@@ -1,0 +1,7 @@
+# PostgreSQL
+# ------------------------------------------------------------------------------
+POSTGRES_HOST=postgres
+POSTGRES_PORT=5432
+POSTGRES_DB=chigame
+POSTGRES_USER=wJcGuHcTmPiDQJSBUQUQlNXgEVjHmGWP
+POSTGRES_PASSWORD=O6G2BBdJvRJ5jLSJBqDdMzeQemvl9lOSN295a6QIXVAkOaXjOKWyYtz0KDHx6TrP

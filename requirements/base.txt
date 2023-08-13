@@ -1,0 +1,9 @@
+argon2-cffi==21.3.0  # https://github.com/hynek/argon2_cffi
+
+# Django
+# ------------------------------------------------------------------------------
+django==4.2.4  # pyup: < 5.0  # https://www.djangoproject.com/
+django-environ==0.10.0  # https://github.com/joke2k/django-environ
+django-allauth==0.54.0  # https://github.com/pennersr/django-allauth
+django-crispy-forms==2.0  # https://github.com/django-crispy-forms/django-crispy-forms
+crispy-bootstrap5==0.7  # https://github.com/django-crispy-forms/crispy-bootstrap5
