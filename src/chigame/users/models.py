@@ -66,9 +66,9 @@ class FriendInvitation(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
 
 
-class FriendGroup(models.Model):
+class Group(models.Model):
     """
-    A group of friends.
+    A group of users.
     """
 
     name = models.TextField()
@@ -77,12 +77,12 @@ class FriendGroup(models.Model):
     date_created = models.DateTimeField(auto_now_add=True)
 
 
-class FriendGroupInvitation(models.Model):
+class GroupInvitation(models.Model):
     """
-    An invitation to join a group of friends
+    An invitation to join a group
     """
 
-    friend_group = models.ForeignKey(FriendGroup, on_delete=models.CASCADE)
+    friend_group = models.ForeignKey(Group, on_delete=models.CASCADE)
     sender = models.ForeignKey(User, related_name="sent_group_invitations", on_delete=models.CASCADE)
     receiver = models.ForeignKey(User, related_name="received_group_invitations", on_delete=models.CASCADE)
     accepted = models.BooleanField(default=False)

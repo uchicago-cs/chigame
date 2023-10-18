@@ -1,6 +1,6 @@
 from django.db import models
 
-from chigame.users.models import FriendGroup, User
+from chigame.users.models import Group, User
 
 
 class Game(models.Model):
@@ -56,7 +56,7 @@ class MatchProposal(models.Model):
 
     game = models.ForeignKey(Game, on_delete=models.CASCADE)
     proposer = models.ForeignKey(User, on_delete=models.CASCADE)
-    friend_group = models.ForeignKey(FriendGroup, on_delete=models.CASCADE)
+    group = models.ForeignKey(Group, on_delete=models.CASCADE)
     proposed_time = models.DateTimeField()
     min_players = models.PositiveIntegerField()
     joined = models.ManyToManyField(User, related_name="joined_matches", blank=True)
