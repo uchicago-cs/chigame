@@ -71,6 +71,17 @@
                   {# URL provided by django-allauth/account/urls.py #}
                   <a class="nav-link" href="{% url 'account_logout' %}">{% translate "Sign Out" %}</a>
                 </li>
+                <li class="nav-item">
+                  <form class="form-inline"
+                        method="get"
+                        action="{% url 'users:search-results' %}">
+                    <input class="form-control"
+                           type="text"
+                           name="email"
+                           placeholder="Search by Email" />
+                    <button class="btn btn-primary" type="submit">Search</button>
+                  </form>
+                </li>
               {% else %}
                 {% if ACCOUNT_ALLOW_REGISTRATION %}
                   <li class="nav-item">

@@ -1,9 +1,12 @@
+import django.shortcuts as sc
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import DetailView, RedirectView, UpdateView
+
+from .models import UserProfile
 
 User = get_user_model()
 
@@ -41,3 +44,36 @@ class UserRedirectView(LoginRequiredMixin, RedirectView):
 
 
 user_redirect_view = UserRedirectView.as_view()
+
+
+def user_search_results(request):
+    if request.method == "GET":
+        email = request.GET.get("email")
+
+        if email:
+            # Search for the user by email
+            user = sc.get_object_or_404(User, email=email)
+
+            # Redirect to the user's profile page
+            return sc.redirect("users:detail", pk=user.pk)
+        else:
+            # Handle no email provided or user not found
+            # You can add error handling or display a message here
+            pass
+
+    # Handle GET request or other cases
+    # You can render a search results page or display a message
+    # based on the search query
+    return sc.render(request, "search_results.html")
+
+
+def user_profile_view(request, pk):
+    userProfile = sc.get_object_or_404(UserProfile, user__pk=pk)
+    user = sc.get_object_or_404(User, pk=pk)
+    friends = userProfile.friends.all()
+    currentFriend = False
+    for friend in friends:
+        if friend.user == user:
+            currentFriend = True
+    context = {"profile": userProfile, "friend": currentFriend}
+    return sc.render(request, "users/user_detail.html", context)
