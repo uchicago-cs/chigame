@@ -51,15 +51,3 @@ def user_search_results(request):
     users = UserProfile.objects.filter(user__email=email).values()
     context = {"user_list": users}
     return sc.render(request, "users/user_search_results.html", context)
-
-
-def user_profile_view(request, pk):
-    userProfile = sc.get_object_or_404(UserProfile, user__pk=pk)
-    user = sc.get_object_or_404(User, pk=pk)
-    friends = userProfile.friends.all()
-    currentFriend = False
-    for friend in friends:
-        if friend.user == user:
-            currentFriend = True
-    context = {"profile": userProfile, "friend": currentFriend}
-    return sc.render(request, "users/user_detail.html", context)

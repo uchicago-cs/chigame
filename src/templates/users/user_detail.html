@@ -4,16 +4,16 @@
 
 {% block title %}
   User:
-  {{ profile.display_name }}
+  {{ object.name }}
 {% endblock title %}
 {% block content %}
   <div class="container">
     <div class="row">
       <div class="col-sm-12">
-        <h2>{{ profile.display_name }}</h2>
+        <h2>{{ object.name }}</h2>
       </div>
     </div>
-    {% if profile.user == request.user %}
+    {% if object == request.user %}
       <!-- Action buttons -->
       <div class="row">
         <div class="col-sm-12">
@@ -21,20 +21,6 @@
           <a class="btn btn-primary"
              href="{% url 'account_email' %}"
              role="button">E-Mail</a>
-          <!-- Your Stuff: Custom user template urls -->
-        </div>
-      </div>
-      <!-- End Action buttons -->
-    {% endif %}
-    {% if profile.user != request.user %}
-      <!-- Action buttons -->
-      <div class="row">
-        <div class="col-sm-12">
-          {% if not friend %}
-            <a class="btn btn-primary"
-               href="{% url 'users:detail' profile.user.pk %}"
-               role="button">Add Friend</a>
-          {% endif %}
           <!-- Your Stuff: Custom user template urls -->
         </div>
       </div>
