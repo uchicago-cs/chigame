@@ -1,9 +1,12 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
+from django.shortcuts import redirect
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import DetailView, RedirectView, UpdateView
+
+from .models import FriendInvitation
 
 User = get_user_model()
 
@@ -41,3 +44,11 @@ class UserRedirectView(LoginRequiredMixin, RedirectView):
 
 
 user_redirect_view = UserRedirectView.as_view()
+
+
+def send_friend_invitation(request, pk):
+    sender = User.objects.get(pk=request.user.id)
+    receiver = User.objects.get(pk=pk)
+    if sender.id != receiver.id:
+        FriendInvitation.objects.create(sender=sender, receiver=receiver)
+    return redirect(reverse("users:detail", kwargs={"pk": request.user.pk}))

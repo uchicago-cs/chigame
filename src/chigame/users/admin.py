@@ -6,6 +6,8 @@ from django.utils.translation import gettext_lazy as _
 
 from chigame.users.forms import UserAdminChangeForm, UserAdminCreationForm
 
+from .models import FriendInvitation
+
 User = get_user_model()
 
 if settings.DJANGO_ADMIN_FORCE_ALLAUTH:
@@ -47,3 +49,6 @@ class UserAdmin(auth_admin.UserAdmin):
             },
         ),
     )
+
+
+admin.site.register(FriendInvitation)
