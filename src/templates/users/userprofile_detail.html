@@ -17,7 +17,7 @@
               <div class="media-body">
                 <p>Bio: {{ object.bio }}</p>
                 {% if object.user == request.user %}
-                  <a href="{% url users:edit-profile %}"" class="btn btn-primary">Edit Profile</a>
+                  <a href="{% url 'users:update' %}"" class="btn btn-primary">Edit Profile</a>
                 {% endif %}
               </div>
             </div>
