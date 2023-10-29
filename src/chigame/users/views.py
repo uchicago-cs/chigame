@@ -47,24 +47,10 @@ user_redirect_view = UserRedirectView.as_view()
 
 
 def user_search_results(request):
-    if request.method == "GET":
-        email = request.GET.get("email")
-
-        if email:
-            # Search for the user by email
-            user = sc.get_object_or_404(User, email=email)
-
-            # Redirect to the user's profile page
-            return sc.redirect("users:detail", pk=user.pk)
-        else:
-            # Handle no email provided or user not found
-            # You can add error handling or display a message here
-            pass
-
-    # Handle GET request or other cases
-    # You can render a search results page or display a message
-    # based on the search query
-    return sc.render(request, "search_results.html")
+    email = request.GET.get("email")
+    users = UserProfile.objects.filter(user__email=email).values()
+    context = {"user_list": users}
+    return sc.render(request, "users/user_search_results.html", context)
 
 
 def user_profile_view(request, pk):

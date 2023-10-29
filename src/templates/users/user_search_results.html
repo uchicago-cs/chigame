@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block title %}
+  Search Results
+{% endblock title %}
+{% block content %}
+  <h1 class="mb-4">User Search Results</h1>
+  {% if user_list %}
+    <div class="row">
+      {% for user in user_list %}
+        <div class="col-md-4 mb-4">
+          <div class="card">
+            <div class="card-body">
+              <h2 class="card-title">{{ user.display_name }}</h2>
+              <p class="card-text">{{ user.email }}</p>
+            </div>
+            <div class="card-footer d-flex justify-content-between">
+              <a href="{% url 'users:detail' user.id %}" class="btn btn-primary">View</a>
+              {% if user.id != request.user.id %}
+                <form method="post">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-secondary">Add Friend</button>
+                </form>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p>Oops!! No users matching your search criteria were found. Maybe try changing your search parameters.</p>
+  {% endif %}
+{% endblock content %}

@@ -71,15 +71,17 @@
                   {# URL provided by django-allauth/account/urls.py #}
                   <a class="nav-link" href="{% url 'account_logout' %}">{% translate "Sign Out" %}</a>
                 </li>
-                <li class="nav-item">
-                  <form class="form-inline"
+                <li class="nav-item ms-auto">
+                  <form class="form-inline d-flex"
                         method="get"
                         action="{% url 'users:search-results' %}">
-                    <input class="form-control"
-                           type="text"
-                           name="email"
-                           placeholder="Search by Email" />
-                    <button class="btn btn-primary" type="submit">Search</button>
+                    <div class="input-group">
+                      <input class="form-control"
+                             type="text"
+                             name="email"
+                             placeholder="Search by Email" />
+                      <button class="btn btn-primary" type="submit">Search</button>
+                    </div>
                   </form>
                 </li>
               {% else %}
