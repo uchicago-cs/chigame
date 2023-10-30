@@ -1,6 +1,8 @@
+from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
+from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
@@ -49,6 +51,31 @@ user_redirect_view = UserRedirectView.as_view()
 def send_friend_invitation(request, pk):
     sender = User.objects.get(pk=request.user.id)
     receiver = User.objects.get(pk=pk)
+    if sender.id == receiver.id:
+        messages.error(request, "You can't send friendship invitation to yourself")
+        return redirect(reverse("users:redirect"))
+
     if sender.id != receiver.id:
-        FriendInvitation.objects.create(sender=sender, receiver=receiver)
-    return redirect(reverse("users:detail", kwargs={"pk": request.user.pk}))
+        _, new = FriendInvitation.objects.get_or_create(sender=sender, receiver=receiver)
+    if new:
+        messages.success(request, "Friendship invitation sent successfully.")
+    else:
+        messages.info(request, "Friendship invitation already sent before.")
+    return redirect(reverse("users:redirect"))
+
+
+def cancel_friendship(request, pk):
+    sender = User.objects.get(pk=request.user.id)
+    receiver = User.objects.get(pk=pk)
+    num = None
+    try:
+        friendship = FriendInvitation.objects.get(sender=sender, receiver=receiver)
+        num, _ = friendship.delete()
+    except ObjectDoesNotExist:
+        messages.error(request, "Something went wrong please try again later!")
+    if num:
+        messages.success(request, "Friendship invitation cancelled successfully.")
+    else:
+        messages.error(request, "Something went wrong please try again later!")
+
+    return redirect(reverse("users:redirect"))
