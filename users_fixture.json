@@ -96,6 +96,38 @@
   }
 },
 {
+  "model": "users.user",
+  "pk": 7,
+  "fields": {
+    "password": "foo",
+    "last_login": null,
+    "is_superuser": false,
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2023-10-26T13:42:31.123Z",
+    "name": "user7",
+    "email": "user7@example.com",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "users.user",
+  "pk": 8,
+  "fields": {
+    "password": "foo",
+    "last_login": null,
+    "is_superuser": false,
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2023-10-26T13:53:08.045Z",
+    "name": "user8",
+    "email": "user8@example.com",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
   "model": "users.userprofile",
   "pk": 1,
   "fields": {
@@ -158,6 +190,28 @@
     "display_name": "Default Display Name",
     "bio": "A brief bio for the superuser",
     "date_joined": "2023-10-30T03:31:56.761Z",
+    "friends": []
+  }
+},
+{
+  "model": "users.userprofile",
+  "pk": 7,
+  "fields": {
+    "user": 7,
+    "display_name": "Default Display Name",
+    "bio": "A brief bio about User Seven",
+    "date_joined": "2023-10-26T13:42:31.123Z",
+    "friends": []
+  }
+},
+{
+  "model": "users.userprofile",
+  "pk": 8,
+  "fields": {
+    "user": 8,
+    "display_name": "Default Display Name",
+    "bio": "A brief bio about User Eight",
+    "date_joined": "2023-10-26T13:53:08.045Z",
     "friends": []
   }
 }
