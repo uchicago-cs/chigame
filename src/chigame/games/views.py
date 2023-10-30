@@ -37,8 +37,13 @@ def bgg_search_view(request):
                     "id": game_id,
                     "name": details_root.find(".//name").get("value"),
                     "image": details_root.find(".//image").text,
-                    "description": details_root.find(".//description").text
+                    "description": details_root.find(".//description").text,
+                    "yearpublished": details_root.find(".//yearpublished").get("value"),
+                    "boardgamepublishers": [publisher.get("value") for publisher in details_root.findall(".//link[@type='boardgamepublisher']")],
+                    "minplaytime": details_root.find(".//minplaytime").get("value"),
+                    "maxplaytime": details_root.find(".//maxplaytime").get("value"),
                 }
+
                 games_list.append(game_data)
 
     return render(request, 'games/search_results.html', {'form': form, 'games_list': games_list})
