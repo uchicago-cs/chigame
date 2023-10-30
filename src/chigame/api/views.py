@@ -1,5 +1,6 @@
 # from django.shortcuts import render
 from rest_framework import generics
+
 from chigame.api.serializers import GameSerializer
 from chigame.games.models import Game
 
