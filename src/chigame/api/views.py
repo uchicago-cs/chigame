@@ -1,6 +1,6 @@
 # from django.shortcuts import render
 from api.serializers import GameSerializer
-from rest_framework.generics import ListAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework import generics
 
 from src.chigame.games.models import Game
 
@@ -9,12 +9,12 @@ from src.chigame.games.models import Game
 # create /games/ endpoint that returns a list of all games
 
 
-class GameListView(ListAPIView):
-    model = Game
+class GameListView(generics.ListAPIView):
+    queryset = Game.objects.all()
     serializer_class = GameSerializer
 
 
 # create /games/<int:pk>/ endpoint that returns a single game
-class GameDetailView(RetrieveUpdateDestroyAPIView):
-    model = Game
+class GameDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Game.objects.all()
     serializer_class = GameSerializer
