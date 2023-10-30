@@ -1,18 +1,20 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <title>{{ game.name }} Details</title>
-  </head>
-  <body>
-    <h1>{{ game.name }}</h1>
-    <p>
-      <strong>Minimum Players:</strong> {{ game.min_players }}
-    </p>
-    <p>
-      <strong>Maximum Players:</strong> {{ game.max_players }}
-    </p>
-    <p>
-      <strong>Description:</strong> {{ game.description }}
-    </p>
-  </body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}
+  {{ game.name }} Details
+{% endblock title %}
+{% block content %}
+  <h1>{{ game.name }}</h1>
+  <p>
+    <strong>Minimum Players:</strong> {{ game.min_players }}
+  </p>
+  <p>
+    <strong>Maximum Players:</strong> {{ game.max_players }}
+  </p>
+  <p>
+    <strong>Description:</strong> {{ game.description }}
+  </p>
+  <p>
+    <a href="{% url 'games-list' %}">Back to Games List</a>
+  </p>
+{% endblock content %}
