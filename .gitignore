@@ -165,3 +165,5 @@ chigame_template/media/
 .env
 .envs/*
 !.envs/.local/
+
+*DS_Store

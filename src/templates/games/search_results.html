@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}
+BGG API CALL Demo
+{% endblock title %}
+
+{% block css %}
+{{ block.super }} <!-- This will inherit the styles from the base.html -->
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+    }
+
+    form {
+        margin-bottom: 20px;
+    }
+
+    img {
+        max-width: 100px;
+        margin: 10px 0;
+    }
+
+    .game-item {
+        border: 1px solid #e1e1e1;
+        padding: 15px;
+        margin: 10px 0;
+        border-radius: 5px;
+        display: flex;
+        align-items: center;
+    }
+
+    .game-image {
+        max-width: 200px;
+        margin-right: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .game-details {
+        flex-grow: 1;
+    }
+
+    .game-description {
+        text-align: justify;
+        margin-top: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Search on BoardGameGeek</button>
+</form>
+
+{% if games_list %}
+<h2>Matching Games:</h2>
+{% for game in games_list %}
+<div class="game-item">
+    <img class="game-image" src="{{ game.image }}" alt="{{ game.name }}">
+    <div class="game-details">
+        <h3>{{ game.name }} (ID: {{ game.id }})</h3>
+        <p class="game-description">{{ game.description|escape|safe|linebreaks }}</p>
+    </div>
+</div>
+{% endfor %}
+{% endif %}
+
+{% endblock content %}
