@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth import get_user_model
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import ObjectDoesNotExist
@@ -48,6 +49,7 @@ class UserRedirectView(LoginRequiredMixin, RedirectView):
 user_redirect_view = UserRedirectView.as_view()
 
 
+@login_required
 def send_friend_invitation(request, pk):
     sender = User.objects.get(pk=request.user.id)
     receiver = User.objects.get(pk=pk)
@@ -64,6 +66,7 @@ def send_friend_invitation(request, pk):
     return redirect(reverse("users:redirect"))
 
 
+@login_required
 def cancel_friendship(request, pk):
     sender = User.objects.get(pk=request.user.id)
     receiver = User.objects.get(pk=pk)
