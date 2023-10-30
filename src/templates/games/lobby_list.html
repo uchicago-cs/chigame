@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}
+  Lobbies
+{% endblock title %}
+{% block content %}
+  <h1>List of Lobbies</h1>
+  <table>
+    <tr>
+        <th>Lobby Name</th> 
+        <th>Game Name</th>  
+        <th>Host</th>   
+        <th>Current Members</th>  
+        <th>Min Players</th>  
+        <th>Max Players</th>        
+    </tr>
+
+    {% for lobby in object_list %}
+    <tr>   
+        <td>{{lobby.name}}</td>
+        <td>{{lobby.game}}</td>
+        <td>{{lobby.created_by}}</td>
+        <td>{{lobby.members}}</td>
+        <td>{{lobby.min_players}}</td>
+        <td>{{lobby.max_players}}</td>
+    </tr>  
+    {% endfor %}
+  </table>
+{% endblock content %}
