@@ -1,8 +1,8 @@
 # from django.shortcuts import render
-from api.serializers import GameSerializer
 from rest_framework import generics
 
-from src.chigame.games.models import Game
+from chigame.api.serializers import GameSerializer
+from chigame.games.models import Game
 
 # Create your views here.
 
