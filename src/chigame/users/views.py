@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import ObjectDoesNotExist
-from django.shortcuts import redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import DetailView, RedirectView, UpdateView
@@ -91,3 +91,23 @@ def cancel_friendship(request, pk):
         messages.error(request, "Something went wrong please try again later!")
 
     return redirect(reverse("users:redirect"))
+
+
+@login_required
+def user_search_results(request):
+    if request.method == "GET":
+        email = request.GET.get("email")
+        # Search for the user by email
+        try:
+            user = get_object_or_404(User, email=email)
+            return redirect("users:user-profile", pk=user.pk)
+        # Redirect to the user's profile page
+        except Exception:
+            messages.error(request, "User does not exist!")
+            return redirect(reverse("users:redirect"))
+        # Handle no email provided or user not found
+        # You can add error handling or display a message here
+    # Handle GET request or other cases
+    # You can render a search results page or display a message
+    # based on the search query
+    return render(request, "search_results.html")

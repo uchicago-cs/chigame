@@ -19,7 +19,8 @@
                 {% if object.user == request.user %}
                   <a href="{% url 'users:update' %}" class="btn btn-primary">Edit Profile</a>
                 {% else %}
-                  <a class="btn btn-primary">Add Friend</a>
+                  <a href="{% url 'users:add_friend' object.user.pk %}"
+                     class="btn btn-primary">Add Friend</a>
                 {% endif %}
               </div>
             </div>
