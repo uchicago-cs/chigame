@@ -1,9 +1,13 @@
+from django.contrib import messages
 from django.contrib.auth import get_user_model
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
-from django.urls import reverse
+from django.shortcuts import get_object_or_404, redirect, render, reverse
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import DetailView, RedirectView, UpdateView
+
+from .models import UserProfile
 
 User = get_user_model()
 
@@ -41,3 +45,13 @@ class UserRedirectView(LoginRequiredMixin, RedirectView):
 
 
 user_redirect_view = UserRedirectView.as_view()
+
+
+@login_required
+def user_profile_detail_view(request, pk):
+    try:
+        profile = get_object_or_404(UserProfile, user__pk=pk)
+        return render(request, "users/userprofile_detail.html", {"object": profile})
+    except Exception:
+        messages.error(request, "Profile does not exist")
+        return redirect(reverse("users:detail", kwargs={"pk": request.user.pk}))
