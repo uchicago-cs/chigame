@@ -17,7 +17,7 @@
 
     {% for lobby in object_list %}
     <tr>   
-        <td>{{lobby.name}}</td>
+        <td><a href = "{% url 'lobby-details' lobby.pk %}">{{lobby.name}} </a></td>
         <td>{{lobby.game}}</td>
         <td>{{lobby.created_by}}</td>
         <td>{{lobby.members}}</td>
