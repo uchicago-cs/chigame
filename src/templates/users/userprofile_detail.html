@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block title %}
+  User:
+  {{ object.display_name }}
+{% endblock title %}
+{% block content %}
+  <div class="container mt-5">
+    <div class="row">
+      <div class="col-md-6 offset-md-3">
+        <div class="card">
+          <div class="card-header">{{ object.display_name }}</div>
+          <div class="card-body">
+            <div class="media">
+              <div class="media-body">
+                <p>Bio: {{ object.bio }}</p>
+                {% if object.user == request.user %}
+                  <a href="{% url 'users:update' %}" class="btn btn-primary">Edit Profile</a>
+                {% else %}
+                  <a class="btn btn-primary">Add Friend</a>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock content %}
