@@ -17,7 +17,7 @@ class Game(models.Model):
     min_playtime = models.PositiveIntegerField()
     max_playtime = models.PositiveIntegerField()
     year_published = models.PositiveIntegerField()
-    image = models.TextField()
+    image = models.URLField()
     complexity = models.PositiveSmallIntegerField()
     BGG_id = models.PositiveIntegerField()
 
