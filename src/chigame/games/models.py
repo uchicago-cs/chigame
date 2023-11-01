@@ -12,6 +12,14 @@ class Game(models.Model):
     description = models.TextField()
     min_players = models.PositiveIntegerField()
     max_players = models.PositiveIntegerField()
+    rules = models.TextField()
+    expected_playtime = models.PositiveIntegerField()
+    min_playtime = models.PositiveIntegerField()
+    max_playtime = models.PositiveIntegerField()
+    year_published = models.PositiveIntegerField()
+    image = models.TextField()
+    complexity = models.PositiveSmallIntegerField()
+    BGG_id = models.PositiveIntegerField()
 
     def __str__(self):
         return self.name
