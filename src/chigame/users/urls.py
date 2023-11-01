@@ -9,6 +9,8 @@ from chigame.users.views import (
     user_update_view,
 )
 
+from . import views
+
 app_name = "users"
 urlpatterns = [
     path("~redirect/", view=user_redirect_view, name="redirect"),
@@ -17,4 +19,5 @@ urlpatterns = [
     path("profile/<int:pk>/", view=user_profile_detail_view, name="user-profile"),
     path("add_friend/<int:pk>", view=send_friend_invitation, name="add-friend"),
     path("cancel_friend_invitation/<int:pk>", view=cancel_friend_invitation, name="cancel-friend-invitation"),
+    path("user-list/", views.user_list, name="user_list"),
 ]
