@@ -13,10 +13,9 @@ def lobby_list(request):
     context = {"object_list": lobbies}
     return render(request, "games/lobby_list.html", context)
 
-class ViewLobbyDetails(ListView):
-    model = Lobby
-    queryset = Lobby.objects.all()
-    template_name = "games/lobby_details.html"
+def lobby_detail(request, lobby_id):
+    lobby = Lobby.objects.get(id=lobby_id)
+    return render(request, 'lobby_detail.html', {'lobby': lobby})
 
 class GameDetailView(DetailView):
     model = Game
