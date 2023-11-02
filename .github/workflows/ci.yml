@@ -7,11 +7,11 @@ env:
 
 on:
   pull_request:
-    branches: ['master', 'main']
+    branches: ['main', 'dev']
     paths-ignore: ['docs/**']
 
   push:
-    branches: ['master', 'main']
+    branches: ['main', 'dev']
     paths-ignore: ['docs/**']
 
 concurrency:
@@ -66,6 +66,10 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements/local.txt
+
+      - name: Check Django setup
+        working-directory: src/
+        run: python3 manage.py check
 
       - name: Test with pytest
         run: pytest
