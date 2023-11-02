@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load render_table from django_tables2 %}
 
 {% load static %}
 
@@ -25,6 +26,13 @@
         </div>
       </div>
       <!-- End Action buttons -->
+
+      <!-- List of friends table -->
+      <br><br>
+      <h2> My Friends </h2>
+      {% if friends %}
+        {% render_table friend_table %}
+      {% endif %}
     {% endif %}
 
     {% if request.user.is_staff %}

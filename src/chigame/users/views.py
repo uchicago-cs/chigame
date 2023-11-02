@@ -8,9 +8,10 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import DetailView, RedirectView, UpdateView
+from django_tables2 import RequestConfig
 
 from .models import FriendInvitation, UserProfile
-from .tables import UserTable
+from .tables import UserTable, FriendTable
 
 User = get_user_model()
 
@@ -60,8 +61,19 @@ def user_list(request):
 @login_required
 def user_detail(request):
     users = User.objects.all()
+    user = request.user
 
-    return render(request, "users/user_detail.html", {"users": users})
+    friends = FriendInvitation.objects.filter(sender=user, accepted=True).values_list("receiver", flat=True)
+    friend_table = FriendTable(UserProfile.objects.filter(user__in=friends))
+    RequestConfig(request).configure(friend_table)
+    
+    context = {
+        "users": users,
+        "friend_table": friend_table,
+        "friends": friends,
+    }
+
+    return render(request, "users/user_detail.html", context)
 
 def user_profile_detail_view(request, pk):
     try:
