@@ -1,3 +1,4 @@
+from django.contrib.auth.mixins import UserPassesTestMixin
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DetailView, ListView, UpdateView
 
@@ -16,17 +17,25 @@ class GameDetailView(DetailView):
     context_object_name = "game"
 
 
-class GameCreateView(CreateView):
+class GameCreateView(UserPassesTestMixin, CreateView):
     model = Game
     fields = ["name", "description", "min_players", "max_players"]
     template_name = "games/game_form.html"
     success_url = reverse_lazy("game-list")
+    raise_exception = True
+
+    def test_func(self):
+        return self.request.user.is_staff
 
 
-class GameEditView(UpdateView):
+class GameEditView(UserPassesTestMixin, UpdateView):
     model = Game
     fields = ["name", "description", "min_players", "max_players"]
     template_name = "games/game_form.html"
+    raise_exception = True
 
     def get_success_url(self):
         return reverse_lazy("game-detail", kwargs={"pk": self.kwargs["pk"]})
+
+    def test_func(self):
+        return self.request.user.is_staff
