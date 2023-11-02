@@ -71,6 +71,18 @@ BGG API CALL Demo
             {{ publisher }}{% if not forloop.last %}, {% endif %}
         {% endfor %}
         </p>
+        <p>
+        <strong>Designers:</strong>
+        {% for designer in game.boardgamedesigners %}
+            {{ designer }}{% if not forloop.last %}, {% endif %}
+        {% endfor %}
+        </p>
+        <p>
+        <strong>Artists:</strong>
+        {% for artist in game.boardgameartists %}
+            {{ artist }}{% if not forloop.last %}, {% endif %}
+        {% endfor %}
+        </p>
         <p><strong>Minimum Playtime:</strong> {{ game.minplaytime }} minutes</p>
         <p><strong>Maximum Playtime:</strong> {{ game.maxplaytime }} minutes</p>
     </div>

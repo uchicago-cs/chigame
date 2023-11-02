@@ -40,6 +40,8 @@ def bgg_search_view(request):
                     "description": details_root.find(".//description").text,
                     "yearpublished": details_root.find(".//yearpublished").get("value"),
                     "boardgamepublishers": [publisher.get("value") for publisher in details_root.findall(".//link[@type='boardgamepublisher']")],
+                    "boardgameartists": [publisher.get("value") for publisher in details_root.findall(".//link[@type='boardgameartist']")],
+                    "boardgamedesigners": [publisher.get("value") for publisher in details_root.findall(".//link[@type='boardgamedesigner']")],
                     "minplaytime": details_root.find(".//minplaytime").get("value"),
                     "maxplaytime": details_root.find(".//maxplaytime").get("value"),
                 }
