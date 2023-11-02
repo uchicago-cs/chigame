@@ -10,6 +10,7 @@ from django.utils.translation import gettext_lazy as _
 from django.views.generic import DetailView, RedirectView, UpdateView
 
 from .models import FriendInvitation, UserProfile
+from .tables import UserTable
 
 User = get_user_model()
 
@@ -48,9 +49,16 @@ class UserRedirectView(LoginRequiredMixin, RedirectView):
 
 user_redirect_view = UserRedirectView.as_view()
 
-
 @login_required
 def user_list(request):
+    users = User.objects.all()
+    table = UserTable(users)
+    context = {"users": users, "table": table}
+
+    return render(request, "users/user_list.html", context)
+
+@login_required
+def user_detail(request):
     users = User.objects.all()
 
     return render(request, "users/user_detail.html", {"users": users})
@@ -100,4 +108,4 @@ def cancel_friend_invitation(request, pk):
     else:
         messages.error(request, "Something went wrong please try again later!")
     return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
-  
+
