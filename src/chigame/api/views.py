@@ -9,7 +9,7 @@ from chigame.games.models import Game
 # create /games/ endpoint that returns a list of all games
 
 
-class GameListView(generics.ListAPIView):
+class GameListView(generics.ListCreateAPIView):
     queryset = Game.objects.all()
     serializer_class = GameSerializer
 
