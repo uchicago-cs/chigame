@@ -55,6 +55,7 @@ def user_list(request):
 
     return render(request, "users/user_detail.html", {"users": users})
 
+
 def user_profile_detail_view(request, pk):
     try:
         profile = get_object_or_404(UserProfile, user__pk=pk)
@@ -100,4 +101,3 @@ def cancel_friend_invitation(request, pk):
     else:
         messages.error(request, "Something went wrong please try again later!")
     return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
-  
