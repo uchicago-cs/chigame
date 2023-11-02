@@ -50,3 +50,4 @@ INSTALLED_APPS += ["django_extensions"]  # noqa: F405
 
 # Add additional configuration below:
 # ------------------------------------------------------------------------------
+INSTALLED_APPS += ["django_tables2"]  # noqa: F405
