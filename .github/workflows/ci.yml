@@ -33,21 +33,8 @@ jobs:
       - name: Run pre-commit
         uses: pre-commit/action@v3.0.0
 
-  # With no caching at all the entire ci process takes 4m 30s to complete!
-  pytest:
+  run-tests:
     runs-on: ubuntu-latest
-
-    services:
-      postgres:
-        image: postgres:15
-        ports:
-          - 5432:5432
-        env:
-          POSTGRES_PASSWORD: postgres
-
-    env:
-      # postgres://user:password@host:port/database
-      DATABASE_URL: 'postgres://postgres:postgres@localhost:5432/postgres'
 
     steps:
       - name: Checkout Code Repository
@@ -68,7 +55,6 @@ jobs:
           pip install -r requirements/local.txt
 
       - name: Check Django setup
-        working-directory: src/
         run: python3 manage.py check
 
       - name: Test with pytest
