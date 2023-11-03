@@ -1,10 +1,9 @@
-import datetime
-
 import django.db.models as models
 from django.contrib.auth.models import AbstractUser
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.urls import reverse
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from chigame.users.managers import UserManager
@@ -145,5 +144,5 @@ class Notification(models.Model):
             self.save()
 
     def renew_notification(self):
-        self.last_sent = datetime.datetime.now()
+        self.last_sent = timezone.now()
         self.save()
