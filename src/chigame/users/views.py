@@ -3,7 +3,6 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
-from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
@@ -101,11 +100,15 @@ def cancel_friend_invitation(request, pk):
     num = None
     try:
         friendship = FriendInvitation.objects.get(sender=sender, receiver=receiver)
-        notification = Notification.objects.filter_by_actor(friendship)
-        num, _ = friendship.delete()
-        notification.update(visible=False)
-    except ObjectDoesNotExist:
+        notification = Notification.objects.get_by_actor(friendship)
+    except FriendInvitation.DoesNotExist:
         messages.error(request, "Friendship invitation does not exist")
+        return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
+    except Notification.DoesNotExist:
+        notification = Notification.objects.create(actor=friendship, receiver=receiver)
+        notification.mark_as_deleted()
+    num, _ = friendship.delete()
+    notification.mark_as_deleted()
     if num:
         messages.success(request, "Friendship invitation cancelled successfully.")
     else:
