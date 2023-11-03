@@ -1,10 +1,5 @@
 name: CI
 
-# Enable Buildkit and let compose use it to speed up image building
-env:
-  DOCKER_BUILDKIT: 1
-  COMPOSE_DOCKER_CLI_BUILD: 1
-
 on:
   pull_request:
     branches: ['main', 'dev']
@@ -14,11 +9,17 @@ on:
     branches: ['main', 'dev']
     paths-ignore: ['docs/**']
 
+# Concurrency control: Only one workflow run per PR branch.
+# In-progress runs for a PR branch are canceled on new pushes.
+# For non-PR events, each run is treated independently.
 concurrency:
   group: ${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
 jobs:
+  # The linter job runs the same quality checks run by pre-commit
+  # when making a commit. It should pass as long as everyone
+  # is using pre-commit correctly before pushing.
   linter:
     runs-on: ubuntu-latest
     steps:
@@ -33,6 +34,7 @@ jobs:
       - name: Run pre-commit
         uses: pre-commit/action@v3.0.0
 
+  # run-tests does a basic Django check and runs all the tests
   run-tests:
     runs-on: ubuntu-latest
 
