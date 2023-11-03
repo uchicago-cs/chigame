@@ -93,6 +93,26 @@ class GroupInvitation(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
 
 
+class NotificationQuerySet(models.QuerySet):
+    def filter_by_actor(self, actor, **kwargs):
+        try:
+            actor_content_type = ContentType.objects.get(model=actor._meta.model_name)
+            actor_object_id = actor.pk
+            return self.filter(actor_content_type=actor_content_type, actor_object_id=actor_object_id, **kwargs)
+
+        except ContentType.DoesNotExist:
+            raise ValueError(f"The model {actor.label} is not registered in content type")
+
+    def get_by_actor(self, actor, **kwargs):
+        try:
+            actor_content_type = ContentType.objects.get(model=actor._meta.model_name)
+            actor_object_id = actor.pk
+            return self.get(actor_content_type=actor_content_type, actor_object_id=actor_object_id, **kwargs)
+
+        except ContentType.DoesNotExist:
+            raise ValueError(f"The model {actor.label} is not registered in content type")
+
+
 class Notification(models.Model):
     """
     A notification to user
@@ -107,13 +127,14 @@ class Notification(models.Model):
     actor_object_id = models.PositiveIntegerField()
     actor = GenericForeignKey("actor_content_type", "actor_object_id")
     message = models.CharField(max_length=255, blank=True, null=True)
+    objects = NotificationQuerySet.as_manager()
 
     def mark_as_read(self):
         if not self.read:
             self.read = True
             self.save()
 
-    def mark_as_underad(self):
+    def mark_as_unread(self):
         if self.read:
             self.read = False
             self.save()

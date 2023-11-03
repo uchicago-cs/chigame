@@ -87,9 +87,8 @@ def send_friend_invitation(request, pk):
     else:
         messages.info(request, "Friendship invitation already sent before.")
         try:
-            notification = Notification.objects.get(actor_object_id=friend_request.pk, receiver=receiver)
+            notification = Notification.objects.get_by_actor(friend_request, receiver=receiver)
             notification.renew_notification()
-
         except Notification.DoesNotExist:
             notification = Notification.objects.create(actor=friend_request, receiver=receiver)
     return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
@@ -102,9 +101,7 @@ def cancel_friend_invitation(request, pk):
     num = None
     try:
         friendship = FriendInvitation.objects.get(sender=sender, receiver=receiver)
-        notification = Notification.objects.filter(
-            actor_content_type__model="friendinvitation", actor_object_id=friendship.pk
-        )
+        notification = Notification.objects.filter_by_actor(friendship)
         num, _ = friendship.delete()
         notification.update(visible=False)
     except ObjectDoesNotExist:
