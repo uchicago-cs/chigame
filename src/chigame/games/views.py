@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, reverse
-from django.views.generic import DetailView, ListView
+from django.urls import reverse_lazy
+from django.views.generic import CreateView, DetailView, ListView, UpdateView
 
 from .models import *
 
@@ -22,3 +23,19 @@ class GameDetailView(DetailView):
     model = Game
     template_name = "games/game_detail.html"
     context_object_name = "game"
+
+
+class GameCreateView(CreateView):
+    model = Game
+    fields = ["name", "description", "min_players", "max_players"]
+    template_name = "games/game_form.html"
+    success_url = reverse_lazy("game-list")
+
+
+class GameEditView(UpdateView):
+    model = Game
+    fields = ["name", "description", "min_players", "max_players"]
+    template_name = "games/game_form.html"
+
+    def get_success_url(self):
+        return reverse_lazy("game-detail", kwargs={"pk": self.kwargs["pk"]})

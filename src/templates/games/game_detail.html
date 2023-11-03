@@ -15,6 +15,9 @@
     <strong>Description:</strong> {{ game.description }}
   </p>
   <p>
-    <a href="{% url 'games-list' %}">Back to Games List</a>
+    <a href="{% url 'game-edit' game.pk %}">Edit</a>
+  </p>
+  <p>
+    <a href="{% url 'game-list' %}">Back to Games List</a>
   </p>
 {% endblock content %}
