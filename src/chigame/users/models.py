@@ -1,3 +1,5 @@
+import datetime
+
 import django.db.models as models
 from django.contrib.auth.models import AbstractUser
 from django.contrib.contenttypes.fields import GenericForeignKey
@@ -97,8 +99,26 @@ class Notification(models.Model):
     """
 
     receiver = models.ForeignKey(User, on_delete=models.CASCADE)
-    timestamp = models.DateTimeField(auto_now_add=True)
+    first_sent = models.DateTimeField(auto_now_add=True)
+    last_sent = models.DateTimeField(auto_now_add=True)
     read = models.BooleanField(default=False)
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    object_id = models.PositiveIntegerField()
-    content_object = GenericForeignKey("content_type", "object_id")
+    visible = models.BooleanField(default=True)
+    actor_content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, related_name="notification")
+    actor_object_id = models.PositiveIntegerField()
+    actor = GenericForeignKey("actor_content_type", "actor_object_id")
+    message = models.CharField(max_length=255, blank=True, null=True)
+
+    def mark_as_read(self):
+        if not self.read:
+            self.read = True
+
+    def mark_as_underad(self):
+        if self.read:
+            self.read = False
+
+    def mark_as_deleted(self):
+        if self.visible:
+            self.visible = False
+
+    def renew_notification(self):
+        self.last_sent = datetime.datetime.now()

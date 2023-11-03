@@ -9,7 +9,7 @@ from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import DetailView, RedirectView, UpdateView
 
-from .models import FriendInvitation, UserProfile
+from .models import FriendInvitation, Notification, UserProfile
 
 User = get_user_model()
 
@@ -78,9 +78,10 @@ def send_friend_invitation(request, pk):
         messages.error(request, "You can't send friendship invitation to yourself")
         return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
     if sender.id != receiver.id:
-        _, new = FriendInvitation.objects.get_or_create(sender=sender, receiver=receiver)
+        friend_request, new = FriendInvitation.objects.get_or_create(sender=sender, receiver=receiver)
     if new:
         messages.success(request, "Friendship invitation sent successfully.")
+        Notification.objects.create(content_object=friend_request, receiver=receiver)
     else:
         messages.info(request, "Friendship invitation already sent before.")
     return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
@@ -93,7 +94,9 @@ def cancel_friend_invitation(request, pk):
     num = None
     try:
         friendship = FriendInvitation.objects.get(sender=sender, receiver=receiver)
+        notifications = Notification.objects.filter(content_type__model="friendinvitation", object_id=friendship.pk)
         num, _ = friendship.delete()
+        notifications.update(visible=False)
     except ObjectDoesNotExist:
         messages.error(request, "Friendship invitation does not exist")
     if num:
