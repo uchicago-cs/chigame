@@ -1,5 +1,7 @@
 import django.db.models as models
 from django.contrib.auth.models import AbstractUser
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
@@ -87,3 +89,16 @@ class GroupInvitation(models.Model):
     receiver = models.ForeignKey(User, related_name="received_group_invitations", on_delete=models.CASCADE)
     accepted = models.BooleanField(default=False)
     timestamp = models.DateTimeField(auto_now_add=True)
+
+
+class Notification(models.Model):
+    """
+    A notification to user
+    """
+
+    receiver = models.ForeignKey(User, on_delete=models.CASCADE)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    read = models.BooleanField(default=False)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey("content_type", "object_id")
