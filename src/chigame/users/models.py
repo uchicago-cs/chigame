@@ -103,7 +103,7 @@ class Notification(models.Model):
     last_sent = models.DateTimeField(auto_now_add=True)
     read = models.BooleanField(default=False)
     visible = models.BooleanField(default=True)
-    actor_content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, related_name="notification")
+    actor_content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     actor_object_id = models.PositiveIntegerField()
     actor = GenericForeignKey("actor_content_type", "actor_object_id")
     message = models.CharField(max_length=255, blank=True, null=True)
@@ -111,14 +111,18 @@ class Notification(models.Model):
     def mark_as_read(self):
         if not self.read:
             self.read = True
+            self.save()
 
     def mark_as_underad(self):
         if self.read:
             self.read = False
+            self.save()
 
     def mark_as_deleted(self):
         if self.visible:
             self.visible = False
+            self.save()
 
     def renew_notification(self):
         self.last_sent = datetime.datetime.now()
+        self.save()

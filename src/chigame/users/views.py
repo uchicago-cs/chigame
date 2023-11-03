@@ -74,16 +74,24 @@ def user_profile_detail_view(request, pk):
 def send_friend_invitation(request, pk):
     sender = User.objects.get(pk=request.user.id)
     receiver = User.objects.get(pk=pk)
+
     if sender.id == receiver.id:
         messages.error(request, "You can't send friendship invitation to yourself")
         return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
     if sender.id != receiver.id:
         friend_request, new = FriendInvitation.objects.get_or_create(sender=sender, receiver=receiver)
+
     if new:
         messages.success(request, "Friendship invitation sent successfully.")
-        Notification.objects.create(content_object=friend_request, receiver=receiver)
+        notification = Notification.objects.create(actor=friend_request, receiver=receiver)
     else:
         messages.info(request, "Friendship invitation already sent before.")
+        try:
+            notification = Notification.objects.get(actor_object_id=friend_request.pk, receiver=receiver)
+            notification.renew_notification()
+
+        except Notification.DoesNotExist:
+            notification = Notification.objects.create(actor=friend_request, receiver=receiver)
     return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
 
 
@@ -94,9 +102,11 @@ def cancel_friend_invitation(request, pk):
     num = None
     try:
         friendship = FriendInvitation.objects.get(sender=sender, receiver=receiver)
-        notifications = Notification.objects.filter(content_type__model="friendinvitation", object_id=friendship.pk)
+        notification = Notification.objects.filter(
+            actor_content_type__model="friendinvitation", actor_object_id=friendship.pk
+        )
         num, _ = friendship.delete()
-        notifications.update(visible=False)
+        notification.update(visible=False)
     except ObjectDoesNotExist:
         messages.error(request, "Friendship invitation does not exist")
     if num:
