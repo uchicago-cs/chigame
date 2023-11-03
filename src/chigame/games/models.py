@@ -25,6 +25,22 @@ class Game(models.Model):
         return self.name
 
 
+class People(models.Model):
+    DESIGNERS = 1
+    PUBLISHERS = 2
+    ARTISTS = 3
+
+    PEOPLE = (
+        (DESIGNERS, "Designers"),
+        (PUBLISHERS, "Publishers"),
+        (ARTISTS, "Artists"),
+    )
+
+    person_type = models.PositiveSmallIntegerField(choices=PEOPLE)
+    name = models.TextField()
+    game = models.ManyToManyField(Game)
+
+
 class Lobby(models.Model):
     """
     A lobby that users can join before starting a match.
