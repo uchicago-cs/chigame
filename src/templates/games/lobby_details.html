@@ -1,19 +1,24 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1>Lobby Details</h1>
-
-    <p><strong>Name:</strong> {{ lobby_detail.name }}</p>
-    <p><strong>Game:</strong> {{ lobby_detail.game }}</p>
-    <p><strong>Created By:</strong> {{ lobby_detail.created_by }}</p>
-    <p><strong>Minimum Players:</strong> {{ lobby_detail.min_players }}</p>
-    <p><strong>Maximum Players:</strong> {{ lobby_detail.max_players }}</p>
-
-    <h2>Members:</h2>
-    <ul>
-        {% for member in lobby_detail.members.all %}
-            <li>{{ member.username }}</li>
-        {% endfor %}
-    </ul>
-
-{% endblock %}
+  <h1>Lobby Details</h1>
+  <p>
+    <strong>Name:</strong> {{ lobby_detail.name }}
+  </p>
+  <p>
+    <strong>Game:</strong> {{ lobby_detail.game }}
+  </p>
+  <p>
+    <strong>Created By:</strong> {{ lobby_detail.created_by }}
+  </p>
+  <p>
+    <strong>Minimum Players:</strong> {{ lobby_detail.min_players }}
+  </p>
+  <p>
+    <strong>Maximum Players:</strong> {{ lobby_detail.max_players }}
+  </p>
+  <h2>Members:</h2>
+  <ul>
+    {% for member in lobby_detail.members.all %}<li>{{ member.username }}</li>{% endfor %}
+  </ul>
+{% endblock content %}
