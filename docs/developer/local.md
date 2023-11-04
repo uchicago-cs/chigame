@@ -1,10 +1,8 @@
-Deploying Locally
-================
+# Deploying Locally
 
 This page includes instructions on how to deploy ChiGame locally.
 
-Initial Setup
--------------
+## Initial Setup
 
 Assuming you've cloned the repository, perform the following steps from inside
 the repository's root. Please note that these steps only have to be performed
@@ -16,15 +14,15 @@ once.
        source venv/bin/activate
        pip3 install pip --upgrade
        pip3 install wheel
-       pip3 install -r requirements.txt
+       pip3 install -r requirements/local.txt
 
 2. Setup the pre-commit hooks:
 
-       export PYTHONPATH=$(pwd)/src:$PYTHONPATH
+       pre-commit install
 
 3. Create an empty database:
 
-       python3 scripts/manage.py migrate
+       python3 manage.py migrate
 
    By default, a SQLite database called `db.sqlite3` will be created in the `src/` directory.
 
@@ -35,8 +33,7 @@ once.
    You will prompted for a password (you can use any password you want)
 
 
-Running the test environment
-----------------------------
+## Running the test environment
 
 You will need to follow these steps each time you want to run
 the test environment.
