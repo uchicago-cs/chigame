@@ -14,6 +14,7 @@ urlpatterns = [
     path("users/", include("chigame.users.urls", namespace="users")),
     path("accounts/", include("allauth.urls")),
     # Your stuff: custom urls includes go here
+    path("games/", include("chigame.games.urls")),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 
