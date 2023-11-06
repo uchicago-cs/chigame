@@ -75,7 +75,11 @@ def user_profile_detail_view(request, pk):
         is_friend = profile.friends.filter(pk=request.user.pk).exists()
         friendship_request = None
         if not is_friend:
-            friendship_request = FriendInvitation.objects.filter(sender=request.user.pk, receiver=pk).exists()
+            curr_user = User.objects.get(pk=request.user.id)
+            other_user = profile.user
+            friendship_request = FriendInvitation.objects.filter(
+                Q(sender=curr_user, receiver=other_user) | Q(sender=other_user, receiver=curr_user)
+            ).first()
         context = {"object": profile, "is_friend": is_friend, "friendship_request": friendship_request}
         return render(request, "users/userprofile_detail.html", context=context)
     except UserProfile.DoesNotExist:
@@ -158,7 +162,7 @@ def decline_friend_invitation(request, pk):
         if friendship.receiver.pk != request.user.pk:
             messages.error(request, "You are not the receiver of this friend invitation ")
         else:
-            friendship.objects.delete()
+            friendship.delete()
     except FriendInvitation.DoesNotExist:
         messages.error(request, "This friend invitation does not exist")
     return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))

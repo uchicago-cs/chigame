@@ -21,13 +21,13 @@
                 {% elif is_friend %}
                   <a class="btn btn-primary">Remove Friend</a>
                 {% elif friendship_request %}
-                  {% if friendship_request.sender.pk == request.user.pk %}
-                    <a href="{% url 'users:cancel-friend-invitation' object.user.pk %}"
+                  {% if friendship_request.sender_id == request.user.pk %}
+                    <a href="{% url 'users:cancel-friend-invitation' object.user.id %}"
                        class="btn btn-primary">Cancel Friendship Request</a>
                   {% else %}
-                    <a href="{% url 'users:accept-friend-invitation' friendship_request.pk %}"
+                    <a href="{% url 'users:accept-friend-invitation' friendship_request.id %}"
                        class="btn btn-primary">Accept Friendship Request</a>
-                    <a href="{% url 'users:decline-friend-invitation' friendship_request.pk %}"
+                    <a href="{% url 'users:decline-friend-invitation' friendship_request.id %}"
                        class="btn btn-primary">Decline Friendship Request</a>
                   {% endif %}
                 {% else %}
