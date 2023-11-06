@@ -110,19 +110,19 @@ class Notification(models.Model):
     A notification, which can be sent to multiple users.
     """
 
-    receipients = models.ManyToManyField(User, related_name="notifications")
+    recipients = models.ManyToManyField(User, related_name="notifications")
     content = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
 
     # visibility: a smallPositiveIntegerField representing the visibility of
     # the notification. This may be added later.
 
-    def get_all_receipients(self):
-        return self.receipients.all()
+    def get_all_recipients(self):
+        return self.recipients.all()
 
     def __str__(self):  # may be changed later
-        receipients_str = "&".join([str(receipient) for receipient in self.get_all_receipients()])
-        return "Notification sent to: " + receipients_str + ";\n content: " + self.content
+        recipients_str = "&".join([str(recipient) for recipient in self.get_all_recipients()])
+        return "Notification sent to: " + recipients_str + ";\n content: " + self.content
 
 
 class Chat(models.Model):
