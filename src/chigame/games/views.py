@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DetailView, ListView, UpdateView
 
-from .models import Game, Lobby
+from .models import Game, Lobby, Tournament
 
 
 class GameListView(ListView):
@@ -43,3 +43,15 @@ class GameEditView(UpdateView):
 
     def get_success_url(self):
         return reverse_lazy("game-detail", kwargs={"pk": self.kwargs["pk"]})
+
+
+class TournamentListView(ListView):
+    model = Tournament
+    queryset = Tournament.objects.prefetch_related('matches').all()
+    template_name = "games/tournament_list.html"
+    context_object_name = "tournament_list"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Additional context can be added if needed
+        return context
