@@ -82,14 +82,18 @@ def send_friend_invitation(request, pk):
 
     if new:
         messages.success(request, "Friendship invitation sent successfully.")
-        notification = Notification.objects.create(actor=friend_request, receiver=receiver)
+        notification = Notification.objects.create(
+            actor=friend_request, receiver=receiver, type=Notification.FRIEND_REQUEST
+        )
     else:
         messages.info(request, "Friendship invitation already sent before.")
         try:
             notification = Notification.objects.get_by_actor(friend_request, receiver=receiver)
             notification.renew_notification()
         except Notification.DoesNotExist:
-            notification = Notification.objects.create(actor=friend_request, receiver=receiver)
+            notification = Notification.objects.create(
+                actor=friend_request, receiver=receiver, type=Notification.FRIEND_REQUEST
+            )
     return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
 
 
@@ -105,7 +109,9 @@ def cancel_friend_invitation(request, pk):
         messages.error(request, "Friendship invitation does not exist")
         return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
     except Notification.DoesNotExist:
-        notification = Notification.objects.create(actor=friendship, receiver=receiver)
+        notification = Notification.objects.create(
+            actor=friendship, receiver=receiver, type=Notification.FRIEND_REQUEST
+        )
         notification.mark_as_deleted()
     num, _ = friendship.delete()
     notification.mark_as_deleted()

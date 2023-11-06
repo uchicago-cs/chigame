@@ -117,9 +117,22 @@ class Notification(models.Model):
     A notification to user
     """
 
+    FRIEND_REQUEST = 1
+    REMINDER = 2
+    UPCOMING_MATCH = 3
+    MATCH_PROPOSAL = 4
+
+    NOTIFICATION_TYPES = (
+        (FRIEND_REQUEST, "FRIEND_REQUEST"),
+        (REMINDER, "REMINDER"),
+        (UPCOMING_MATCH, "UPCOMING_MATCH"),
+        (MATCH_PROPOSAL, "MATCH_PROPOSAL"),
+    )
+
     receiver = models.ForeignKey(User, on_delete=models.CASCADE)
     first_sent = models.DateTimeField(auto_now_add=True)
     last_sent = models.DateTimeField(auto_now_add=True)
+    type = models.PositiveIntegerField(choices=NOTIFICATION_TYPES)
     read = models.BooleanField(default=False)
     visible = models.BooleanField(default=True)
     actor_content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
