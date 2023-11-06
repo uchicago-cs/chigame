@@ -70,6 +70,8 @@ def user_history(request, pk):
 def user_profile_detail_view(request, pk):
     try:
         profile = get_object_or_404(UserProfile, user__pk=pk)
+        if request.user.pk == pk:
+            return render(request, "users/userprofile_detail.html", {"object": profile})
         is_friend = profile.friends.filter(pk=request.user.pk).exists()
         friendship_request = None
         if not is_friend:
