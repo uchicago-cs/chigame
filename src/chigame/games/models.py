@@ -33,15 +33,15 @@ class Lobby(models.Model):
     Modified_game = 2
     MODIFICATIONS = ((Default_game, "Default Game"), (Modified_game, "Modified Game"))
 
-    match_status = models.PositiveSmallIntegerField(choices=STATUS)
+    match_status = models.PositiveSmallIntegerField(choices=STATUS, default="Lobbied")
     name = models.TextField()
     game = models.ForeignKey(Game, on_delete=models.CASCADE)
-    game_modification_status = models.PositiveSmallIntegerField(choices=MODIFICATIONS)
+    game_modification_status = models.PositiveSmallIntegerField(choices=MODIFICATIONS, default="Default Game")
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
     members = models.ManyToManyField(User, related_name="lobbies")
     min_players = models.PositiveIntegerField()
     max_players = models.PositiveIntegerField()
-    time_constraint = models.PositiveIntegerField()
+    time_constraint = models.PositiveIntegerField(default=3)
     lobby_created = models.DateTimeField(default=timezone.now)
 
 
