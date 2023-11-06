@@ -136,3 +136,16 @@ def cancel_friend_invitation(request, pk):
     else:
         messages.error(request, "Something went wrong please try again later!")
     return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
+
+
+@login_required
+def accept_friend_invitation(request, pk):
+    try:
+        friendship = FriendInvitation.objects.get(pk=pk)
+        if friendship.receiver.pk != request.user.pk:
+            messages.error(request, "You are not the receiver of this friend invitation ")
+        else:
+            friendship.accept_invitation()
+    except FriendInvitation.DoesNotExist:
+        messages.error(request, "This friend invitation does not exist ")
+    return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
