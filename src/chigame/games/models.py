@@ -31,12 +31,12 @@ class Lobby(models.Model):
 
     Default_game = 1
     Modified_game = 2
-    MODIFICATIONS = ((Default_game, "Default Game"), (Modified_game, "Modified Game"))
+    MODS = ((Default_game, "Default Game"), (Modified_game, "Modified Game"))
 
-    match_status = models.PositiveSmallIntegerField(choices=STATUS, default=Lobbied)
+    match_status = models.PositiveSmallIntegerField(choices=STATUS, default=1)
     name = models.TextField()
     game = models.ForeignKey(Game, on_delete=models.CASCADE)
-    game_modification_status = models.PositiveSmallIntegerField(choices=MODIFICATIONS, default=Default_game)
+    game_mod_status = models.PositiveSmallIntegerField(choices=MODS, default=1)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
     members = models.ManyToManyField(User, related_name="lobbies")
     min_players = models.PositiveIntegerField()
