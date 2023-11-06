@@ -3,6 +3,7 @@ from django.urls import path
 from chigame.users.views import (
     accept_friend_invitation,
     cancel_friend_invitation,
+    decline_friend_invitation,
     send_friend_invitation,
     user_detail_view,
     user_profile_detail_view,
@@ -21,6 +22,7 @@ urlpatterns = [
     path("add_friend/<int:pk>", view=send_friend_invitation, name="add-friend"),
     path("cancel_friend_invitation/<int:pk>", view=cancel_friend_invitation, name="cancel-friend-invitation"),
     path("accept_friend_invitation/<int:pk>", view=accept_friend_invitation, name="accept-friend-invitation"),
+    path("decline_friend_invitation/<int:pk>", view=decline_friend_invitation, name="decline-friend-invitation"),
     path("user-list/", views.user_list, name="user_list"),
     path("user_history/<int:pk>", views.user_history, name="user-history"),
 ]

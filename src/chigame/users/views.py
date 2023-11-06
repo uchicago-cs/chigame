@@ -147,5 +147,18 @@ def accept_friend_invitation(request, pk):
         else:
             friendship.accept_invitation()
     except FriendInvitation.DoesNotExist:
-        messages.error(request, "This friend invitation does not exist ")
+        messages.error(request, "This friend invitation does not exist")
+    return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
+
+
+@login_required
+def decline_friend_invitation(request, pk):
+    try:
+        friendship = FriendInvitation.objects.get(pk=pk)
+        if friendship.receiver.pk != request.user.pk:
+            messages.error(request, "You are not the receiver of this friend invitation ")
+        else:
+            friendship.objects.delete()
+    except FriendInvitation.DoesNotExist:
+        messages.error(request, "This friend invitation does not exist")
     return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
