@@ -3,6 +3,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
+from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
@@ -82,28 +83,30 @@ def user_profile_detail_view(request, pk):
 
 @login_required
 def send_friend_invitation(request, pk):
-    sender = User.objects.get(pk=request.user.id)
-    receiver = User.objects.get(pk=pk)
-
-    if sender.id == receiver.id:
+    curr_user = User.objects.get(pk=request.user.id)
+    other_user = User.objects.get(pk=pk)
+    if curr_user.id == other_user.id:
         messages.error(request, "You can't send friendship invitation to yourself")
         return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
-    if sender.id != receiver.id:
-        friend_request, new = FriendInvitation.objects.get_or_create(sender=sender, receiver=receiver)
 
+    invitation, new = FriendInvitation.objects.filter(
+        Q(sender=curr_user, receiver=other_user) | Q(sender=other_user, receiver=curr_user)
+    ).get_or_create(defaults={"sender": curr_user, "receiver": other_user})
     if new:
         messages.success(request, "Friendship invitation sent successfully.")
         notification = Notification.objects.create(
-            actor=friend_request, receiver=receiver, type=Notification.FRIEND_REQUEST
+            actor=invitation, receiver=other_user, type=Notification.FRIEND_REQUEST
         )
+    elif invitation.sender.pk == other_user.pk:
+        messages.info(request, "You already have a pending friend invitation from this profile.")
     else:
         messages.info(request, "Friendship invitation already sent before.")
         try:
-            notification = Notification.objects.get_by_actor(friend_request, receiver=receiver)
+            notification = Notification.objects.get_by_actor(invitation, receiver=other_user)
             notification.renew_notification()
         except Notification.DoesNotExist:
             notification = Notification.objects.create(
-                actor=friend_request, receiver=receiver, type=Notification.FRIEND_REQUEST
+                actor=invitation, receiver=other_user, type=Notification.FRIEND_REQUEST
             )
     return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
 
