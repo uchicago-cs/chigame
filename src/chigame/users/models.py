@@ -78,10 +78,13 @@ class FriendInvitation(models.Model):
 
     def accept_invitation(self):
         sender = self.sender
+        sender_profile = UserProfile.objects.get(user__pk=sender.pk)
         receiver = self.receiver
-        sender.friends.add(receiver)
-        receiver.friends.add(sender)
+        receiver_profile = UserProfile.objects.get(user__pk=receiver.pk)
+        sender_profile.friends.add(receiver)
+        receiver_profile.friends.add(sender)
         self.accepted = True
+        self.save()
 
 
 class Group(models.Model):
