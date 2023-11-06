@@ -84,7 +84,7 @@ THIRD_PARTY_APPS = [
 
 LOCAL_APPS = [
     "chigame.users",
-    "chigame.games"
+    "chigame.games",
     # Additional apps go here
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps

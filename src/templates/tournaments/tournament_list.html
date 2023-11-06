@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h1>Tournaments</h1>
+  <ul>
+    {% for tournament in tournaments %}
+      <li>
+        <h2>
+          <a href="{% url 'tournament-detail' tournament.id %}">{{ tournament.name }}</a>
+        </h2>
+        <p>Game: {{ tournament.game }}</p>
+        <p>Start date: {{ tournament.start_date }}</p>
+        <p>End date: {{ tournament.end_date }}</p>
+        <p>Max players: {{ tournament.max_players }}</p>
+        <p>Description: {{ tournament.description }}</p>
+        <p>Rules: {{ tournament.rules }}</p>
+        <p>Draw rules: {{ tournament.draw_rules }}</p>
+        <!-- Matches may be added later if needed -->
+        <p>Winners:</p>
+        <ul>
+          {% for winner in tournament.get_all_winners %}
+            <li>
+              <h3>
+                <a href="{% url 'users:detail' winner.id %}">{{ winner.name }}</a>
+              </h3>
+              <!-- You can add more fields as needed -->
+            </li>
+          {% endfor %}
+        </ul>
+        <p>Players:</p>
+        <ul>
+          {% for player in tournament.get_all_players %}
+            <li>
+              <h3>
+                <a href="{% url 'users:detail' player.id %}">{{ player.name }}</a>
+              </h3>
+              <!-- You can add more fields as needed -->
+            </li>
+          {% endfor %}
+        </ul>
+        <!-- You can add more fields as needed -->
+      </li>
+    {% empty %}
+      <li>No tournaments available.</li>
+    {% endfor %}
+  </ul>
+  {% if user.is_staff %}
+    <p>
+      <a href="{% url 'tournament-create' %}">Create a new tournament</a>
+    </p>
+  {% endif %}
+{% endblock content %}
