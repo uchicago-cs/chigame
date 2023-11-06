@@ -13,6 +13,9 @@ class Game(models.Model):
     min_players = models.PositiveIntegerField()
     max_players = models.PositiveIntegerField()
 
+    def __str__(self):
+        return self.name
+
 
 class Lobby(models.Model):
     """

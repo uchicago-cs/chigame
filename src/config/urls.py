@@ -16,6 +16,7 @@ urlpatterns = [
     # Your stuff: custom urls includes go here
     # urls to handle api requests
     path("api/", include("chigame.api.urls")),
+    path("games/", include("chigame.games.urls")),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 
