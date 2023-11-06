@@ -55,6 +55,8 @@ def user_list(request):
     table = UserTable(users)
     context = {"users": users, "table": table}
 
+    ## Add information about top ranking users, total points collected, etc. 
+
     return render(request, "users/user_list.html", context)
 
 @login_required

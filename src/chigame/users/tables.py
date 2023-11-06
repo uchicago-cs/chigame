@@ -8,3 +8,5 @@ class UserTable(tables.Table):
         model = User
         template_name = "django_tables2/bootstrap.html"
         fields = ["name"]
+
+        ## Add information about top ranking users, total points collected, etc.
