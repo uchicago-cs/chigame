@@ -17,7 +17,7 @@ class GameTests(APITestCase):
         """
 
         # Create a game object
-        url = reverse("game-list")
+        url = reverse("api-game-list")
         data = {"name": "The Witcher 3", "description": "Geralt of Rivia", "min_players": 1, "max_players": 4}
         response = self.client.post(url, data, format="json")
         # Check that the game object was created correctly
@@ -34,13 +34,13 @@ class GameTests(APITestCase):
         """
 
         # Create a game object
-        url = reverse("game-list")
+        url = reverse("api-game-list")
         data = {"name": "The Witcher 3", "description": "Geralt of Rivia", "min_players": 1, "max_players": 4}
         response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         # Get the game object
-        url = reverse("game-detail", kwargs={"pk": 1})
+        url = reverse("api-game-detail", kwargs={"pk": 1})
         response = self.client.get(url, format="json")
 
         # Check that the game object was retrieved correctly
@@ -57,13 +57,13 @@ class GameTests(APITestCase):
         """
 
         # Create a game object
-        url = reverse("game-list")
+        url = reverse("api-game-list")
         data = {"name": "The Witcher 3", "description": "Geralt of Rivia", "min_players": 1, "max_players": 4}
         response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         # Update the game object
-        url = reverse("game-detail", kwargs={"pk": 1})
+        url = reverse("api-game-detail", kwargs={"pk": 1})
         data = {"name": "The Witcher 3: Wild Hunt", "max_players": 5}
         response = self.client.patch(url, data, format="json")
 
@@ -81,13 +81,13 @@ class GameTests(APITestCase):
         """
 
         # Create a game object
-        url = reverse("game-list")
+        url = reverse("api-game-list")
         data = {"name": "The Witcher 3", "description": "Geralt of Rivia", "min_players": 1, "max_players": 4}
         response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         # Delete the game object
-        url = reverse("game-detail", kwargs={"pk": 1})
+        url = reverse("api-game-detail", kwargs={"pk": 1})
         response = self.client.delete(url, format="json")
 
         # Check that the game object was deleted correctly
@@ -100,13 +100,13 @@ class GameTests(APITestCase):
         """
 
         # Create a game object
-        url = reverse("game-list")
+        url = reverse("api-game-list")
         data = {"name": "The Witcher 3", "description": "Geralt of Rivia", "min_players": 1, "max_players": 4}
         response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         # Get the game object list
-        url = reverse("game-list")
+        url = reverse("api-game-list")
         response = self.client.get(url, format="json")
 
         # Check that the game object list was retrieved correctly
