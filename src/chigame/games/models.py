@@ -41,7 +41,7 @@ class Lobby(models.Model):
     members = models.ManyToManyField(User, related_name="lobbies")
     min_players = models.PositiveIntegerField()
     max_players = models.PositiveIntegerField()
-    time_constraint = models.PositiveIntegerField(default=3)
+    time_constraint = models.PositiveIntegerField(default=300)
     lobby_created = models.DateTimeField(default=timezone.now)
 
 
