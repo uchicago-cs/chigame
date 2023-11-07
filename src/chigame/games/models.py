@@ -63,3 +63,43 @@ class MatchProposal(models.Model):
     proposed_time = models.DateTimeField()
     min_players = models.PositiveIntegerField()
     joined = models.ManyToManyField(User, related_name="joined_matches", blank=True)
+
+
+class Tournament(models.Model):
+    """
+    A tournament of a game, between a set of players. Each object represents a
+    single-elimination tournament.
+    """
+
+    name = models.CharField(max_length=255)
+    game = models.ForeignKey(Game, on_delete=models.CASCADE)
+    start_date = models.DateTimeField()
+    end_date = models.DateTimeField()
+    max_players = models.PositiveIntegerField()
+    description = models.TextField()  # not limited to 255 characters
+    rules = models.TextField()  # not limited to 255 characters
+    draw_rules = models.TextField()  # not limited to 255 characters
+    matches = models.ManyToManyField(Match, related_name="matches")
+    winners = models.ManyToManyField(User, related_name="won_tournaments", blank=True)  # allow multiple winners
+    players = models.ManyToManyField(User)
+
+    def get_all_matches(self):
+        return self.matches.all()
+
+    def get_all_winners(self):
+        return self.winners.all()
+
+    def get_all_players(self):
+        return self.players.all()
+
+    def __str__(self):  # may be changed later
+        return (
+            "Tournament "
+            + self.name
+            + ": "
+            + self.game.name
+            + " from "
+            + self.start_date.strftime("%m/%d/%Y")
+            + " to "
+            + self.end_date.strftime("%m/%d/%Y")
+        )
