@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 
 from chigame.users.models import Group, User
 
@@ -23,12 +24,25 @@ class Lobby(models.Model):
     The match can start as soon as min_players join the lobby.
     """
 
+    Lobbied = 1
+    Viewable = 2
+    Finished = 3
+    STATUS = ((Lobbied, "Lobbied"), (Viewable, "In-Progress"), (Finished, "Finished"))
+
+    Default_game = 1
+    Modified_game = 2
+    MODS = ((Default_game, "Default Game"), (Modified_game, "Modified Game"))
+
+    match_status = models.PositiveSmallIntegerField(choices=STATUS, default=1)
     name = models.TextField()
     game = models.ForeignKey(Game, on_delete=models.CASCADE)
+    game_mod_status = models.PositiveSmallIntegerField(choices=MODS, default=1)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
     members = models.ManyToManyField(User, related_name="lobbies")
     min_players = models.PositiveIntegerField()
     max_players = models.PositiveIntegerField()
+    time_constraint = models.PositiveIntegerField(default=300)
+    lobby_created = models.DateTimeField(default=timezone.now)
 
 
 class Match(models.Model):
