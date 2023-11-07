@@ -19,7 +19,7 @@
   "model": "users.user",
   "pk": 2,
   "fields": {
-    "password": "test",
+    "password": "argon2$argon2id$v=19$m=102400,t=2,p=8$Zzk2ZjFCTXl4RlJmOW1VU1JHa3QxZA$tiaFDXObRmwzYoVytjyCGFVfJnoqp1uYUOvCVUsUHpY",
     "last_login": null,
     "is_superuser": false,
     "is_staff": false,
@@ -35,7 +35,7 @@
   "model": "users.user",
   "pk": 3,
   "fields": {
-    "password": "test",
+    "password": "argon2$argon2id$v=19$m=102400,t=2,p=8$Zzk2ZjFCTXl4RlJmOW1VU1JHa3QxZA$tiaFDXObRmwzYoVytjyCGFVfJnoqp1uYUOvCVUsUHpY",
     "last_login": null,
     "is_superuser": false,
     "is_staff": false,
@@ -51,7 +51,7 @@
   "model": "users.user",
   "pk": 4,
   "fields": {
-    "password": "test",
+    "password": "argon2$argon2id$v=19$m=102400,t=2,p=8$Zzk2ZjFCTXl4RlJmOW1VU1JHa3QxZA$tiaFDXObRmwzYoVytjyCGFVfJnoqp1uYUOvCVUsUHpY",
     "last_login": null,
     "is_superuser": false,
     "is_staff": false,
@@ -67,7 +67,7 @@
   "model": "users.user",
   "pk": 5,
   "fields": {
-    "password": "test",
+    "password": "argon2$argon2id$v=19$m=102400,t=2,p=8$Zzk2ZjFCTXl4RlJmOW1VU1JHa3QxZA$tiaFDXObRmwzYoVytjyCGFVfJnoqp1uYUOvCVUsUHpY",
     "last_login": null,
     "is_superuser": false,
     "is_staff": false,
@@ -83,7 +83,7 @@
   "model": "users.user",
   "pk": 6,
   "fields": {
-    "password": "test",
+    "password": "argon2$argon2id$v=19$m=102400,t=2,p=8$Zzk2ZjFCTXl4RlJmOW1VU1JHa3QxZA$tiaFDXObRmwzYoVytjyCGFVfJnoqp1uYUOvCVUsUHpY",
     "last_login": null,
     "is_superuser": false,
     "is_staff": false,
