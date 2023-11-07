@@ -5,40 +5,87 @@ from chigame.users.models import Group, User
 
 class Game(models.Model):
     """
-    A game (Chess, Checkers, etc.)
+    A game like Chess, Checkers, etc.
     """
-
-    name = models.TextField()
+    # Basic information
+    name = models.CharField(max_length=255)
     description = models.TextField()
+    image = models.URLField(default='/static/images/no_picture_available.png')
+    year_published = models.PositiveIntegerField(null=True)
+
+    # Gameplay information
+    rules = models.TextField(null=True)
+
     min_players = models.PositiveIntegerField()
     max_players = models.PositiveIntegerField()
-    rules = models.TextField(null=True)
+    suggested_age = models.PositiveSmallIntegerField(null=True)
+
     expected_playtime = models.PositiveIntegerField(null=True)
     min_playtime = models.PositiveIntegerField(null=True)
     max_playtime = models.PositiveIntegerField(null=True)
-    year_published = models.PositiveIntegerField(null=True)
-    image = models.URLField(null=True)
+
     complexity = models.PositiveSmallIntegerField(null=True)
-    BGG_id = models.PositiveIntegerField(null=True)
+    category = models.ManyToManyField("Category", related_name="games")
+    mechanics = models.ManyToManyField("Mechanic", related_name="games")
+
+    # BGG information
+    BGG_id = models.PositiveIntegerField(unique=True, null=True)
 
     def __str__(self):
         return self.name
 
+class Person(models.Model):
+    """
+    A person associated with a game, such as a designer or artist.
+    """
+    DESIGNER = 1
+    ARTIST = 2
 
-class People(models.Model):
-    DESIGNERS = 1
-    PUBLISHERS = 2
-    ARTISTS = 3
-
-    PEOPLE = (
-        (DESIGNERS, "Designers"),
-        (PUBLISHERS, "Publishers"),
-        (ARTISTS, "Artists"),
+    ROLE_CHOICES = (
+        (DESIGNER, "Designer"),
+        (ARTIST, "Artist"),
     )
 
-    person_type = models.PositiveSmallIntegerField(choices=PEOPLE)
-    name = models.TextField()
-    game = models.ManyToManyField(Game)
+    name = models.CharField(max_length=255)
+    person_role = models.PositiveSmallIntegerField(choices=ROLE_CHOICES)
+    games = models.ManyToManyField(Game, related_name="people")
+
+    def __str__(self):
+        return self.name
+
+class Publisher(models.Model):
+    """
+    A publisher of a game.
+    """
+    name = models.CharField(max_length=255)
+    games = models.ManyToManyField(Game, related_name="publishers")
+    website = models.URLField(null=True)
+    year_established = models.PositiveIntegerField(null=True)
+
+    def __str__(self):
+        return self.name
+    
+class Category(models.Model):
+    """
+    Category of the game like Strategy, Adventure, etc.
+    See a full list of options: https://boardgamegeek.com/browse/boardgamecategory
+    """
+    name = models.CharField(max_length=255, unique=True)
+    description = models.TextField(null=True)
+
+    def __str__(self):
+        return self.name
+    
+class Mechanic(models.Model):
+    """
+    Mechanic of the game like Dice Rolling, Hand Management, etc.
+    See a full list of options: https://boardgamegeek.com/browse/boardgamemechanic
+    """
+    name = models.CharField(max_length=255, unique=True)
+    description = models.TextField(null=True)
+
+    def __str__(self):
+        return self.name
 
 
 class Lobby(models.Model):
