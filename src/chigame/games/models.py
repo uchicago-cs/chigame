@@ -38,7 +38,7 @@ class Match(models.Model):
 
     game = models.ForeignKey(Game, on_delete=models.CASCADE)
     lobby = models.OneToOneField(Lobby, on_delete=models.CASCADE)
-    winners = models.ManyToManyField(User, related_name="won_matches", blank=True)
+    date_played = models.DateTimeField()
     players = models.ManyToManyField(User, through="Player")
 
 
@@ -47,8 +47,24 @@ class Player(models.Model):
     A player in a match.
     """
 
+    WIN = 0
+    DRAW = 1
+    LOSE = 2
+    WITHDRAWAL = 3
+
+    OUTCOMES = (
+        (WIN, "win"),
+        (DRAW, "draw"),
+        (LOSE, "lose"),
+        (WITHDRAWAL, "withdrawal"),
+    )
+
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     match = models.ForeignKey(Match, on_delete=models.CASCADE)
+    team = models.TextField(blank=True, null=True)
+    role = models.TextField(blank=True, null=True)
+    outcome = models.PositiveSmallIntegerField(choices=OUTCOMES)
+    victory_type = models.TextField(blank=True, null=True)
 
 
 class MatchProposal(models.Model):
