@@ -1,6 +1,9 @@
 import django.db.models as models
 from django.contrib.auth.models import AbstractUser
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 from django.urls import reverse
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from chigame.users.managers import UserManager
@@ -87,3 +90,72 @@ class GroupInvitation(models.Model):
     receiver = models.ForeignKey(User, related_name="received_group_invitations", on_delete=models.CASCADE)
     accepted = models.BooleanField(default=False)
     timestamp = models.DateTimeField(auto_now_add=True)
+
+
+class NotificationQuerySet(models.QuerySet):
+    def filter_by_actor(self, actor, **kwargs):
+        try:
+            actor_content_type = ContentType.objects.get(model=actor._meta.model_name)
+            actor_object_id = actor.pk
+            return self.filter(actor_content_type=actor_content_type, actor_object_id=actor_object_id, **kwargs)
+
+        except ContentType.DoesNotExist:
+            raise ValueError(f"The model {actor.label} is not registered in content type")
+
+    def get_by_actor(self, actor, **kwargs):
+        try:
+            actor_content_type = ContentType.objects.get(model=actor._meta.model_name)
+            actor_object_id = actor.pk
+            return self.get(actor_content_type=actor_content_type, actor_object_id=actor_object_id, **kwargs)
+
+        except ContentType.DoesNotExist:
+            raise ValueError(f"The model {actor.label} is not registered in content type")
+
+
+class Notification(models.Model):
+    """
+    A notification to user
+    """
+
+    FRIEND_REQUEST = 1
+    REMINDER = 2
+    UPCOMING_MATCH = 3
+    MATCH_PROPOSAL = 4
+
+    NOTIFICATION_TYPES = (
+        (FRIEND_REQUEST, "FRIEND_REQUEST"),
+        (REMINDER, "REMINDER"),
+        (UPCOMING_MATCH, "UPCOMING_MATCH"),
+        (MATCH_PROPOSAL, "MATCH_PROPOSAL"),
+    )
+
+    receiver = models.ForeignKey(User, on_delete=models.CASCADE)
+    first_sent = models.DateTimeField(auto_now_add=True)
+    last_sent = models.DateTimeField(auto_now_add=True)
+    type = models.PositiveIntegerField(choices=NOTIFICATION_TYPES)
+    read = models.BooleanField(default=False)
+    visible = models.BooleanField(default=True)
+    actor_content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    actor_object_id = models.PositiveIntegerField()
+    actor = GenericForeignKey("actor_content_type", "actor_object_id")
+    message = models.CharField(max_length=255, blank=True, null=True)
+    objects = NotificationQuerySet.as_manager()
+
+    def mark_as_read(self):
+        if not self.read:
+            self.read = True
+            self.save()
+
+    def mark_as_unread(self):
+        if self.read:
+            self.read = False
+            self.save()
+
+    def mark_as_deleted(self):
+        if self.visible:
+            self.visible = False
+            self.save()
+
+    def renew_notification(self):
+        self.last_sent = timezone.now()
+        self.save()
