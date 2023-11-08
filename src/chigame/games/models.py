@@ -20,18 +20,18 @@ class Game(models.Model):
 
     min_players = models.PositiveIntegerField()
     max_players = models.PositiveIntegerField()
-    suggested_age = models.PositiveSmallIntegerField(null=True)
+    suggested_age = models.PositiveSmallIntegerField(null=True) # Minimum recommendable age. For example, 8+ would be 8.
 
-    expected_playtime = models.PositiveIntegerField(null=True)
+    expected_playtime = models.PositiveIntegerField(null=True) # In Minutes
     min_playtime = models.PositiveIntegerField(null=True)
     max_playtime = models.PositiveIntegerField(null=True)
 
-    complexity = models.PositiveSmallIntegerField(null=True)
+    complexity = models.PositiveSmallIntegerField(null=True) # 1-5, 1 being the easiest
     category = models.ManyToManyField("Category", related_name="games")
     mechanics = models.ManyToManyField("Mechanic", related_name="games")
 
     # BGG information
-    BGG_id = models.PositiveIntegerField(unique=True, null=True)
+    BGG_id = models.PositiveIntegerField(null=True)
 
     def __str__(self):
         return self.name
