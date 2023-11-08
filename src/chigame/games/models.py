@@ -10,7 +10,7 @@ class Game(models.Model):
     """
 
     # ================ BASIC INFORMATION ================
-    name = models.CharField()
+    name = models.TextField()
     description = models.TextField()
     year_published = models.PositiveIntegerField(null=True)
 
@@ -58,7 +58,7 @@ class Person(models.Model):
         (ARTIST, "Artist"),
     )
 
-    name = models.CharField()
+    name = models.TextField()
     person_role = models.PositiveSmallIntegerField(choices=ROLE_CHOICES)
     games = models.ManyToManyField(Game, related_name="people")
 
@@ -71,7 +71,7 @@ class Publisher(models.Model):
     A publisher of a game.
     """
 
-    name = models.CharField()
+    name = models.TextField()
     games = models.ManyToManyField(Game, related_name="publishers")
     website = models.URLField(null=True)
     year_established = models.PositiveIntegerField(null=True)
