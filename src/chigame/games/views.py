@@ -48,7 +48,7 @@ class GameEditView(UpdateView):
 class TournamentListView(ListView):
     model = Tournament
     queryset = Tournament.objects.prefetch_related("matches").all()
-    template_name = "games/tournament_list.html"
+    template_name = "tournaments/tournament_list.html"
     context_object_name = "tournament_list"
 
     def get_context_data(self, **kwargs):
