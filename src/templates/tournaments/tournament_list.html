@@ -44,9 +44,4 @@
       <li>No tournaments available.</li>
     {% endfor %}
   </ul>
-  {% if user.is_staff %}
-    <p>
-      <a href="{% url 'tournament-create' %}">Create a new tournament</a>
-    </p>
-  {% endif %}
 {% endblock content %}
