@@ -9,20 +9,25 @@ class Game(models.Model):
     A game like Chess, Checkers, etc.
     """
 
-    # Basic information
-    name = models.CharField(max_length=255)
+    # ================ BASIC INFORMATION ================
+    name = models.CharField()
     description = models.TextField()
-    image = models.URLField(default="/static/images/no_picture_available.png")
     year_published = models.PositiveIntegerField(null=True)
 
-    # Gameplay information
+    # NOTE:
+    # Regular game images are not to be stored in the repository due to their large size.
+    # It is recommended to store them externally, for instance, on a dedicated server or a
+    # BLOB (Binary Large Object) storage service such as AWS S3.
+    image = models.URLField(default="/static/images/no_picture_available.png")
+
+    # ================ GAMEPLAY INFORMATION ================
     rules = models.TextField(null=True)
 
     min_players = models.PositiveIntegerField()
     max_players = models.PositiveIntegerField()
     suggested_age = models.PositiveSmallIntegerField(
         null=True
-    )  # Minimum recommendable age. For example, 8+ would be 8.
+    )  # Minimum recommendable age. For example, 8+ would be stored as 8.
 
     expected_playtime = models.PositiveIntegerField(null=True)  # In Minutes
     min_playtime = models.PositiveIntegerField(null=True)
@@ -32,8 +37,8 @@ class Game(models.Model):
     category = models.ManyToManyField("Category", related_name="games")
     mechanics = models.ManyToManyField("Mechanic", related_name="games")
 
-    # BGG information
-    BGG_id = models.PositiveIntegerField(null=True)
+    # ================ OTHER ================
+    BGG_id = models.PositiveIntegerField(null=True)  # BoardGameGeek ID
 
     def __str__(self):
         return self.name
@@ -42,6 +47,7 @@ class Game(models.Model):
 class Person(models.Model):
     """
     A person associated with a game, such as a designer or artist.
+    This model is intended to track simple relationships between people and games.
     """
 
     DESIGNER = 1
@@ -52,7 +58,7 @@ class Person(models.Model):
         (ARTIST, "Artist"),
     )
 
-    name = models.CharField(max_length=255)
+    name = models.CharField()
     person_role = models.PositiveSmallIntegerField(choices=ROLE_CHOICES)
     games = models.ManyToManyField(Game, related_name="people")
 
@@ -65,7 +71,7 @@ class Publisher(models.Model):
     A publisher of a game.
     """
 
-    name = models.CharField(max_length=255)
+    name = models.CharField()
     games = models.ManyToManyField(Game, related_name="publishers")
     website = models.URLField(null=True)
     year_established = models.PositiveIntegerField(null=True)
