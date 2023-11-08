@@ -1,8 +1,10 @@
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DetailView, ListView, UpdateView
+from django_tables2 import SingleTableView
 
 from .models import Game, Lobby
+from .tables import LobbyTable
 
 
 class GameListView(ListView):
@@ -11,10 +13,10 @@ class GameListView(ListView):
     template_name = "games/game_list.html"
 
 
-def lobby_list(request):
-    lobbies = Lobby.objects.all()
-    context = {"object_list": lobbies}
-    return render(request, "games/lobby_list.html", context)
+class LobbyListView(SingleTableView):
+    model = Lobby
+    table_class = LobbyTable
+    template_name = "games/lobby_list.html"
 
 
 class ViewLobbyDetails(DetailView):
