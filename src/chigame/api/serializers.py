@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from chigame.games.models import Game
-from chigame.users.models import UserProfile
+from chigame.users.models import User
 
 
 class GameSerializer(serializers.ModelSerializer):
@@ -10,7 +10,7 @@ class GameSerializer(serializers.ModelSerializer):
         fields = ("id", "name", "description", "min_players", "max_players")
 
 
-class UserProfileSerializer(serializers.ModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = UserProfile
-        fields = ("id", "display_name", "bio", "date_joined")
+        model = User
+        fields = ("id", "name", "email")
