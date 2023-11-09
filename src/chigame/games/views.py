@@ -1,3 +1,4 @@
+from django.db.models import Q
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DetailView, ListView, UpdateView
@@ -43,3 +44,11 @@ class GameEditView(UpdateView):
 
     def get_success_url(self):
         return reverse_lazy("game-detail", kwargs={"pk": self.kwargs["pk"]})
+
+
+def search_results(request):
+    query = request.GET.get("query")
+    object_list = Game.objects.filter(Q(name__icontains=query) | Q(description__icontains=query))
+    context = {"object_list": object_list}
+
+    return render(request, "games/game_list.html", context)
