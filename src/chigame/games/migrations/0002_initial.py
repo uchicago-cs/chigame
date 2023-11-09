@@ -11,7 +11,6 @@ class Migration(migrations.Migration):
     dependencies = [
         ("games", "0001_initial"),
         ("users", "0001_initial"),
-        ("games", "0001_games_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
