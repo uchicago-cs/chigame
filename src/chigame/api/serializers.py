@@ -12,7 +12,7 @@ class GameSerializer(serializers.ModelSerializer):
 class UserListSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ("name",)
+        fields = ("name", "email")
 
 
 class UserDetailSerializer(serializers.ModelSerializer):
