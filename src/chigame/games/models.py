@@ -129,7 +129,7 @@ class Chat(models.Model):
     """
     Represents the live chat feature for both players and spectators.
     It contains a list of messages, which are not mixed with the messages from
-    other Chats.
+    other Chats. The messages are stored in the Message model.
     """
 
     match = models.OneToOneField(Match, on_delete=models.CASCADE)
@@ -152,8 +152,9 @@ class Message(models.Model):
     content = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)  # timestamp of the
     # moment the message was created.
-    sender = models.ForeignKey(User, on_delete=models.CASCADE)  # Even if the
-    # user is deleted, the message will still exist.
+    sender = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    # Even if the user is deleted, the message will still exist such that the
+    # message history is preserved. The sender field will be set to null.
 
     def __str__(self):  # may be changed later
         return "Message from " + str(self.sender) + ": " + self.content
