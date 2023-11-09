@@ -1,7 +1,7 @@
 # from django.shortcuts import render
 from rest_framework import generics
 
-from chigame.api.serializers import GameSerializer, UserProfileSerializer
+from chigame.api.serializers import GameSerializer, UserSerializer
 from chigame.games.models import Game
 from chigame.users.models import UserProfile
 
@@ -16,25 +16,10 @@ class GameDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = GameSerializer
 
 
-class UserProfileListView(generics.ListCreateAPIView):
-    queryset = UserProfile.objects.all()
-    serializer_class = UserProfileSerializer
-
-
-class UserProfileDetailView(generics.RetrieveAPIView):
-    queryset = UserProfile.objects.all()
-    serializer_class = UserProfileSerializer
-
-
 class UserFriendsAPIView(generics.RetrieveAPIView):
-    serializer_class = UserProfileSerializer
+    serializer_class = UserSerializer
 
-    def get_object(self):
-        user_id = self.kwargs["user_id"]
+    def get_queryset(self):
+        user_id = self.kwargs["pk"]
         user_profile = UserProfile.objects.get(user_id=user_id)
         return user_profile.friends.all()
-
-    # def get(self, request, *args, **kwargs):
-    #     friends = self.get_object()
-    #     serializer = UserProfileSerializer(friends, many=True)
-    #     return Response(serializer.data)
