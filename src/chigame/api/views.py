@@ -21,5 +21,5 @@ class UserFriendsAPIView(generics.RetrieveAPIView):
 
     def get_queryset(self):
         user_id = self.kwargs["pk"]
-        user_profile = UserProfile.objects.get(user_id=user_id)
+        user_profile = UserProfile.objects.get(user=user_id)
         return user_profile.friends.all()
