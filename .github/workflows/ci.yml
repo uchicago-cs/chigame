@@ -1,24 +1,25 @@
 name: CI
 
-# Enable Buildkit and let compose use it to speed up image building
-env:
-  DOCKER_BUILDKIT: 1
-  COMPOSE_DOCKER_CLI_BUILD: 1
-
 on:
   pull_request:
-    branches: ['master', 'main']
+    branches: ['main', 'dev']
     paths-ignore: ['docs/**']
 
   push:
-    branches: ['master', 'main']
+    branches: ['main', 'dev']
     paths-ignore: ['docs/**']
 
+# Concurrency control: Only one workflow run per PR branch.
+# In-progress runs for a PR branch are canceled on new pushes.
+# For non-PR events, each run is treated independently.
 concurrency:
   group: ${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
 jobs:
+  # The linter job runs the same quality checks run by pre-commit
+  # when making a commit. It should pass as long as everyone
+  # is using pre-commit correctly before pushing.
   linter:
     runs-on: ubuntu-latest
     steps:
@@ -33,21 +34,9 @@ jobs:
       - name: Run pre-commit
         uses: pre-commit/action@v3.0.0
 
-  # With no caching at all the entire ci process takes 4m 30s to complete!
-  pytest:
+  # run-tests does a basic Django check and runs all the tests
+  run-tests:
     runs-on: ubuntu-latest
-
-    services:
-      postgres:
-        image: postgres:15
-        ports:
-          - 5432:5432
-        env:
-          POSTGRES_PASSWORD: postgres
-
-    env:
-      # postgres://user:password@host:port/database
-      DATABASE_URL: 'postgres://postgres:postgres@localhost:5432/postgres'
 
     steps:
       - name: Checkout Code Repository
@@ -66,6 +55,9 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements/local.txt
+
+      - name: Check Django setup
+        run: python3 manage.py check
 
       - name: Test with pytest
         run: pytest
