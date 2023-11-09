@@ -1,3 +1,4 @@
+from django.contrib.auth.mixins import UserPassesTestMixin
 from django.db.models import Q
 from django.shortcuts import render
 from django.urls import reverse_lazy
@@ -30,25 +31,36 @@ class GameDetailView(DetailView):
     context_object_name = "game"
 
 
-class GameCreateView(CreateView):
+class GameCreateView(UserPassesTestMixin, CreateView):
     model = Game
     fields = ["name", "description", "min_players", "max_players"]
     template_name = "games/game_form.html"
     success_url = reverse_lazy("game-list")
+    raise_exception = True  # if user is not staff member, raise exception
+
+    # check if user is staff member
+    def test_func(self):
+        return self.request.user.is_staff
 
 
-class GameEditView(UpdateView):
+class GameEditView(UserPassesTestMixin, UpdateView):
     model = Game
     fields = ["name", "description", "min_players", "max_players"]
     template_name = "games/game_form.html"
+    raise_exception = True  # if user is not staff member, raise exception
 
+    # if edit is successful, redirect to that game's detail page
     def get_success_url(self):
         return reverse_lazy("game-detail", kwargs={"pk": self.kwargs["pk"]})
+
+    # check if user is staff member
+    def test_func(self):
+        return self.request.user.is_staff
 
 
 def search_results(request):
     query = request.GET.get("query")
-    object_list = Game.objects.filter(Q(name__icontains=query) | Q(description__icontains=query))
+    object_list = Game.objects.filter(Q(name__icontains=query) | Q(category__name__icontains=query))
     context = {"object_list": object_list}
 
-    return render(request, "games/game_list.html", context)
+    return render(request, "games/search_results.html", context)

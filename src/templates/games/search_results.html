@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 
 {% block title %}
-  Games List
+  Search Results
 {% endblock title %}
 {% block content %}
-  <h1>List of Games</h1>
+  <h1>Search Results</h1>
   <ul>
     {% for game in object_list %}
       <li>
@@ -12,7 +12,4 @@
       </li>
     {% endfor %}
   </ul>
-  {% if user.is_staff %}
-    <a href="{% url 'game-create' %}">Create New Game</a>
-  {% endif %}
 {% endblock content %}
