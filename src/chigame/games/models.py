@@ -216,6 +216,7 @@ class Announcement(models.Model):
     recipients = models.ManyToManyField(User, related_name="announcements")
     content = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
+    sent = models.BooleanField(default=False)
 
     def get_all_recipients(self):
         return self.recipients.all()
@@ -226,10 +227,11 @@ class Announcement(models.Model):
                 recipient=recipient, content=self.content
             )  # can add more fields later
             notification.save()
+        self.sent = True
+        self.save()
 
     def is_announcement_sent(self):
-        # TODO: check if the announcement is sent
-        return True
+        return self.sent
 
     def __str__(self) -> str:
         if self.is_announcement_sent():
