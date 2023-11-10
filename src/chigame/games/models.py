@@ -1,7 +1,7 @@
 from django.db import models
 from django.utils import timezone
 
-from chigame.users.models import Group, User
+from chigame.users.models import Group, Notification, User
 
 
 class Game(models.Model):
@@ -119,24 +119,39 @@ class Tournament(models.Model):
         )
 
 
-class Notification(models.Model):
+class Announcement(models.Model):
     """
-    A notification, which can be sent to multiple users.
+    An announcement, which can be sent to multiple users.
     """
 
-    recipients = models.ManyToManyField(User, related_name="notifications")
+    recipients = models.ManyToManyField(User, related_name="announcements")
     content = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
-
-    # visibility: a smallPositiveIntegerField representing the visibility of
-    # the notification. This may be added later.
 
     def get_all_recipients(self):
         return self.recipients.all()
 
-    def __str__(self):  # may be changed later
-        recipients_str = "&".join([str(recipient) for recipient in self.get_all_recipients()])
-        return "Notification sent to: " + recipients_str + ";\n content: " + self.content
+    def send_announcement(self):
+        for recipient in self.get_all_recipients():
+            notification = Notification.objects.create(
+                recipient=recipient, content=self.content
+            )  # can add more fields later
+            notification.save()
+
+    def is_announcement_sent(self):
+        # TODO: check if the announcement is sent
+        return True
+
+    def __str__(self) -> str:
+        if self.is_announcement_sent():
+            return (
+                "Announcement sent to: "
+                + "&".join([str(recipient) for recipient in self.get_all_recipients()])
+                + ";\n content: "
+                + self.content
+            )
+        else:
+            return "Announcement not sent yet. Content is: " + self.content
 
 
 class Chat(models.Model):
