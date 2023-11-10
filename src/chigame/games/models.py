@@ -1,7 +1,7 @@
 from django.db import models
 from django.utils import timezone
 
-from chigame.users.models import Group, User
+from chigame.users.models import Group, Notification, User
 
 
 class Game(models.Model):
@@ -165,3 +165,113 @@ class MatchProposal(models.Model):
     proposed_time = models.DateTimeField()
     min_players = models.PositiveIntegerField()
     joined = models.ManyToManyField(User, related_name="joined_matches", blank=True)
+
+
+class Tournament(models.Model):
+    """
+    A tournament of a game, between a set of players. Each object represents a
+    single-elimination tournament.
+    """
+
+    name = models.CharField(max_length=255)
+    game = models.ForeignKey(Game, on_delete=models.CASCADE)
+    start_date = models.DateTimeField()
+    end_date = models.DateTimeField()
+    max_players = models.PositiveIntegerField()
+    description = models.TextField()  # not limited to 255 characters
+    rules = models.TextField()  # not limited to 255 characters
+    draw_rules = models.TextField()  # not limited to 255 characters
+    matches = models.ManyToManyField(Match, related_name="matches")
+    winners = models.ManyToManyField(User, related_name="won_tournaments", blank=True)  # allow multiple winners
+    players = models.ManyToManyField(User)
+
+    def get_all_matches(self):
+        return self.matches.all()
+
+    def get_all_winners(self):
+        return self.winners.all()
+
+    def get_all_players(self):
+        return self.players.all()
+
+    def __str__(self):  # may be changed later
+        return (
+            "Tournament "
+            + self.name
+            + ": "
+            + self.game.name
+            + " from "
+            + self.start_date.strftime("%m/%d/%Y")
+            + " to "
+            + self.end_date.strftime("%m/%d/%Y")
+        )
+
+
+class Announcement(models.Model):
+    """
+    An announcement, which can be sent to multiple users.
+    """
+
+    recipients = models.ManyToManyField(User, related_name="announcements")
+    content = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def get_all_recipients(self):
+        return self.recipients.all()
+
+    def send_announcement(self):
+        for recipient in self.get_all_recipients():
+            notification = Notification.objects.create(
+                recipient=recipient, content=self.content
+            )  # can add more fields later
+            notification.save()
+
+    def is_announcement_sent(self):
+        # TODO: check if the announcement is sent
+        return True
+
+    def __str__(self) -> str:
+        if self.is_announcement_sent():
+            return (
+                "Announcement sent to: "
+                + "&".join([str(recipient) for recipient in self.get_all_recipients()])
+                + ";\n content: "
+                + self.content
+            )
+        else:
+            return "Announcement not sent yet. Content is: " + self.content
+
+
+class Chat(models.Model):
+    """
+    Represents the live chat feature for both players and spectators.
+    It contains a list of messages, which are not mixed with the messages from
+    other Chats. The messages are stored in the Message model.
+    """
+
+    match = models.OneToOneField(Match, on_delete=models.CASCADE)
+    # match: the match in which the chat is taking place.
+
+    # visibility: a smallPositiveIntegerField representing the visibility of
+    # the chat. This may be added later.
+
+    def __str__(self):  # may be changed later
+        return "Chat for match " + str(self.match)
+
+
+class Message(models.Model):
+    """
+    Represents the individual message which populates one Chat entity. The
+    messages from different Chats are not mixed together.
+    """
+
+    chat = models.ForeignKey(Chat, on_delete=models.CASCADE)
+    content = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)  # timestamp of the
+    # moment the message was created.
+    sender = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    # Even if the user is deleted, the message will still exist such that the
+    # message history is preserved. The sender field will be set to null.
+
+    def __str__(self):  # may be changed later
+        return "Message from " + str(self.sender) + ": " + self.content

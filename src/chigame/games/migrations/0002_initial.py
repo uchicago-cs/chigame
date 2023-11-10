@@ -75,4 +75,53 @@ class Migration(migrations.Migration):
             name="members",
             field=models.ManyToManyField(related_name="lobbies", to=settings.AUTH_USER_MODEL),
         ),
+        migrations.CreateModel(
+            name="Chat",
+            fields=[
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("match", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="games.match")),
+            ],
+        ),
+        migrations.CreateModel(
+            name="Tournament",
+            fields=[
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("name", models.CharField(max_length=255)),
+                ("start_date", models.DateTimeField()),
+                ("end_date", models.DateTimeField()),
+                ("max_players", models.PositiveIntegerField()),
+                ("description", models.TextField()),
+                ("rules", models.TextField()),
+                ("draw_rules", models.TextField()),
+                ("game", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="games.game")),
+                ("matches", models.ManyToManyField(related_name="matches", to="games.match")),
+                ("players", models.ManyToManyField(to=settings.AUTH_USER_MODEL)),
+                (
+                    "winners",
+                    models.ManyToManyField(blank=True, related_name="won_tournaments", to=settings.AUTH_USER_MODEL),
+                ),
+            ],
+        ),
+        migrations.CreateModel(
+            name="Notification",
+            fields=[
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("content", models.TextField()),
+                ("timestamp", models.DateTimeField(auto_now_add=True)),
+                ("receipients", models.ManyToManyField(related_name="notifications", to=settings.AUTH_USER_MODEL)),
+            ],
+        ),
+        migrations.CreateModel(
+            name="Message",
+            fields=[
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("content", models.TextField()),
+                ("timestamp", models.DateTimeField(auto_now_add=True)),
+                ("chat", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="games.chat")),
+                (
+                    "sender",
+                    models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL),
+                ),
+            ],
+        )
     ]
