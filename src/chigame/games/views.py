@@ -32,7 +32,7 @@ class GameDetailView(DetailView):
 
 class GameCreateView(UserPassesTestMixin, CreateView):
     model = Game
-    fields = ["name", "description", "min_players", "max_players"]
+    fields = "__all__"  # include all fields in form
     template_name = "games/game_form.html"
     success_url = reverse_lazy("game-list")
     raise_exception = True  # if user is not staff member, raise exception
@@ -44,7 +44,7 @@ class GameCreateView(UserPassesTestMixin, CreateView):
 
 class GameEditView(UserPassesTestMixin, UpdateView):
     model = Game
-    fields = ["name", "description", "min_players", "max_players"]
+    fields = "__all__"  # include all fields in form
     template_name = "games/game_form.html"
     raise_exception = True  # if user is not staff member, raise exception
 

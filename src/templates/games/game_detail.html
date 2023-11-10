@@ -12,14 +12,16 @@
     <strong>Maximum Players:</strong> {{ game.max_players }}
   </p>
   <p>
-    <strong>Description:</strong> {{ game.description }}
-  </p>
-  {% if user.is_staff %}
-    <p>
-      <a href="{% url 'game-edit' game.pk %}">Edit</a>
-    </p>
-  {% endif %}
-  <p>
-    <a href="{% url 'game-list' %}">Back to Games List</a>
-  </p>
+    <!-- |linebreaksbr replaces line breaks in plain text with HTML line break
+<br />
+<strong>Description:</strong> {{ game.description|linebreaksbr }}
+</p>
+{% if user.is_staff %}
+<p>
+<a href="{% url 'game-edit' game.pk %}">Edit</a>
+</p>
+{% endif %}
+<p>
+<a href="{% url 'game-list' %}">Back to Games List</a>
+</p>
 {% endblock content %}
