@@ -6,7 +6,7 @@ import django.db.models.deletion
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("games", "0002_initial"),
+        ("games", "0003_category_mechanic_game_bgg_id_game_complexity_and_more"),
     ]
 
     operations = [
