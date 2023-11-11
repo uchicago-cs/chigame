@@ -19,7 +19,7 @@ def lobby_list(request):
     context = {"object_list": lobbies}
     return render(request, "games/lobby_list.html", context)
 
-
+@login_required
 def lobby_join(request, pk):
     lobby = get_object_or_404(Lobby, pk=pk)
     joined = Lobby.objects.filter(members=request.user.id)
