@@ -1,7 +1,8 @@
 from django.contrib.auth.mixins import UserPassesTestMixin
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404, redirect, reverse
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DetailView, ListView, UpdateView
+from django.http import HttpResponse, HttpResponseNotFound
 
 from .models import Game, Lobby
 
@@ -17,11 +18,23 @@ def lobby_list(request):
     context = {"object_list": lobbies}
     return render(request, "games/lobby_list.html", context)
 
+def lobby_join(request, pk):
+    lobby = get_object_or_404(Lobby, pk = pk)
+    joined = Lobby.objects.filter(members = request.user.id)
+    print(joined, lobby)
+    if lobby in joined:
+        return HttpResponseNotFound("Already joined.")
+    lobby.members.add(request.user)
+    return redirect(reverse("lobby-details", kwargs={"pk": lobby.id}))
 
 class ViewLobbyDetails(DetailView):
     model = Lobby
     template_name = "games/lobby_details.html"
     context_object_name = "lobby_detail"
+    def get_context_data(self, **kwargs):
+        # Call the base implementation first to get a context
+        context = super(ViewLobbyDetails, self).get_context_data(**kwargs)
+        context['user'] = self.request.user
 
 
 class GameDetailView(DetailView):
