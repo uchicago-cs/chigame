@@ -100,7 +100,7 @@ class NotificationQuerySet(models.QuerySet):
             actor_object_id = actor.pk
             queryset = self.filter(actor_content_type=actor_content_type, actor_object_id=actor_object_id, **kwargs)
             if not include_deleted:
-                queryset.is_not_deleted()
+                queryset = queryset.is_not_deleted()
             return queryset
 
         except ContentType.DoesNotExist:
@@ -112,7 +112,7 @@ class NotificationQuerySet(models.QuerySet):
             actor_object_id = actor.pk
             queryset = self.get(actor_content_type=actor_content_type, actor_object_id=actor_object_id, **kwargs)
             if not include_deleted:
-                queryset.is_not_deleted()
+                queryset = queryset.is_not_deleted()
             return queryset
 
         except ContentType.DoesNotExist:
@@ -121,15 +121,15 @@ class NotificationQuerySet(models.QuerySet):
     def filter_by_receiver(self, receiver, include_deleted=False):
         queryset = self.filter(receiver=receiver)
         if not include_deleted:
-            queryset.is_not_deleted()
+            queryset = queryset.is_not_deleted()
         return queryset
 
     def filter_by_type(self, type, include_deleted=False):
-        if type not in Notification.NOTIFICATION_TYPES:
+        if type not in [type[0] for type in Notification.NOTIFICATION_TYPES]:
             raise ValueError(f"{type} is not a valid type")
         queryset = self.filter(type=type)
         if not include_deleted:
-            queryset.is_not_deleted()
+            queryset = queryset.is_not_deleted()
         return queryset
 
     def mark_all_unread(self):
@@ -141,6 +141,9 @@ class NotificationQuerySet(models.QuerySet):
     def mark_all_deleted(self):
         self.update(visible=False)
 
+    def restore_all_deleted(self):
+        self.update(visible=True)
+
     def is_read(self):
         return self.filter(read=True)
 
@@ -151,7 +154,7 @@ class NotificationQuerySet(models.QuerySet):
         return self.filter(visible=False)
 
     def is_not_deleted(self):
-        return self.filter(visible=False)
+        return self.filter(visible=True)
 
 
 class Notification(models.Model):
