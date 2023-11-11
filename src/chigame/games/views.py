@@ -1,11 +1,11 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import UserPassesTestMixin
-from django.http import HttpResponseNotFound, HttpResponseRedirect
+from django.http import HttpResponseNotFound
 from django.shortcuts import get_object_or_404, redirect, render, reverse
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DetailView, ListView, UpdateView
 
-from .models import Game, Lobby, User
+from .models import Game, Lobby
 
 
 class GameListView(ListView):
@@ -31,23 +31,14 @@ def lobby_join(request, pk):
 
 
 @login_required
-def leave_lobby(request):
-    if request.method == "POST":
-        user_id = request.POST.get("user_id")
-        lobby_id = request.POST.get(
-            "lobby_id"
-        )  # You need to pass the lobby_id from the view that renders this template
-
-        user = get_object_or_404(User, username=user_id)
-        lobby = get_object_or_404(Lobby, id=lobby_id)
-
-        if user in lobby.members.all():
-            lobby.members.remove(user)
-            # Redirect to the lobby details page
-            return HttpResponseRedirect(reverse("lobby_details", args=[lobby_id]))
-
-    # Redirect to the 404 page if the user is not in the lobby
-    return render(request, "templates/404.html")
+def leave_lobby(request, pk):
+    lobby = get_object_or_404(Lobby, pk=pk)
+    joined = Lobby.objects.filter(members=request.user.id)
+    print(joined, lobby)
+    if lobby not in joined:
+        return HttpResponseNotFound("Haven't Joined.")
+    lobby.members.remove(request.user)
+    return redirect(reverse("lobby-details", kwargs={"pk": lobby.id}))
 
 
 class ViewLobbyDetails(DetailView):
