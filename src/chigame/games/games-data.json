@@ -1,0 +1,39 @@
+[
+{
+    "model": "games.game",
+    "pk": 1,
+    "fields": {
+        "name": "testg",
+        "description": "",
+        "year_published": 2000,
+        "image": "/static/images/no_picture_available.png",
+        "rules": null,
+        "min_players": 1,
+        "max_players": 2,
+        "suggested_age": null,
+        "expected_playtime": null,
+        "min_playtime": null,
+        "max_playtime": null,
+        "complexity": null,
+        "BGG_id": null,
+        "category": [],
+        "mechanics": []
+    }
+},
+{
+    "model": "games.lobby",
+    "pk": 1,
+    "fields": {
+        "match_status": 1,
+        "name": "testl",
+        "game": 1,
+        "game_mod_status": 1,
+        "created_by": 1,
+        "min_players": 1,
+        "max_players": 2,
+        "time_constraint": 300,
+        "lobby_created": "2023-11-11T20:52:09.239Z",
+        "members": []
+    }
+}
+]
