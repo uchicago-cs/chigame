@@ -47,6 +47,7 @@ class UserProfile(models.Model):
     """
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+    #    profile_id = models.IntegerField(default=user.pk, primary_key=True)
     display_name = models.TextField()
     bio = models.TextField(blank=True)
     friends = models.ManyToManyField(User, related_name="friendship", blank=True)
@@ -111,6 +112,32 @@ class NotificationQuerySet(models.QuerySet):
         except ContentType.DoesNotExist:
             raise ValueError(f"The model {actor.label} is not registered in content type")
 
+    def filter_by_receiver(self, receiver):
+        return self.filter(receiver=receiver)
+
+    def filter_by_type(self, type):
+        if type not in Notification.NOTIFICATION_TYPES:
+            raise ValueError(f"{type} is not a valid type")
+        return self.filter(type=type)
+
+    def mark_all_unread(self):
+        self.update(read=False)
+
+    def mark_all_read(self):
+        self.update(read=True)
+
+    def mark_all_deleted(self):
+        self.update(visible=False)
+
+    def is_read(self):
+        return self.filter(read=True)
+
+    def is_unread(self):
+        return self.filter(read=False)
+
+    def is_deleted(self):
+        return self.filter(visible=False)
+
 
 class Notification(models.Model):
     """
@@ -121,12 +148,14 @@ class Notification(models.Model):
     REMINDER = 2
     UPCOMING_MATCH = 3
     MATCH_PROPOSAL = 4
+    GROUP_INVITATION = 5
 
     NOTIFICATION_TYPES = (
         (FRIEND_REQUEST, "FRIEND_REQUEST"),
         (REMINDER, "REMINDER"),
         (UPCOMING_MATCH, "UPCOMING_MATCH"),
         (MATCH_PROPOSAL, "MATCH_PROPOSAL"),
+        (GROUP_INVITATION, "GROUP_INVITATION"),
     )
 
     receiver = models.ForeignKey(User, on_delete=models.CASCADE)
