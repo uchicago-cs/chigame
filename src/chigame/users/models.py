@@ -47,7 +47,6 @@ class UserProfile(models.Model):
     """
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    #    profile_id = models.IntegerField(default=user.pk, primary_key=True)
     display_name = models.TextField()
     bio = models.TextField(blank=True)
     friends = models.ManyToManyField(User, related_name="friendship", blank=True)
