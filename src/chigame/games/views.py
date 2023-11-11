@@ -57,6 +57,10 @@ class GameEditView(UserPassesTestMixin, UpdateView):
     def get_success_url(self):
         return reverse_lazy("game-detail", kwargs={"pk": self.kwargs["pk"]})
 
+    # check if user is staff member
+    def test_func(self):
+        return self.request.user.is_staff
+
 
 # Tournaments
 
@@ -172,7 +176,3 @@ class TournamentDeleteView(DeleteView):
     template_name = "tournaments/tournament_delete.html"
     context_object_name = "tournament"
     success_url = reverse_lazy("tournament-list")
-
-    # check if user is staff member
-    def test_func(self):
-        return self.request.user.is_staff
