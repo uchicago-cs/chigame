@@ -7,6 +7,7 @@ from django.utils.decorators import method_decorator
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
 from .models import Game, Lobby, Tournament
+from .tournaments_function import create_tournaments_brackets
 
 
 class GameListView(ListView):
@@ -110,12 +111,29 @@ class TournamentCreateView(CreateView):
     # Note: we may remove the "matches" field later for the same reason,
     # but we keep it for now because it is convenient for testing.
 
+    # This method is called when valid form data has been POSTed. It
+    # overrides the default behavior of the CreateView class.
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        create_tournaments_brackets(self.object)  # This should be changed later
+        # because the brackets should not be created right after the tournament
+        # is created. Instead, the brackets should be created when the registration
+        # deadline is reached. But for now, we keep it this way for testing.
+
+        # Do something with brackets if needed
+        return response
+
     def get_success_url(self):
         return reverse_lazy("tournament-detail", kwargs={"pk": self.object.pk})
 
 
 @method_decorator(staff_required, name="dispatch")
 class TournamentUpdateView(UpdateView):
+    # Note: players should not be allowed to join a tournament after
+    # it has started, so it is discouraged (but still allowed) to add
+    # new users to "players". However, the new users will not be put
+    # into any matches automatically. The staff user will have to
+    # manually add them to the matches.
     model = Tournament
     template_name = "tournaments/tournament_update.html"
     fields = [
