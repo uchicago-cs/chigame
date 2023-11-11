@@ -1,10 +1,11 @@
 from functools import wraps
 
+from django.contrib.auth.mixins import UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
-from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
+from django.views.generic import CreateView, DetailView, ListView, UpdateView
 
 from .models import Game, Lobby, Tournament
 
@@ -33,20 +34,31 @@ class GameDetailView(DetailView):
     context_object_name = "game"
 
 
-class GameCreateView(CreateView):
+class GameCreateView(UserPassesTestMixin, CreateView):
     model = Game
     fields = ["name", "description", "min_players", "max_players"]
     template_name = "games/game_form.html"
     success_url = reverse_lazy("game-list")
+    raise_exception = True  # if user is not staff member, raise exception
+
+    # check if user is staff member
+    def test_func(self):
+        return self.request.user.is_staff
 
 
-class GameEditView(UpdateView):
+class GameEditView(UserPassesTestMixin, UpdateView):
     model = Game
     fields = ["name", "description", "min_players", "max_players"]
     template_name = "games/game_form.html"
+    raise_exception = True  # if user is not staff member, raise exception
 
+    # if edit is successful, redirect to that game's detail page
     def get_success_url(self):
         return reverse_lazy("game-detail", kwargs={"pk": self.kwargs["pk"]})
+
+    # check if user is staff member
+    def test_func(self):
+        return self.request.user.is_staff
 
 
 # Tournaments
@@ -112,37 +124,3 @@ class TournamentCreateView(CreateView):
 
     def get_success_url(self):
         return reverse_lazy("tournament-detail", kwargs={"pk": self.object.pk})
-
-
-@method_decorator(staff_required, name="dispatch")
-class TournamentUpdateView(UpdateView):
-    model = Tournament
-    template_name = "tournaments/tournament_update.html"
-    fields = [
-        "name",
-        "game",
-        "start_date",
-        "end_date",
-        "max_players",
-        "description",
-        "rules",
-        "draw_rules",
-        "matches",
-        "players",
-    ]
-    # Note: "winner" is not included in the fields because it is not
-    # supposed to be set by the user. It will be set automatically
-    # when the tournament is over.
-    # Note: we may remove the "matches" field later for the same reason,
-    # but we keep it for now because it is convenient for testing.
-
-    def get_success_url(self):
-        return reverse_lazy("tournament-detail", kwargs={"pk": self.object.pk})
-
-
-@method_decorator(staff_required, name="dispatch")
-class TournamentDeleteView(DeleteView):
-    model = Tournament
-    template_name = "tournaments/tournament_delete.html"
-    context_object_name = "tournament"
-    success_url = reverse_lazy("tournament-list")
