@@ -20,6 +20,14 @@
   <h2>Members:</h2>
   <ul>
     {% for member in lobby_detail.members.all %}<li>{{ member.username }}</li>{% endfor %}
+    <form method="post" action="{% url 'lobby-details' lobby_detail.pk %}">
+      {% csrf_token %}
+      <input type="hidden" name="user_id" value="{{ member.username }}" />
+      <input type="hidden" name="lobby_id" value="{{ lobby_detail.id }}" />
+      <button type="submit">Leave Lobby</button>
+    </form>
   </ul>
-  <p><a href="{% url 'lobby-join' lobby_detail.pk %}">Join Lobby</a></p>
+  <p>
+    <a href="{% url 'lobby-join' lobby_detail.pk %}">Join Lobby</a>
+  </p>
 {% endblock content %}
