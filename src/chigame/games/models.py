@@ -77,7 +77,7 @@ class Player(models.Model):
     match = models.ForeignKey(Match, on_delete=models.CASCADE)
     team = models.TextField(blank=True, null=True)
     role = models.TextField(blank=True, null=True)
-    outcome = models.PositiveSmallIntegerField(choices=OUTCOMES)
+    outcome = models.PositiveSmallIntegerField(choices=OUTCOMES, blank=True, null=True)
     victory_type = models.TextField(blank=True, null=True)
 
 
