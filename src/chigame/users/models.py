@@ -94,31 +94,43 @@ class GroupInvitation(models.Model):
 
 
 class NotificationQuerySet(models.QuerySet):
-    def filter_by_actor(self, actor, **kwargs):
+    def filter_by_actor(self, actor, include_deleted=False, **kwargs):
         try:
             actor_content_type = ContentType.objects.get(model=actor._meta.model_name)
             actor_object_id = actor.pk
-            return self.filter(actor_content_type=actor_content_type, actor_object_id=actor_object_id, **kwargs)
+            queryset = self.filter(actor_content_type=actor_content_type, actor_object_id=actor_object_id, **kwargs)
+            if not include_deleted:
+                queryset.is_not_deleted()
+            return queryset
 
         except ContentType.DoesNotExist:
             raise ValueError(f"The model {actor.label} is not registered in content type")
 
-    def get_by_actor(self, actor, **kwargs):
+    def get_by_actor(self, actor, include_deleted=False, **kwargs):
         try:
             actor_content_type = ContentType.objects.get(model=actor._meta.model_name)
             actor_object_id = actor.pk
-            return self.get(actor_content_type=actor_content_type, actor_object_id=actor_object_id, **kwargs)
+            queryset = self.get(actor_content_type=actor_content_type, actor_object_id=actor_object_id, **kwargs)
+            if not include_deleted:
+                queryset.is_not_deleted()
+            return queryset
 
         except ContentType.DoesNotExist:
             raise ValueError(f"The model {actor.label} is not registered in content type")
 
-    def filter_by_receiver(self, receiver):
-        return self.filter(receiver=receiver)
+    def filter_by_receiver(self, receiver, include_deleted):
+        queryset = self.filter(receiver=receiver)
+        if not include_deleted:
+            queryset.is_not_deleted()
+        return queryset
 
-    def filter_by_type(self, type):
+    def filter_by_type(self, type, include_deleted):
         if type not in Notification.NOTIFICATION_TYPES:
             raise ValueError(f"{type} is not a valid type")
-        return self.filter(type=type)
+        queryset = self.filter(type=type)
+        if not include_deleted:
+            queryset.is_not_deleted()
+        return queryset
 
     def mark_all_unread(self):
         self.update(read=False)
@@ -136,6 +148,9 @@ class NotificationQuerySet(models.QuerySet):
         return self.filter(read=False)
 
     def is_deleted(self):
+        return self.filter(visible=False)
+
+    def is_not_deleted(self):
         return self.filter(visible=False)
 
 
