@@ -118,13 +118,13 @@ class NotificationQuerySet(models.QuerySet):
         except ContentType.DoesNotExist:
             raise ValueError(f"The model {actor.label} is not registered in content type")
 
-    def filter_by_receiver(self, receiver, include_deleted):
+    def filter_by_receiver(self, receiver, include_deleted=False):
         queryset = self.filter(receiver=receiver)
         if not include_deleted:
             queryset.is_not_deleted()
         return queryset
 
-    def filter_by_type(self, type, include_deleted):
+    def filter_by_type(self, type, include_deleted=False):
         if type not in Notification.NOTIFICATION_TYPES:
             raise ValueError(f"{type} is not a valid type")
         queryset = self.filter(type=type)
