@@ -29,11 +29,6 @@ class Migration(migrations.Migration):
         migrations.DeleteModel(
             name="Notification",
         ),
-        migrations.RenameField(
-            model_name="notification",
-            old_name="receipients",
-            new_name="recipients",
-        ),
         migrations.AlterField(
             model_name="message",
             name="sender",
