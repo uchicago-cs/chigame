@@ -1,7 +1,9 @@
 from functools import wraps
 
+from django.contrib import messages
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
+from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
@@ -9,7 +11,7 @@ from django_tables2 import SingleTableView
 
 from .models import Game, Lobby, Tournament
 from .tables import LobbyTable
-from .tournaments_function import create_tournaments_brackets
+from .tournaments_function import create_tournaments_brackets, tournament_sign_up, tournament_withdraw
 
 
 class GameListView(ListView):
@@ -95,11 +97,73 @@ class TournamentsListView(ListView):
         # Additional context can be added if needed
         return context
 
+    def post(self, request, *args, **kwargs):
+        # This method is called when the user clicks the "Join Tournament" or
+        # "Withdraw" button
+        tournament = Tournament.objects.get(id=request.POST.get("tournament_id"))
+        if request.POST.get("action") == "join":
+            success = tournament_sign_up(request.user, tournament)
+            if success == 0:
+                messages.success(request, "You have successfully joined this tournament")
+                return redirect(reverse_lazy("tournament-list"))
+            elif success == 1:
+                messages.error(request, "You have already joined this tournament")
+                return redirect(reverse_lazy("tournament-list"))
+            elif success == 2:
+                messages.error(request, "This tournament is full")
+                return redirect(reverse_lazy("tournament-list"))
+            else:
+                raise Exception("Invalid return value")
+
+        elif request.POST.get("action") == "withdraw":
+            success = tournament_withdraw(request.user, tournament)
+            if success == 0:
+                messages.success(request, "You have successfully withdrawn from this tournament")
+                return redirect(reverse_lazy("tournament-list"))
+            elif success == 1:
+                messages.error(request, "You have not joined this tournament")
+                return redirect(reverse_lazy("tournament-list"))
+            else:
+                raise Exception("Invalid return value")
+        else:
+            raise ValueError("Invalid action")
+
 
 class TournamentDetailView(DetailView):
     model = Tournament
     template_name = "tournaments/tournament_detail.html"
     context_object_name = "tournament"
+
+    def post(self, request, *args, **kwargs):
+        # This method is called when the user clicks the "Join Tournament" or
+        # "Withdraw" button
+        tournament = Tournament.objects.get(id=request.POST.get("tournament_id"))
+        if request.POST.get("action") == "join":
+            success = tournament_sign_up(request.user, tournament)
+            if success == 0:
+                messages.success(request, "You have successfully joined this tournament")
+                return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
+            elif success == 1:
+                messages.error(request, "You have already joined this tournament")
+                return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
+            elif success == 2:
+                messages.error(request, "This tournament is full")
+                return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
+            else:
+                raise Exception("Invalid return value")
+
+        elif request.POST.get("action") == "withdraw":
+            success = tournament_withdraw(request.user, tournament)
+            if success == 0:
+                messages.success(request, "You have successfully withdrawn from this tournament")
+                return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
+            elif success == 1:
+                messages.error(request, "You have not joined this tournament")
+                return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
+            else:
+                raise Exception("Invalid return value")
+        else:
+            raise ValueError("Invalid action")
 
 
 @method_decorator(staff_required, name="dispatch")
