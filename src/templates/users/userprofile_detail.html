@@ -18,8 +18,14 @@
                 <p>Bio: {{ object.bio }}</p>
                 {% if object.user == request.user %}
                   <a href="{% url 'users:update' %}" class="btn btn-primary">Edit Profile</a>
+                {% elif is_friend %}
+                  <a class="btn btn-primary">Remove Friend</a>
+                {% elif friendship_request %}
+                  <a href="{% url 'users:cancel-friend-invitation' object.user.pk %}"
+                     class="btn btn-primary">Cancel Friendship Request</a>
                 {% else %}
-                  <a class="btn btn-primary">Add Friend</a>
+                  <a href="{% url 'users:add-friend' object.user.pk %}"
+                     class="btn btn-primary">Add Friend</a>
                 {% endif %}
               </div>
             </div>

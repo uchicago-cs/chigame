@@ -1,9 +1,10 @@
+from django.contrib.auth.mixins import UserPassesTestMixin
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DetailView, ListView, UpdateView
-from django.shortcuts import render
-from django.http import Http404
+from django_tables2 import SingleTableView
 
-from .models import Game
+from .models import Game, Lobby
+from .tables import LobbyTable
 
 
 class GameListView(ListView):
@@ -12,18 +13,17 @@ class GameListView(ListView):
     template_name = "games/game_list.html"
 
 
-def game_browse(request):
-    # This is a placeholder for the real implementation
-    temp_images = [
-        'https://cf.geekdo-images.com/W3Bsga_uLP9kO91gZ7H8yw__itemrep/img/IzYEUm_gWFuRFOL8gQYqGm5gU6A=/fit-in/246x300/filters:strip_icc()/pic2419375.jpg',
-        'https://cf.geekdo-images.com/HkZSJfQnZ3EpS214xtuplg__imagepage/img/nLp0poXg-Y6szkicHe7U2thnwhk=/fit-in/900x600/filters:no_upscale():strip_icc()/pic2439223.jpg',
-        'https://cf.geekdo-images.com/YyiFambqCNTQijYcrzXfbg__imagepage/img/ylRWhjJZyD5cVVY9gmFbjjW0Scw=/fit-in/900x600/filters:no_upscale():strip_icc()/pic829431.jpg',
-    ]
-    
-    # We have 3 temp images, so we'll just repeat them 10 times for 30 fake games
-    games = [{'image': url} for url in temp_images] * 10  
-    context = {'games': games}
-    return render(request, 'games/game_browse.html', context)
+class LobbyListView(SingleTableView):
+    model = Lobby
+    table_class = LobbyTable
+    template_name = "games/lobby_list.html"
+
+
+class ViewLobbyDetails(DetailView):
+    model = Lobby
+    template_name = "games/lobby_details.html"
+    context_object_name = "lobby_detail"
+
 
 class GameDetailView(DetailView):
     model = Game
@@ -31,17 +31,28 @@ class GameDetailView(DetailView):
     context_object_name = "game"
 
 
-class GameCreateView(CreateView):
+class GameCreateView(UserPassesTestMixin, CreateView):
     model = Game
     fields = ["name", "description", "min_players", "max_players"]
     template_name = "games/game_form.html"
     success_url = reverse_lazy("game-list")
+    raise_exception = True  # if user is not staff member, raise exception
+
+    # check if user is staff member
+    def test_func(self):
+        return self.request.user.is_staff
 
 
-class GameEditView(UpdateView):
+class GameEditView(UserPassesTestMixin, UpdateView):
     model = Game
     fields = ["name", "description", "min_players", "max_players"]
     template_name = "games/game_form.html"
+    raise_exception = True  # if user is not staff member, raise exception
 
+    # if edit is successful, redirect to that game's detail page
     def get_success_url(self):
         return reverse_lazy("game-detail", kwargs={"pk": self.kwargs["pk"]})
+
+    # check if user is staff member
+    def test_func(self):
+        return self.request.user.is_staff
