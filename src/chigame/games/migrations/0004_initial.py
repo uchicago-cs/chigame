@@ -26,9 +26,6 @@ class Migration(migrations.Migration):
             name="num_winners",
             field=models.PositiveIntegerField(default=1),
         ),
-        migrations.DeleteModel(
-            name="Notification",
-        ),
         migrations.AlterField(
             model_name="message",
             name="sender",
