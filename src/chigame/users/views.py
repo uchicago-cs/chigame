@@ -3,7 +3,6 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
-from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
@@ -11,7 +10,7 @@ from django.views.generic import DetailView, RedirectView, UpdateView
 from rest_framework import status
 from rest_framework.response import Response
 
-from .models import FriendInvitation, UserProfile
+from .models import FriendInvitation, Notification, UserProfile
 
 User = get_user_model()
 
@@ -85,15 +84,27 @@ def user_profile_detail_view(request, pk):
 def send_friend_invitation(request, pk):
     sender = User.objects.get(pk=request.user.id)
     receiver = User.objects.get(pk=pk)
+
     if sender.id == receiver.id:
         messages.error(request, "You can't send friendship invitation to yourself")
         return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
     if sender.id != receiver.id:
-        _, new = FriendInvitation.objects.get_or_create(sender=sender, receiver=receiver)
+        friend_request, new = FriendInvitation.objects.get_or_create(sender=sender, receiver=receiver)
+
     if new:
         messages.success(request, "Friendship invitation sent successfully.")
+        notification = Notification.objects.create(
+            actor=friend_request, receiver=receiver, type=Notification.FRIEND_REQUEST
+        )
     else:
         messages.info(request, "Friendship invitation already sent before.")
+        try:
+            notification = Notification.objects.get_by_actor(friend_request, receiver=receiver)
+            notification.renew_notification()
+        except Notification.DoesNotExist:
+            notification = Notification.objects.create(
+                actor=friend_request, receiver=receiver, type=Notification.FRIEND_REQUEST
+            )
     return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
 
 
@@ -104,9 +115,17 @@ def cancel_friend_invitation(request, pk):
     num = None
     try:
         friendship = FriendInvitation.objects.get(sender=sender, receiver=receiver)
-        num, _ = friendship.delete()
-    except ObjectDoesNotExist:
+        notification = Notification.objects.get_by_actor(friendship)
+    except FriendInvitation.DoesNotExist:
         messages.error(request, "Friendship invitation does not exist")
+        return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
+    except Notification.DoesNotExist:
+        notification = Notification.objects.create(
+            actor=friendship, receiver=receiver, type=Notification.FRIEND_REQUEST
+        )
+        notification.mark_as_deleted()
+    num, _ = friendship.delete()
+    notification.mark_as_deleted()
     if num:
         messages.success(request, "Friendship invitation cancelled successfully.")
     else:
