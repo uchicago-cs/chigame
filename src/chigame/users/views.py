@@ -8,6 +8,8 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import DetailView, RedirectView, UpdateView
+from rest_framework import status
+from rest_framework.response import Response
 
 from .models import FriendInvitation, UserProfile
 
@@ -54,6 +56,15 @@ def user_list(request):
     users = User.objects.all()
 
     return render(request, "users/user_detail.html", {"users": users})
+
+
+def user_history(request, pk):
+    try:
+        user = User.objects.get(pk=pk)
+
+        return render(request, "users/user_history.html", {"user": user})
+    except User.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
 
 
 def user_profile_detail_view(request, pk):
