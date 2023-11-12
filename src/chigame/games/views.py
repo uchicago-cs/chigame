@@ -10,7 +10,7 @@ from .tables import LobbyTable
 class GameListView(ListView):
     model = Game
     queryset = Game.objects.all()
-    template_name = "games/game_list.html"
+    template_name = "games/game_grid.html"
 
 
 class LobbyListView(SingleTableView):

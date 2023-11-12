@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}
+  Games
+{% endblock title %}
+{% block content %}
+  <style>
+    .card {
+      transition: all 0.2s ease-in-out;
+    }
+
+    .card:hover {
+      transform: scale(1.02);
+    }
+  </style>
+  <h1 class="display-1 mt-3 mb-3">Games</h1>
+  <div class="row row-cols-1 row-cols-md-4 g-4">
+    {% for game in object_list %}
+      <div class="col">
+        <div class="card h-100">
+          <img src="{{ game.image }}" class="card-img-top" alt="game image" />
+          <div class="card-body">
+            <h4 class="card-title">{{ game.name }}</h4>
+            <p class="card-text">{{ game.description }}</p>
+            <div class="mt-0">
+              {% for category in game.category.all %}<span class="badge text-bg-primary">{{ category }}</span>{% endfor %}
+            </div>
+          </div>
+          <div class="card-footer bg-transparent">
+            <a href="{% url 'game-detail' game.id %}"
+               class="btn btn-secondary stretched-link">More details</a>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+  {% if user.is_staff %}
+    <div class="container mt-4 mb-4">
+      <a class="btn btn-outline-success" href="{% url 'game-create' %}">Create New Game</a>
+    </div>
+  {% endif %}
+{% endblock content %}
