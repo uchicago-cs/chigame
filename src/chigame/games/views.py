@@ -3,9 +3,8 @@ from django.urls import reverse_lazy
 from django.views.generic import CreateView, DetailView, ListView, UpdateView
 from django_tables2 import SingleTableView
 
-from .models import Game, Lobby
+from .models import Game, Lobby, Tournament
 from .tables import LobbyTable
-
 
 
 class GameListView(ListView):
