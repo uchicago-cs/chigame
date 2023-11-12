@@ -1,8 +1,10 @@
-from django.shortcuts import render
+from django.contrib.auth.mixins import UserPassesTestMixin
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DetailView, ListView, UpdateView
+from django_tables2 import SingleTableView
 
 from .models import Game, Lobby
+from .tables import LobbyTable
 
 
 class GameListView(ListView):
@@ -11,10 +13,10 @@ class GameListView(ListView):
     template_name = "games/game_list.html"
 
 
-def lobby_list(request):
-    lobbies = Lobby.objects.all()
-    context = {"object_list": lobbies}
-    return render(request, "games/lobby_list.html", context)
+class LobbyListView(SingleTableView):
+    model = Lobby
+    table_class = LobbyTable
+    template_name = "games/lobby_list.html"
 
 
 class ViewLobbyDetails(DetailView):
@@ -29,17 +31,28 @@ class GameDetailView(DetailView):
     context_object_name = "game"
 
 
-class GameCreateView(CreateView):
+class GameCreateView(UserPassesTestMixin, CreateView):
     model = Game
     fields = ["name", "description", "min_players", "max_players"]
     template_name = "games/game_form.html"
     success_url = reverse_lazy("game-list")
+    raise_exception = True  # if user is not staff member, raise exception
+
+    # check if user is staff member
+    def test_func(self):
+        return self.request.user.is_staff
 
 
-class GameEditView(UpdateView):
+class GameEditView(UserPassesTestMixin, UpdateView):
     model = Game
     fields = ["name", "description", "min_players", "max_players"]
     template_name = "games/game_form.html"
+    raise_exception = True  # if user is not staff member, raise exception
 
+    # if edit is successful, redirect to that game's detail page
     def get_success_url(self):
         return reverse_lazy("game-detail", kwargs={"pk": self.kwargs["pk"]})
+
+    # check if user is staff member
+    def test_func(self):
+        return self.request.user.is_staff
