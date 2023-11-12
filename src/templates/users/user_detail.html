@@ -26,7 +26,6 @@
       </div>
       <!-- End Action buttons -->
     {% endif %}
-
     {% if request.user.is_staff %}
       <!-- Additional content for admin -->
       <div class="row">
@@ -34,16 +33,15 @@
           <!-- Admin-specific content goes here -->
           <ul>
             {% for user in users %}
-                <li>
-                    {{ user.username }}
-                    {{ user.email }}
-                </li>
+              <li>
+                {{ user.username }}
+                {{ user.email }}
+              </li>
             {% endfor %}
-            </ul>
+          </ul>
         </div>
       </div>
       <!-- End Additional content for admin -->
     {% endif %}
-
   </div>
 {% endblock content %}
