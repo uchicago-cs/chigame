@@ -21,6 +21,7 @@ class LobbyListView(SingleTableView):
     table_class = LobbyTable
     template_name = "games/lobby_list.html"
 
+
 @login_required
 def lobby_join(request, pk):
     lobby = get_object_or_404(Lobby, pk=pk)
