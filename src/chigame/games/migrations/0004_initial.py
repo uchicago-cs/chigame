@@ -8,7 +8,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ("games", "0003_initial"),
+        ("games", "0003_category_mechanic_game_bgg_id_game_complexity_and_more"),
     ]
 
     operations = [
@@ -23,5 +23,10 @@ class Migration(migrations.Migration):
             field=models.ForeignKey(
                 null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL
             ),
+        ),
+        migrations.AlterField(
+            model_name="chat",
+            name="match",
+            field=models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to="games.match"),
         ),
     ]
