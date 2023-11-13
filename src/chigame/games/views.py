@@ -115,6 +115,7 @@ class TournamentCreateView(CreateView):
         "rules",
         "draw_rules",
         "matches",
+        "num_winner",
         "players",
     ]
     # Note: "winner" is not included in the fields because it is not
