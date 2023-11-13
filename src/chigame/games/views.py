@@ -1,7 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.http import HttpResponseNotFound
-from django.shortcuts import get_object_or_404, redirect, render, reverse
+from django.shortcuts import get_object_or_404, redirect, reverse
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DetailView, ListView, UpdateView
 from django_tables2 import SingleTableView
@@ -33,7 +33,7 @@ def lobby_join(request, pk):
 
 
 @login_required
-def leave_lobby(request, pk):
+def lobby_leave(request, pk):
     lobby = get_object_or_404(Lobby, pk=pk)
     joined = Lobby.objects.filter(members=request.user.id)
     print(joined, lobby)
