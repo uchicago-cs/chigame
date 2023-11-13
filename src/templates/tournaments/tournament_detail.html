@@ -9,29 +9,64 @@
   <p>Description: {{ tournament.description }}</p>
   <p>Rules: {{ tournament.rules }}</p>
   <p>Draw rules: {{ tournament.draw_rules }}</p>
-  <!-- Matches may be added later if needed -->
-  <p>Winners:</p>
-  <ul>
-    {% for winner in tournament.get_all_winners %}
-      <li>
-        <h3>
-          <a href="{% url 'users:detail' winner.id %}">{{ winner.name }}</a>
-        </h3>
-        <!-- You can add more fields as needed -->
-      </li>
-    {% endfor %}
-  </ul>
   <p>Players:</p>
   <ul>
     {% for player in tournament.get_all_players %}
       <li>
-        <h3>
-          <a href="{% url 'users:detail' player.id %}">{{ player.name }}</a>
-        </h3>
+        <p>
+          {% if player.name %}
+            <a href="{% url 'users:detail' player.id %}">{{ player.name }}</a>
+          {% else %}
+            <a href="{% url 'users:detail' player.id %}">{{ player.email }}</a>
+          {% endif %}
+        </p>
         <!-- You can add more fields as needed -->
       </li>
     {% endfor %}
   </ul>
+  <p>Winners:</p>
+  {% if tournament.get_all_winners %}
+    <ul>
+      {% for winner in tournament.get_all_winners %}
+        <li>
+          <p>
+            {% if winner.name %}
+              <a href="{% url 'users:detail' winner.id %}">{{ winner.name }}</a>
+            {% else %}
+              <a href="{% url 'users:detail' winner.id %}">{{ winner.email }}</a>
+            {% endif %}
+          </p>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No winner yet.</p>
+  {% endif %}
+  <!-- You can add more fields as needed -->
+  <p>Matches:</p>
+  {% if tournament.get_all_matches %}
+    <ul>
+      {% for match in tournament.get_all_matches %}
+        <li>
+          <p>
+            Match (
+            {% for player in match.players.all %}
+              {% if player.name %}
+                <a href="{% url 'users:detail' player.id %}">{{ player.name }}</a>
+              {% else %}
+                <a href="{% url 'users:detail' player.id %}">{{ player.email }}</a>
+              {% endif %}
+              {% if not forloop.last %}vs.{% endif %}
+            {% endfor %}
+            )
+          </p>
+          <!-- You can add more fields as needed -->
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No matches yet.</p>
+  {% endif %}
   {% if user.is_staff %}
     <p>
       <a href="{% url 'tournament-update' tournament.id %}">Update</a>

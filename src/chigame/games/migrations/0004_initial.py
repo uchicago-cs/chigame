@@ -25,4 +25,9 @@ class Migration(migrations.Migration):
                 null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL
             ),
         ),
+        migrations.AlterField(
+            model_name="chat",
+            name="match",
+            field=models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to="games.match"),
+        ),
     ]
