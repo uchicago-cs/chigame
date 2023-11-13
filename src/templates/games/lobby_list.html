@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% load render_table from django_tables2 %}
+
+<!DOCTYPE html>
+{% block title %}
+  Lobbies
+{% endblock title %}
+{% block content %}
+  <h1>List of Lobbies</h1>
+  {% render_table table %}
+{% endblock content %}
