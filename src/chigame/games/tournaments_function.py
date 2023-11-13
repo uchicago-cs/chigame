@@ -34,7 +34,8 @@ def create_tournaments_brackets(tournament: Tournament) -> list[Match]:
             # lobby_created, # default: the field is set to the current time
         )
         players_in_match = players[i : i + tournament.game.max_players]  # the players in the match
-        match = Match.objects.create(game=game, lobby=lobby)
+        match = Match.objects.create(game=game, lobby=lobby, date_played=tournament.start_date)
+        # date_played is set to the start date of the tournament for now
         match.players.set(players_in_match)
         match.save()
         brackets.append(match)
@@ -87,7 +88,7 @@ def next_round_tournaments_brackets(tournament: Tournament) -> list[Match]:
             # lobby_created, # default: the field is set to the current time
         )
         players_in_match = players[i : i + tournament.game.max_players]  # the players in the match
-        match = Match.objects.create(game=game, lobby=lobby)
+        match = Match.objects.create(game=game, lobby=lobby, date_played=tournament.start_date)
         match.players.set(players_in_match)
         match.save()
         next_round_brackets.append(match)
