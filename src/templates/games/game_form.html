@@ -4,10 +4,71 @@
   Games
 {% endblock title %}
 {% block content %}
-  <h1>Update or Create Game</h1>
-  <form method="post">
+  <h1>
+    {% if is_create %}
+      Create
+    {% else %}
+      Update
+    {% endif %}
+    Game
+  </h1>
+  <!-- Game Form -->
+  <form method="post" id="game_form">
     {% csrf_token %}
-    {{ form.as_p }}
+    <!-- Manually render each form field -->
+    {% for field in form %}
+      <div>
+        {{ field.label_tag }} {{ field }}
+        {% if field.name == 'name' and is_create %}
+          <!-- BGG Search Button (only under 'name' field in Create view) -->
+          <button type="button" id="bgg_search_button">Search on BoardGameGeek</button>
+          <!-- Container for BGG search results -->
+          <div id="bgg_search_results"></div>
+        {% endif %}
+      </div>
+      <br />
+    {% endfor %}
     <button type="submit">Save</button>
   </form>
+  <!-- AJAX script for BGG search (only in Create view) -->
+  {% if is_create %}
+    <script>
+      document.getElementById('bgg_search_button').addEventListener('click', function() {
+        var search_term = document.getElementById('id_name').value;
+        if (!search_term) return; // Do nothing if search term is empty
+
+        fetch(`/games/bgg_search_ajax/?search_term=${encodeURIComponent(search_term)}`)
+          .then(response => response.json())
+          .then(data => {
+            var results = data.games_list;
+            var resultsContainer = document.getElementById('bgg_search_results');
+            resultsContainer.innerHTML = ''; // Clear previous results
+
+            results.forEach(function(game) {
+              // Create a div for each game
+              var gameDiv = document.createElement('div');
+              gameDiv.innerHTML = `<img src="${game.image}" style="width:50px; height:50px; vertical-align:middle; margin-right: 10px;" /> <span>${game.name}</span>`;
+              gameDiv.style.cursor = 'pointer';
+              gameDiv.style.padding = '10px';
+              gameDiv.style.borderBottom = '1px solid #ddd';
+              gameDiv.style.display = 'flex';
+              gameDiv.style.alignItems = 'center';
+
+              gameDiv.addEventListener('click', function() {
+                // Autofill the form fields
+                Object.keys(game).forEach(key => {
+                  let element = document.getElementById(`id_${key}`);
+                  if (element) {
+                    element.value = game[key];
+                  }
+                });
+                resultsContainer.innerHTML = ''; // Clear results after selection
+              });
+
+              resultsContainer.appendChild(gameDiv);
+            });
+          });
+      });
+    </script>
+  {% endif %}
 {% endblock content %}
