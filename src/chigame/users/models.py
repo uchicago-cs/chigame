@@ -7,7 +7,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from chigame.users.managers import UserManager
-
+from chigame.games.models import Match, Tournament
 
 class User(AbstractUser):
     """
@@ -91,7 +91,26 @@ class GroupInvitation(models.Model):
     accepted = models.BooleanField(default=False)
     timestamp = models.DateTimeField(auto_now_add=True)
 
+class GameInvitation(models.Model):
+    """
+    An invitation to join a match of a game
+    """
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='game_invitations_sent')
+    receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='game_invitations_received')
+    match = models.ForeignKey(Match, on_delete=models.CASCADE)
+    accepted = models.BooleanField(default=False)
+    timestamp = models.DateTimeField(auto_now_add=True)
 
+class TournamentInvitation(models.Model):
+    """
+    An invitation to join a tournament
+    """
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tournament_invitations_sent')
+    receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tournament_invitations_received')
+    tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE)  
+    accepted = models.BooleanField(default=False)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    
 class NotificationQuerySet(models.QuerySet):
     def filter_by_actor(self, actor, **kwargs):
         try:
