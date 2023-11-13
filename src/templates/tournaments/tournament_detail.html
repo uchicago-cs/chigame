@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h1>{{ tournament.name }}</h1>
+  <p>Game: {{ tournament.game }}</p>
+  <p>Start date: {{ tournament.start_date }}</p>
+  <p>End date: {{ tournament.end_date }}</p>
+  <p>Max players: {{ tournament.max_players }}</p>
+  <p>Description: {{ tournament.description }}</p>
+  <p>Rules: {{ tournament.rules }}</p>
+  <p>Draw rules: {{ tournament.draw_rules }}</p>
+  <h2>Winners</h2>
+  <ul>
+    {% for winner in tournament.get_all_winners %}
+      <li>{{ winner.name }}</li>
+    {% empty %}
+      <li>No winners yet.</li>
+    {% endfor %}
+  </ul>
+  <h2>Players</h2>
+  <ul>
+    {% for player in tournament.get_all_players %}
+      <li>{{ player.name }}</li>
+    {% empty %}
+      <li>No players yet.</li>
+    {% endfor %}
+  </ul>
+{% endblock content %}

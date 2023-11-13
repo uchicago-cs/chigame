@@ -78,3 +78,9 @@ class TournamentCreateView(UserPassesTestMixin, CreateView):
 
     def test_func(self):
         return self.request.user.is_staff
+
+
+class TournamentDetailView(DetailView):
+    model = Tournament
+    template_name = "tournaments/tournament_detail.html"
+    context_object_name = "tournament"
