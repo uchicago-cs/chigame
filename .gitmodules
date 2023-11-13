@@ -1,0 +1,3 @@
+[submodule "src/sandbox/misago"]
+	path = src/sandbox/misago
+	url = https://github.com/rafalp/Misago.git
