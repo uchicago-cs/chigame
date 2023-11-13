@@ -8,10 +8,3 @@ class Migration(migrations.Migration):
         ("games", "0004_initial"),
     ]
 
-    operations = [
-        migrations.AlterField(
-            model_name="tournament",
-            name="matches",
-            field=models.ManyToManyField(blank=True, related_name="matches", to="games.match"),
-        ),
-    ]
