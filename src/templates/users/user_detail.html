@@ -3,30 +3,47 @@
 {% load static %}
 
 {% block title %}
-  User:
-  {{ object.name }}
+  My Details:
 {% endblock title %}
 {% block content %}
   <div class="container">
     <div class="row">
       <div class="col-sm-12">
-        <h2>{{ object.name }}</h2>
+        <h2>My Details:</h2>
       </div>
     </div>
     {% if object == request.user %}
       <!-- Action buttons -->
+      <style>
+        .list-item {
+          margin-bottom: 20px;
+          list-style-type: none;
+        }
+      </style>
       <div class="row">
         <div class="col-sm-12">
-          <a class="btn btn-primary" href="{% url 'users:update' %}" role="button">My Info</a>
-          <a class="btn btn-primary"
-             href="{% url 'account_email' %}"
-             role="button">E-Mail</a>
-          <!-- Your Stuff: Custom user template urls -->
+          <ul>
+            <li class="list-item">
+              User Display Name: {{ object.name }}
+              <a class="btn btn-primary" href="{% url 'users:update' %}" role="button">Update Name</a>
+            </li>
+            <li class="list-item">
+              Email: {{ object.email }}
+              <a class="btn btn-primary"
+                 href="{% url 'account_email' %}"
+                 role="button">Update E-Mail</a>
+            </li>
+            <li class="list-item">Password: {{ object.password }}</li>
+            <li class="list-item">Bio: {{ object.bio }}</li>
+            <li class="list-item">Date Joined: {{ object.date_joined }}</li>
+            <li class="list-item">Is Admin: {{ object.is_staff }}</li>
+            <li class="list-item">Friends: {{ object.friends }}</li>
+            <!-- Your Stuff: Custom user template URLs -->
+          </ul>
         </div>
       </div>
       <!-- End Action buttons -->
     {% endif %}
-
     {% if request.user.is_staff %}
       <!-- Additional content for admin -->
       <div class="row">
@@ -34,16 +51,15 @@
           <!-- Admin-specific content goes here -->
           <ul>
             {% for user in users %}
-                <li>
-                    {{ user.username }}
-                    {{ user.email }}
-                </li>
+              <li>
+                {{ user.username }}
+                {{ user.email }}
+              </li>
             {% endfor %}
-            </ul>
+          </ul>
         </div>
       </div>
       <!-- End Additional content for admin -->
     {% endif %}
-
   </div>
 {% endblock content %}
