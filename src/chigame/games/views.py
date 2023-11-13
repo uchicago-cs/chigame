@@ -66,7 +66,6 @@ def bgg_search_by_name(request):
     Returns a JsonResponse of games with their details.
     """
 
-    # Check if the request method is GET
     if request.method == "GET":
         search_term = request.GET.get("search_term")
         BGG_BASE_URL = "https://www.boardgamegeek.com/xmlapi2/"
@@ -139,6 +138,8 @@ def bgg_get_game_details(bgg_id):
         "max_playtime": details_root.find(".//maxplaytime").get("value"),
         "suggested_age": details_root.find(".//minage").get("value"),
         "complexity": rounded_complexity,  # The rounded complexity rating of the game
+        # Missing fields: category, mechanics
+        # No rules field in BGG API
     }
 
     return game_data

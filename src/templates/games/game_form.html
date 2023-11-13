@@ -37,7 +37,8 @@
         var search_term = document.getElementById('id_name').value;
         if (!search_term) return; // Do nothing if search term is empty
 
-        fetch(`/games/bgg_search_ajax/?search_term=${encodeURIComponent(search_term)}`)
+        // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent
+        fetch(`/games/bgg_search_by_name/?search_term=${encodeURIComponent(search_term)}`)
           .then(response => response.json())
           .then(data => {
             var results = data.games_list;

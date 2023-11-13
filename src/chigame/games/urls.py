@@ -9,5 +9,5 @@ urlpatterns = [
     path("create/", views.GameCreateView.as_view(), name="game-create"),
     path("<int:pk>/edit", views.GameEditView.as_view(), name="game-edit"),
     path("<int:pk>/", views.GameDetailView.as_view(), name="game-detail"),
-    path("bgg_search_ajax/", views.bgg_search_ajax, name="bgg_search_ajax"),
+    path("bgg_search_by_name/", views.bgg_search_by_name, name="bgg_search_by_name"),
 ]
