@@ -48,15 +48,17 @@ class UserRedirectView(LoginRequiredMixin, RedirectView):
 
 user_redirect_view = UserRedirectView.as_view()
 
+
 @login_required
 def user_list(request):
     users = User.objects.all()
     table = UserTable(users)
     context = {"users": users, "table": table}
 
-    ## Add information about top ranking users, total points collected, etc.
+    # Add information about top ranking users, total points collected, etc.
 
     return render(request, "users/user_list.html", context)
+
 
 @login_required
 def user_detail(request):
