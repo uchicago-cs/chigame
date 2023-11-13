@@ -4,8 +4,6 @@ This file contains the functions needed for the tournaments feature.
 
 import random
 
-from chigame.users.models import User
-
 from .models import Lobby, Match, Tournament
 
 
@@ -37,6 +35,7 @@ def create_tournaments_brackets(tournament: Tournament) -> list[Match]:
         )
         players_in_match = players[i : i + tournament.game.max_players]  # the players in the match
         match = Match.objects.create(game=game, lobby=lobby, date_played=tournament.start_date)
+        # date_played is set to the start date of the tournament for now
         match.players.set(players_in_match)
         match.save()
         brackets.append(match)
@@ -118,53 +117,3 @@ def end_tournament(tournament: Tournament) -> None:
     tournament.save()  # save the tournament to the database
 
     # Note: we don't delete the tournament because we want to keep it in the database
-
-
-def tournament_sign_up(user: User, tournament: Tournament) -> int:
-    """
-    Signs up a user for a tournament. If the user has already joined the
-    tournament, nothing happens.
-
-    Args:
-        tournament: the tournament
-        user: the user
-
-    Returns:
-        int: 0 if the user has successfully signed up for the tournament,
-        1 if the user has already joined the tournament,
-        2 if the tournament is full, 3 if the tournament has already started,
-        4 if the tournament has already ended
-    """
-    if user in tournament.players.all():
-        # The user has already joined the tournament
-        return 1
-    if tournament.players.count() >= tournament.max_players:
-        # The tournament is full
-        return 2
-    tournament.players.add(user)
-    tournament.save()
-    return 0
-
-
-def tournament_withdraw(
-    user: User,
-    tournament: Tournament,
-) -> int:
-    """
-    Withdraws a user from a tournament. If the user has not joined the
-    tournament, nothing happens.
-
-    Args:
-        tournament: the tournament
-        user: the user
-
-    Returns:
-        int: 0 if the user has successfully withdrawn from the tournament,
-        1 if the user has not joined the tournament
-    """
-    if user not in tournament.players.all():
-        # The user has not joined the tournament
-        return 1
-    tournament.players.remove(user)
-    tournament.save()
-    return 0
