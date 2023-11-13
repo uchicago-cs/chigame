@@ -68,3 +68,13 @@ class TournamentListView(ListView):
     # check if user is staff member
     def test_func(self):
         return self.request.user.is_staff
+
+
+class TournamentCreateView(UserPassesTestMixin, CreateView):
+    model = Tournament
+    fields = ["name", "game", "start_date", "end_date", "max_players", "description", "rules", "draw_rules"]
+    template_name = "tournaments/tournament_form.html"
+    success_url = reverse_lazy("tournament-list")
+
+    def test_func(self):
+        return self.request.user.is_staff

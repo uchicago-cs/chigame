@@ -2,8 +2,9 @@
 
 {% block content %}
   <h1>Tournaments</h1>
+  <a href="{% url 'tournament-create' %}">Create New Tournament</a>
   <ul>
-    {% for tournament in tournaments %}
+    {% for tournament in tournament_list %}
       <li>
         <h2>
           <a href="{% url 'tournament-detail' tournament.id %}">{{ tournament.name }}</a>
