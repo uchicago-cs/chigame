@@ -3,7 +3,7 @@ from django.urls import reverse_lazy
 from django.views.generic import CreateView, DetailView, ListView, UpdateView
 from django_tables2 import SingleTableView
 
-from .models import Game, Lobby
+from .models import Game, Lobby, Tournament
 from .tables import LobbyTable
 
 
@@ -52,6 +52,18 @@ class GameEditView(UserPassesTestMixin, UpdateView):
     # if edit is successful, redirect to that game's detail page
     def get_success_url(self):
         return reverse_lazy("game-detail", kwargs={"pk": self.kwargs["pk"]})
+
+
+class TournamentListView(ListView):
+    model = Tournament
+    queryset = Tournament.objects.prefetch_related("matches").all()
+    template_name = "tournaments/tournament_list.html"
+    context_object_name = "tournament_list"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Additional context can be added if needed
+        return context
 
     # check if user is staff member
     def test_func(self):
