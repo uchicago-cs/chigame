@@ -15,7 +15,7 @@ from .models import FriendInvitation, Notification, UserProfile
 User = get_user_model()
 
 
-class UserDetailView(UserPassesTestMixin, DetailView):
+class UserDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
     model = User
     slug_field = "id"
     slug_url_kwarg = "id"
