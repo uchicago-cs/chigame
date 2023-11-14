@@ -1,7 +1,8 @@
+from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.utils import timezone
 
-from chigame.users.models import Group, User
+from chigame.users.models import Group, Notification, User
 
 
 class Game(models.Model):
@@ -223,24 +224,57 @@ class Tournament(models.Model):
         )
 
 
-class Notification(models.Model):
+class Announcement(models.Model):
     """
-    A notification, which can be sent to multiple users.
+    An announcement, which can be sent to multiple users.
     """
 
-    recipients = models.ManyToManyField(User, related_name="notifications")
+    REMINDER = 2
+    UPCOMING_MATCH = 3
+    MATCH_PROPOSAL = 4
+
+    ANNOUNCEMENT_TYPES = (
+        (REMINDER, "REMINDER"),
+        (UPCOMING_MATCH, "UPCOMING_MATCH"),
+        (MATCH_PROPOSAL, "MATCH_PROPOSAL"),
+    )
+
+    recipients = models.ManyToManyField(User, related_name="announcements")
     content = models.TextField()
+    sender = models.ForeignKey(User, on_delete=models.CASCADE)
     timestamp = models.DateTimeField(auto_now_add=True)
-
-    # visibility: a smallPositiveIntegerField representing the visibility of
-    # the notification. This may be added later.
+    sent = models.BooleanField(default=False)
+    type = models.PositiveIntegerField(choices=ANNOUNCEMENT_TYPES)
 
     def get_all_recipients(self):
         return self.recipients.all()
 
-    def __str__(self):  # may be changed later
-        recipients_str = "&".join([str(recipient) for recipient in self.get_all_recipients()])
-        return "Notification sent to: " + recipients_str + ";\n content: " + self.content
+    def send_announcement(self):
+        for recipient in self.get_all_recipients():
+            notification = Notification.objects.create(
+                receiver=recipient,
+                message=self.content,
+                type=self.type,
+                actor_content_type=ContentType.objects.get_for_model(self.sender),
+                actor_object_id=self.sender.pk,
+            )
+            notification.save()
+        self.sent = True
+        self.save()
+
+    def is_announcement_sent(self):
+        return self.sent
+
+    def __str__(self) -> str:
+        if self.is_announcement_sent():
+            return (
+                "Announcement sent to: "
+                + "&".join([str(recipient) for recipient in self.get_all_recipients()])
+                + ";\n content: "
+                + self.content
+            )
+        else:
+            return "Announcement not sent yet. Content is: " + self.content
 
 
 class Chat(models.Model):
