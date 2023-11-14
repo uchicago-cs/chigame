@@ -1,7 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -15,13 +15,15 @@ from .models import FriendInvitation, Notification, UserProfile
 User = get_user_model()
 
 
-class UserDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
+class UserDetailView(LoginRequiredMixin, DetailView):
     model = User
     slug_field = "id"
     slug_url_kwarg = "id"
 
-    def test_func(self):
-        return self.request.user == self.get_object()
+    # In parameters, use UserPassesTestMixin and uncomment the following code to
+    # give error message if an outside user tries to access your detail view.
+    # def test_func(self):
+    # return self.request.user == self.get_object()
 
 
 user_detail_view = UserDetailView.as_view()
