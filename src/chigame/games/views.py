@@ -1,3 +1,4 @@
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.http import HttpResponseNotFound
@@ -28,7 +29,8 @@ def lobby_join(request, pk):
     joined = Lobby.objects.filter(members=request.user.id)
     print(joined, lobby)
     if lobby in joined:
-        return HttpResponseNotFound("Already joined.")
+        messages.error(request, "Already joined.")
+        return redirect(reverse("lobby-details", kwargs={"pk": lobby.id}))
     lobby.members.add(request.user)
     return redirect(reverse("lobby-details", kwargs={"pk": lobby.id}))
 
@@ -39,7 +41,8 @@ def lobby_leave(request, pk):
     joined = Lobby.objects.filter(members=request.user.id)
     print(joined, lobby)
     if lobby not in joined:
-        return HttpResponseNotFound("Haven't Joined.")
+        messages.error(request, "Haven't joined.")
+        return redirect(reverse("lobby-details", kwargs={"pk": lobby.id}))
     lobby.members.remove(request.user)
     return redirect(reverse("lobby-details", kwargs={"pk": lobby.id}))
 
