@@ -12,33 +12,33 @@ class Game(models.Model):
     # ================ BASIC INFORMATION ================
     name = models.TextField()
     description = models.TextField()
-    year_published = models.PositiveIntegerField(null=True)
+    year_published = models.PositiveIntegerField(null=True, blank=True)
 
     # NOTE:
     # Regular game images are not to be stored in the repository due to their large size.
     # It is recommended to store them externally, for instance, on a dedicated server or a
     # BLOB (Binary Large Object) storage service such as AWS S3.
-    image = models.URLField(default="/static/images/no_picture_available.png")
+    image = models.TextField(default="/static/images/no_picture_available.png")
 
     # ================ GAMEPLAY INFORMATION ================
-    rules = models.TextField(null=True)
+    rules = models.TextField(null=True, blank=True)
 
     min_players = models.PositiveIntegerField()
     max_players = models.PositiveIntegerField()
     suggested_age = models.PositiveSmallIntegerField(
-        null=True
+        null=True, blank=True
     )  # Minimum recommendable age. For example, 8+ would be stored as 8.
 
-    expected_playtime = models.PositiveIntegerField(null=True)  # In Minutes
-    min_playtime = models.PositiveIntegerField(null=True)
-    max_playtime = models.PositiveIntegerField(null=True)
+    expected_playtime = models.PositiveIntegerField(null=True, blank=True)  # In Minutes
+    min_playtime = models.PositiveIntegerField(null=True, blank=True)
+    max_playtime = models.PositiveIntegerField(null=True, blank=True)
 
-    complexity = models.PositiveSmallIntegerField(null=True)  # 1-5, 1 being the easiest
-    category = models.ManyToManyField("Category", related_name="games")
-    mechanics = models.ManyToManyField("Mechanic", related_name="games")
+    complexity = models.PositiveSmallIntegerField(null=True, blank=True)  # 1-5, 1 being the easiest
+    category = models.ManyToManyField("Category", related_name="games", blank=True)
+    mechanics = models.ManyToManyField("Mechanic", related_name="games", blank=True)
 
     # ================ OTHER ================
-    BGG_id = models.PositiveIntegerField(null=True)  # BoardGameGeek ID
+    BGG_id = models.PositiveIntegerField(null=True, blank=True)  # BoardGameGeek ID
 
     def __str__(self):
         return self.name
@@ -140,7 +140,7 @@ class Match(models.Model):
 
     game = models.ForeignKey(Game, on_delete=models.CASCADE)
     lobby = models.OneToOneField(Lobby, on_delete=models.CASCADE)
-    winners = models.ManyToManyField(User, related_name="won_matches", blank=True)
+    date_played = models.DateTimeField()
     players = models.ManyToManyField(User, through="Player")
 
 
@@ -149,8 +149,24 @@ class Player(models.Model):
     A player in a match.
     """
 
+    WIN = 0
+    DRAW = 1
+    LOSE = 2
+    WITHDRAWAL = 3
+
+    OUTCOMES = (
+        (WIN, "win"),
+        (DRAW, "draw"),
+        (LOSE, "lose"),
+        (WITHDRAWAL, "withdrawal"),
+    )
+
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     match = models.ForeignKey(Match, on_delete=models.CASCADE)
+    team = models.TextField(blank=True, null=True)
+    role = models.TextField(blank=True, null=True)
+    outcome = models.PositiveSmallIntegerField(choices=OUTCOMES, blank=True, null=True)
+    victory_type = models.TextField(blank=True, null=True)
 
 
 class MatchProposal(models.Model):
