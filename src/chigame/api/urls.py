@@ -9,7 +9,7 @@ urlpatterns = [
     # LOBBY API URLS
     path("lobbies/", views.LobbyListView.as_view(), name="api-lobby-list"),
     path("lobbies/<int:pk>/", views.LobbyDetailView.as_view(), name="api-lobby-detail"),
-
+    # USER API URLS
     path("users/", views.UserListView.as_view(), name="api-user-list"),
     path("users/<int:pk>/", views.UserDetailView.as_view(), name="api-user-detail"),
 ]
