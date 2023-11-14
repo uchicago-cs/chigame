@@ -75,6 +75,7 @@ DJANGO_APPS = [
     "django.forms",
     "rest_framework",
     "django_filters",
+    "django_tables2",
 ]
 THIRD_PARTY_APPS = [
     "crispy_forms",
