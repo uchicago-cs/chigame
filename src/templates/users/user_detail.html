@@ -33,11 +33,16 @@
                  href="{% url 'account_email' %}"
                  role="button">Update E-Mail</a>
             </li>
-            <li class="list-item">Password: {{ object.password }}</li>
-            <li class="list-item">Bio: {{ object.bio }}</li>
+            <li class="list-item">
+              Password:
+              <a class="btn btn-primary"
+                 href="{% url 'users:password_reset' %}"
+                 role="button">Reset Password</a>
+            </li>
+            <li class="list-item">Bio: {{ object.UserProfile.bio }}</li>
             <li class="list-item">Date Joined: {{ object.date_joined }}</li>
             <li class="list-item">Is Admin: {{ object.is_staff }}</li>
-            <li class="list-item">Friends: {{ object.friends }}</li>
+            <li class="list-item">Friends: {{ object.UserProfile.friends }}</li>
             <!-- Your Stuff: Custom user template URLs -->
           </ul>
         </div>

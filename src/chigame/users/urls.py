@@ -1,3 +1,4 @@
+from django.contrib.auth import views as auth_views
 from django.urls import path
 
 from chigame.users.views import (
@@ -21,4 +22,8 @@ urlpatterns = [
     path("cancel_friend_invitation/<int:pk>", view=cancel_friend_invitation, name="cancel-friend-invitation"),
     path("user-list/", views.user_list, name="user_list"),
     path("user_history/<int:pk>", views.user_history, name="user-history"),
+    path("password_reset/", auth_views.PasswordResetView.as_view(), name="password_reset"),
+    path("password_reset/done/", auth_views.PasswordResetDoneView.as_view(), name="password_reset_done"),
+    path("reset/<uidb64>/<token>/", auth_views.PasswordResetConfirmView.as_view(), name="password_reset_confirm"),
+    path("reset/done/", auth_views.PasswordResetCompleteView.as_view(), name="password_reset_complete"),
 ]
