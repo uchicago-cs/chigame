@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ("games", "0006_matches_nullable_outcome"),
+        ("games", "0008_merge_20231113_1632"),
     ]
 
     operations = [
