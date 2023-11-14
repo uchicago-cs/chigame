@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
-from chigame.games.models import Game, Lobby
+from chigame.games.models import Game, User, Lobby
+
 
 
 class GameSerializer(serializers.ModelSerializer):
@@ -24,3 +25,14 @@ class LobbySerializer(serializers.ModelSerializer):
             "time_constraint",
             "lobby_created",
         )
+
+class UserListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ("id", "name", "email")
+
+
+class UserDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ("id", "name", "email")
