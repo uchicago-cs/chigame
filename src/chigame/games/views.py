@@ -68,6 +68,7 @@ class GameEditView(UserPassesTestMixin, UpdateView):
 
 # Permission Checkers
 
+
 def staff_required(view_func):
     @wraps(view_func)
     def wrapper(request, *args, **kwargs):
@@ -77,7 +78,7 @@ def staff_required(view_func):
 
     return wrapper
 
-  
+
 class TournamentListView(ListView):
     model = Tournament
     queryset = Tournament.objects.prefetch_related("matches").all()
