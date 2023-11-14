@@ -1,7 +1,7 @@
 from django.urls import path
 
 from . import views
-from .views import LobbyListView, TournamentCreateView
+from .views import LobbyListView
 
 urlpatterns = [
     path("lobby/", LobbyListView.as_view(), name="lobby-list"),
@@ -12,6 +12,4 @@ urlpatterns = [
     path("<int:pk>/", views.GameDetailView.as_view(), name="game-detail"),
     # tournaments
     path("tournaments/", views.TournamentListView.as_view(), name="tournament-list"),
-    path("tournaments/create/", TournamentCreateView.as_view(), name="tournament-create"),
-    path("tournaments/<int:pk>/", views.TournamentDetailView.as_view(), name="tournament-detail"),
 ]
