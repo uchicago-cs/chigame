@@ -197,10 +197,9 @@ class Tournament(models.Model):
     description = models.TextField()  # not limited to 255 characters
     rules = models.TextField()  # not limited to 255 characters
     draw_rules = models.TextField()  # not limited to 255 characters
-    matches = models.ManyToManyField(Match, related_name="matches", blank=True)
+    matches = models.ManyToManyField(Match, related_name="matches")
     winners = models.ManyToManyField(User, related_name="won_tournaments", blank=True)  # allow multiple winners
-    num_winner = models.PositiveIntegerField(default=1)  # number of winners
-    players = models.ManyToManyField(User, related_name="joined_tournaments", blank=True)
+    players = models.ManyToManyField(User)
 
     def get_all_matches(self):
         return self.matches.all()

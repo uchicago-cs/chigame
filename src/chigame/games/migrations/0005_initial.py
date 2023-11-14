@@ -11,4 +11,17 @@ class Migration(migrations.Migration):
         ("games", "0004_initial"),
     ]
 
-    
+    operations = [
+        migrations.RenameField(
+            model_name="notification",
+            old_name="receipients",
+            new_name="recipients",
+        ),
+        migrations.AlterField(
+            model_name="message",
+            name="sender",
+            field=models.ForeignKey(
+                null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL
+            ),
+        ),
+    ]
