@@ -83,18 +83,6 @@ def staff_required(view_func):
     return wrapper
 
 
-class TournamentsListView(ListView):
-    model = Tournament
-    queryset = Tournament.objects.prefetch_related("matches").all()
-    template_name = "tournaments/tournament_list.html"
-    context_object_name = "tournaments"
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        # Additional context can be added if needed
-        return context
-
-
 class TournamentDetailView(DetailView):
     model = Tournament
     template_name = "tournaments/tournament_detail.html"

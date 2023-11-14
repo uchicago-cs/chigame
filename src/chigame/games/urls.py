@@ -11,7 +11,6 @@ urlpatterns = [
     path("<int:pk>/edit", views.GameEditView.as_view(), name="game-edit"),
     path("<int:pk>/", views.GameDetailView.as_view(), name="game-detail"),
     # tournaments
-    path("tournaments/", views.TournamentsListView.as_view(), name="tournament-list"),
     path("tournaments/<int:pk>/", views.TournamentDetailView.as_view(), name="tournament-detail"),
     path("tournaments/create/", views.TournamentCreateView.as_view(), name="tournament-create"),
 ]
