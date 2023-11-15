@@ -55,6 +55,10 @@ class GameEditView(UserPassesTestMixin, UpdateView):
     def get_success_url(self):
         return reverse_lazy("game-detail", kwargs={"pk": self.kwargs["pk"]})
 
+    # check if user is staff member
+    def test_func(self):
+        return self.request.user.is_staff
+
 
 class TournamentListView(ListView):
     model = Tournament
@@ -67,10 +71,6 @@ class TournamentListView(ListView):
         # Additional context can be added if needed
         return context
 
-    # check if user is staff member
-    def test_func(self):
-        return self.request.user.is_staff
-
 
 def search_results(request):
     query = request.GET.get("query")
@@ -81,7 +81,12 @@ def search_results(request):
     allows for more advanced searches. More info can be found here at
     https://docs.djangoproject.com/en/4.2/topics/db/queries/#complex-lookups-with-q-objects
     """
-    object_list = Game.objects.filter(Q(name__icontains=query) | Q(category__name__icontains=query))
+    object_list = Game.objects.filter(
+        Q(name__icontains=query)
+        | Q(category__name__icontains=query)
+        | Q(people__name__icontains=query)
+        | Q(publishers__name__icontains=query)
+    )
     context = {"query_type": "Games", "object_list": object_list}
 
     return render(request, "pages/search_results.html", context)
