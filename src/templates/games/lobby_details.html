@@ -21,4 +21,10 @@
   <ul>
     {% for member in lobby_detail.members.all %}<li>{{ member.username }}</li>{% endfor %}
   </ul>
+  <p>
+    <a href="{% url 'lobby-join' lobby_detail.pk %}">Join Lobby</a>
+  </p>
+  <p>
+    <a href="{% url 'lobby-leave' lobby_detail.pk %}">Leave Lobby</a>
+  </p>
 {% endblock content %}
