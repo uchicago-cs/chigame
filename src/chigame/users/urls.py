@@ -20,4 +20,5 @@ urlpatterns = [
     path("add_friend/<int:pk>", view=send_friend_invitation, name="add-friend"),
     path("cancel_friend_invitation/<int:pk>", view=cancel_friend_invitation, name="cancel-friend-invitation"),
     path("user-list/", views.user_list, name="user_list"),
+    path("user_history/<int:pk>", views.user_history, name="user-history"),
 ]
