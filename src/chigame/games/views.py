@@ -1,12 +1,11 @@
 import xml.etree.ElementTree as ET
 
 import requests
-
-from django.http import JsonResponse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.db.models import Q
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render, reverse
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DetailView, ListView, UpdateView
@@ -59,7 +58,6 @@ class GameEditView(UserPassesTestMixin, UpdateView):
     # check if user is staff member
     def test_func(self):
         return self.request.user.is_staff
-
 
 
 # =============== BGG Searching =================
@@ -191,8 +189,9 @@ class ViewLobbyDetails(DetailView):
     template_name = "games/lobby_details.html"
     context_object_name = "lobby_detail"
 
-    
+
 # =============== Tournament Views ===============
+
 
 class TournamentListView(ListView):
     model = Tournament
@@ -208,6 +207,7 @@ class TournamentListView(ListView):
     # check if user is staff member
     def test_func(self):
         return self.request.user.is_staff
+
 
 def search_results(request):
     query = request.GET.get("query")
