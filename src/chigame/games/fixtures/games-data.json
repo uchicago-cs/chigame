@@ -1,5 +1,21 @@
 [
 {
+    "model": "users.user",
+    "pk": 1,
+    "fields": {
+        "password": "argon2$argon2id$v=19$m=102400,t=2,p=8$Zzk2ZjFCTXl4RlJmOW1VU1JHa3QxZA$tiaFDXObRmwzYoVytjyCGFVfJnoqp1uYUOvCVUsUHpY",
+        "last_login": null,
+        "is_superuser": true,
+        "is_staff": true,
+        "is_active": true,
+        "date_joined": "2023-10-30T03:15:43.052Z",
+        "name": "",
+        "email": "admin@example.com",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
     "model": "games.game",
     "pk": 1,
     "fields": {
