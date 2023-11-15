@@ -76,6 +76,16 @@ class FriendInvitation(models.Model):
     accepted = models.BooleanField(default=False)
     timestamp = models.DateTimeField(auto_now_add=True)
 
+    def accept_invitation(self):
+        sender = self.sender
+        sender_profile = UserProfile.objects.get(user__pk=sender.pk)
+        receiver = self.receiver
+        receiver_profile = UserProfile.objects.get(user__pk=receiver.pk)
+        sender_profile.friends.add(receiver)
+        receiver_profile.friends.add(sender)
+        self.accepted = True
+        self.save()
+
 
 class Group(models.Model):
     """
