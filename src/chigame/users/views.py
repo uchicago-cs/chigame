@@ -67,6 +67,9 @@ def user_list(request):
 def user_detail(request):
     users = User.objects.all()
 
+    # Shows a user detail page if logged in as a user
+    # Shows a list of all users if logged in as admin
+
     return render(request, "users/user_detail.html", {"users": users})
 
 
