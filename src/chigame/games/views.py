@@ -5,6 +5,7 @@ from django_tables2 import SingleTableView
 
 from .models import Game, Lobby, Tournament
 from .tables import LobbyTable
+from .filter import LobbyFilter
 
 
 class GameListView(ListView):
@@ -13,10 +14,16 @@ class GameListView(ListView):
     template_name = "games/game_list.html"
 
 
-class LobbyListView(SingleTableView):
-    model = Lobby
-    table_class = LobbyTable
-    template_name = "games/lobby_list.html"
+#class LobbyListView(SingleTableView):
+#    model = Lobby
+#    table_class = LobbyTable
+#    template_name = "games/lobby_list.html"
+def lobby_list(request):
+    querysert = Lobby.objects.all()
+    filter = LobbyFilter(request.GET, quesryset=queryset)
+    table = LobbyTable(filter.qs)
+
+    return render(request, "games/lobby_list.html", {'table': table, 'filter': filter})
 
 
 class ViewLobbyDetails(DetailView):
