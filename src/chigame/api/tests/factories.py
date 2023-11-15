@@ -29,14 +29,24 @@ class GameFactory(DjangoModelFactory):
     year_published = Faker("pyint", min_value=1900, max_value=2023)
 
     rules = Faker("text", max_nb_chars=1000)
+
     min_players = Faker("pyint", min_value=1, max_value=10)
     max_players = Faker("pyint", min_value=1, max_value=10)
 
+    # Ensures min_players is not greater than max_players
+    if min_players > max_players:
+        min_players, max_players = max_players, min_players
+
     suggested_age = Faker("pyint", min_value=1, max_value=18)
 
-    expected_playtime = Faker("pyint", min_value=1, max_value=1000)
     min_playtime = Faker("pyint", min_value=1, max_value=1000)
     max_playtime = Faker("pyint", min_value=1, max_value=1000)
+
+    # Ensure min_playtime is not greater than max_playtime
+    if min_playtime > max_playtime:
+        min_playtime, max_playtime = max_playtime, min_playtime
+
+    expected_playtime = Faker("pyint", min_value=min_playtime, max_value=max_playtime)
 
     complexity = Faker("pyint", min_value=1, max_value=5)
 
