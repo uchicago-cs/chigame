@@ -1,7 +1,11 @@
 from functools import wraps
 
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
+from django.db.models import Q
+from django.shortcuts import get_object_or_404, redirect, render, reverse
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views.generic import CreateView, DetailView, ListView, UpdateView
@@ -21,6 +25,30 @@ class LobbyListView(SingleTableView):
     model = Lobby
     table_class = LobbyTable
     template_name = "games/lobby_list.html"
+
+
+@login_required
+def lobby_join(request, pk):
+    lobby = get_object_or_404(Lobby, pk=pk)
+    joined = Lobby.objects.filter(members=request.user.id)
+    print(joined, lobby)
+    if lobby in joined:
+        messages.error(request, "Already joined.")
+        return redirect(reverse("lobby-details", kwargs={"pk": lobby.id}))
+    lobby.members.add(request.user)
+    return redirect(reverse("lobby-details", kwargs={"pk": lobby.id}))
+
+
+@login_required
+def lobby_leave(request, pk):
+    lobby = get_object_or_404(Lobby, pk=pk)
+    joined = Lobby.objects.filter(members=request.user.id)
+    print(joined, lobby)
+    if lobby not in joined:
+        messages.error(request, "Haven't joined.")
+        return redirect(reverse("lobby-details", kwargs={"pk": lobby.id}))
+    lobby.members.remove(request.user)
+    return redirect(reverse("lobby-details", kwargs={"pk": lobby.id}))
 
 
 class ViewLobbyDetails(DetailView):
@@ -58,22 +86,6 @@ class GameEditView(UserPassesTestMixin, UpdateView):
         return reverse_lazy("game-detail", kwargs={"pk": self.kwargs["pk"]})
 
 
-class TournamentListView(ListView):
-    model = Tournament
-    queryset = Tournament.objects.prefetch_related("matches").all()
-    template_name = "tournaments/tournament_list.html"
-    context_object_name = "tournament_list"
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        # Additional context can be added if needed
-        return context
-
-    # check if user is staff member
-    def test_func(self):
-        return self.request.user.is_staff
-
-
 # Tournaments
 
 
@@ -93,6 +105,22 @@ def staff_required(view_func):
         return view_func(request, *args, **kwargs)
 
     return wrapper
+
+
+class TournamentListView(ListView):
+    model = Tournament
+    queryset = Tournament.objects.prefetch_related("matches").all()
+    template_name = "tournaments/tournament_list.html"
+    context_object_name = "tournament_list"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Additional context can be added if needed
+        return context
+
+    # check if user is staff member
+    def test_func(self):
+        return self.request.user.is_staff
 
 
 class TournamentDetailView(DetailView):
@@ -125,3 +153,18 @@ class TournamentCreateView(CreateView):
 
     def get_success_url(self):
         return reverse_lazy("tournament-detail", kwargs={"pk": self.object.pk})
+
+
+def search_results(request):
+    query = request.GET.get("query")
+
+    """
+    The Q object is an object used to encapsulate a collection of keyword
+    arguments that can be combined with logical operators (&, |, ~) which
+    allows for more advanced searches. More info can be found here at
+    https://docs.djangoproject.com/en/4.2/topics/db/queries/#complex-lookups-with-q-objects
+    """
+    object_list = Game.objects.filter(Q(name__icontains=query) | Q(category__name__icontains=query))
+    context = {"query_type": "Games", "object_list": object_list}
+
+    return render(request, "pages/search_results.html", context)
