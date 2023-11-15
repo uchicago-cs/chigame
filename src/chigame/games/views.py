@@ -1,7 +1,8 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import UserPassesTestMixin
-from django.shortcuts import get_object_or_404, redirect, reverse
+from django.shortcuts import get_object_or_404, redirect, reverse, render
+from django.db.models import Q
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DetailView, ListView, UpdateView
 from django_tables2 import SingleTableView
@@ -95,3 +96,18 @@ class TournamentListView(ListView):
     # check if user is staff member
     def test_func(self):
         return self.request.user.is_staff
+
+
+def search_results(request):
+    query = request.GET.get("query")
+
+    """
+    The Q object is an object used to encapsulate a collection of keyword
+    arguments that can be combined with logical operators (&, |, ~) which
+    allows for more advanced searches. More info can be found here at
+    https://docs.djangoproject.com/en/4.2/topics/db/queries/#complex-lookups-with-q-objects
+    """
+    object_list = Game.objects.filter(Q(name__icontains=query) | Q(category__name__icontains=query))
+    context = {"query_type": "Games", "object_list": object_list}
+
+    return render(request, "pages/search_results.html", context)
