@@ -10,6 +10,7 @@ urlpatterns = [
     path("create/", views.GameCreateView.as_view(), name="game-create"),
     path("<int:pk>/edit", views.GameEditView.as_view(), name="game-edit"),
     path("<int:pk>/", views.GameDetailView.as_view(), name="game-detail"),
+    path("search/", views.search_results, name="game-search-results"),
     # tournaments
     path("tournaments/", views.TournamentListView.as_view(), name="tournament-list"),
 ]
