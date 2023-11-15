@@ -1,6 +1,8 @@
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.db.models import Q
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, redirect, render, reverse
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DetailView, ListView, UpdateView
 from django_tables2 import SingleTableView
@@ -19,6 +21,30 @@ class LobbyListView(SingleTableView):
     model = Lobby
     table_class = LobbyTable
     template_name = "games/lobby_list.html"
+
+
+@login_required
+def lobby_join(request, pk):
+    lobby = get_object_or_404(Lobby, pk=pk)
+    joined = Lobby.objects.filter(members=request.user.id)
+    print(joined, lobby)
+    if lobby in joined:
+        messages.error(request, "Already joined.")
+        return redirect(reverse("lobby-details", kwargs={"pk": lobby.id}))
+    lobby.members.add(request.user)
+    return redirect(reverse("lobby-details", kwargs={"pk": lobby.id}))
+
+
+@login_required
+def lobby_leave(request, pk):
+    lobby = get_object_or_404(Lobby, pk=pk)
+    joined = Lobby.objects.filter(members=request.user.id)
+    print(joined, lobby)
+    if lobby not in joined:
+        messages.error(request, "Haven't joined.")
+        return redirect(reverse("lobby-details", kwargs={"pk": lobby.id}))
+    lobby.members.remove(request.user)
+    return redirect(reverse("lobby-details", kwargs={"pk": lobby.id}))
 
 
 class ViewLobbyDetails(DetailView):
