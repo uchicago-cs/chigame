@@ -26,7 +26,7 @@ class Game(models.Model):
 
     min_players = models.PositiveIntegerField()
     max_players = models.PositiveIntegerField()
-    
+
     suggested_age = models.PositiveSmallIntegerField(
         null=True, blank=True
     )  # Minimum recommendable age. For example, 8+ would be stored as 8.
@@ -36,7 +36,7 @@ class Game(models.Model):
     max_playtime = models.PositiveIntegerField(null=True, blank=True)
 
     complexity = models.DecimalField(max_digits=3, decimal_places=2, null=True)  # 1-5, 1 being the easiest
-    
+
     category = models.ManyToManyField("Category", related_name="games", blank=True)
     mechanics = models.ManyToManyField("Mechanic", related_name="games", blank=True)
 
