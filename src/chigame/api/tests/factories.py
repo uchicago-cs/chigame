@@ -1,4 +1,6 @@
-from factory import Faker, post_generation
+import random
+
+from factory import Faker, LazyAttribute, post_generation
 from factory.django import DjangoModelFactory
 
 from chigame.games.models import Category, Game, Mechanic
@@ -31,22 +33,17 @@ class GameFactory(DjangoModelFactory):
     rules = Faker("text", max_nb_chars=1000)
 
     min_players = Faker("pyint", min_value=1, max_value=10)
-    max_players = Faker("pyint", min_value=1, max_value=10)
 
-    # Ensures min_players is not greater than max_players
-    if min_players > max_players:
-        min_players, max_players = max_players, min_players
+    # LazyAttribute allows setting a field's value based on other fields at runtime.
+    # In this case, we want max_players to be at least min_players, but no more than 10.
+    max_players = LazyAttribute(lambda x: random.randint(x.min_players, 10))
 
     suggested_age = Faker("pyint", min_value=1, max_value=18)
 
-    min_playtime = Faker("pyint", min_value=1, max_value=1000)
-    max_playtime = Faker("pyint", min_value=1, max_value=1000)
-
     # Ensure min_playtime is not greater than max_playtime
-    if min_playtime > max_playtime:
-        min_playtime, max_playtime = max_playtime, min_playtime
-
-    expected_playtime = Faker("pyint", min_value=min_playtime, max_value=max_playtime)
+    min_playtime = Faker("pyint", min_value=1, max_value=1000)
+    max_playtime = LazyAttribute(lambda x: random.randint(x.min_playtime, 1000))
+    expected_playtime = LazyAttribute(lambda x: random.randint(x.min_playtime, x.max_playtime))
 
     complexity = Faker("pyint", min_value=1, max_value=5)
 
