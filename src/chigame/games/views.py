@@ -1,13 +1,19 @@
 import xml.etree.ElementTree as ET
 
 import requests
-from django.contrib.auth.mixins import UserPassesTestMixin
+
 from django.http import JsonResponse
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import UserPassesTestMixin
+from django.db.models import Q
+from django.shortcuts import get_object_or_404, redirect, render, reverse
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DetailView, ListView, UpdateView
 from django_tables2 import SingleTableView
 
-from .models import Game, Lobby
+from .forms import GameForm
+from .models import Game, Lobby, Tournament
 from .tables import LobbyTable
 
 
@@ -26,7 +32,7 @@ class GameDetailView(DetailView):
 
 class GameCreateView(UserPassesTestMixin, CreateView):
     model = Game
-    fields = "__all__"
+    form_class = GameForm
     template_name = "games/game_form.html"
     success_url = reverse_lazy("game-list")  # URL to redirect after successful creation
 
@@ -42,7 +48,7 @@ class GameCreateView(UserPassesTestMixin, CreateView):
 
 class GameEditView(UserPassesTestMixin, UpdateView):
     model = Game
-    fields = "__all__"  # include all fields in form
+    form_class = GameForm
     template_name = "games/game_form.html"
     raise_exception = True  # if user is not staff member, raise exception
 
@@ -53,6 +59,7 @@ class GameEditView(UserPassesTestMixin, UpdateView):
     # check if user is staff member
     def test_func(self):
         return self.request.user.is_staff
+
 
 
 # =============== BGG Searching =================
@@ -155,7 +162,63 @@ class LobbyListView(SingleTableView):
     template_name = "games/lobby_list.html"
 
 
+@login_required
+def lobby_join(request, pk):
+    lobby = get_object_or_404(Lobby, pk=pk)
+    joined = Lobby.objects.filter(members=request.user.id)
+    print(joined, lobby)
+    if lobby in joined:
+        messages.error(request, "Already joined.")
+        return redirect(reverse("lobby-details", kwargs={"pk": lobby.id}))
+    lobby.members.add(request.user)
+    return redirect(reverse("lobby-details", kwargs={"pk": lobby.id}))
+
+
+@login_required
+def lobby_leave(request, pk):
+    lobby = get_object_or_404(Lobby, pk=pk)
+    joined = Lobby.objects.filter(members=request.user.id)
+    print(joined, lobby)
+    if lobby not in joined:
+        messages.error(request, "Haven't joined.")
+        return redirect(reverse("lobby-details", kwargs={"pk": lobby.id}))
+    lobby.members.remove(request.user)
+    return redirect(reverse("lobby-details", kwargs={"pk": lobby.id}))
+
+
 class ViewLobbyDetails(DetailView):
     model = Lobby
     template_name = "games/lobby_details.html"
     context_object_name = "lobby_detail"
+
+    
+# =============== Tournament Views ===============
+
+class TournamentListView(ListView):
+    model = Tournament
+    queryset = Tournament.objects.prefetch_related("matches").all()
+    template_name = "tournaments/tournament_list.html"
+    context_object_name = "tournament_list"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Additional context can be added if needed
+        return context
+
+    # check if user is staff member
+    def test_func(self):
+        return self.request.user.is_staff
+
+def search_results(request):
+    query = request.GET.get("query")
+
+    """
+    The Q object is an object used to encapsulate a collection of keyword
+    arguments that can be combined with logical operators (&, |, ~) which
+    allows for more advanced searches. More info can be found here at
+    https://docs.djangoproject.com/en/4.2/topics/db/queries/#complex-lookups-with-q-objects
+    """
+    object_list = Game.objects.filter(Q(name__icontains=query) | Q(category__name__icontains=query))
+    context = {"query_type": "Games", "object_list": object_list}
+
+    return render(request, "pages/search_results.html", context)
