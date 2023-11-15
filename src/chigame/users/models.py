@@ -2,6 +2,7 @@ import django.db.models as models
 from django.contrib.auth.models import AbstractUser
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
+from django.core.validators import MaxValueValidator
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -22,6 +23,7 @@ class User(AbstractUser):
     last_name = None  # type: ignore
     email = models.EmailField(_("email address"), unique=True)
     username = None  # type: ignore
+    tokens = models.PositiveSmallIntegerField(validators=[MaxValueValidator(3)], default=1)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
@@ -36,6 +38,12 @@ class User(AbstractUser):
 
         """
         return reverse("users:detail", kwargs={"pk": self.id})
+
+    def save(self, *args, **kwargs):
+        if self.tokens > 3:
+            self.tokens = 3
+
+        super().save(*args, **kwargs)
 
 
 class UserProfile(models.Model):
