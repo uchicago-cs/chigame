@@ -1,7 +1,8 @@
+from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.utils import timezone
 
-from chigame.users.models import Group, User
+from chigame.users.models import Group, Notification, User
 
 
 class Game(models.Model):
@@ -12,33 +13,33 @@ class Game(models.Model):
     # ================ BASIC INFORMATION ================
     name = models.TextField()
     description = models.TextField()
-    year_published = models.PositiveIntegerField(null=True)
+    year_published = models.PositiveIntegerField(null=True, blank=True)
 
     # NOTE:
     # Regular game images are not to be stored in the repository due to their large size.
     # It is recommended to store them externally, for instance, on a dedicated server or a
     # BLOB (Binary Large Object) storage service such as AWS S3.
-    image = models.URLField(default="/static/images/no_picture_available.png")
+    image = models.TextField(default="/static/images/no_picture_available.png")
 
     # ================ GAMEPLAY INFORMATION ================
-    rules = models.TextField(null=True)
+    rules = models.TextField(null=True, blank=True)
 
     min_players = models.PositiveIntegerField()
     max_players = models.PositiveIntegerField()
     suggested_age = models.PositiveSmallIntegerField(
-        null=True
+        null=True, blank=True
     )  # Minimum recommendable age. For example, 8+ would be stored as 8.
 
-    expected_playtime = models.PositiveIntegerField(null=True)  # In Minutes
-    min_playtime = models.PositiveIntegerField(null=True)
-    max_playtime = models.PositiveIntegerField(null=True)
+    expected_playtime = models.PositiveIntegerField(null=True, blank=True)  # In Minutes
+    min_playtime = models.PositiveIntegerField(null=True, blank=True)
+    max_playtime = models.PositiveIntegerField(null=True, blank=True)
 
-    complexity = models.PositiveSmallIntegerField(null=True)  # 1-5, 1 being the easiest
-    category = models.ManyToManyField("Category", related_name="games")
-    mechanics = models.ManyToManyField("Mechanic", related_name="games")
+    complexity = models.PositiveSmallIntegerField(null=True, blank=True)  # 1-5, 1 being the easiest
+    category = models.ManyToManyField("Category", related_name="games", blank=True)
+    mechanics = models.ManyToManyField("Mechanic", related_name="games", blank=True)
 
     # ================ OTHER ================
-    BGG_id = models.PositiveIntegerField(null=True)  # BoardGameGeek ID
+    BGG_id = models.PositiveIntegerField(null=True, blank=True)  # BoardGameGeek ID
 
     def __str__(self):
         return self.name
@@ -223,24 +224,57 @@ class Tournament(models.Model):
         )
 
 
-class Notification(models.Model):
+class Announcement(models.Model):
     """
-    A notification, which can be sent to multiple users.
+    An announcement, which can be sent to multiple users.
     """
 
-    recipients = models.ManyToManyField(User, related_name="notifications")
+    REMINDER = 2
+    UPCOMING_MATCH = 3
+    MATCH_PROPOSAL = 4
+
+    ANNOUNCEMENT_TYPES = (
+        (REMINDER, "REMINDER"),
+        (UPCOMING_MATCH, "UPCOMING_MATCH"),
+        (MATCH_PROPOSAL, "MATCH_PROPOSAL"),
+    )
+
+    recipients = models.ManyToManyField(User, related_name="announcements")
     content = models.TextField()
+    sender = models.ForeignKey(User, on_delete=models.CASCADE)
     timestamp = models.DateTimeField(auto_now_add=True)
-
-    # visibility: a smallPositiveIntegerField representing the visibility of
-    # the notification. This may be added later.
+    sent = models.BooleanField(default=False)
+    type = models.PositiveIntegerField(choices=ANNOUNCEMENT_TYPES)
 
     def get_all_recipients(self):
         return self.recipients.all()
 
-    def __str__(self):  # may be changed later
-        recipients_str = "&".join([str(recipient) for recipient in self.get_all_recipients()])
-        return "Notification sent to: " + recipients_str + ";\n content: " + self.content
+    def send_announcement(self):
+        for recipient in self.get_all_recipients():
+            notification = Notification.objects.create(
+                receiver=recipient,
+                message=self.content,
+                type=self.type,
+                actor_content_type=ContentType.objects.get_for_model(self.sender),
+                actor_object_id=self.sender.pk,
+            )
+            notification.save()
+        self.sent = True
+        self.save()
+
+    def is_announcement_sent(self):
+        return self.sent
+
+    def __str__(self) -> str:
+        if self.is_announcement_sent():
+            return (
+                "Announcement sent to: "
+                + "&".join([str(recipient) for recipient in self.get_all_recipients()])
+                + ";\n content: "
+                + self.content
+            )
+        else:
+            return "Announcement not sent yet. Content is: " + self.content
 
 
 class Chat(models.Model):
