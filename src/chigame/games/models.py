@@ -52,18 +52,17 @@ class Game(models.Model):
         if self.min_players and self.max_players and self.min_players > self.max_players:
             raise ValidationError({"min_players": "min_players cannot be greater than max_players"})
 
-        # Ensures min_playtime is not greater than max_playtime and that expected_playtime is in this range if provided
+        # Validate playtime constraints for all combinations of min_playtime, max_playtime, and expected_playtime
         if self.min_playtime is not None and self.max_playtime is not None:
-            if self.expected_playtime is not None:
-                # Ensures that the expected_playtime is within the range of min_playtime and max_playtime
-                if not (self.min_playtime <= self.expected_playtime <= self.max_playtime):
-                    raise ValidationError(
-                        {"expected_playtime": "expected_playtime must be between min_playtime and max_playtime"}
-                    )
-            else:
-                # Ensure min_playtime is not greater than max_playtime in case where expected_playtime is not provided
-                if self.min_playtime > self.max_playtime:
-                    raise ValidationError({"min_playtime": "min_playtime cannot be greater than max_playtime"})
+            if self.min_playtime > self.max_playtime:
+                raise ValidationError({"min_playtime": "min_playtime cannot be greater than max_playtime"})
+
+        if self.expected_playtime is not None:
+            if self.min_playtime is not None and self.expected_playtime < self.min_playtime:
+                raise ValidationError({"expected_playtime": "expected_playtime cannot be less than min_playtime"})
+
+            if self.max_playtime is not None and self.expected_playtime > self.max_playtime:
+                raise ValidationError({"expected_playtime": "expected_playtime cannot be greater than max_playtime"})
 
     def save(self, *args, **kwargs):
         # Calls full_clean to run all validations before saving
