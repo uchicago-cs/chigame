@@ -1,4 +1,5 @@
 {% load static i18n %}
+{% load tags %}
 
 <!DOCTYPE html>
 {% get_current_language as LANGUAGE_CODE %}
@@ -25,6 +26,9 @@
       <!-- Your stuff: Third-party CSS libraries go here -->
       <!-- This file stores project-specific CSS -->
       <link href="{% static 'css/project.css' %}" rel="stylesheet" />
+      <link href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/themes/ui-lightness/jquery-ui.css"
+            rel="stylesheet"
+            type="text/css" />
     {% endblock css %}
     <!-- Le javascript
     ================================================== -->
@@ -39,6 +43,8 @@
       <!-- Your stuff: Third-party javascript libraries go here -->
       <!-- place project specific Javascript in this file -->
       <script defer src="{% static 'js/project.js' %}"></script>
+      <script src= "https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.js"></script>
+      <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.js"></script>
     {% endblock javascript %}
   </head>
   <body>
@@ -143,6 +149,30 @@
               search_bar.action = "{% url 'game-search-results' %}";
             } else if (query_type.value == "users") {
               search_bar.action = "{% url 'home' %}"; // placeholder
+            }
+          });
+        });
+      </script>
+      <script>
+        document.addEventListener('DOMContentLoaded', function() {
+          {
+            %
+            get_games as games %
+          }
+          var game_names = [{
+            %
+            for game in games %
+          } {
+            url: "{% url 'game-detail' pk=game.pk %}",
+            label: "{{game.name}}"
+          }, {
+            %
+            endfor %
+          }];
+          $("#query").autocomplete({
+            source: game_names,
+            select: function(event, ui) {
+              window.location.href = ui.item.url;
             }
           });
         });
