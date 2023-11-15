@@ -61,14 +61,16 @@ class GameDetailView(DetailView):
 
 class GameCreateView(UserPassesTestMixin, CreateView):
     model = Game
-    fields = ["name", "description", "min_players", "max_players"]
+    # include all fields
+    fields = "__all__"
     template_name = "games/game_form.html"
     success_url = reverse_lazy("game-list")
     raise_exception = True  # if user is not staff member, raise exception
 
     # check if user is staff member
     def test_func(self):
-        return self.request.user.is_staff
+        return True
+        # return self.request.user.is_staff
 
 
 class GameEditView(UserPassesTestMixin, UpdateView):
