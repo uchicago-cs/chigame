@@ -24,6 +24,7 @@ class UserFriendsAPIView(generics.RetrieveAPIView):
         user_profile = UserProfile.objects.get(user=user_id)
         return user_profile.friends.all()
 
+
 class LobbyListView(generics.ListCreateAPIView):
     queryset = Lobby.objects.all()
     serializer_class = LobbySerializer
