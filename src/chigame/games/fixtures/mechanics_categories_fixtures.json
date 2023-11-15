@@ -1,6 +1,7 @@
 [
     {
         "model": "games.mechanic",
+        "pk": 1,
         "fields": {
             "name": "Acting",
             "description": "Games with the Acting mechanic require players to use some form of mime or mimicry to communicate with the other players.\n\nCharades is probably the poster child for this mechanic, where one member of a team must use non-verbal clues to allow the other members to guess the solution.",
@@ -9,6 +10,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 2,
         "fields": {
             "name": "Action Drafting",
             "description": "Players select from an assortment of Actions in a shared pool. The available Actions are limited in quantity, and once a player has chosen an Action it may not be chosen again.\n\nNOTE: Worker Placement is a subset of this category, and games with that mechanism should be placed in that category instead.",
@@ -17,6 +19,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 3,
         "fields": {
             "name": "Action Points",
             "description": "A player receives a number of Action Points or Operation Points on their turn. They may spend them on a variety of Actions.\n\nThe earliest example of a game listed on Boardgamegeek that uses AP's is Special Train (1948).\n\nMicrobadge\n\n Action point games fan",
@@ -25,6 +28,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 4,
         "fields": {
             "name": "Action Queue",
             "description": "Players create Action Queues and perform them in sequence. Queues can either be &quot;Batch&quot; queues, where all actions are executed in sequence, or &quot;Rolling&quot; queues where actions are added to the end of the Queue, and the first action is then executed.  Players may each have their own queue of actions, or there may be a shared action queue.\n\nNuclear War is an example of a Rolling queue. Colt Express is an example of a Batch queue. Impulse utilizes a shared rolling queue.\n\nSome games utilize a fixed action queue printed to the board, such as in Bus and Dominant Species.\n\nAn Action Queue that is only for movement actions is called Programmed Movement, which has a separate entry.",
@@ -33,6 +37,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 5,
         "fields": {
             "name": "Action Retrieval",
             "description": "Each player has a set of Actions available to them, embodied in cards, tokens, or some other affordance. Once performed, they are spent and may not be performed again until retrieved. Action Retrieval typically is itself an Action, or may take an entire turn.",
@@ -41,6 +46,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 6,
         "fields": {
             "name": "Action Timer",
             "description": "Players place owned timers on action spaces and pieces and take an action. When the timer runs out, it may be moved to another location to take that action. There are no turns -; players may move their own timers any time after they have expired.",
@@ -49,6 +55,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 7,
         "fields": {
             "name": "Action/Event",
             "description": "On their turn, the player plays a card that shows Action Points and an Event. They must choose to either use the Action Points or perform the Event. If they choose to use Action Points, typically the Event may be performed by another player.",
@@ -57,6 +64,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 8,
         "fields": {
             "name": "Advantage Token",
             "description": "One player has a token that permits them to do a special Action, or modify an Action. Once used, the token passes to another player.\n\nFirst used in Storm over Arnhem, this mechanism has been used to great impact in many games since, notably as The China Card in Twilight Struggle.",
@@ -65,6 +73,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 9,
         "fields": {
             "name": "Alliances",
             "description": "Players have formal relationships that may change over the course of the game.\n\nThis differs from Negotiation in that these relationships are governed by specific game rules. For example, in Dune, players may form alliances at each Nexus phase, which last until the next Nexus. During that time the players win together, may not attack each other, and grant their ally a special power. In Struggle of Empires players bid for the right to select their ally for that round, which is governed by similar rules.\n\nIf players are allied as partners for the entire game, and win or lose together, it is instead a Team-Based Game.",
@@ -73,6 +82,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 10,
         "fields": {
             "name": "Area Majority / Influence",
             "description": "Multiple players may occupy a space and gain benefits based on their proportional presence in the space.\n\nIn El Grande, for instance, players earn their score in a region by having the most caballeros in that region.\n\nFor an overview and discussion of popular games with this mechanic, see: Area Control Games: Your favourites and why\n\nMicrobadges\n\n Area Control Games fan\n\n Area Majority Games fan",
@@ -81,6 +91,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 11,
         "fields": {
             "name": "Area Movement",
             "description": "The game board is divided into irregularly shaped areas to determine adjacency and movement.\n\nThis can be contrasted to point to point movement (which is isomorphic) and grid movement (which uses regular shapes).",
@@ -89,6 +100,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 12,
         "fields": {
             "name": "Area-Impulse",
             "description": "Players subdivide turns into impulses alternating between players which repeat until both players pass (or in some cases a sunset die roll ends the impulses catching one or both players off guard).  In those impulses a group of units is once activated or gets to act collectively before being marked spent. However instead of the activated units being grouped by a certain radius from a leader the units activated are in an area (and thus the need for the impulse system to have areas, not hexes).  The areas exist to define scope of activation on an impulse (as well as restrict what can be done on that impulse with respect to attack and movement range). Thus each of a players groups of units each acts once by means of small alternating impulses instead of the traditional all my units then all your units. Finally, before the next turn of impulses, spent units are reset and regain the ability to act.\n\nHistorically this began with Storm Over Arnhem (1981) part of the Series: Storm Over area impulse",
@@ -97,6 +109,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 13,
         "fields": {
             "name": "Auction Compensation",
             "description": "Losing bidders in an auction receive a lesser award in place of the lot they bid on.",
@@ -105,6 +118,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 14,
         "fields": {
             "name": "Auction: Dexterity",
             "description": "A Dexterity Auction requires performance of some act of dexterity to submit a valid bid. Typically, this would involve the bid marker itself being placed into some valid bidding area, but other methods for implementing this may be used.\n\nFor example, in Going, Going, GONE!, players place tokens in cups in real time to represent their bid.",
@@ -113,6 +127,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 15,
         "fields": {
             "name": "Auction: Dutch",
             "description": "A simultaneous single-bid system in which the lot starts at a very high price, and then is gradually decreased by the auctioneer or other controlling mechanism, until someone agrees to claim the item at its current price, ending the auction. The first bidder to accept the current price is the winner, such that there are no ties. A Dutch Auction is sometimes also called a one-bid auction because of this feature that the first bid made is also the only bid in the auction.\n\nThe purest implementation of this is Merchants of Amsterdam, which features a spring-load mechanism that gradually reduces the price until someone hits it, winning the bid.\n\nThis category also includes the mechanism where items slide down a track, with the cost decreasing as it does so. This is a common implementation of Open Drafting such as in Through the Ages: A Story of Civilization. An alternative but logically equivalent process is Increase Value of Unchosen Resources.",
@@ -121,6 +136,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 16,
         "fields": {
             "name": "Auction: Dutch Priority",
             "description": "A Dutch Priority Auction is a multiple-lot auction in which prices for the lots are determined based on the number of bids placed on the lots up for bid. The winning bidder is the first player, in bid priority, who chooses to pay the current price for a lot, which is equal to the number of bidding tokens there. Priority may be determined by a variety of factors, including global turn order or turn order for each lot based on order of bid placement. Players may typically pass on the purchase when they are the priority bidder by removing their bidding token. This has the effect of reducing the price for the lot by one.\n\nThe Speicherstadt introduced this mechanism. In that, players place meeples one at a time on different lots to be bid on. After all meeples are placed, each lot is evaluated. The player with the first meeple placed on a lot may purchase it, but must pay a price equal to the total number of meeples. If they cannot or will not purchase it, they take their meeple back, and the next meeple in line may purchase, now at $1 less.\n\nThis opens up lots of opportunity for counterplay and brinkmanship in a relatively simple system.",
@@ -129,6 +145,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 17,
         "fields": {
             "name": "Auction: English",
             "description": "An auctioneer asks for bids of a certain amount and players indicate their willingness to bid at that amount, usually by holding up a hand or paddle, or by calling out. Players are permitted to adjust the increment of the bid, usually by shouting out their actual bid, though this is done infrequently, and usually either to indicate a smaller increment than the auctioneer requests, or a much larger one. When a certain amount of time with no increases occurs, or it is clear that no one wishes to raise the current bid, the auctioneer declares that the high bidder is the winner.",
@@ -137,6 +154,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 18,
         "fields": {
             "name": "Auction: Fixed Placement",
             "description": "Fixed Placement is a meta-mechanism that modifies a multiple-lot auction by creating rules about which lots players may bid on, and representing bids visually on a board or cards. It is often combined with constrained-value bids. A Fixed-Placement auction ends when every player passes and/or no player has the right to bid further. The highest bidder for each lot wins the lot.\n\nGood examples of this mechanism are in Amun-Re and Vegas Showdown. In these games, there is a track below each lot up for auction. Each player places a marker on the lot they are interested in, at the value they want to pay. If another player wants to bid on that lot they do it by placing their bid marker on a space higher than the current bidder. The outbid player retrieves their bid token, and may place it on the same lot at a higher price, or another lot.\n\nWhen all players have placed their token, the bids are resolved.",
@@ -145,6 +163,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 19,
         "fields": {
             "name": "Auction: Multiple Lot",
             "description": "An auction in which players simultaneously bid on Multiple Lots in parallel, instead of bidding for one lot at a time serially. The actual format of the auction can follow any of the auction mechanisms.\n\nFor example, in Revolution! players perform a simultaneous Sealed Bid Auction on 12 different actions.",
@@ -153,6 +172,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 20,
         "fields": {
             "name": "Auction: Once Around",
             "description": "The players each have one opportunity to bid, either passing or raising the prior bidder. The order of bids is determined by one of the Turn Order structures. After the last player has their opportunity to bid, the high bidder wins.\n\nAlthough this helps shorten the auction (as increasing game length is a pitfall of including auctions), it strongly favors the last player to bid, as they know what their winning bid needs to be, so the designer needs to take care to balance properly.\n\nExamples include Modern Art and Medici.",
@@ -161,6 +181,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 21,
         "fields": {
             "name": "Auction: Sealed Bid",
             "description": "Players secretly make a bid. All bids are revealed simultaneously, and the high bidder wins.\n\nTypically some tie breaker mechanism is required. Common ones include closest to start player or using a secondary currency for a tie-breaking bid.\n\nA variation on this is called Sealed Bid with Cancellation. In this case, if two or more players have the same high bid, they are eliminated from contention. The highest non-duplicated bid is the winner. This is best used with Constrained Bidding to make ties more likely, and was first used in What the Heck? (originally called Hol's Der Geier, so it is sometimes referred to as &quot;the Hol's Der Geier mechanism&quot;).",
@@ -169,6 +190,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 22,
         "fields": {
             "name": "Auction: Turn Order Until Pass",
             "description": "Starting with one player and going in turn order, players may raise the current bid or pass. When all players but one have passed, the player remaining in the auction is the winner.\n\nNormally players that pass may not re-enter the auction. However, allowing re-entry is a variation that is not uncommon.",
@@ -177,6 +199,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 23,
         "fields": {
             "name": "Auction/Bidding",
             "description": "This mechanic requires you to place a bid, usually monetary, on items in an auction of goods in order to enhance your position in the game. These goods allow players future actions or improve a position. The auction consists of taking turns placing bids on a given item until one winner is established, allowing the winner to take control of the item being bid on. Usually there is a game rule that helps drop the price of the items being bid on if no players are interested in the item at its current price. In most games, once a winner for one item is done, if there are more items to be bid upon, another auction is held for those items. The process repeats until a game condition is met or items are exhausted in the auction phase of the game. This is similar to Worker Placement, but workers can be kicked off spots by bidding higher.\n\nIn Power Grid, for example, you start with no power plants and must win bids to be able to produce power. Winning a bid on a given power plant allows that player to add it to their current inventory of power plants and also allows for more power to be made in a given turn. In Vegas Showdown, players bid on rooms. such as a slot machine or a restaurant, in order to build a larger hotel with more prestige and value. Winning players pay for the room based on their bid and place it in their hotel. In both examples, bidding is done in a turn format and players have the option of passing on bids.\n\nMicrobadge\n\n Blind bidding fan",
@@ -185,6 +208,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 24,
         "fields": {
             "name": "Automatic Resource Growth",
             "description": "The automatic increase of a resource triggered by a particular, conditional, deterministic (not random) game state.\n\nExample 1. Unacquired resources in Agricola: \n- Uncollected wood from the wood-collection action space (condition) will offer +1 wood (result) on the following round (game state).\n\nExample 2. Acquired resources in Agricola: \n- Two pigs in your farm, in an area with space enough for 3 pigs (condition) will automatically produce a 3rd pig (result) during the breeding phase of that round (game state).\n\nCounter-example 1. Income in Monopoly:\n- Collect $200 (result) when passing &ldquo;GO&rdquo; (game state).\n- There is no condition (ex: if you own 1 or more properties)\n\nCounter-example 2. Random Production in Catan:\n- Players collect resources at the beginning of each turn based on a die roll.\n- The production is random not deterministic.",
@@ -193,6 +217,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 25,
         "fields": {
             "name": "Betting and Bluffing",
             "description": "Players commit a stake of currency or resources to purchase a chance of winning everyone&rsquo;s stake, based on some random outcome like being dealt a superior set of cards or rolling a higher number. Players typically have partial information about the overall game state, and may &ldquo;bluff,&rdquo; by representing through their in-game actions that they hold a stronger position than they do. Conversely, players may &ldquo;fold,&rdquo; or quit the contest, and limit their losses to whatever they had already staked.",
@@ -201,6 +226,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 26,
         "fields": {
             "name": "Bias",
             "description": "Pieces automatically move in a certain direction, or it is easier to move in a certain direction, or some directional/environmental vector has game play effects.\n\nThis is commonly used to simulate wind (Yacht Race), currents (Primordial Soup), gravity (Demon's Run), conveyor belts (RoboRally), sun angle (Photosynthesis) or other environmental features.",
@@ -209,6 +235,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 27,
         "fields": {
             "name": "Bids As Wagers",
             "description": "Players bid that they can achieve some outcome in the ensuing gameplay phase. Scoring is based on whether and how well players achieve their bids. Examples would be Spades or Contract Bridge.",
@@ -217,6 +244,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 28,
         "fields": {
             "name": "Bingo",
             "description": "Items are selected at random, and each player needs to use the items for their own player boards.\n\nOther than Bingo, examples include Take it Easy!, Rise of Augustus, and Super-Skill Pinball: 4-Cade; it is often the basis for the game genres of Mechanism: Roll-and-Write and Mechanism: Flip-and-Write.",
@@ -225,6 +253,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 29,
         "fields": {
             "name": "Bribery",
             "description": "Players offer bribes to other players to get them to perform specific actions.\n\nTypically players will place bribes on certain actions, and if another player selects that choice they get the bribe. Otherwise it is returned to the player. Santiago and Tonga Bonga operate this way.\n\nBribery can also be a part of a Negotiation mechanism, as players may offer bribes which may or may not be binding. Intrigue is an example of the latter.",
@@ -233,6 +262,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 30,
         "fields": {
             "name": "Campaign / Battle Card Driven",
             "description": "The Campaign/Battle Card Driven mechanic is a relatively recent development in wargames that focuses the players' actions on cards they have in their hand. Performing a single action uses a single card; cards will often be multi-purpose.\n\nAction/Event is a similar but more distinctive mechanic. Games where the cards are used to deploy specific units are considered to be using Command Cards. Games where cards are used to affect the outcome of battles are considered to be using Card Play Conflict Resolution.",
@@ -241,6 +271,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 31,
         "fields": {
             "name": "Card Play Conflict Resolution",
             "description": "Each player simultaneously or sequentially plays one or more cards. These modify the base outcome of a conflict and allow various special abilities to apply.\n\nThis can function similarly to Area Majority / Influence, but with a discrete resolution or award of the conflict target, rather than by dynamic/shifting control of a fixed asset.  It is also similar to Force Commitment, but that mechanic presupposes a more liquid resource where the quantity can be chosen.",
@@ -249,6 +280,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 32,
         "fields": {
             "name": "Catch the Leader",
             "description": "The game systems advantage players that are behind or disadvantage players that are ahead.\n\nIf this advantage is limited to turn order, then Turn Order: Stat-Based should be tagged instead.",
@@ -257,6 +289,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 33,
         "fields": {
             "name": "Chaining",
             "description": "Pieces are stationary but are built out in chains. This can give a dynamic sense of motion to the game, even though the pieces do not move.\n\nEarly examples of this mechanism can be found in Expedition and Through the Desert.",
@@ -265,6 +298,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 34,
         "fields": {
             "name": "Chit-Pull System",
             "description": "Used in wargames to address the problem of simulating simultaneous action on the battlefield and issues of &quot;Command and Control&quot;. In such a system the current player randomly draws a chit or counter identifying a group of units which may now be moved. Schemes include moving any units commanded by a particular leader, moving units of a particular quality or activating units not for movement but for fighting.\n\nBolt Action is an example of such mechanics.",
@@ -273,6 +307,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 35,
         "fields": {
             "name": "Closed Drafting",
             "description": "Closed Drafting (or 'Card Drafting') is a means of distributing cards or other game elements to players through an ordered, closed selection process - typically &quot;select and pass&quot;.\n\nA typical implementation involves each player being dealt the same number of cards. Players then select one (or more) card(s) to keep, and pass the rest to their left. This continues until all cards are selected or discarded. 7 Wonders implements this type of draft.\n\nAn alternative is that only one player is dealt cards, and they take one and pass it until all players have cards. This obviously is strongly biased towards the first player, and needs to be supported thematically and balance-wise. Citadels implements this type of draft.\n\nThis is distinct from Open Drafting, which involves selection from a public display.\n\nMicrobadge\n Card drafting fan",
@@ -281,6 +316,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 36,
         "fields": {
             "name": "Closed Economy Auction",
             "description": "Closed-Economy is a meta-mechanism that can modify any auction type. In a Closed-Economy Auction, all the money spent in the auction is paid out to the auction participants themselves.\n\nFor example, in Nightmare Productions, the winning bid is distributed evenly between the non-winning players, and losing bids is the only way to gain more money.",
@@ -289,6 +325,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 37,
         "fields": {
             "name": "Command Cards",
             "description": "Players have a hand of cards that allows them to activate and perform actions with a subset of their units.",
@@ -297,6 +334,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 38,
         "fields": {
             "name": "Commodity Speculation",
             "description": "A subcategory of Investment in which players buy and sell commodities of various types and quantities as they change value throughout the game.\n\nCommodity Speculation includes both Investment games in which players have some indirect control over asset values, but have a hard time hurting others without hurting themselves; and Collusion games, in which players have huge direct control in manipulating asset values, forcing players to help others and manage shifting alliances.",
@@ -305,6 +343,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 39,
         "fields": {
             "name": "Communication Limits",
             "description": "Games may limit players from communicating with one another openly. These restrictions can be absolute as they relate to certain specific pieces of information, or they may restrict certain types of communication, such as speaking.\n\nExamples of this mechanism include Hanabi and Reverse Charades.",
@@ -313,6 +352,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 40,
         "fields": {
             "name": "Connections",
             "description": "Players are trying to form connections between different points on the board. Essentially, this is a specialized kind of set collection in which the sets collected represent ties between nodes, often represented as routes between destinations.\n\nThis mechanism includes games like Hex, TransAmerica, and Ta Y\u00fc.",
@@ -321,6 +361,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 41,
         "fields": {
             "name": "Constrained Bidding",
             "description": "This is a meta-mechanism that can modify other auction techniques. Players may not bid any number that they wish. They may only bid based on increments and/or combinations of certain resources.\n\nExamples of this are Ra, which forces players to select one of three bid tiles for their bid, and High Society, where players must increase bids by adding money cards from their hand and are not allowed to make change.",
@@ -329,6 +370,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 42,
         "fields": {
             "name": "Contracts",
             "description": "Players fulfill Contracts to earn rewards. These take the form of special goals requiring coordination and planning beyond simply being &quot;first past the post&quot;. These can be either public, where all players compete to be the first to complete them, or private, where only the owning player may fulfill them.\n\nThis often takes the form of a special type of Set Collection, such as in The Voyages of Marco Polo where Contracts defining an ad hoc set of resources may be claimed to obtain the corresponding reward. Pick-up and Deliver is a special case of Contracts common to train games such as Empire Builder which should be selected for those games.",
@@ -337,6 +379,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 43,
         "fields": {
             "name": "Cooperative Game",
             "description": "Players coordinate their actions to achieve a common win condition or conditions. Players all win or lose the game together.\n\nMicrobadges\n\n Cooperative Games fan\n Cooperative Games fan",
@@ -345,6 +388,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 44,
         "fields": {
             "name": "Crayon Rail System",
             "description": "The Crayon Rail System is a subcategory of Route/Network Building. Types of these games use crayon or other non-permanent methods of making connecting lines on a board, often eraseable.  The most popular Crayon Rail games are part of the Empire Builder system.",
@@ -353,6 +397,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 45,
         "fields": {
             "name": "Critical Hits and Failures",
             "description": "Dice are rolled, and those exceeding a target number generate a success. Certain rolls (typically the highest and/or lowest on the die) generate additional success or extreme failure.",
@@ -361,6 +406,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 46,
         "fields": {
             "name": "Cube Tower",
             "description": "Actions are resolved by dropping cubes of various colors into a tower and seeing which emerge out the bottom. Cubes that do not emerge may come out in future actions, and impact those. This is in essence a particular form of a shared Deck, Bag, and Pool Building as implemented by a Components: Drop Tower.\n\nWallenstein is an early example.\n\nNote that this is different to mechanics like the Castillo in El Grande, where cubes are dropped, but serves as a place to hide them until revealed.",
@@ -369,6 +415,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 47,
         "fields": {
             "name": "Deck Construction",
             "description": "As the first step, or prior to playing the game, players create the deck they will use.\n\nExamples include Magic: The Gathering or Smash Up.",
@@ -377,6 +424,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 48,
         "fields": {
             "name": "Deck, Bag, and Pool Building",
             "description": "Players play cards out of individual decks, seeking to acquire new cards and to play through their decks iteratively, improving them over time through card acquisition or card elimination.\n\nIt may include a &quot;random-draw&quot; to form a hand from the deck for the current round (as in Star Realms) and the deck is automatically reset once the draw pile is exhausted; or it may allow access to all available cards at once (as in Concordia or The Quest for El Dorado) until the discards are retrieved. The latter may embody the Action Retrieval mechanic, where the card use activate actions.\n\nThis category also covers Bag Building, Pool Building, and related mechanisms (using chits, dice, etc).\n\nDominion pioneered this mechanism.\n\nUseful lists on the subject:\n\nDeck-building Games: Your favourites and why\nThe sons of Dominion\n\nMicrobadge\n\n Deck Building games fan",
@@ -385,6 +433,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 49,
         "fields": {
             "name": "Deduction",
             "description": "Players are trying to determine the identity of hidden information based on clues.\n\nExamples include Clue and Sleuth.",
@@ -393,6 +442,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 50,
         "fields": {
             "name": "Delayed Purchase",
             "description": "Items that are purchased do not enter play right away but arrive on a future turn.\n\nThis is a typical default characteristic of most Deck, Bag, and Pool Building games such Dominion where purchased cards are placed into the discards.\n\nOther examples of this mechanism include World in Flames, which uses a &quot;Production Spiral&quot; so purchased troops, planes and fleets come into the game several months (or years) in the future depending on how long they take to build.",
@@ -401,6 +451,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 51,
         "fields": {
             "name": "Dice Rolling",
             "description": "&quot;Dice Rolling&quot; is a game mechanism that can be used for many things, randomness being the most obvious.\n\nIn wargames, &quot;Dice Rolling&quot; is used in conjunction with a variety of tables, notably a &quot;Combat Results Table&quot; (either as a Ratio or a Differential) which produces a result by strengths of both sides and a die roll (1D6, 2D6, and 1D10 are most commonly used).\n\n&quot;Dice Rolling&quot; can be a game in and of itself see Yahtzee or Craps.\n\nMicrobadge\n\n Dice games fan",
@@ -409,6 +460,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 52,
         "fields": {
             "name": "Die Icon Resolution",
             "description": "The player rolls a number of custom dice to resolve an event or conflict. Results must match specific symbols for success.\n\nThis is not the same as Worker Placement with Dice Workers, as used for example in Roll for the Galaxy, where any result may be usable to accomplish actions selected after rolling.",
@@ -417,6 +469,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 53,
         "fields": {
             "name": "Different Dice Movement",
             "description": "Different Dice are used to move depending on unit or game state.\n\nAn early example of this is Formula D\u00e9, where different dice represent different gears on a race car.",
@@ -425,6 +478,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 54,
         "fields": {
             "name": "Drawing",
             "description": "Players draw a picture and other players guess what the picture is intended to depict.\n\nNOTE: This is distinct from Line Drawing, which is where non-representative lines are drawn, typically to connect points (as in Dots &amp; Boxes).",
@@ -433,6 +487,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 55,
         "fields": {
             "name": "Elapsed Real Time Ending",
             "description": "The game ends after a set amount of actual time has elapsed. During the game, individual players may have separate turns, or play may be simultaneous--in which all players play at the same time.\n\nThis is sometimes mediated by a soundtrack, as in Space Alert, or can simply be elapsed time on a clock, as in Escape from Colditz.\n\nOther representative games in this category are Escape: The Curse of the Temple, Space Alert, and most &quot;escape room&quot; type games, including the Escape Room: The Game series and the Unlock! series.",
@@ -441,6 +496,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 56,
         "fields": {
             "name": "Enclosure",
             "description": "In Area Enclosure games, players place or move pieces in order to surround areas contiguously with their pieces.  The oldest and most famous Area Enclosure game is of course Go, but many newer examples also exist.\n\nArea Enclosure is different than Area Majority / Influence because players actually create the areas on a gridded board during the course of play, whereas in Area Majority/Influence the actual areas are pre-existing and players are merely competing control over them.",
@@ -449,6 +505,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 57,
         "fields": {
             "name": "End Game Bonuses",
             "description": "Players earn (or lose!) bonus Victory Points (VPs) at the end of the game based on meeting victory conditions.",
@@ -457,6 +514,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 58,
         "fields": {
             "name": "Events",
             "description": "Actions occur outside the control of players that cause an immediate effect, change the state of the game, or impact subsequent actions.",
@@ -465,6 +523,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 59,
         "fields": {
             "name": "Finale Ending",
             "description": "When the main game ends, a special mini-game is played to determine the victor.\n\nMonsters Menace America is an example of this mechanism.",
@@ -473,6 +532,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 60,
         "fields": {
             "name": "Flicking",
             "description": "A Physical Action needs to be performed by one or more players to determine the outcome of the action.",
@@ -481,6 +541,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 61,
         "fields": {
             "name": "Follow",
             "description": "One player selects an Action. Other players may then perform that Action, or a modified version of it. This is closely related to Action Drafting (ACT-02) and Role Selection (TRN-10), and is often implemented alongside those systems.",
@@ -489,6 +550,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 62,
         "fields": {
             "name": "Force Commitment",
             "description": "The players select how many of their forces they will commit to the battle to different categories. This can be simultaneous (hidden) or incrementally, prior to resolution. Frequently players must lose all forces that they commit. Arguably this is a form of auction/bidding, but distinctive when applied to war or area control games for multiple/parallel contests.\n\nDune is an early example of this mechanism.",
@@ -497,6 +559,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 63,
         "fields": {
             "name": "Grid Coverage",
             "description": "A family of mechanisms in which players cover a grid or fill a space using a variety of shapes, such as Components: Polyominoes.\n\nSometimes called a &quot;Tetris mechanism&quot;, this challenges players to use shapes efficiently. It can either be the primary point of the game, as in Ubongo, or as a secondary mechanism to force players to plan and restrict their options, as in The Princes of Florence.\n\nGames that use a single piece type to construct or enclose areas-of-control (especially when in competition over common spaces) are utilizing Enclosure.",
@@ -505,6 +568,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 64,
         "fields": {
             "name": "Grid Movement",
             "description": "Grid Movement occurs when pawns move on the grid in many directions. The grid may be square (like in Chess) or hexagonal (like in the classic wargames).\n\nIn a game there can be many pawns (like in Chess or Checkers) or only one (like the bishop in Fresco).\n\n\nNote that the related Mechanic categories for Hexagon Grid and Square Grid only designate the type of playing field. Some games do not involve movement of pieces on such a playing grid, only placement. Thus, this mechanic supplements either of the &quot;- Grid&quot; mechanics by identifying specifically when the grid is used for movement purposes.",
@@ -513,6 +577,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 65,
         "fields": {
             "name": "Hand Management",
             "description": "Hand management games are games with cards in them that reward players for playing the cards in certain sequences or groups. The optimal sequence/grouping may vary, depending on board position, cards held and cards played by opponents. Managing your hand means gaining the most value out of available cards under given circumstances. Cards often have multiple uses in the game, further obfuscating an &quot;optimal&quot; sequence.\n\nHand management has no relationship to action/dexterity.",
@@ -521,6 +586,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 66,
         "fields": {
             "name": "Hexagon Grid",
             "description": "Pieces are placed on a board tessellated with hexagons, which is used for adjacency and/or movement.\n\n\nPreviously this category was known as &quot;hex and counter.&quot; While the Hexagon Grid mechanic now covers a wider range of games, the original description highlights important facets of a large class of games that fall under this mechanic:\n\nClassic wargame mechanic, played with 'counters' on a map with a hexagonal grid. The hex grid allowed for equidistant movement of counters in more directions (6) than a square grid, and avoided the simulation issues caused by diagonal movement on a square grid (i.e. diagonal moves being further in distance than orthogonal moves).\n\n+  Pieces are placed on a board tessellated with hexagons, which is used for adjacency and/or movement\n\n+ Counters are commonly thick cardboard chits, with printed attributes and identification.\n\n+  Many of these games include a concept called &quot;zone of control&quot; (now a separate mechanic) which hinders or stops movement when units move or start next to an opposing unit. The exact effects vary, depending upon the era being simulated and other design concerns.",
@@ -529,6 +595,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 67,
         "fields": {
             "name": "Hidden Movement",
             "description": "Movement occurs that is not visible to all players.\n\nScotland Yard is a classic game implementing this mechanism.\n\nA key challenge for designers is determining how to make the movement rules simple enough that the players moving hidden units do not make mistakes, or that paths are traceable when the game concludes.",
@@ -537,6 +604,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 68,
         "fields": {
             "name": "Hidden Roles",
             "description": "In games with hidden roles, one or more players are assigned differing roles that are not publicly revealed.",
@@ -545,6 +613,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 69,
         "fields": {
             "name": "Hidden Victory Points",
             "description": "The number of Victory Points held by each player is private information.",
@@ -553,6 +622,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 70,
         "fields": {
             "name": "Highest-Lowest Scoring",
             "description": "Each player&rsquo;s score is equal to the lowest value of several categories. Whoever has the highest lowest value is the winner.\n\nThis system is normally known as Knizia scoring. Tigris & Euphrates is an early example of this mechanism. Players are collecting four different color cubes - red, green, blue, and yellow - and their score is the color that they have the least of. A player with 12 red, 10 green, 6 blue, and 2 yellow has a final score of 2. This forces players to not be too specialized in which cubes they collect.\n\nHighest-Lowest Scoring is a special case of Set Collection, where only complete sets are counted.",
@@ -561,6 +631,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 71,
         "fields": {
             "name": "Hot Potato",
             "description": "A single item is bad for players to have, and players strive to pass it to other players or avoid it so they are not holding it at game end or some other defined time.\n\nExample games include Old Maid, Exploding Kittens, and Catch Phrase!.",
@@ -569,6 +640,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 72,
         "fields": {
             "name": "I Cut, You Choose",
             "description": "A method of drafting where one player divides a set of resources into different groups; other players have first choice of which group to select.\n\nSan Marco, New York Slice, and Berrymandering implement versions of this mechanism.\n\nThis mechanism can also be used to divide more abstract resources, like turn order. Many games use the so-called &quot;pie rule&quot; or &quot;swap rule&quot; to minimize first player advantage, e.g. Hex. In this game, the first player makes the first move of the game, and then the second player can choose to switch sides (taking over the first player's color as well as that first move), or to let the first player stay with that color and first move, and the second player then makes their first move in response to the first player's move. After that, turns continue as usual.",
@@ -577,6 +649,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 73,
         "fields": {
             "name": "Impulse Movement",
             "description": "A turn is broken up into a series of small Impulses. Depending on their speed, units will be able to move in specific Impulses.\n\nAn early example of this is contained in Star Fleet Battles.",
@@ -585,6 +658,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 74,
         "fields": {
             "name": "Income",
             "description": "Players gain resources at defined times.",
@@ -593,6 +667,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 75,
         "fields": {
             "name": "Increase Value of Unchosen Resources",
             "description": "If players do not select certain Actions or Resources, then they increase in value.\n\nPuerto Rico is a classic example of this technique, as unchosen roles have a coin placed on them. This mechanism is a simple way for designers to balance different options.\n\nThe money may either come from the bank, as in Puerto Rico, or from the players themselves, as is done in Small World, where players must place a coin on factions that are skipped.",
@@ -601,6 +676,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 76,
         "fields": {
             "name": "Induction",
             "description": "Players are attempting to determine the rules governing a situation. In a typical induction games, a game master creates a hidden rule. Players then create patterns and are advised by the game master whether they match the rule or not.\n\nExamples include Eleusis and Zendo.",
@@ -609,6 +685,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 77,
         "fields": {
             "name": "Interrupts",
             "description": "This is a meta-mechanic for Turn Order. Players may take an action that interrupts the normal turn flow.",
@@ -617,6 +694,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 78,
         "fields": {
             "name": "Investment",
             "description": "Players purchase an interest in a game entity, in order to generate a monetary or VP benefit, the ultimate value of which is determined over the course of the game.\n\nThis differs from Ownership in that Investment does not grant special actions or other &quot;game effect&quot; privileges based on the investment.\n\nAcquire is an early example of the Investment mechanism.",
@@ -625,6 +703,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 79,
         "fields": {
             "name": "Kill Steal",
             "description": "Players contribute towards completing a task, but only the player who finally completes it gets a particular benefit or bonus reward (even if others share in the base level benefit).\n\nCutthroat Caverns is an example of this mechanism.",
@@ -633,6 +712,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 80,
         "fields": {
             "name": "King of the Hill",
             "description": "Games with a king of the hill mechanism reward players with points or other advantages for occupying a special position on the board. How long can you hold your ground?",
@@ -641,6 +721,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 81,
         "fields": {
             "name": "Ladder Climbing",
             "description": "Players play one card, or a set of related cards. Subsequently, players must play cards of an equal or higher value of the same set already played. The last player to successfully play wins the right to start a new round of Climbing.\n\nThis mechanism originated in East Asia, and is represented by modern games such as Tichu and The Great Dalmuti.",
@@ -649,6 +730,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 82,
         "fields": {
             "name": "Layering",
             "description": "Components are placed above other components, partially covering the ones below, or overlapping in various ways. Only the topmost visible icons/areas are active.\n\nExamples include Patchistory and Smartphone Inc. using cards, and Taluva using tiles.",
@@ -657,6 +739,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 83,
         "fields": {
             "name": "Legacy Game",
             "description": "A multi-session game in which permanent and irreversible changes to the game state carry over to future plays. Components may be written on with permanent ink, torn apart, covered with a sticker, etc.",
@@ -665,6 +748,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 84,
         "fields": {
             "name": "Line Drawing",
             "description": "Games using the line drawing mechanic involve the drawing of lines in one way or another. Lines may be used to connect objects as in Sprouts, to isolate objects, or to create areas as in the classic Dots and Dashes, also known as Square-it.\n\nDrawing of symbols or pictures is more properly classified as Drawing or Mechanism: Drawing",
@@ -673,6 +757,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 85,
         "fields": {
             "name": "Line of Sight",
             "description": "Units may only see certain areas.\n\nMechanically this can be dealt with in a variety of ways, ranging from True Line of Sight, as measured by a string (as in Advanced Squad Leader) to color-coded regions showing what can be see what, as in Tannh\u00e4user.",
@@ -681,6 +766,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 86,
         "fields": {
             "name": "Loans",
             "description": "Players may take a Loan from the bank to get more money.\n\nExamples include Monopoly where players can mortgage properties, and Age of Steam, where taking loans is a key strategic consideration.",
@@ -689,6 +775,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 87,
         "fields": {
             "name": "Lose a Turn",
             "description": "This is a meta-mechanism that can be applied to a variety of turn structures. A player who &ldquo;Loses a Turn&rdquo; must skip their next opportunity for a turn, and will go to the next round, or the next time their turn arises.",
@@ -697,6 +784,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 88,
         "fields": {
             "name": "Mancala",
             "description": "In a typical Mancala mechanism, players pick up the tokens in one space, and then place them one-by-one in spaces in a specific direction around a circle, with the last space placed in having special significance.\n\nIn addition to its namesake game Kalah, this mechanism can be seen in modern games such as Finca and Theseus: The Dark Orbit.",
@@ -705,6 +793,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 89,
         "fields": {
             "name": "Map Addition",
             "description": "The map is added to as it is explored. Examples include Mississippi Queen and Eclipse.",
@@ -713,6 +802,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 90,
         "fields": {
             "name": "Map Deformation",
             "description": "The map is modified during the course of the game through rotation or shifts.\n\nExamples include Wiz-War and Dungeon Twister.",
@@ -721,6 +811,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 91,
         "fields": {
             "name": "Map Reduction",
             "description": "Over the course of the game, the map shrinks.\n\nExamples include Isolation, Survive: Escape from Atlantis!, and The Sinking of the Titanic.",
@@ -729,6 +820,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 92,
         "fields": {
             "name": "Market",
             "description": "Players may buy from or sell resources to Markets, where prices and quantities can vary. This is often a primary feature of Economic games, but sometimes only a secondary mechanism.\n\nMany games use a &quot;market&quot; to price cards, tiles, etc available for permanent purchase by players, but this is a type of Open Drafting and should be classified as such.",
@@ -737,6 +829,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 93,
         "fields": {
             "name": "Matching",
             "description": "Players must make their next play by matching a feature on the previous play. This is frequently used in shedding games like UNO or Crazy Eights, where number or color/suit need to be matched.\n\nIn some implementations the next play needs to be in a number range based on the last. For example, in L.L.A.M.A. the play must be the same or one higher than the last. In Spit, it must be one higher or lower.\n\nNOTE: Although this is similar to 'following suit' in a trick taking game, or 'ladder climbing' games, please use those mechanisms instead.",
@@ -745,6 +838,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 94,
         "fields": {
             "name": "Measurement Movement",
             "description": "Pieces may be moved up to a certain distance, measured by a ruler.\n\nThis is typically used in miniatures games such as Warhammer 40,000 (Third Edition). Because of precision issues it can sometimes lead to disagreements between players about true range.\n\nNote that this mechanism differs from Movement Template, where players place templates and must move the length of the template, rather than the infinitely-variable placement noted here.",
@@ -753,6 +847,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 95,
         "fields": {
             "name": "Melding and Splaying",
             "description": "A set of cards in a specific relationship to one another that allows them to be played to a table or scored as a meld. When laying these cards down, the way the cards splay, or overlap one another, may sometimes reveal or conceal certain abilities or attributes.\n\nRummy games have players placing combinations of cards or tiles on the table to score. Innovation is a good example of the Splaying side, where players can spread cards out to show particular sets of icons to empower abilities.",
@@ -761,6 +856,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 96,
         "fields": {
             "name": "Memory",
             "description": "Hidden, trackable information whose tracking gives players an advantage.",
@@ -769,6 +865,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 97,
         "fields": {
             "name": "Minimap Resolution",
             "description": "When a conflict is initiated, pieces are moved to a separate board for resolution.\n\nTitan is an early example of this mechanism.",
@@ -777,6 +874,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 98,
         "fields": {
             "name": "Modular Board",
             "description": "Play occurs upon a modular board that is composed of multiple pieces, often tiles or cards.\n\nIn many games, board placement is randomized, leading to different possibilities for strategy and exploration.\n\nSome games in this category have multiple boards which are not used simultaneously, preserving table space. Unused boards remain out of play until they are required.\n\nMicrobadges\n\n Modular boards / tiles games fan\n Modular boards / tiles games fan",
@@ -785,6 +883,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 99,
         "fields": {
             "name": "Move Through Deck",
             "description": "Players Move Through a Deck of cards. Typically the goal is to reach the bottom (One Deck Dungeon), find and defeat a boss (Chainsaw Warrior), or simply know when to quit (Incan Gold).",
@@ -793,6 +892,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 100,
         "fields": {
             "name": "Movement Points",
             "description": "A piece is given a number of points to spend on movement. This is common in a variety of games, but particularly war games, where spaces can cost different amounts depending on the terrain. This is distinct from Action Points in that it is a property of the particular piece or terrain, rather than player options (which may &lsquo;&rsquo;include&rsquo;&rsquo; movement).",
@@ -801,6 +901,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 101,
         "fields": {
             "name": "Movement Template",
             "description": "A defined Movement Template is used to determine where a piece moves to.\n\nAn early example of this is Blue Max, but the mechanic was also successful used in Wings of War  and the X-Wing Miniatures Game.",
@@ -809,6 +910,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 102,
         "fields": {
             "name": "Moving Multiple Units",
             "description": "Actions may Move one or Multiple Units.\n\nThis mechanism was first introduced in Top Race.  Players place wagers on cars in a race, and so have a vested interest in certain ones winning. However the cards they need to play move many cars, including those they want to lose. So they need to time the play of the cards when they will be most advantageous to the cars they control, and minimize the movement of the other cars.\n\nPLEASE NOTE: Moving Multiple Units is NOT a Wargame or Strategy Game mechanism.\nIt is a typical mechanism of some car racing games (described in detail in the previous paragraph) that has nothing to do with the possibility of moving one or more units or pieces during the movement phases of the aforementioned categories of boardgames",
@@ -817,6 +919,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 103,
         "fields": {
             "name": "Multi-Use Cards",
             "description": "Multiple actions are shown on a card, but only one can be used.",
@@ -825,6 +928,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 104,
         "fields": {
             "name": "Multiple Maps",
             "description": "The game takes place on Multiple Maps which are connected at defined points.\n\nSeveral examples stand out. The fantasy rail game Iron Dragon has a surface and cavern map, and players can build and connect tracks in both.\n\nKhronos has three boards representing the same space at different times. Building on the older board impacts history on the future boards.\n\nFische Fluppen Frikadellen allows up to 15 players to trade goods across three separate boards at different areas of the room. Players may leave and physically move between boards at defined times, taking their money and goods with them.",
@@ -833,6 +937,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 105,
         "fields": {
             "name": "Narrative Choice / Paragraph",
             "description": "Multiple action options are presented to the players via a narrative format.\n\nThese can be presented in a book with numbered paragraphs as in Tales of the Arabian Nights or Above and Below, or via cards as in Dead of Winter: A Crossroads Game.",
@@ -841,6 +946,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 106,
         "fields": {
             "name": "Negotiation",
             "description": "Players make agreements about coordinating action, beyond simply Trading.\n\nAgreements may be either binding or non-binding. Diplomacy is a notable example of the latter.",
@@ -849,6 +955,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 107,
         "fields": {
             "name": "Neighbor Scope",
             "description": "Actions, resources, or resolution are shared between neighbors.",
@@ -857,6 +964,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 108,
         "fields": {
             "name": "Network and Route Building",
             "description": "The game involves the development of connected routes and nodes, often represented as routes between destinations. This is differentiated from Connections in that it provides some in-game effect beyond merely scoring, such as the ability to trigger actions, or requiring maintenance costs.\n\nThere are a variety of implementations of this system, most prominently in train-themed games. 1830: Railways & Robber Barons uses tiles with pre-printed tracks. Empire Builder has players draw lines on the map with crayons or dry-erase markers. In Power Grid the development of your network has economic impacts. Hansa Teutonica generates bonus effects as you complete connections in your trading network.",
@@ -865,6 +973,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 109,
         "fields": {
             "name": "Once-Per-Game Abilities",
             "description": "Players have a special ability that they can use one time per game.\n\nThese may be unique to them, like 'feats' in Warmachine, or common to all players, like the special power chits in Finca.\n\nOften players will receive bonus Victory Points if they do not use their one-time abilities during the game.",
@@ -873,6 +982,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 110,
         "fields": {
             "name": "Open Drafting",
             "description": "Open Drafting is used in games in which players pick cards (or tiles, resources, dice, etc) from a common pool, to gain some advantage (immediate or longterm) or to assemble collections that are used to meet objectives within the game.\n\nSaint Petersburg is a well-known game utilizing an open draft. \nAzul utilizes a more complex draft, where tiles are selected from multiple constructed lots, with some reverting to the common pool.\n\nGames where cards are simply drawn from a pile are not drafting games; drafting implies that players have some sort of choice and the ability to draft a card another player may want thereby denying them something they may have wanted. In Ticket to Ride, for instance, players may choose to draw cards from open display, so although most cards in a game are only drawn randomly, it still can be considered a drafting game.\n\nThis is distinct from Closed Drafting, the mechanic of &quot;select and pass&quot;.",
@@ -881,6 +991,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 111,
         "fields": {
             "name": "Order Counters",
             "description": "Players place &quot;Order Markers&quot; into specific regions (or zone, or hexagon, or square) of the game board, indicating what they want to do in that particular region of the game board. After all markers are placed, they are executed in sequence.\n\nStarCraft: The Board Game is an example of this mechanism.",
@@ -889,6 +1000,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 112,
         "fields": {
             "name": "Ordering",
             "description": "The objective of the game is to rearrange a group of game elements from a disordered to an ordered state.",
@@ -897,6 +1009,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 113,
         "fields": {
             "name": "Ownership",
             "description": "Players own entities, and perform actions for those entities, or collect benefits if others use them.\n\nLe Havre and Caylus allow players to own action spaces, and gain a benefit when other players use them.\n\nThe 18xx series (such as 1830: Railways & Robber Barons) and Imperial represent examples of shared ownership through the mechanism of Stock Holding.",
@@ -905,6 +1018,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 114,
         "fields": {
             "name": "Paper-and-Pencil",
             "description": "The game is developed using paper and pen to mark and save responses or attributes that, at the end of the game, are used to score points and determine the winner.\n\nA game that merely keeps track of score on a sheet of paper does not use a paper-and-pencil mechanism.",
@@ -913,6 +1027,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 115,
         "fields": {
             "name": "Passed Action Token",
             "description": "Players possess one or more Action Tokens. Those who have an Action Token may take a turn, then they pass the token clockwise, allowing the next player to perform an action. Actions are performed in real time; - there is no pausing and structure within the turn.\n\nTypically, to prevent stalling and to keep the game moving, in games with multiple Action Tokens, if both tokens are held by the same player, then they suffer a penalty.\n\nCamelot and Diner are examples.",
@@ -921,6 +1036,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 116,
         "fields": {
             "name": "Pattern Building",
             "description": "Players must configure game components in sophisticated patterns in order to score or trigger actions, as would be typical for games in the Puzzle category.\n\nAzul is a modern classic designed around this mechanic. The common mechanism of Tile Placement can be considered as including pattern building via &quot;feature completion&quot; of connecting tiles.",
@@ -929,6 +1045,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 117,
         "fields": {
             "name": "Pattern Movement",
             "description": "Pieces move in a specific pattern relative to the board grid.\n\nClassic games like Chess and Shogi use this mechanism, as well as modern games like The Duke.",
@@ -937,6 +1054,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 118,
         "fields": {
             "name": "Pattern Recognition",
             "description": "Players must recognize a known or emergent pattern created by the game components to gain objectives or win the game. This could for instance involve markers, typically with a color or symbol, placed to certain locations on a board, or relative to the other markers, forming an abstract or meaningful pattern, requiring deductive reasoning by players to determine its significance.",
@@ -945,6 +1063,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 119,
         "fields": {
             "name": "Physical Removal",
             "description": "Pieces are removed from a structure, and play is affected by things that fall (as in Ker Plunk), or a complete collapse of the structure (as in Jenga).",
@@ -953,6 +1072,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 120,
         "fields": {
             "name": "Pick-up and Deliver",
             "description": "This mechanism usually requires players to pick up an item or good at one location on the playing board and bring it to another location on the playing board. Initial placement of the item can be either predetermined or random. The delivery of the good usually gives the player money to do more actions with. In most cases, there is a game rule or another mechanic that determines where the item needs to go.\n\nEmpire Builder is a classic pickup-and-deliver game from 1980 that remains popular today. In this game, players build railroads between cities, and move trains around on the track. Players hold contracts specifying that specific cities demand specific types of goods. To fulfill a contract, a player must travel to a city where that good is available, pick it up, and deliver it to the destination city. When the player completes the contract, the player receives money as specified on the contract.\n\nFor an overview and discussion of popular games with this mechanism, see: Pickup-and-Deliver Games: Your favourites and why\n\nMicrobadge\n\n Pick up and deliver games fan",
@@ -961,6 +1081,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 121,
         "fields": {
             "name": "Pieces as Map",
             "description": "The Pieces themselves compose the Map.\n\nThis is distinct from Tile Placement in that the map elements remain &ldquo;pieces&rdquo; after placement, and accordingly continue to have agency in the game mechanics.\n\nEarly examples include Hive and Maelstrom.",
@@ -969,6 +1090,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 122,
         "fields": {
             "name": "Player Elimination",
             "description": "A player can be removed from the game, no longer participating.\n\nIn some such games, all of an eliminated player's material is removed from the game as well; in other such games this material may remain in play as neutral material. (E.g. an eliminated player's armies and cities on a map might disappear, or might be become neutral armies and cities.)\n\nIn most games, an eliminated player cannot win, but this is not necessarily true. (E.g. in some games with victory based on scores, an eliminated player's score is still eligible for victory.)\n\nIn most games with player elimination, a player is eliminated involuntarily. But in some games a player can choose to drop out (with hope that their score suffices to win (e.g. Wooly Wars).\n\nIn some games, player elimination is possible, but rare in practice and does not happen in a &quot;typical session&quot; (e.g. Age of Steam).\n\nIn some games, player elimination is common. In the extreme case, all players but one (the sole surviver = eventual winner) are eliminated during a session (e.g. Titan). In many player elimination games, typically some players are eliminated but multiple other players are not (e.g. Werewolf and BANG!).\n\nPlayer elimination does not include two-player-only games where the goal is to defeat the opponent, e.g., Chess.\n\nMicrobadges\n\n I like games with player elimination\n\n I avoid games with player elimination",
@@ -977,6 +1099,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 123,
         "fields": {
             "name": "Player Judge",
             "description": "One player, the judge, decides the outcome of the Action.\n\nThis is a common mechanism in party games, including Apples to Apples and Cards Against Humanity.",
@@ -985,6 +1108,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 124,
         "fields": {
             "name": "Point to Point Movement",
             "description": "On a board of a game with point-to-point movement, there are certain spots that can be occupied by markers or figurines, e. g. cities on a map. These points are connected by lines, and movement can only happen along these lines. It is not enough that two points are next to or close to each other; if there is no connecting line between them, a player cannot move his or her piece from one to the other.\n\nExamples for point-to-point movement: Nine Men's Morris, Kensington, Friedrich.\n\nNon-intuitive example for point-to-point movement:  Risk.  While Risk is also an Area Movement game, like Axis &amp; Allies, it encompasses point-to-point movement as well. This is due to the lines connecting various areas through the otherwise impassable water areas (e.g. Greenland, Japan, Iceland, Madagascar).\n\nMovement along a track or loop representing sequential locations, including simple branching such as Tokaido or Jamaica, should be classified as using Track Movement.\n\n\t\t\n\t\t\n\t\t\n\t\t\n\t\t\n\t\t\n\t\t\n\t\t\n\t\t\n\nPictured above: Point-to-point movement in Friedrich.",
@@ -993,6 +1117,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 125,
         "fields": {
             "name": "Predictive Bid",
             "description": "Players make a prediction about what they will do in a future part of the game, and score points based on how well they match the prediction.\n\nThis is most frequently seen in trick taking games like Bridge, Spades, and Sluff Off!. It is also notably seen in Dune, as the Bene Gesserit player may steal victory from another player by successfully predicting that they will win on a particular turn.",
@@ -1001,6 +1126,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 126,
         "fields": {
             "name": "Prisoner's Dilemma",
             "description": "Each player has a choice between Cooperating or Defecting. Total payoff is maximized if both players Cooperate, but if one Defects and the other Cooperates, the Defector will score more individual points.",
@@ -1009,6 +1135,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 127,
         "fields": {
             "name": "Programmed Movement",
             "description": "Players simultaneously program their movement, and then reveal and execute it. This mechanism tends to promote chaos in a game, and benefits those with good spatial relations.\n\nThis is a specialized form of the Action Queue mechanism.\n\nRobo Rally is a good example of this mechanism.\n\nMicrobadge\n\n Programmed movement games fan",
@@ -1017,6 +1144,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 128,
         "fields": {
             "name": "Push Your Luck",
             "description": "Players must decide between settling for existing gains, or risking them all for further rewards, in a game with some amount output randomness or luck. Push-Your-Luck is also known as press-your-luck.\n\nHere's a description of the category by Bruno Faidutti:\n\nDouble or Quits, Keep going or stop, cash your gains or bet them. The idea is not new. Many gambling games, such as Black Jack, make an intensive use of it, as well as some traditional dice game &ndash; and Pass the Pigs is only a modern version of those. This system is also used in many TV games, where the winner can either leave with his gains, either answer one more question at the risk of losing everything he won so far. Like in Luigi Comencini&rsquo;s Scopone Scientifico, if you never stop, you always end losing. This system is also very efficient in board and cardgames, since it generates a high tension, and some anguish when rolling some more dice or drawing one more card. The best known &ldquo;double or quits&rdquo; game is probably Sid Sackson&rsquo;s Can&rsquo;t Stop, a clever dice game figuring, in the last edition, mountaineers so impatient to reach the summit that they usually end up falling down. It&rsquo;s even trickier when all players are aboard the same ship, not knowing if, or when, it will sink. Time to leave or not ? That&rsquo;s what happen in Aaron Weissblum&rsquo;s Cloud Nine, as well as in Diamant, a game I designed together with Alan R. Moon.\n\nHere's the introduction of the Jeopardy dice games from Reiner Knizia's Dice Games Properly Explained:\n\nYou focus on progessing and maximising your results. But the stakes are rising. If things go wrong, you lose it all. Great risks bring great rewards - or utter defeat!\nDisaster strikes in many different ways. More than ever, you need to weigh up the potential gains and losses. Rolling specific numbers or reaching certain totals may catch you out. You see disaster looming - but can you escape? Other games allow you to continue throwing as long as you keep your options open. Know when to stop and secure your results. If you get greedy and your luck fails, you are out. You need to make the right decisions and be lucky, too.\n\nMicrobadge:  - Fan of Press-Your-Luck Games",
@@ -1025,6 +1153,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 129,
         "fields": {
             "name": "Questions and Answers",
             "description": "Players ask and answer questions in a manner constrained by rules.",
@@ -1033,6 +1162,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 130,
         "fields": {
             "name": "Race",
             "description": "Games where the first player to achieve a key objective wins the game. Typically this is expressed as the winner being the first player to reach the end of a track, but any type of fixed goal also qualifies as a Race mechanism. CATAN is an example, where players race to reach 10 points. The Quest for El Dorado is an example, where players race to reach a goal on a map.",
@@ -1041,6 +1171,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 131,
         "fields": {
             "name": "Random Production",
             "description": "Resources are generated from a random process and distributed to qualifying players.\n\nCATAN and Crude: The Oil Game are based on early examples of this mechanism.",
@@ -1049,6 +1180,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 132,
         "fields": {
             "name": "Ratio / Combat Results Table",
             "description": "In many Board Wargames to resolve a combat between units, the Attacker and Defender total the strength of the units involved in that combat. This is then expressed as a &quot;Ratio&quot; (Attacker versus Defender) which is used to index into a &quot;Combat Results Table (CRT)&quot;. A dice roll then determines the final result of the combat.",
@@ -1057,6 +1189,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 133,
         "fields": {
             "name": "Re-rolling and Locking",
             "description": "Dice may be rerolled, or may be locked, preventing rerolling.\n\nYahtzee and Cosmic Wimpout are early examples of this mechanism. More recent games include the idea of &quot;locking&quot;, where certain dice are prevented from being re-rolled, as in Zombie Dice and Escape: The Curse of the Temple.",
@@ -1065,6 +1198,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 134,
         "fields": {
             "name": "Real-Time",
             "description": "There are no turns. Players play as quickly as possible, subject to certain constraints, until the game or phase is completed.",
@@ -1073,6 +1207,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 135,
         "fields": {
             "name": "Relative Movement",
             "description": "The precise location of units is not tracked. Only their Relative Position is important.\n\nThis mechanism has been used in a variety of racing games, including Formula Motor Racing and RoadKill, and other themes, like escaping from shark in Get Bit!.",
@@ -1081,6 +1216,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 136,
         "fields": {
             "name": "Resource Queue",
             "description": "Resources are in an ordered queue, and can only be pulled from one end, or rarely, both ends, but not the middle.",
@@ -1089,6 +1225,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 137,
         "fields": {
             "name": "Resource to Move",
             "description": "Players expend a Resource to Move.\n\nThis is commonly themed as fuel, but other games use money or other commodities.",
@@ -1097,6 +1234,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 138,
         "fields": {
             "name": "Rock-Paper-Scissors",
             "description": "There are three possible options, and they are cyclically superior (A beats B, B beats C, and C beats A).\n\nThe name derives from the well-known children's game where\nScissors cuts Paper\nPaper covers Rock\nRock crushes Scissors\n\nBut can refer to any game with non-transitive mechanisms, e.g.\n\n\n\nor",
@@ -1105,6 +1243,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 139,
         "fields": {
             "name": "Role Playing",
             "description": "Some board games incorporate elements of role playing. It can be that players control a character that improves over time. It can also be a game that encourages or inspires Storytelling. This mechanic can be viewed as an extension of Variable Player Powers.",
@@ -1113,6 +1252,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 140,
         "fields": {
             "name": "Roles with Asymmetric Information",
             "description": "One or more players are secretly assigned roles at the start of the game which have different win conditions, and receive different starting information about the game state.\n\nThis is a typically a subset of Hidden Roles, except that all players have incomplete information. In Werewolf all werewolves know the full game state. In contrast, in Spyfall most players know the location but not who the spy is, while the spy has the opposite information.\n\nExamples of this mechanism include Insider and Spyfall.",
@@ -1121,6 +1261,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 141,
         "fields": {
             "name": "Roll / Spin and Move",
             "description": "Roll / Spin and move games are games where players roll dice or spin spinners and move playing pieces in accordance with the roll.\n\nThis term is often used derogatorily to imply that there is no thought involved. Roll and move games like Backgammon, however, contain tactical elements.\n\nMicrobadges\n\n - Roll-and-Move Games fan",
@@ -1129,6 +1270,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 142,
         "fields": {
             "name": "Rondel",
             "description": "The available Actions are represented as pie wedges in a circle. Each player has one or more tokens on Rondel&rsquo;s wedges. On their turn, they may move their token around the Rondel and perform the Action indicated by the wedge where they stop. It is typically more costly to move further around the Rondel.",
@@ -1137,6 +1279,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 143,
         "fields": {
             "name": "Scenario / Mission / Campaign Game",
             "description": "A game system that can be applied to a variety of different maps, starting resources and positions, and even different win and loss conditions. These variable conditions can be assembled into a broader narrative or campaign, or they can be entirely disconnected from one another.",
@@ -1145,6 +1288,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 144,
         "fields": {
             "name": "Score-and-Reset Game",
             "description": "A game in which players play until reaching a stopping condition, then record scores, reset the game, and play one or more additional rounds. The game concludes after some number of rounds, and the cumulative score is calculated to determine a winner.",
@@ -1153,6 +1297,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 145,
         "fields": {
             "name": "Secret Unit Deployment",
             "description": "In Secret Unit Deployment games, some (or all) pieces enter the board in secret, and only the player controlling certain playing pieces has perfect information about the nature (or even the whereabouts) of those pieces. Other players will not know where those pieces are located on the board, or they may know where pieces are, but not know the details (such as strength or type) of these pieces. This mechanic is often used in wargames to simulate &quot;fog of war&quot;.",
@@ -1161,6 +1306,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 146,
         "fields": {
             "name": "Selection Order Bid",
             "description": "Selection Order Bid is a form of multiple-lot auction in which players are not directly bidding on the lots themselves, but the order in which they&rsquo;ll draft the lots. As the bid increases, players may pass and accept a later place in the order. In some cases, players must pay their entire current bid (an all-pay mechanism), and in others they may recover some of their bid.\n\nAn early example of this mechanism is in For Sale.",
@@ -1169,6 +1315,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 147,
         "fields": {
             "name": "Semi-Cooperative Game",
             "description": "A game in which players are cooperating and competing with each other throughout the game, while trying to complete a common objective. There have been several ways to implement this\n\nOn classification is Grand Winner format. A Grand Winner game has two possible outcomes:\n\nA) One or more players win    \nB) No players win\n\nA game where players sometimes cooperate and sometimes compete but one always wins is not semi-cooperative. It is a Competitive game with a Negotiation mechanism.\n\nOther formats of semi-cooperative games proceed similar to cooperative games but winning and losing objectives are triggered individually such that the outcome may be that no players win, all players win or some players win and some lose. The individual win/loss games have shown to be far less controversial than the Grand Winner format.",
@@ -1177,6 +1324,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 148,
         "fields": {
             "name": "Set Collection",
             "description": "The value of items is dependent on being part of a set; for example, scoring according to groups of a certain quantity or variety.\n\nDemonstrations:\nA set of 3 of a particular item is worth points (but each item alone has no value).\nA set of 3 different items is worth points (but each item alone has no value).\nA particular item is worth 3 points, a set of 2 such items is worth 7 points, and a set of 3 of it is worth 13 points.\n\nExample games: Players collect and harvest different types of beans in Bohnanza, and they collect Monuments in Ra.\n\nContracts should be indicated when applicable, as a more sophisticated case where the items are defined by variable goals within the game which can be claimed, typically by only one player.",
@@ -1185,6 +1333,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 149,
         "fields": {
             "name": "Simulation",
             "description": "Simulation games attempt to model actual events or situations.",
@@ -1193,6 +1342,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 150,
         "fields": {
             "name": "Simultaneous Action Selection",
             "description": "Players plan their turn simultaneously and secretly. Then, they reveal their plans at the same time.",
@@ -1201,6 +1351,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 151,
         "fields": {
             "name": "Singing",
             "description": "Games that use a Singing mechanic require players to hum or sing familiar songs in order to fulfill certain game requirements.",
@@ -1209,6 +1360,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 152,
         "fields": {
             "name": "Single Loser Game",
             "description": "A game which concludes when a single player loses.\n\nThese are typically games designed for more than two players, although they may accommodate two players. At the two-player count, this game mechanism could apply if the loser is the one who due to their own actions is eliminated, moreso than due to the competitive play of the opponent. i.e. Chess would not be considered a &quot;single loser game&quot;. This is also not intended for games where the end of game trigger is due to a single player &quot;busting&quot; (as in Hearts). There will typically not be a winner rated among the remaining players, although some ranking system is possible, especially if played in multiple rounds.",
@@ -1217,6 +1369,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 153,
         "fields": {
             "name": "Slide/Push",
             "description": "Players push or slide a token, and other tokens ahead of it are also pushed.\n\nExamples: Abalone, Masters of Renaissance: Lorenzo il Magnifico \u2013 The Card Game, Black Angel.",
@@ -1225,6 +1378,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 154,
         "fields": {
             "name": "Solo / Solitaire Game",
             "description": "Games that are intended for play by a single player, or that have a game mode intended for play by a single player.\n\nThis does not include games in which a player plays both (or multiple) factions in play to the best of his abilities (something that often happens to Wargame players or to Chess players).",
@@ -1233,6 +1387,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 155,
         "fields": {
             "name": "Speed Matching",
             "description": "A pattern is revealed, typically through a card flip, and players try to be the first to find a match with other game elements on the table, or see if a match exists.\n\nScan and Jungle Speed are examples.",
@@ -1241,6 +1396,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 156,
         "fields": {
             "name": "Square Grid",
             "description": "Pieces are placed on a board tessellated with squares, which is used for adjacency and/or movement",
@@ -1249,6 +1405,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 157,
         "fields": {
             "name": "Stacking and Balancing",
             "description": "Players must physically stack and balance pieces.\n\nJunk Art and Bausack are examples.\n\nNOTE: This is different than the common term &quot;stacking&quot; in wargames, where multiple counters are in a stack.",
@@ -1257,6 +1414,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 158,
         "fields": {
             "name": "Stat Check Resolution",
             "description": "There is a target number required to succeed at some test. A random number is generated (by card draw, die roll, etc.), which is compared to the target. If it meets or exceeds the target, the action succeeds.",
@@ -1265,6 +1423,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 159,
         "fields": {
             "name": "Static Capture",
             "description": "Pieces are captured when another piece occupies or passes over their space.",
@@ -1273,6 +1432,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 160,
         "fields": {
             "name": "Stock Holding",
             "description": "Stock Holding is a subcategory of Investment, in which players may buy and sell (or retain) defined interests an entire asset, such as a company, commodity or nation. This will often grant certain privileges of Ownership.\n\nNotable examples include Acquire, where players can purchase shares of companies, and benefit if those companies grow before being bought out, and Imperial, where players are purchasing bonds in European nations which grant not only a dividend and points at the end of the game but also the right to control that nation's actions for as long as you are the majority bondholder.",
@@ -1281,6 +1441,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 161,
         "fields": {
             "name": "Storytelling",
             "description": "In storytelling games, players are provided with conceptual, written, or pictorial stimuli which must be incorporated into a story of the players' creation. Once Upon a Time uses a selection of words while Rory's Story Cubes include ambiguous symbols. Some games like Snake Oil and Big Idea prompt players to pitch a product, which frequently takes the form of a brief story or vignette.\n\nOther storytelling games include titles such as Tales of the Arabian Nights and Above and Below, game designs in which players don't create their own stories, but instead experience a story from the inside as one of the participants. Games along those lines might present players with a particular narrative situation, after which the player will make a choice that affects which end to the narrative is told &mdash; with the results of this narrative affecting the player's standing in the game.\n\nMicrobadge:\n\n &mdash; Storytelling games fan\n - Storytelling games fan",
@@ -1289,6 +1450,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 162,
         "fields": {
             "name": "Sudden Death Ending",
             "description": "There are two distinct types of Sudden Death Endings:\n\n1. In the case of a tie at the end of regular play, &lsquo;sudden death&rsquo; is triggered where play continues until the game ends immediately after a player achieves a certain condition (like scoring a point).\n\n2. Special victory conditions which when met trigger an early and immediate end to game play (perhaps completing the current round), prior to the &quot;normal&quot; ending conditions for the game.",
@@ -1297,6 +1459,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 163,
         "fields": {
             "name": "Tags",
             "description": "Game objects, typically cards, have icons or other identifiers that identify them as belonging to specific categories. These tags may trigger special effects and/or have values and meaning that can vary, even within the scope of a single play. Tags are additional parameters on top of the base meaning of the game element, so tags represent a means of coupling the game element with more mechanisms and systems. Tags are also bookmarks that can reference a variable set of possible rules that are encoded elsewhere, so tags are also a means to modularize, or uncouple, game triggers and game effects.",
@@ -1305,6 +1468,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 164,
         "fields": {
             "name": "Take That",
             "description": "Competitive maneuvers that directly target one opponent's progress toward victory, but do not directly eliminate any characters or components representing the opponent. Such mechanics include stealing, nullifying, or force-discarding of one opponent's resources, actions, or abilities. A take-that maneuver often results in a dramatic change in the players' position of power over a relatively short period of time.\n\nIt is unclear whether this includes 2 player games (as every action inhibits your one opponent's victory).",
@@ -1313,6 +1477,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 165,
         "fields": {
             "name": "Targeted Clues",
             "description": "A player gives clues that they want some, but not all, players to guess.\n\nThis is frequently used in party games, such as Barbarossa and Dixit.",
@@ -1321,6 +1486,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 166,
         "fields": {
             "name": "Team-Based Game",
             "description": "In team-based games, teams of players compete with one another to obtain victory. There are a variety of possible team structures, including symmetrical teams like 2v2 and 3v3, multiple sides like 2v2v2, and even One vs. All.",
@@ -1329,6 +1495,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 167,
         "fields": {
             "name": "Tech Trees / Tech Tracks",
             "description": "During the course of the game, new Actions become available to specific players, or existing Actions are improved. These are often themed as Technologies, but do not need to be.\n\nSometimes this is expressed as a Tree, where gaining one Tech unlocks multiple other Techs. Or it can be a track, where advancing along the track unlocks upgraded or new Actions.",
@@ -1337,6 +1504,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 168,
         "fields": {
             "name": "Three Dimensional Movement",
             "description": "Position and movement of pieces is in three dimensions. This can either be represented by a multi-level play surface, or some token or indicator of the height above or below a two-dimensional play surface.\n\nExamples include Chopper Strike, which physically has two layers for tanks and helicopters to move on, or Attack Vector: Tactical, which includes tiles to show height above or below the play surface.",
@@ -1345,6 +1513,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 169,
         "fields": {
             "name": "Tile Placement",
             "description": "Tile Placement games feature placing a piece to score VPs or trigger actions, often based on adjacent pieces or pieces in the same group/cluster, or keying off non-spatial properties like color, &quot;feature completion&quot;, cluster size etc.\n\nA classic example is Carcassonne, where a player randomly draws a tile, places it next to other tiles (along with a meeple), in order to complete map features.\n\nMicrobadge\n\n Tile placement / tile laying games fan",
@@ -1353,6 +1522,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 170,
         "fields": {
             "name": "Track Movement",
             "description": "Pieces are moved along a linear track (not necessarily straight - it may turn, curve or loop). \nExamples include classic roll-and-move games of the Backgammon or Pachisi variety, or contemporary board games such as Lewis & Clark: The Expedition or Viva Topo!.\nThis may include simple branches such as Tokaido or Jamaica, and tracks with limited width as is typical of racing games such as: Flamme Rouge, Downforce, or Monza.",
@@ -1361,6 +1531,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 171,
         "fields": {
             "name": "Trading",
             "description": "Players may Trade assets directly with each other, rather than via a Market.",
@@ -1369,6 +1540,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 172,
         "fields": {
             "name": "Traitor Game",
             "description": "A traitor game can be seen as a kind of team game, or as a cooperative game with a betrayal mechanism. The traitors typically win by triggering a failure condition for the players. For this mechanism, a traitor game is characterized by traitors that begin the game with hidden identities, or are assigned them during the game.",
@@ -1377,6 +1549,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 173,
         "fields": {
             "name": "Trick-taking",
             "description": "Players play cards from their hand to the table in a series of rounds, or &ldquo;tricks&rdquo; which are each evaluated separately to determine a winner and to apply other potential effects.\n\nThe most common way to win a trick is by having the card with highest value of the suit that was led, but many classical card games use the &quot;trump&quot; system (where the  certain cards, usually those of a designated suit, will win the trick if they are played.)  Occasionally there is a round of bidding to determine this trump suit.\n\nIn many trick taking games (though not all), players are required to &quot;follow suit&quot;, i.e. play a card of the same suit as was led if they have one.  If they do not have a matching card, they must play another card from their hand.\n\nCards are played sequentially, not simultaneously.",
@@ -1385,6 +1558,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 174,
         "fields": {
             "name": "Tug of War",
             "description": "A marker is moved up and back on a track towards or away from a neutral position.\n\nTwilight Struggle implements this as a way of determining victory, and also acting as a Sudden Death mechanism if either player reaches the end of the track.\n\nChurchill implements a 3-player tug-of-war to resolve the issues being debated throughout the game.",
@@ -1393,6 +1567,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 175,
         "fields": {
             "name": "Turn Order: Auction",
             "description": "Players bid for turn order. A variety of auction mechanisms may be used.",
@@ -1401,6 +1576,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 176,
         "fields": {
             "name": "Turn Order: Claim Action",
             "description": "In each round there is a First Player, and turns are taken clockwise from the first player. There is an action that may be taken to claim a place in the turn order (typically, but not always, first) for the next round, with play proceeding clockwise from the First Player. If no one takes the action, turn order remains unchanged.",
@@ -1409,6 +1585,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 177,
         "fields": {
             "name": "Turn Order: Pass Order",
             "description": "On their turn, players may either take an action or pass. The first player who passes becomes the new first player for the next round. The second player who passes becomes the second player for the next round, and so on. Reversing pass order and turn order is also possible when going later in turn order is more advantageous.",
@@ -1417,6 +1594,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 178,
         "fields": {
             "name": "Turn Order: Progressive",
             "description": "One player has the First Player token. At the end of the round, the token passes to the player to the left, who becomes the new First Player for that round. During the round, players take turns clockwise around the table.\n\nCounterclockwise movement is called &quot;Regressive Turn Order&quot; and can also be included in this category.",
@@ -1425,6 +1603,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 179,
         "fields": {
             "name": "Turn Order: Random",
             "description": "Representatives of play pieces or players are randomized, and one is drawn at a time. That player or play piece takes its turn, then a new random draw is made.",
@@ -1433,6 +1612,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 180,
         "fields": {
             "name": "Turn Order: Role Order",
             "description": "Players secretly and simultaneously select an action, role, or priority. Then they are revealed, and the actions/roles revealed determine the order in which players act.",
@@ -1441,6 +1621,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 181,
         "fields": {
             "name": "Turn Order: Stat-Based",
             "description": "The turn order within each Round is set by some statistic relating to the players&rsquo; resources or position in the game. A typical case is when turn order is performed in order of current score (as a catch-up mechanism).",
@@ -1449,6 +1630,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 182,
         "fields": {
             "name": "Turn Order: Time Track",
             "description": "In this Turn Order mechanism, there is a linear &ldquo;Time Track&rdquo; with many spaces. Each player has a marker on the track, which indicates where they are &ldquo;in time.&rdquo; Markers farther on the track are further forward in time.\n\nThe player with the marker lowest on the track (furthest &ldquo;back in time&rdquo;) takes the next action. Different actions have different costs in time. The player&rsquo;s marker is advanced a number of spaces according to the cost of the selected action. Then, the next lowest marker on the track takes an action.\n\nIt is possible that the same player takes multiple turns in a row.\n\nNOTE: If there is a time tracker that does not determine turn order, that does not qualify as using this Time Track turn order mechanism.",
@@ -1457,6 +1639,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 183,
         "fields": {
             "name": "Variable Phase Order",
             "description": "Variable Phase Order implies that turns may not be played the same way as before and / or after.\n\nUsing Puerto Rico as an example, every turn is different. Depending on who starts selecting the roles and what roles they take, you may have to play the 'build' action sooner than you'd wish. In other games, you may be denied from taking certain action.\n\nMost games with limited action and any game without a static game turn order fall under this 'mechanism'. Use of variable player turn order are not Variable Phase Order games.",
@@ -1465,6 +1648,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 184,
         "fields": {
             "name": "Variable Player Powers",
             "description": "Variable Player Powers is a mechanic that grants different abilities and/or paths to victory to the players.  To illustrate, here are some notable examples.\n\nIn Ogre, one player controls a single powerful piece, and the other plays many weaker units.  The net effect is a balanced game.\n\nIn Cosmic Encounter, each player is assigned a random special ability at the beginning of the game.  Although each player has the same victory goal (establish colonies on five planets in other players' systems), their abilities enable differing means to the end.\n\nIn Here I Stand, each player controls a political power with unique ways to score victory points.  Some focus on military conquest, some on religious influence, etc.\n\nPlayer powers may change throughout the game, as in Small World or Sunrise City.",
@@ -1473,6 +1657,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 185,
         "fields": {
             "name": "Variable Set-up",
             "description": "The starting game state varies from game to game, through changes to shared game components like the map, and/or changes to starting player set-ups, resources, objectives, etc.\n\nExamples cited from Building Blocks of Tabletop Game Design: An Encyclopedia of Mechanisms by Geoffrey Engelstein and Isaac Shalev:\n\nBattlestar Galactica: The Board Game (Konieczka, 2008)\nCatan (Teuber, 1995)\nCosmic Encounter (Eberle, Kittredge, Norton, and Olatka, 1977)\nDominion (Vaccarino, 2008)\nScythe (Stegmaier, 2016)\nSpecter Ops (Matsuuchi, 2015)",
@@ -1481,6 +1666,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 186,
         "fields": {
             "name": "Victory Points as a Resource",
             "description": "Victory Points (VPs) may be spent as a currency to impact the game state.\n\nBusiness or Economic games that use currency and give the win to the players with the most money are common examples of this mechanism. However games with other themes like Small World also use this mechanism.  Games where currency (or other resources) can contribute in a minor fashion as extra VPs at the end game (usually at some discount rate) should not be tagged with this mechanism, but rather as End Game Bonuses.",
@@ -1489,6 +1675,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 187,
         "fields": {
             "name": "Voting",
             "description": "Players vote on whether a proposed action will occur or not.\n\nIn most games with this mechanism each player has one vote. However several, like Junta, give players different numbers of votes depending on their board position or the issue being voted on.",
@@ -1497,6 +1684,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 188,
         "fields": {
             "name": "Worker Placement",
             "description": "A stylized form of Action Drafting, players place tokens (typically the classic person-shaped &quot;meeple&quot;) to trigger an action from a set of actions available to all players, generally one-at-a-time and in turn order. Some games achieve the same effect in reverse: the turn begins with action spaces filled by markers, which are claimed by players for some cost. Each player usually has a limited number of tokens with which to participate in the process, although these may increase as the game progresses.\n\nThere is usually(*) a limit on the number of times a single action may be taken. Once that limit for an action is reached, it typically either becomes more expensive to take again or can no longer be taken for the remainder of the round. As such, not all actions can be taken by all players in a given round, and &quot;action blocking&quot; occurs. If the game is structured in rounds, then all actions are usually refreshed at the start or end of each round so that they become available again.\n\nFrom a thematic standpoint, the game pieces which players use to draft actions often represent &quot;workers&quot; of a given trade (this category of mechanism, however, is not necessarily limited to or by this thematic representation). In other words, players often thematically &quot;place workers&quot; to show which actions have been drafted by individual players. For example, in Agricola each player starts with two pieces representing family members that can be placed on action spaces to collect resources or take other actions like building fences. When someone places a piece on a given space, that action is no longer available until the next round.\n\nKeydom, which was published in 1998, is widely recognized as the first of the worker placement genre of games. Other early design experiments with the mechanism include Bus (1999) and Way Out West (2000). Well known examples of worker placement include Agricola (2007), Caylus (2005) and Stone Age (2008).\n\n(*) The use of the word &quot;usually&quot; in this context is a somewhat controversial point of discussion. For purposes of BGG classification, &quot;action blocking&quot; is a defining element of worker placement. In that case, there must always be a limit on the number of times a single action may be drafted each round.\n\nMicrobadges\n\n Worker Placement fan\n Worker Placement fan",
@@ -1505,6 +1693,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 189,
         "fields": {
             "name": "Worker Placement with Dice Workers",
             "description": "Workers are represented by dice whose pip values impact play.\n\nKingsburg and Alien Frontiers are examples of this mechanism.\n\nSee also mechanic Worker Placement",
@@ -1513,6 +1702,7 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 190,
         "fields": {
             "name": "Worker Placement, Different Worker Types",
             "description": "Workers can differ in abilities, or can be upgraded and downgraded, or are valid for placement in different areas and buildings.\n\nGames that implement this mechanism include Age of Empires III: The Age of Discovery and The Manhattan Project.",
@@ -1521,9 +1711,766 @@
     },
     {
         "model": "games.mechanic",
+        "pk": 191,
         "fields": {
             "name": "Zone of Control",
             "description": "Spaces adjacent to a unit impact the ability of opposing units to move or attack.\n\nThis is a very common mechanism in wargames, such as The Russian Campaign. There are many variations, including &quot;Locking ZOCs&quot;, where units are frozen and cannot leave, &quot;Soft ZOCs&quot;, where units can move from ZOC to ZOC, but at some penalty, and others.",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 1,
+        "fields": {
+            "name": "Abstract Strategy",
+            "description": "Abstract Strategy games are often (but not always):\n\n\n     theme-less (without storyline)\n     built on simple and/or straightforward design and mechanics\n     perfect information games\n     games that promote one player overtaking their opponent(s)\n     little to no elements of luck, chance, or random occurrence\n\n\nMicrobadges\n\n Abstract fan\n Modern abstract games fan",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 2,
+        "fields": {
+            "name": "Action / Dexterity",
+            "description": "Action/Dexterity games often compete players' physical reflexes and co-ordination as a determinant of overall success.\n\nRelated blog post: On the value of dexterity games\n\nMicrobadges:\n\n - Action/Dexterity Games fan",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 3,
+        "fields": {
+            "name": "Adventure",
+            "description": "Adventure games often have themes of heroism, exploration, and puzzle-solving.  The storyline behind such games often have fantastical elements, and involve the characters in some sort of quest.\n\nMicrobadge\n\n Adventure games fan",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 4,
+        "fields": {
+            "name": "Age of Reason",
+            "description": "Age of Reason games are board-wargames and historical games (expansion, promos, etc.) set from late 17th century (around 1690) to late 18th century (1789).\n\nThe Age of Reason started around 1690, with the development and adoption of the socket bayonet by the main European armies, coming to an end in 1789 with the French Revolutionary Wars and the following Napoleonic Wars.\n\n\nHistorical categories on BGG:\n\n\n    Ancient\n    Medieval\n    Renaissance\n    Pike and Shot\n    Age of Reason\n    Napoleonic\n    Post-Napoleonic\n    World War I\n    World War II\n    Korean War\n    Vietnam War\n    Modern Warfare\n\n\nNorth America:\n\n    American Revolutionary War\n    American Civil War\n    American Indian Wars\n    American West",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 5,
+        "fields": {
+            "name": "American Civil War",
+            "description": "American Civil War games have storylines set during the secession years of the United States of America, 1861-1865.\n\nThe most popular American Civil War games are also categorized as Wargames.\n\n\n[Note: this category is included in the Civil war category which covers all civil wars].\n\n\nHistorical categories on BGG:\n\n\n    Ancient\n    Medieval\n    Renaissance\n    Pike and Shot\n    Age of Reason\n    Napoleonic\n    Post-Napoleonic\n    World War I\n    World War II\n    Korean War\n    Vietnam War\n    Modern Warfare\n\n\nNorth America:\n\n    American Revolutionary War\n    American Civil War\n    American Indian Wars\n    American West",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 6,
+        "fields": {
+            "name": "American Indian Wars",
+            "description": "American Indian Wars games generally have themes concerning the battles and wars between the indigenous peoples of North America and the colonizing European powers or settlers during the XVII (17)th and XVIII (18)th centuries. It also covers battles and wars between those indigenous peoples and the United States government during the XVIII (18)th and XIX (19)th centuries.\n\nMost American Indian Wars games are also categorized as Wargames.\n\n\nHistorical categories on BGG:\n\n\n    Ancient\n    Medieval\n    Renaissance\n    Pike and Shot\n    Age of Reason\n    Napoleonic\n    Post-Napoleonic\n    World War I\n    World War II\n    Korean War\n    Vietnam War\n    Modern Warfare\n\n\nNorth America:\n\n    American Revolutionary War\n    American Civil War\n    American Indian Wars\n    American West",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 7,
+        "fields": {
+            "name": "American Revolutionary War",
+            "description": "American Revolutionary War games have storylines set during the American War of Independence, 1775-1783.\n\nMost American Revolutionary War games are also categorized as Wargames.\n\n\nHistorical categories on BGG:\n\n\n    Ancient\n    Medieval\n    Renaissance\n    Pike and Shot\n    Age of Reason\n    Napoleonic\n    Post-Napoleonic\n    World War I\n    World War II\n    Korean War\n    Vietnam War\n    Modern Warfare\n\n\nNorth America:\n\n    American Revolutionary War\n    American Civil War\n    American Indian Wars\n    American West",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 8,
+        "fields": {
+            "name": "American West",
+            "description": "American West games often have themes or storylines set in the Western United States during the latter half of the 19th century.  Some of the themes and imagery found in the most popular American West games concerns cowboys, sheriffs, outlaws, prospecting, colonization, and railways, among others.\n\n\nHistorical categories on BGG:\n\n\n    Ancient\n    Medieval\n    Renaissance\n    Pike and Shot\n    Age of Reason\n    Napoleonic\n    Post-Napoleonic\n    World War I\n    World War II\n    Korean War\n    Vietnam War\n    Modern Warfare\n\n\nNorth America:\n\n    American Revolutionary War\n    American Civil War\n    American Indian Wars\n    American West",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 9,
+        "fields": {
+            "name": "Ancient",
+            "description": "Ancient games often have themes or storylines set in the Old World, between 3000 BC (the beginning of the Egyptian dynasties) and AD 476 (the fall of the Western Roman Empire).  Some of the themes and imagery found in the most popular Ancient games concerns ancient Egyptian, Greek, and Roman civilizations.\n\n\nHistorical categories on BGG:\n\n\n    Ancient\n    Medieval\n    Renaissance\n    Pike and Shot\n    Age of Reason\n    Napoleonic\n    Post-Napoleonic\n    World War I\n    World War II\n    Korean War\n    Vietnam War\n    Modern Warfare\n\n\nNorth America:\n\n    American Revolutionary War\n    American Civil War\n    American Indian Wars\n    American West",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 10,
+        "fields": {
+            "name": "Animals",
+            "description": "Animals games involve animals as a major component of the theme or gameplay.  Animals games often require players to attend to the management or control of animals.  Players may even take on the role of an animal (or animals) in the game.",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 11,
+        "fields": {
+            "name": "Arabian",
+            "description": "Arabian games are generally fantasy or adventure games that have themes or storylines set in the Arabian Peninsula of the Middle East, but may include locations around the Persian Gulf or North/East Africa as well. Popular themes and imagery in Arabian games include deserts, palaces, camels, jewels, and oases, among others,",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 12,
+        "fields": {
+            "name": "Aviation / Flight",
+            "description": "Games primarily concerned with mechanical flight, including planes, helicopters, and gliders.",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 13,
+        "fields": {
+            "name": "Bluffing",
+            "description": "Bluffing games encourage players to use deception to achieve their aims.  All Bluffing games have an element of hidden information in them.",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 14,
+        "fields": {
+            "name": "Book",
+            "description": "Book games are not games per se, but rather a collection of game designs and rules that can be played using common gaming equipment (checkered board, paper and pencil, cards, dominoes, dice, etc.).  Another type of Book games are those like Steve Jackson's Sorcery! series that uses storytelling, dice rolling, and a &quot;multiple-choice paragraph system&quot; as mechanics.",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 15,
+        "fields": {
+            "name": "Card Game",
+            "description": "Card Games use cards as its sole or central component.  There are stand-alone card games, in which all the cards necessary for gameplay are purchased at once.  There are also Collectible Card Games (CCGs), where players purchase starter and &quot;booster&quot; packs in an effort to compile a more and more powerful deck of cards to compete with.",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 16,
+        "fields": {
+            "name": "Children's Game",
+            "description": "Children's Games are often driven by a set of simple rules and elementary themes geared towards younger players.  However, the most popular Children's Games are just that because they can be (and are) enjoyed by gamers of all ages.",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 17,
+        "fields": {
+            "name": "City Building",
+            "description": "City Building games compel players to construct and manage a city in a way that is efficient, powerful, and/or lucrative.",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 18,
+        "fields": {
+            "name": "Civil War",
+            "description": "Civil War games generally have storylines concerning a violent battle for government control between two more groups from the same country.  The majority of Civil War games are also categorized as Wargames.\n\n[Note: this category covers all civil wars including the American civil war (1861-65)].",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 19,
+        "fields": {
+            "name": "Civilization",
+            "description": "Civilization games often have players developing and managing a society of people.  The aim of each player is usually to employ citizens in ways that are beneficial to society, and have them progress throughout the game so that their civilization gains superiority over others.  Civilization games may have each player build their society independently, or through warfare and diplomacy, each player may find themselves benefiting or suffering from the actions of others.",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 20,
+        "fields": {
+            "name": "Collectible Components",
+            "description": "Collectible Components games are ones where the components required to play the game are purchased incrementally, rather than all at once.\n\nThese games have a transitory nature as reprints really aren't possible.  Collecting a &quot;complete set&quot; for many of these games could be considered a hobby.\n\nThe most popular Collectible Components games come in the form of Collectible Card Games (CCG) or Miniatures games.",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 21,
+        "fields": {
+            "name": "Comic Book / Strip",
+            "description": "Comic Book/Strip games often have themes and storylines that are based on established comic book/strip characters.  Comic Book/Strip games may have been designed independently, or have been built onto previously established game systems (e.g., HeroClix).",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 22,
+        "fields": {
+            "name": "Deduction",
+            "description": "Deduction games are those that require players to form conclusions based on available premises. These games are quite varied, including several different types of logical reasoning. Cat &amp; Mouse games like Scotland Yard are a type of Deduction game in which players use a set of observations and truthful feedback to narrow down possibilities and catch a constantly moving opponent at the right position. Elimination games like Clue expect players to arrive at the right conclusion after narrowing down possibilities from a large list. Signalling games like Werewolf allow for a set of observations and player-driven feedback (which may not be truthful) to arrive at the right conclusion out of 2-3 main choices. Finally, this Category includes Induction games like Zendo, in which players must derive a general rule out of near infinite possibilities.\n\nSocial deduction games are a related sub-category that is proving increasingly popular, and includes games with hidden roles and bluffing such as The Resistance and One Night Werewolf.  For an overview, see the article Social Deduction Games: How Many Different Ways Can I Tell You That I Am Not A Werewolf? and also Social Deduction Games: Choosing an Appropriate One.\n\nMicrobadges:\n\n - Deduction games fan\n - Deduction games fan\n\n - Social Deduction games fan",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 23,
+        "fields": {
+            "name": "Dice",
+            "description": "Dice games often use dice as its sole or principal component.  Dice games traditionally focus almost exclusively on dice rolling as a mechanic (e.g., Yahtzee, Perudo, Can't Stop).",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 24,
+        "fields": {
+            "name": "Economic",
+            "description": "Economic games encourage players to manage a system of production, distribution, trade, and/or consumption of goods. The games usually simulate a market in some way. The term is often used interchangeably with resource management games.\n\nMicrobadges\n\n Economic Games fan\n Economic Games fan\n Economic Games fan\n Economic Games fan - Money never sleeps, pal",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 25,
+        "fields": {
+            "name": "Educational",
+            "description": "Educational games have been specifically designed to teach people about a certain subject, expand concepts, reinforce development, understand an historical event or culture, or assist them in learning a skill as they play.\n\n(Definition taken from https://en.wikipedia.org/wiki/Educational_game)",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 26,
+        "fields": {
+            "name": "Electronic",
+            "description": "Electronic games often have an electronic apparatus as the central component of the game.  They differ from electrified games (e.g., Operation) as Electronic game components will contain circuitry, and sometimes a simple computer.\n\nGames that require a website or app to be played do not fall into this category. They can be added to the family Components: Digital Hybrid \u2013 App/Website Required instead.",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 27,
+        "fields": {
+            "name": "Environmental",
+            "description": "Environmental games often have themes and storylines regarding environmental conservation and management.",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 28,
+        "fields": {
+            "name": "Expansion for Base-game",
+            "description": "Expansion for Base-game games are sets of additional components and rules for expanding on an original base game.  An expansion cannot be played alone; they must be used in conjunction with the base game.\n\nExpansions for base games can be found in most of the game entries on BGG.  You will find them in the &quot;Information&quot; section, under &quot;Expanded By&quot;.  You can also find expansions under the &quot;Linked Items&quot; column.",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 29,
+        "fields": {
+            "name": "Exploration",
+            "description": "Exploration games often encourage players to discover and search new areas or territories for particular objects or goods, and/or to search for people to become trading partners with.\n\nMicrobadge\n\n Exploration Games fan",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 30,
+        "fields": {
+            "name": "Fan Expansion",
+            "description": "&quot;Fan expansion&quot; is a BoardGameGeek designation for non-commercial enhancements made by people other than a base game's designers or publishers. In other words, these are &quot;unofficial&quot; works.\n\nThe convention of adding &quot;(fan expansion for...)&quot; to the title field arose when the people behind Dominion expressed concern that unlicensed work might be confused with the official product line.\n\nPlease be sure to read Fan Expansion Criteria.",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 31,
+        "fields": {
+            "name": "Fantasy",
+            "description": "Fantasy games are those that have themes and scenarios that exist in a fictional world. It is a genre that uses magic and other supernatural forms as a primary element of plot, theme, and/or setting. Fantasy is generally distinguished from science fiction and horror by the expectation that it steers clear of scientific and macabre themes, respectively, though there can be a great deal of overlap between the three.\n\nFantasy game elements usually include:\na- Creatures that are common in fantasy books and comics, such as orcs, trolls, goblins, dragons, etc.\nb- Magic that can be used with units or abilities \nc- Can involve a struggle between good and evil forces.\n\nMicrobadges\n\n Fantasy Gamer\n Fantasy Gamer\n Fantasy Gamer\n Fantasy Gamer\n Fantasy Gamer",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 32,
+        "fields": {
+            "name": "Farming",
+            "description": "Farming games encourage players to build and manage farmland for the purposes of growing crops and/or tending to livestock, often to be sold or traded later on.",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 33,
+        "fields": {
+            "name": "Fighting",
+            "description": "Fighting games are those that encourage players to engage game characters in close quarter battles and hand-to-hand combat.\n\nFighting games differ from Wargames in that the combat in Wargames exists as one part of a large-scale military simulation, while in Fighting games the focus is on the particular combat scenarios.",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 34,
+        "fields": {
+            "name": "Game System",
+            "description": "A Game System is an item whose components are not a game, per se, but are used to play games.  Examples include Piecepack, Decktet, Shibumi, GEMJI, Chestego and Rainbow Deck.\n\nItems that describe a single game or a game that has a set of scenarios are generally not regarded as a games system.",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 35,
+        "fields": {
+            "name": "Horror",
+            "description": "Horror games often contain themes and imagery depicting morbid and supernatural elements.\n\n Microbadges \n\n Horror Games fan",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 36,
+        "fields": {
+            "name": "Humor",
+            "description": "Humor games often have themes and gameplay that provoke laughter and amusement.  More specifically, humor games may require players to engage in clowning, comedy, jokes, and/or satire as an objective of the game.",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 37,
+        "fields": {
+            "name": "Industry / Manufacturing",
+            "description": "Industry / Manufacturing games encourage players to build, manage and/or operate tools and machinery in order to manufacture raw materials into goods and products.\n\nMany of the most popular Industry / Manufacturing games are Economic games as well.",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 38,
+        "fields": {
+            "name": "Korean War",
+            "description": "Korean War games cover the military conflict between North and South Korea (and their respective allies) during 1950-1953.\n\nThe most popular Korean War games are also categorized as Wargames.\n\n\nHistorical categories on BGG:\n\n\n    Ancient\n    Medieval\n    Renaissance\n    Pike and Shot\n    Age of Reason\n    Napoleonic\n    Post-Napoleonic\n    World War I\n    World War II\n    Korean War\n    Vietnam War\n    Modern Warfare\n\n\nNorth America:\n\n    American Revolutionary War\n    American Civil War\n    American Indian Wars\n    American West",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 39,
+        "fields": {
+            "name": "Mafia",
+            "description": "Mafia games have themes and scenarios related to classic Sicilian criminal organizations.  However, some games in the Mafia category may be related to other organized criminal groups.\n\nThis is not a mechanic, i'ts a narrative or theme.",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 40,
+        "fields": {
+            "name": "Math",
+            "description": "Math games explicitly require players to use mathematical knowledge and concepts to achieve game objectives. Games involving ordering of numbers or only basic arithmetic should be classified as Number games instead.",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 41,
+        "fields": {
+            "name": "Mature / Adult",
+            "description": "Mature/Adult games often contain explicit humour and situations that might be offensive to some adults and not appropriate for younger gamers.  Many of these games contain sex or alcohol related humour.",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 42,
+        "fields": {
+            "name": "Maze",
+            "description": "Maze games often require players to navigate a series of pathways that are located on the game board.",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 43,
+        "fields": {
+            "name": "Medical",
+            "description": "Medical games have themes related to the science of natural healing. Themes may include surgery, cures, recovery/recuperation/physical therapy, psychiatry, pharmaceutical prescription, and other medicine-related items.",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 44,
+        "fields": {
+            "name": "Medieval",
+            "description": "Medieval games that have themes or storylines set in Europe or Asia, between the 5th century (476, the fall of the Western Roman Empire) and the 15th century (1492, the beginnings of European overseas colonization).\n\n\nHistorical categories on BGG:\n\n\n    Ancient\n    Medieval\n    Renaissance\n    Pike and Shot\n    Age of Reason\n    Napoleonic\n    Post-Napoleonic\n    World War I\n    World War II\n    Korean War\n    Vietnam War\n    Modern Warfare\n\n\nNorth America:\n\n    American Revolutionary War\n    American Civil War\n    American Indian Wars\n    American West\n\n\n\nMicrobadge\n\n Medieval Theme fan",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 45,
+        "fields": {
+            "name": "Memory",
+            "description": "Memory games require players to retain and recall previous game events or information as an objective.",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 46,
+        "fields": {
+            "name": "Miniatures",
+            "description": "Note: Not all games that use miniatures as components are miniature games. A full list of games that use miniatures can be found here: Components: Miniatures.\n\nMiniatures games are games in which miniatures are used to stage the game scenes. In such games, miniatures are the key components, and the playing area represents the miniature's surroundings in a matching scale.\n\n\n\n      Miniatures Reference Wiki\n     Collectible Miniatures Games (BGG Family Page)\n     Miscellaneous Miniatures Game Accessory (BGG Game Page)\n     Miscellaneous Miniatures (RPGG Game Page)\n     Miniature Painters Guild\n         Miniature Painting Guide",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 47,
+        "fields": {
+            "name": "Modern Warfare",
+            "description": "Modern Warfare games cover armed conflicts occurring after World War II (1945 - present). Two precise wars during this period have their own specific category: Korean War (1950-53) and Vietnam War (1945-75).\n\nThe most popular Modern Warfare games are also categorized as Wargames.\n\n\nHistorical categories on BGG:\n\n\n    Ancient\n    Medieval\n    Renaissance\n    Pike and Shot\n    Age of Reason\n    Napoleonic\n    Post-Napoleonic\n    World War I\n    World War II\n    Korean War\n    Vietnam War\n    Modern Warfare\n\n\nNorth America:\n\n    American Revolutionary War\n    American Civil War\n    American Indian Wars\n    American West",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 48,
+        "fields": {
+            "name": "Movies / TV / Radio theme",
+            "description": "Movies/TV/Radio games are often those that are thematically linked with a popular movie, television show, or radio program.  Other Movies/TV/Radio games may test players' knowledge about these media, or the game environment may be set in the movie, television, or radio industry.",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 49,
+        "fields": {
+            "name": "Murder/Mystery",
+            "description": "Murder/Mystery games often involve an unsolved murder or murders.  A requirement of these games is usually for players to investigate these crimes, and determine the criminal details and/or perpetrator(s).",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 50,
+        "fields": {
+            "name": "Music",
+            "description": "Music games are thematically linked to music, bands and/or the music industry.  While many of the popular Music games test players knowledge on music (e.g., Cranium Pop 5, Encore), a number of these games are only linked to music as a theme in the game environment (e.g., Schrille Stille, Battle of the Bands).",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 51,
+        "fields": {
+            "name": "Mythology",
+            "description": "Mythology games are those that often incorporate a thematic narrative that defines how the game world or characters came into existence, specially those related or based on narratives of ancient civilizations of the world.\n\nThe storyline in a number of Mythology games usually includes supernatural elements, such as gods, goddesses and demigods, and are sometimes set in a fabled, primordial time, which usually corresponds to a general corpus of folk stories (myths) that used to have some form of religious or sacred nature for the cultures that engendered these stories.\n\nExamples of Mythology themed games include Ra (based on Egyptian mythology), Odin's Ravens (based on Norse mythology) and Cyclades (based on Greek mythology).",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 52,
+        "fields": {
+            "name": "Napoleonic",
+            "description": "Napoleonic games have storylines set during the French Revolution (1789-1799) and Napoleonic Wars (1803-1815).\n\nMost Napoleonic games are also categorized as Wargames.\n\n\nHistorical categories on BGG:\n\n\n    Ancient\n    Medieval\n    Renaissance\n    Pike and Shot\n    Age of Reason\n    Napoleonic\n    Post-Napoleonic\n    World War I\n    World War II\n    Korean War\n    Vietnam War\n    Modern Warfare\n\n\nNorth America:\n\n    American Revolutionary War\n    American Civil War\n    American Indian Wars\n    American West",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 53,
+        "fields": {
+            "name": "Nautical",
+            "description": "Nautical games involve sailors, ships, and/or maritime navigation as a major component of the theme or gameplay.  Most Nautical games require players to effectively control ships as an objective.\n\nMicrobadge\n\n Nautical Theme Games fan",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 54,
+        "fields": {
+            "name": "Negotiation",
+            "description": "Negotiation games explicitly involve and encourage making deals and alliances with other players and backstabbing when appropriate. Winning is rare without participating in these deals. Unlike cooperative games, Negotiation games are still largely competitive, while granting players certain times to make mutual agreements through discussion.\n\nNegotiation also includes bribery, such as is used in Santiago or Power Struggle.  In these situations, the negotiation is in the form of a naked offer, which can be accepted or declined.\n\nFor an overview and discussion of popular negotiation games, see: Negotiation Games: Your favourites and why\n\nMicrobadge\n\n Negotiation games fan",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 55,
+        "fields": {
+            "name": "Novel-based",
+            "description": "Novel-based games are those that are thematically linked with a popular novel or novel series.\n\nGames linked to other works of literature (poems, theatre plays, etc.) can be included too.",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 56,
+        "fields": {
+            "name": "Number",
+            "description": "Number games require players to use or manipulate numbers to achieve their aims.",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 57,
+        "fields": {
+            "name": "Party Game",
+            "description": "Party games are games that encourage social interaction. They generally have easy setups and simple rules, and they can accommodate large groups of people and play in a short amount of time.\n\n  I'm not a party gamer\n  I'm a party gamer",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 58,
+        "fields": {
+            "name": "Pike and Shot",
+            "description": "Pike and Shot games are wargames set from the early XVI (16)th century to the late XVII (17)th century. Approx 1500-1690\n\nThe Pike and Shot era is generally considered to have started in the early 16th century when mixed formations of musket and pike-armed troops came to dominate the battlefield; it is generally considered to have come to an end with the development and adoption of flintlock guns and the socket bayonet around 1690.\nhttps://en.wikipedia.org/wiki/Pike_and_shot\n\n\nHistorical categories on BGG:\n\n\n    Ancient\n    Medieval\n    Renaissance\n    Pike and Shot\n    Age of Reason\n    Napoleonic\n    Post-Napoleonic\n    World War I\n    World War II\n    Korean War\n    Vietnam War\n    Modern Warfare\n\n\nNorth America:\n\n    American Revolutionary War\n    American Civil War\n    American Indian Wars\n    American West",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 59,
+        "fields": {
+            "name": "Pirates",
+            "description": "Pirate games often have themes or storylines of piracy. Some of the most popular themes and imagery in Pirate games concerns treasure hunting, sea robbery, swords and cannons, swashbuckling, and ship racing.  Many Pirate games occur in timelines prior to the 20th century.\n\nMicrobadge\n\n Pirate Games fan",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 60,
+        "fields": {
+            "name": "Political",
+            "description": "Political games encourage players to use their character's authority to manipulate societal activities and policy.",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 61,
+        "fields": {
+            "name": "Post-Napoleonic",
+            "description": "Games that cover the period between the end of Napoleonic Wars (1815) and start of World War I (1914), covering most of XIX (19) th century.\n\nMany Post-Napoleonic games are also categorized as Wargames.\n\n\nHistorical categories on BGG:\n\n\n    Ancient\n    Medieval\n    Renaissance\n    Pike and Shot\n    Age of Reason\n    Napoleonic\n    Post-Napoleonic\n    World War I\n    World War II\n    Korean War\n    Vietnam War\n    Modern Warfare\n\n\nNorth America:\n\n    American Revolutionary War\n    American Civil War\n    American Indian Wars\n    American West",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 62,
+        "fields": {
+            "name": "Prehistoric",
+            "description": "Prehistoric games often have themes or storylines set in a time before recorded history.  These unwritten histories are usually compiled under time periods, including the Stone Age, Bronze Age, and Iron Age.\n\nMany of the popular Prehistoric games are set in the Stone Age, hunter/gatherer societies, or time periods when dinosaurs existed.",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 63,
+        "fields": {
+            "name": "Print & Play",
+            "description": "Print &amp; Play (versions of) games are not published in a physical form. Instead, the rules and (most) components are available in a digital format, and players are expected to print them off and assemble them themselves. Often, some additional, non-printable components are required as well.\n\nThere are a lot of Print &amp; Play games available on the Internet, and they are often available for free.\n\nDigital items that contain only rulebooks (and reference sheets, etc.) but no components should not be linked to this category.\n\nThis category includes games that were published as a Print &amp; Play game at some point, even if their files were removed later. That means that lots of these games are not available as Print &amp; Play games anymore.\n\nRead more in the wiki about how to create Print &amp; Play games.\n\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\tPrint &amp; Play GeekLists\n\nFree Wargames!\n The Canonical List of Free Print-and-Play Games 0-9\nThe Canonical List of Free Print-and-Play Games A-D\nThe Canonical List of Free Print-and-Play Games E-H\nThe Canonical List of Free Print-and-Play Games I-L\nThe Canonical List of Free Print-and-Play Games M-P\nThe Canonical List of Free Print-and-Play Games Q-T\nThe Canonical List of Free Print-and-Play Games U-Z\nFree PnP Expansions\nBest Print & Play Historical Wargames",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 64,
+        "fields": {
+            "name": "Puzzle",
+            "description": "Puzzle games are those in which the players are trying to solve a puzzle.  Many Puzzle games require players to use problem solving, pattern recognition, organization and/or sequencing to reach their objectives.",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 65,
+        "fields": {
+            "name": "Racing",
+            "description": "Games where the objective is to be the first to reach a checkpoint by navigation or steering around obstacles, usually by having greater speed and/or control than your opponents.\n\nGames in which players simply attempt to attain a particular goal (winning condition) more quickly than other players are utilizing the Race mechanic.",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 66,
+        "fields": {
+            "name": "Real-time",
+            "description": "In real-time games, players are encouraged to take their turns as quickly as possible, often simultaneously. In some real-time games, a player is penalized if they don't do something within a set amount of time.\n\nReal-Time is different than Elapsed Real Time Ending, in which gameplay ends after a set amount of actual time has elapsed--as in Space Alert, Escape from Colditz, Escape: The Curse of the Temple, Space Alert, and most &quot;escape room&quot; type games, including the Escape Room: The Game series and the Unlock! series.",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 67,
+        "fields": {
+            "name": "Religious",
+            "description": "A Religious themed boardgame features elements of their narrative, setting or characters that relates to current belief systems (religions) of the world, either in their historical aspect and its development through time or in their actual objects of faith, like sacred scriptures and articles of doctrine.\n\nSome boardgames categorized as Religious may address particular settings or stories from a religious text, for example The Settlers of Canaan, which is themed around the biblical account of the Israelite's settling of the land of Canaan. Other Religious boardgames may have direct references to scriptures, like the Bible Trivia, or explore aspects of the faith in a playful fashion, like Credo!: the Game of Dueling Dogmas or Intelligent Design vs. Evolution.",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 68,
+        "fields": {
+            "name": "Renaissance",
+            "description": "Renaissance games are those set between the end of the XIV (14)th century (when the Renaissance began in Italy) and roughly the end of the XVI (16)th century when firearms were not yet dominating the battle field. Approximately from 1380 to 1590.\nhttps://en.wikipedia.org/wiki/History_of_the_firearm\n\n\nHistorical categories in BGG:\n\n\n    Ancient\n    Medieval\n    Renaissance\n    Pike and Shot\n    Age of Reason\n    Napoleonic\n    Post-Napoleonic\n    World War I\n    World War II\n    Korean War\n    Vietnam War\n    Modern Warfare\n\n\nNorth America:\n\n    American Revolutionary War\n    American Civil War\n    American Indian Wars\n    American West",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 69,
+        "fields": {
+            "name": "Science Fiction",
+            "description": "Science Fiction games often have themes relating to imagined possibilities in the sciences.  Such games need not be futuristic; they can be based on an alternative past. (For example, the writings of Jules Verne and the Star Wars saga are set before present time.)  Many of the most popular Science Fiction games are set in outer space, and often involve alien races.\n\nMicrobadge:\n\n - Sci Fi games fan",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 70,
+        "fields": {
+            "name": "Space Exploration",
+            "description": "Space Exploration games often have themes and storylines relating to travel and adventure in outer space.  Often, players must seek and gather resources and territories as objectives of the game.\n\nMany of the popular Space Exploration games are also categorized under Science Fiction.\n\nMicrobadge\n\n Space Theme fan",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 71,
+        "fields": {
+            "name": "Spies/Secret Agents",
+            "description": "Spies/Secret Agents games often have themes or storylines relating to espionage.  Often, players must identify another player who has taken the role of spy or secret agent and attempt to reveal secret information that this player holds.  Many of the most popular Spies/Secret Agents games are also categorized under Bluffing and/or Deduction, and as such have an element of hidden information to them.",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 72,
+        "fields": {
+            "name": "Sports",
+            "description": "Sports games often have themes or storylines related to the physical activity of sports.  The sports represented in the most popular Sports boardgames are football and racing (whether car, boat, bicycle or horse).",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 73,
+        "fields": {
+            "name": "Territory Building",
+            "description": "Territory Building games have the players establish and/or amass control over a specific area.  Often, these games employ Area Majority / Influence or Enclosure mechanics; the latter in which the areas are not delineated at the beginning of the game but are instead created as the game progresses.",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 74,
+        "fields": {
+            "name": "Trains",
+            "description": "Train games often involve gameplay and imagery related to railroads and rail vehicles.  Many of the most popular Train games are set in the late 19th and early 20th centuries (although some games, like Lunar Rails, are set in the future).",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 75,
+        "fields": {
+            "name": "Transportation",
+            "description": "Transportation games often have gameplay involving the movement of goods or people from one place to another.  Many of the most popular Transportation games are Train games.",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 76,
+        "fields": {
+            "name": "Travel",
+            "description": "Travel games often have gameplay where an objective is to move to and from different geographic locations.  As such, Travel games usually employ a map as the main feature of the game board.",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 77,
+        "fields": {
+            "name": "Trivia",
+            "description": "Trivia games often test players on their knowledge of general interests and popular culture.\n\nTrivia Games History\n\nThe earliest dated trivia game in the BGG database is the Travellers' Tour Through the United States which was released in 1822.  The next trivia game in the BGG database is the New Question and Answer Game released in 1830.  In total, the BGG has records of 18 trivia games that were published in the 19th century.\n\nIt was not until 1981 that the genre of trivia games exploded with the release of Trivial Pursuit: Genus Edition.  In 1983, over 20 million copies of Trivia Pursuit were sold worldwide!  Now there are over 7,200 trivia games recorded in the BGG database (as of October, 2022).",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 78,
+        "fields": {
+            "name": "Video Game Theme",
+            "description": "Video Game Theme applies to games that are thematically linked with or inspired by a video game franchise or genre. Some early games created with these themes are PAC-MAN Game and Frogger.\n\nIt should not be used for board games with a digital/electronic version. These should be submitted to VideoGameGeek.",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 79,
+        "fields": {
+            "name": "Vietnam War",
+            "description": "&quot;Vietnam War&quot; games cover military campaigns in Indochina (Vietnam, Cambodia, Laos): from 1945 until 1975.\nNote: Indochina war (1945-54) - France and allies against Vi\u1ec7t Minh and allies; Vietnam war (1965-75) - United States and allies against North Vietnam and allies\n\nMost Vietnam War games are also categorized as Wargames.\n\nMicrobadge\n\n\n\nHistorical categories on BGG:\n\n\n    Ancient\n    Medieval\n    Renaissance\n    Pike and Shot\n    Age of Reason\n    Napoleonic\n    Post-Napoleonic\n    World War I\n    World War II\n    Korean War\n    Vietnam War\n    Modern Warfare\n\n\nNorth America:\n\n    American Revolutionary War\n    American Civil War\n    American Indian Wars\n    American West",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 80,
+        "fields": {
+            "name": "Wargame",
+            "description": "Wargames are games that depict military actions. Wargames are set in a variety of timelines, from the Ancient period to present conflicts and even in the future.  Thematically, Wargames cover everything from actions between small units on a very small board to larger, extremely detailed conflicts and even global-scale wars.  Although most Wargames are based on historical situations, there are Wargames based on fantasy or science fiction, as well as Wargames based on hypothetical but historically-based situations (e.g., nuclear war between the Soviet Union and the USA). Probably the most popular period for Wargames is World War II, followed by the Napoleonic Wars and the American Civil War. However, Wargames cover a vast range of conflicts, and if you are interested in a particular war you are quite likely to be able to find a game that covers it in some way.\n\nThree levels\n\nA Wargame will be at one of three levels of warfare - tactical, operational, or strategic. Tactical games depict a skirmish, battle or series of battles, using smaller scale units and maps that depict a battleground that is a few miles or less - sometimes much less - in size. Examples of tactical wargames include Advanced Squad Leader and Combat Commander: Pacific.\n\nOperational wargames cover a broader scope of military actions, greater than single battles. These may cover an entire smaller war, or a series of operations or a campaign within a greater war. Units are larger than in tactical games. Examples of operational level Wargames include Fortress Europa and 1914: Twilight in the East.\n\nWargames on the strategic level usually recreate a major war on a large scale. Typically units in such a game will be corps or army level, although in so-called &quot;monster&quot; Wargames (no set definition, but usually a game with large maps and lots of counters that takes a long time to play) divisions and even smaller sized units can be depicted. Strategic Wargames are more likely than tactical or operational level games to include big-picture issues such as production of new military units. Examples of strategic-level Wargames include World in Flames, Paths of Glory, and Here I Stand.\n\nOther aspects\n\nBeyond the level of Wargames are other choices - for example, games that focus exclusively on naval battles and campaigns are common. Examples include Wooden Ships & Iron Men and Sixth Fleet: Modern Naval Combat in the Mediterranean. Similarly, Wargames depicting air battles are popular.\n\nWithin these rough definitions are a huge variety of mechanics, themes, and approaches, and many levels of complexity; it is generally accepted that on average, Wargames are more complex than other types of games, although this is not a hard and fast rule. Naturally, all Wargames include combat - although not all games that include combat would typically be deemed Wargames; for example, Imperial and Age of Empires III: The Age of Discovery have combat and military forces, but most wargamers would not see them as Wargames. Some Wargames include political considerations, for example Ici, c'est la France! The Algerian War of Independence 1954 - 1962or Triumph of Chaos.\n\nNumber of players\n  \nMost Wargames are designed for two players, particularly tactical games. However, a significant minority are designed to be playable by three or more. Examples of Wargames for more than three players include World in Flames, Friedrich, Here I Stand, and Pax Romana.  Victory conditions in Wargames vary greatly, as does the subject matter. Common paths to victory include capturing one or more objectives on the map; destruction of a certain portion of an enemy force; accumulating victory points gained by a variety of means including taking objectives and destroying enemy units.\n\nCardboard and Miniatures\n\nMost Wargames use cardboard counters to depict military units, with symbols and numbers on the counters that describe each unit's attributes. Common attributes include the unit's size, type (e.g., cavalry, cruiser, archer, mechanized infantry...) combat strength, and speed of movement - but many other attributes such as morale, status of the unit, nationality, etc. can also be found. Wargames that use miniature figures to depict military units are also quite popular as are wargames with wooden blocks for units, called Block Games.\n Finally, there are many different approaches to Wargame mechanics. For movement, mechanics include hex-based movement (example: The Russian Campaign), area movement (Warriors of God: The Wars of England & France, 1135-1453), or point-to-point movement (Friedrich); note that is is rare for movement to rely on the roll of dice. Combat is often resolved by rolling dice and referring to a Combat Resolution Table (CRT) (for example, Rise and Decline of the Third Reich or Lee vs. Grant: The Wilderness Campaign of 1864), or by rolling dice to 'hit' opposing units (e.g.,Wellington: The Peninsular War 1812-1814), or by computing odds and drawing a card to see the result (Kingmaker). A popular mechanic over the past 15 or so years is the card-driven game (CDG), where cards are played either to activate units for movement or for the benefits described on the card such as reinforcements; We the People is seen as the first such CDG, and other examples include Paths of Glory and Empire of the Sun.\n\nLinks: History of Wargame\n\n\nOn BGG\n\nLinks\n\nWargames on BGG are ranked: rank list.\nSee also the Wargamer's Guide to Wargaming Geeklists, a repository of geeklists holding special interest for wargamers.\n\nAll Wargames magazines are listed and detailed at Game magazines page.\n\nHistorical categories on BGG:\n\n\n    Ancient\n    Medieval\n    Renaissance\n    Pike and Shot\n    Age of Reason\n    Napoleonic\n    Post-Napoleonic\n    World War I\n    World War II\n    Korean War\n    Vietnam War\n    Modern Warfare\n\n\nNorth America:\n\n    American Revolutionary War\n    American Civil War\n    American Indian Wars\n    American West",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 81,
+        "fields": {
+            "name": "Word Game",
+            "description": "Word games often require players to competitively use their knowledge of language.  Language knowledge in Word games is often focused on spelling and definitions.",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 82,
+        "fields": {
+            "name": "World War I",
+            "description": "World War I games covers military campaigns from 1914 until 1918.\n\nMost World War I games are also categorized as Wargames.\n\n\nHistorical categories on BGG:\n\n\n    Ancient\n    Medieval\n    Renaissance\n    Pike and Shot\n    Age of Reason\n    Napoleonic\n    Post-Napoleonic\n    World War I\n    World War II\n    Korean War\n    Vietnam War\n    Modern Warfare\n\n\nNorth America:\n\n    American Revolutionary War\n    American Civil War\n    American Indian Wars\n    American West",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 83,
+        "fields": {
+            "name": "World War II",
+            "description": "World War II games have storylines set during various military campaigns in Europe, Asia, and Africa from 1939 until 1945.\n\nMost World War II games are also categorized as Wargames.\n\n\nHistorical categories on BGG:\n\n\n    Ancient\n    Medieval\n    Renaissance\n    Pike and Shot\n    Age of Reason\n    Napoleonic\n    Post-Napoleonic\n    World War I\n    World War II\n    Korean War\n    Vietnam War\n    Modern Warfare\n\n\nNorth America:\n\n    American Revolutionary War\n    American Civil War\n    American Indian Wars\n    American West",
+            "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
+        }
+    },
+    {
+        "model": "games.category",
+        "pk": 84,
+        "fields": {
+            "name": "Zombies",
+            "description": "Zombie games often contain themes and imagery concerning the animated dead.  Some of the more popular storylines in Zombie games include apocalyptic themes, horror, and fighting.",
             "image": "https://cf.geekdo-static.com/images/opengraph/bgg_opengraph.png"
         }
     }
