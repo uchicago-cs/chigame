@@ -35,7 +35,7 @@ class Game(models.Model):
     max_playtime = models.PositiveIntegerField(null=True, blank=True)
 
     complexity = models.PositiveSmallIntegerField(null=True, blank=True)  # 1-5, 1 being the easiest
-    categories = models.ManyToManyField("Category", related_name="games", blank=True)
+    category = models.ManyToManyField("Category", related_name="games", blank=True)
     mechanics = models.ManyToManyField("Mechanic", related_name="games", blank=True)
 
     # ================ OTHER ================

@@ -13,7 +13,7 @@
       <h3 class="text-body-secondary">{{ game.description|linebreaksbr }}</h3>
       <p>Published in {{ game.year_published }}</p>
       <p>Complexity: {{ game.complexity }}/5</p>
-      {% for category in game.categories.all %}
+      {% for category in game.category.all %}
         <a href="#"><span class="badge rounded-pill text-bg-primary">{{ category }}</span></a>
       {% endfor %}
       {% for mechanic in game.mechanics.all %}
