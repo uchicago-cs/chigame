@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ("games", "0008_merge_20231113_1632"),
+        ("games", "0009_announcement_delete_notification"),
     ]
 
     operations = [
