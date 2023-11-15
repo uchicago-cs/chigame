@@ -2,7 +2,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.db.models import Q
-from django.shortcuts import get_object_or_404, redirect, reverse, render
+from django.shortcuts import get_object_or_404, redirect, render, reverse
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DetailView, ListView, UpdateView
 from django_tables2 import SingleTableView
