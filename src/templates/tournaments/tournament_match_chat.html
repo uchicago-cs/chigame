@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block content %}
+  <h1>Chat for this Match</h1>
+  <div id="messageContainer">
+    <!-- Messages will be displayed here -->
+  </div>
+  <script src = {% static 'js/getChatUpdate.js' %}></script>
+{% endblock content %}

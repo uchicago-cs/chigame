@@ -12,7 +12,7 @@ from django.views.generic import CreateView, DeleteView, DetailView, ListView, U
 from django_tables2 import SingleTableView
 
 from .forms import GameForm
-from .models import Game, Lobby, Tournament
+from .models import Game, Lobby, Match, Tournament
 from .tables import LobbyTable
 
 
@@ -194,6 +194,12 @@ class TournamentDeleteView(DeleteView):
     template_name = "tournaments/tournament_delete.html"
     context_object_name = "tournament"
     success_url = reverse_lazy("tournament-list")
+
+
+def TournamentChatDetailView(request, pk):
+    match = Match.objects.get(pk=pk)
+    context = {"match": match}
+    return render(request, "tournaments/tournament_match_chat.html", context)
 
 
 def search_results(request):
