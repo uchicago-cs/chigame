@@ -92,10 +92,10 @@ function updateView(tokenId) {
 // Function to format message text for display
 function getMessageText(message) {
   if (message.content !== null) {
-    return "From " + message.sender + ": " + message.content;
+    return message.sender + ": " + message.content;
   } else {
     return (
-      "From " + message.sender + ": " + `Message ${message.tokenId} deleted`
+      message.sender + ": " + `Message ${message.tokenId} deleted`
     );
   }
 }
