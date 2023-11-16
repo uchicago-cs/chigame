@@ -67,4 +67,12 @@
   {% else %}
     <p>No matches yet.</p>
   {% endif %}
+  {% if user.is_staff %}
+    <p>
+      <a href="{% url 'tournament-update' tournament.id %}">Update</a>
+    </p>
+    <p>
+      <a href="{% url 'tournament-delete' tournament.id %}">Delete</a>
+    </p>
+  {% endif %}
 {% endblock content %}

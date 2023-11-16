@@ -8,7 +8,7 @@ from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render, reverse
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
-from django.views.generic import CreateView, DetailView, ListView, UpdateView
+from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 from django_tables2 import SingleTableView
 
 from .forms import GameForm
@@ -158,6 +158,40 @@ class TournamentCreateView(CreateView):
 
     def get_success_url(self):
         return reverse_lazy("tournament-detail", kwargs={"pk": self.object.pk})
+
+
+@method_decorator(staff_required, name="dispatch")
+class TournamentUpdateView(UpdateView):
+    model = Tournament
+    template_name = "tournaments/tournament_update.html"
+    fields = [
+        "name",
+        "game",
+        "start_date",
+        "end_date",
+        "max_players",
+        "description",
+        "rules",
+        "draw_rules",
+        "matches",
+        "players",
+    ]
+    # Note: "winner" is not included in the fields because it is not
+    # supposed to be set by the user. It will be set automatically
+    # when the tournament is over.
+    # Note: we may remove the "matches" field later for the same reason,
+    # but we keep it for now because it is convenient for testing.
+
+    def get_success_url(self):
+        return reverse_lazy("tournament-detail", kwargs={"pk": self.object.pk})
+
+
+@method_decorator(staff_required, name="dispatch")
+class TournamentDeleteView(DeleteView):
+    model = Tournament
+    template_name = "tournaments/tournament_delete.html"
+    context_object_name = "tournament"
+    success_url = reverse_lazy("tournament-list")
 
 
 def search_results(request):
