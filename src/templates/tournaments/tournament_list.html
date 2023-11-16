@@ -3,11 +3,9 @@
 {% block content %}
   <h1>Tournaments</h1>
   <ul>
-    {% for tournament in tournaments %}
+    {% for tournament in tournament_list %}
       <li>
-        <h2>
-          <a href="{% url 'tournament-detail' tournament.id %}">{{ tournament.name }}</a>
-        </h2>
+        <h2>{{ tournament.name }}</h2>
         <p>Game: {{ tournament.game }}</p>
         <p>Start date: {{ tournament.start_date }}</p>
         <p>End date: {{ tournament.end_date }}</p>
@@ -16,42 +14,25 @@
         <p>Rules: {{ tournament.rules }}</p>
         <p>Draw rules: {{ tournament.draw_rules }}</p>
         <p>Winners:</p>
-        {% if tournament.get_all_winners %}
-          <ul>
-            {% for winner in tournament.get_all_winners %}
-              <li>
-                <p>
-                  {% if winner.name %}
-                    <a href="{% url 'users:detail' winner.id %}">{{ winner.name }}</a>
-                  {% else %}
-                    <a href="{% url 'users:detail' winner.id %}">{{ winner.email }}</a>
-                  {% endif %}
-                </p>
-              </li>
-            {% endfor %}
-          </ul>
-        {% else %}
-          <p>No winner yet.</p>
-        {% endif %}
+        <ul>
+          {% for winner in tournament.get_all_winners %}
+            <li>
+              <h3>
+                <a href="{% url 'users:detail' winner.id %}">{{ winner.name }}</a>
+              </h3>
+            </li>
+          {% endfor %}
+        </ul>
         <p>Players:</p>
-        {% if tournament.get_all_players %}
-          <ul>
-            {% for player in tournament.get_all_players %}
-              <li>
-                <p>
-                  {% if player.name %}
-                    <a href="{% url 'users:detail' player.id %}">{{ player.name }}</a>
-                  {% else %}
-                    <a href="{% url 'users:detail' player.id %}">{{ player.email }}</a>
-                  {% endif %}
-                </p>
-              </li>
-            {% endfor %}
-          </ul>
-        {% else %}
-          <p>No player yet.</p>
-        {% endif %}
-        <!-- You can add more fields as needed -->
+        <ul>
+          {% for player in tournament.get_all_players %}
+            <li>
+              <h3>
+                <a href="{% url 'users:detail' player.id %}">{{ player.name }}</a>
+              </h3>
+            </li>
+          {% endfor %}
+        </ul>
       </li>
     {% empty %}
       <li>No tournaments available.</li>
