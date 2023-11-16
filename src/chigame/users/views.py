@@ -12,6 +12,7 @@ from rest_framework import status
 from rest_framework.response import Response
 
 from .models import FriendInvitation, Notification, UserProfile
+from .tables import UserTable
 
 User = get_user_model()
 
@@ -54,6 +55,20 @@ user_redirect_view = UserRedirectView.as_view()
 @login_required
 def user_list(request):
     users = User.objects.all()
+    table = UserTable(users)
+    context = {"users": users, "table": table}
+
+    # Add information about top ranking users, total points collected, etc.
+
+    return render(request, "users/user_list.html", context)
+
+
+@login_required
+def user_detail(request):
+    users = User.objects.all()
+
+    # Shows a user detail page if logged in as a user
+    # Shows a list of all users if logged in as admin
 
     return render(request, "users/user_detail.html", {"users": users})
 
