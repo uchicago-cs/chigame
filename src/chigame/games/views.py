@@ -73,8 +73,7 @@ class GameCreateView(UserPassesTestMixin, CreateView):
 
     # check if user is staff member
     def test_func(self):
-        return True
-        # return self.request.user.is_staff
+        return self.request.user.is_staff
 
 
 class GameEditView(UserPassesTestMixin, UpdateView):
