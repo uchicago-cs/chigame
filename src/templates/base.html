@@ -160,15 +160,18 @@
             get_games as games %
           }
           var game_names = [{
-            %
-            for game in games %
-          } {
-            url: "{% url 'game-detail' pk=game.pk %}",
-            label: "{{game.name}}"
-          }, {
-            %
-            endfor %
-          }];
+              %
+              for game in games %
+            } {
+              url: "{% url 'game-detail' pk=game.pk %}",
+              label: "{{game.name}}"
+            },
+
+            {
+              %
+              endfor %
+            }
+          ];
           $("#query").autocomplete({
             source: game_names,
             select: function(event, ui) {
