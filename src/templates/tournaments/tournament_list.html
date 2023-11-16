@@ -5,7 +5,9 @@
   <ul>
     {% for tournament in tournament_list %}
       <li>
-        <h2>{{ tournament.name }}</h2>
+        <h2>
+          <a href="{% url 'tournament-detail' tournament.id %}">{{ tournament.name }}</a>
+        </h2>
         <p>Game: {{ tournament.game }}</p>
         <p>Start date: {{ tournament.start_date }}</p>
         <p>End date: {{ tournament.end_date }}</p>
