@@ -6,12 +6,15 @@ from .views import LobbyListView
 urlpatterns = [
     path("lobby/", LobbyListView.as_view(), name="lobby-list"),
     path("lobby/<int:pk>/", views.ViewLobbyDetails.as_view(), name="lobby-details"),
+    path("lobby/<int:pk>/join", views.lobby_join, name="lobby-join"),
+    path("lobby/<int:pk>/leave", views.lobby_leave, name="lobby-leave"),
     path("", views.GameListView.as_view(), name="game-list"),
     path("create/", views.GameCreateView.as_view(), name="game-create"),
     path("<int:pk>/edit", views.GameEditView.as_view(), name="game-edit"),
     path("<int:pk>/", views.GameDetailView.as_view(), name="game-detail"),
+    path("search/", views.search_results, name="game-search-results"),
     # tournaments
-    path("tournaments/", views.TournamentsListView.as_view(), name="tournament-list"),
+    path("tournaments/", views.TournamentListView.as_view(), name="tournament-list"),
     path("tournaments/<int:pk>/", views.TournamentDetailView.as_view(), name="tournament-detail"),
     path("tournaments/create/", views.TournamentCreateView.as_view(), name="tournament-create"),
     path("tournaments/<int:pk>/update/", views.TournamentUpdateView.as_view(), name="tournament-update"),

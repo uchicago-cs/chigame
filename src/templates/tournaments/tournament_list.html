@@ -3,7 +3,7 @@
 {% block content %}
   <h1>Tournaments</h1>
   <ul>
-    {% for tournament in tournaments %}
+    {% for tournament in tournament_list %}
       <li>
         <h2>
           <a href="{% url 'tournament-detail' tournament.id %}">{{ tournament.name }}</a>
@@ -15,6 +15,7 @@
         <p>Description: {{ tournament.description }}</p>
         <p>Rules: {{ tournament.rules }}</p>
         <p>Draw rules: {{ tournament.draw_rules }}</p>
+        <!-- Matches may be added later if needed -->
         <p>Winners:</p>
         {% if tournament.get_all_winners %}
           <ul>
