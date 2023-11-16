@@ -4,6 +4,26 @@
 
 {% block content %}
   <h1>Chat for Match {{ match.pk }}</h1>
+  <style>
+    #messageContainer {
+      border: 1px solid #ccc;
+      padding: 10px;
+      border-radius: 5px;
+      max-width: 70%;
+      height: 50vh;
+      /* 50% of the viewport height */
+      margin: 0 auto;
+      overflow-y: auto;
+      /* Add a scrollbar if content overflows vertically */
+      display: flex;
+      flex-direction: column;
+      /* Reverse the order of messages */
+    }
+
+    h1 {
+      text-align: center;
+    }
+  </style>
   <div id="messageContainer">
     <!-- Messages will be displayed here -->
   </div>

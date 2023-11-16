@@ -2,14 +2,26 @@
 let currentTokenId = 0; // Assume the frontend starts with token ID 0
 
 const fakeMessage = [
-  [{ tokenId: 1, updateOn: null, content: "Hello, World!" }],
-  [{ tokenId: 2, updateOn: 1, content: "Updated message!" }],
+  [{ tokenId: 1, updateOn: null, content: "Hello, World!", sender: "Alice" }],
+  [{ tokenId: 2, updateOn: 1, content: "Updated message!", sender: "Alice" }],
   [
-    { tokenId: 3, updateOn: 2, content: null }, // Deleted message
+    { tokenId: 3, updateOn: 2, content: null, sender: "Alice" }, // Deleted message
   ],
-  [{ tokenId: 4, updateOn: null, content: "New message!" }],
-  [{ tokenId: 5, updateOn: 4, content: "Updated message!" }],
+  [{ tokenId: 4, updateOn: null, content: "New message!", sender: "Bob" }],
+  [{ tokenId: 5, updateOn: 4, content: "Updated message!", sender: "Bob" }],
+  [{ tokenId: 6, updateOn: null, content: "New Message 1", sender: "Bob" }],
+  [{ tokenId: 7, updateOn: null, content: "New Message 2", sender: "Bob" }],
+  [{ tokenId: 8, updateOn: null, content: "New Message 3", sender: "Bob" }],
+  [{ tokenId: 9, updateOn: null, content: "New Message 4", sender: "Bob" }],
+  [{ tokenId: 10, updateOn: null, content: "New Message 5", sender: "Bob" }],
+  [{ tokenId: 11, updateOn: null, content: "New Message 6", sender: "Bob" }],
+  [{ tokenId: 12, updateOn: null, content: "New Message 7", sender: "Bob" }],
 ];
+
+function scrollToBottom() {
+  var element = document.getElementById("messageContainer");
+  element.scrollTop = element.scrollHeight - element.clientHeight;
+}
 
 function getMessages(tokenId) {
   try {
@@ -44,6 +56,7 @@ function updateView(tokenId) {
         const messageElement = document.createElement("div");
         messageElement.textContent = getMessageText(message);
         messageElement.id = message.tokenId;
+        messageElement.style.fontSize = "20px";
         messageContainer.appendChild(messageElement);
       }
     }
@@ -58,9 +71,11 @@ function updateView(tokenId) {
 // Function to format message text for display
 function getMessageText(message) {
   if (message.content !== null) {
-    return message.content;
+    return "From " + message.sender + ": " + message.content;
   } else {
-    return `Message ${message.tokenId} deleted`;
+    return (
+      "From " + message.sender + ": " + `Message ${message.tokenId} deleted`
+    );
   }
 }
 
@@ -71,4 +86,5 @@ updateView(currentTokenId);
 setInterval(() => {
   console.log("Updating messages...");
   updateView(currentTokenId);
+  scrollToBottom();
 }, 2000); // Update every second, adjust as needed
