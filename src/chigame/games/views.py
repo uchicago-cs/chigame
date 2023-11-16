@@ -7,6 +7,7 @@ from django.urls import reverse_lazy
 from django.views.generic import CreateView, DetailView, ListView, UpdateView
 from django_tables2 import SingleTableView
 
+from .forms import GameForm
 from .models import Game, Lobby, Tournament
 from .tables import LobbyTable
 
@@ -61,7 +62,7 @@ class GameDetailView(DetailView):
 
 class GameCreateView(UserPassesTestMixin, CreateView):
     model = Game
-    fields = ["name", "description", "min_players", "max_players"]
+    form_class = GameForm
     template_name = "games/game_form.html"
     success_url = reverse_lazy("game-list")
     raise_exception = True  # if user is not staff member, raise exception
@@ -73,13 +74,17 @@ class GameCreateView(UserPassesTestMixin, CreateView):
 
 class GameEditView(UserPassesTestMixin, UpdateView):
     model = Game
-    fields = ["name", "description", "min_players", "max_players"]
+    form_class = GameForm
     template_name = "games/game_form.html"
     raise_exception = True  # if user is not staff member, raise exception
 
     # if edit is successful, redirect to that game's detail page
     def get_success_url(self):
         return reverse_lazy("game-detail", kwargs={"pk": self.kwargs["pk"]})
+
+    # check if user is staff member
+    def test_func(self):
+        return self.request.user.is_staff
 
 
 class TournamentListView(ListView):
