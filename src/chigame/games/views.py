@@ -147,6 +147,7 @@ class TournamentCreateView(CreateView):
         "description",
         "rules",
         "draw_rules",
+        "num_winner",
         "matches",
         "players",
     ]
@@ -173,6 +174,7 @@ class TournamentUpdateView(UpdateView):
         "description",
         "rules",
         "draw_rules",
+        "num_winner",
         "matches",
         "players",
     ]
