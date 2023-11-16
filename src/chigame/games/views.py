@@ -128,6 +128,38 @@ class TournamentListView(ListView):
         return self.request.user.is_staff
 
 
+class TournamentDetailView(DetailView):
+    model = Tournament
+    template_name = "tournaments/tournament_detail.html"
+    context_object_name = "tournament"
+
+
+@method_decorator(staff_required, name="dispatch")
+class TournamentCreateView(CreateView):
+    model = Tournament
+    template_name = "tournaments/tournament_create.html"
+    fields = [
+        "name",
+        "game",
+        "start_date",
+        "end_date",
+        "max_players",
+        "description",
+        "rules",
+        "draw_rules",
+        "matches",
+        "players",
+    ]
+    # Note: "winner" is not included in the fields because it is not
+    # supposed to be set by the user. It will be set automatically
+    # when the tournament is over.
+    # Note: we may remove the "matches" field later for the same reason,
+    # but we keep it for now because it is convenient for testing.
+
+    def get_success_url(self):
+        return reverse_lazy("tournament-detail", kwargs={"pk": self.object.pk})
+
+
 @method_decorator(staff_required, name="dispatch")
 class TournamentUpdateView(UpdateView):
     model = Tournament
@@ -151,9 +183,7 @@ class TournamentUpdateView(UpdateView):
     # but we keep it for now because it is convenient for testing.
 
     def get_success_url(self):
-        return reverse_lazy("tournament-list")
-
-    # reverse_lazy("tournament-detail", kwargs={"pk": self.object.pk})
+        return reverse_lazy("tournament-detail", kwargs={"pk": self.object.pk})
 
 
 @method_decorator(staff_required, name="dispatch")

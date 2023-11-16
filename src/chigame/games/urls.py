@@ -15,6 +15,8 @@ urlpatterns = [
     path("search/", views.search_results, name="game-search-results"),
     # tournaments
     path("tournaments/", views.TournamentListView.as_view(), name="tournament-list"),
+    path("tournaments/<int:pk>/", views.TournamentDetailView.as_view(), name="tournament-detail"),
+    path("tournaments/create/", views.TournamentCreateView.as_view(), name="tournament-create"),
     path("tournaments/<int:pk>/update/", views.TournamentUpdateView.as_view(), name="tournament-update"),
     path("tournaments/<int:pk>/delete/", views.TournamentDeleteView.as_view(), name="tournament-delete"),
 ]
