@@ -21,7 +21,7 @@
           <img src="{{ game.image }}" class="card-img-top" alt="game image" />
           <div class="card-body">
             <h4 class="card-title">{{ game.name }}</h4>
-            <p class="card-text">{{ game.description }}</p>
+            <p class="card-text">{{ game.description|linebreaksbr }}</p>
             <div class="mt-0">
               {% for category in game.category.all %}<span class="badge text-bg-primary">{{ category }}</span>{% endfor %}
             </div>
