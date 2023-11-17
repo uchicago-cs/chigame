@@ -20,7 +20,7 @@ from .tournaments_function import create_tournaments_brackets
 class GameListView(ListView):
     model = Game
     queryset = Game.objects.all()
-    template_name = "games/game_list.html"
+    template_name = "games/game_grid.html"
 
 
 class LobbyListView(SingleTableView):
