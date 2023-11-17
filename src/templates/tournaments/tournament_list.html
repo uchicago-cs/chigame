@@ -15,16 +15,22 @@
         <p>Description: {{ tournament.description }}</p>
         <p>Rules: {{ tournament.rules }}</p>
         <p>Draw rules: {{ tournament.draw_rules }}</p>
-        <p>Winners:</p>
-        <ul>
-          {% for winner in tournament.get_all_winners %}
-            <li>
-              <h3>
-                <a href="{% url 'users:detail' winner.id %}">{{ winner.name }}</a>
-              </h3>
-            </li>
-          {% endfor %}
-        </ul>
+        {% if tournament.get_all_winners %}
+          <p>Winners:</p>
+          <ul>
+            {% for winner in tournament.get_all_winners %}
+              <li>
+                <p>
+                  {% if winner.name %}
+                    <a href="{% url 'users:detail' winner.id %}">{{ winner.name }}</a>
+                  {% else %}
+                    <a href="{% url 'users:detail' winner.id %}">{{ winner.email }}</a>
+                  {% endif %}
+                </p>
+              </li>
+            {% endfor %}
+          </ul>
+        {% endif %}
         <p>Players:</p>
         <ul>
           {% for player in tournament.get_all_players %}

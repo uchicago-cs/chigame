@@ -4,7 +4,7 @@ This file contains the functions needed for the tournaments feature.
 
 import random
 
-from .models import Lobby, Match, Tournament
+from .models import Lobby, Match, Player, Tournament
 
 
 def create_tournaments_brackets(tournament: Tournament) -> list[Match]:
@@ -60,7 +60,12 @@ def next_round_tournaments_brackets(tournament: Tournament) -> list[Match]:
 
     # get the winners of the previous round
     for bracket in brackets:
-        for winner in bracket.winners.all():  # .all() because allow multiple winners
+        bracket_players = bracket.players.all()
+        bracket_winners = [
+            player for player in bracket_players if player.outcome == Player.WIN
+        ]  # allow multiple winners
+        # currently only players who win instead of draw can advance to the next round
+        for winner in bracket_winners:
             players.append(winner)
 
     # check if the number of players is small enough to end the tournament
@@ -108,9 +113,17 @@ def end_tournament(tournament: Tournament) -> None:
     Returns:
         None
     """
+
     winners = []
-    for match in tournament.matches.all():  # the matches of the previous round
-        for winner in match.winners.all():  # .all() because allow multiple winners
+    brackets = tournament.matches.all()
+    for bracket in brackets:  # the matches of the previous round
+        # get the winners of the previous round
+        bracket_players = bracket.players.all()
+        bracket_winners = [
+            player for player in bracket_players if player.outcome == Player.WIN
+        ]  # allow multiple winners
+        # currently only players who win instead of draw can advance to the next round
+        for winner in bracket_winners:
             winners.append(winner)
 
     tournament.winners.set(winners)  # set the winners of the tournament

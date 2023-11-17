@@ -24,8 +24,8 @@
       </li>
     {% endfor %}
   </ul>
-  <p>Winners:</p>
   {% if tournament.get_all_winners %}
+    <p>Winners:</p>
     <ul>
       {% for winner in tournament.get_all_winners %}
         <li>
@@ -39,8 +39,6 @@
         </li>
       {% endfor %}
     </ul>
-  {% else %}
-    <p>No winner yet.</p>
   {% endif %}
   <!-- You can add more fields as needed -->
   <p>Matches:</p>

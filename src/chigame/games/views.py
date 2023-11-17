@@ -149,14 +149,14 @@ class TournamentCreateView(CreateView):
         "rules",
         "draw_rules",
         "num_winner",
-        "matches",
         "players",
     ]
     # Note: "winner" is not included in the fields because it is not
     # supposed to be set by the user. It will be set automatically
     # when the tournament is over.
-    # Note: we may remove the "matches" field later for the same reason,
-    # but we keep it for now because it is convenient for testing.
+    # Note: the "matches" field is not included in the fields because
+    # it is not supposed to be set by the user. It will be set automatically
+    # by the create tournament brackets mechanism.
 
     # This method is called when valid form data has been POSTed. It
     # overrides the default behavior of the CreateView class.
