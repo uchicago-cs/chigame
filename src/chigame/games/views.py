@@ -141,8 +141,10 @@ class TournamentCreateView(CreateView):
     fields = [
         "name",
         "game",
-        "start_date",
-        "end_date",
+        "registration_start_date",
+        "registration_end_date",
+        "tournament_start_date",
+        "tournament_end_date",
         "max_players",
         "description",
         "rules",
@@ -168,8 +170,6 @@ class TournamentUpdateView(UpdateView):
     fields = [
         "name",
         "game",
-        "start_date",
-        "end_date",
         "max_players",
         "description",
         "rules",
@@ -178,6 +178,10 @@ class TournamentUpdateView(UpdateView):
         "matches",
         "players",
     ]
+    # Note: the "registration_start_date" and "registration_end_date",
+    # "tournament_start_date" and "tournament_end_date" fields are not
+    # included because they are not supposed to be updated once the tournament is created.
+
     # Note: "winner" is not included in the fields because it is not
     # supposed to be set by the user. It will be set automatically
     # when the tournament is over.
