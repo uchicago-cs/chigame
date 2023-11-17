@@ -65,7 +65,8 @@ class Game(models.Model):
                 raise ValidationError({"expected_playtime": "expected_playtime cannot be greater than max_playtime"})
 
     def save(self, *args, **kwargs):
-        # Calls full_clean to run all validations before saving
+        # Calls full_clean to run all model validations, including the custom clean method and built-in field checks.
+        # https://docs.djangoproject.com/en/stable/ref/models/instances/#django.db.models.Model.full_clean
         self.full_clean()
         super().save(*args, **kwargs)
 
