@@ -156,22 +156,17 @@
           });
         });
       </script>
-      <script>
+      <!-- djlint:off --><script>
         document.addEventListener('DOMContentLoaded', function() {
-          {
-            %
-            get_games as games %
-          }
-          var game_names = [{
-            %
-            for game in games %
-          } {
-            url: "{% url 'game-detail' pk=game.pk %}",
-            label: "{{game.name}}"
-          }, {
-            %
-            endfor %
-          }];
+          {% get_games as games %}
+          var game_names = [
+	    {% for game in games %}
+              {
+                url: "{% url 'game-detail' pk=game.pk %}",
+                label: "{{game.name}}"
+              },
+            {% endfor %}
+	  ];
           $("#query").autocomplete({
             source: game_names,
             select: function(event, ui) {
@@ -180,6 +175,7 @@
           });
         });
       </script>
+      <!-- djlint:on -->
     {% endblock inline_javascript %}
   </body>
 </html>
