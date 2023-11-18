@@ -101,7 +101,7 @@
                     <option value="users">Users</option>
                     <!-- Add more options here -->
                   </select>
-                  <input id="query" name="query" type="text" placeholder="Search..." />
+                  <input id="query" name="query" type="search" placeholder="Search..." />
                 </form>
               </li>
             </ul>
@@ -139,43 +139,63 @@
     </script>
       {% endcomment %}
       {% comment %}
-    Dynammically change where the search bar sends a GET request to based on
-    the selected value of the query type dropdown menu.
+      Dynammically change the autocomplete optins and where the search bar sends a GET
+      request to based on the selected value of the query type dropdown menu.
       {% endcomment %}
-      <script>
+      {# disable djlint for this section because the linter breaks the template tags #}
+      <!-- djlint:off --><script>   // "djlint:off" turns the linter off for this section of code
         document.addEventListener('DOMContentLoaded', function() {
           const search_bar = document.getElementById('search-bar');
           const query_type = document.getElementById('query-type');
 
-          query_type.addEventListener("change", function() {
-            if (query_type.value == "games") {
-              search_bar.action = "{% url 'game-search-results' %}";
-            } else if (query_type.value == "users") {
-              search_bar.action = "{% url 'home' %}"; // placeholder
-            }
-          });
-        });
-      </script>
-      <!-- djlint:off --><script>
-        document.addEventListener('DOMContentLoaded', function() {
+          // by default, query autocompletes game names
           {% get_games as games %}
           var game_names = [
-	    {% for game in games %}
+            {% for game in games %}
               {
                 url: "{% url 'game-detail' pk=game.pk %}",
                 label: "{{game.name}}"
               },
             {% endfor %}
-	  ];
+          ];
           $("#query").autocomplete({
             source: game_names,
             select: function(event, ui) {
               window.location.href = ui.item.url;
             }
           });
+
+          // if the query type changes, update the landing page and autocomplete
+	      query_type.addEventListener("change", function() {
+            if (query_type.value == "games") {
+              search_bar.action = "{% url 'game-search-results' %}";
+
+	          {% get_games as games %}
+              var game_names = [
+                {% for game in games %}
+                  {
+                    url: "{% url 'game-detail' pk=game.pk %}",
+                    label: "{{game.name}}"
+                  },
+                {% endfor %}
+              ];
+              $("#query").autocomplete({
+                source: game_names,
+                select: function(event, ui) {
+                  window.location.href = ui.item.url;
+                }
+              });
+            }
+            else if (query_type.value == "users") {
+              search_bar.action = "{% url 'home' %}"; // placeholder
+              $("#query").autocomplete({
+                disabled: true  // turn off autocomplete for users option
+              });
+            }
+          });
         });
-      </script>
-      <!-- djlint:on -->
-    {% endblock inline_javascript %}
-  </body>
+</script><!-- djlint:on -->
+{# turn djlint back on#}
+{% endblock inline_javascript %}
+</body>
 </html>
