@@ -11,7 +11,7 @@ from django.utils.decorators import method_decorator
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 from django_tables2 import SingleTableView
 
-from .forms import GameForm
+from .forms import GameForm, LobbyForm
 from .models import Game, Lobby, Tournament
 from .tables import LobbyTable
 
@@ -52,7 +52,6 @@ def lobby_leave(request, pk):
     return redirect(reverse("lobby-details", kwargs={"pk": lobby.id}))
 
 
-@method_decorator(staff_required, name="dispatch")
 class LobbyCreateView(CreateView):
     model = Lobby
     form_class = LobbyForm
