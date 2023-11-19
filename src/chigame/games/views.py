@@ -52,6 +52,14 @@ def lobby_leave(request, pk):
     return redirect(reverse("lobby-details", kwargs={"pk": lobby.id}))
 
 
+@method_decorator(staff_required, name="dispatch")
+class LobbyCreateView(CreateView):
+    model = Lobby
+    form_class = LobbyForm
+    template_name = "games/lobby_form.html"
+    success_url = reverse_lazy("lobby-list")
+
+
 class ViewLobbyDetails(DetailView):
     model = Lobby
     template_name = "games/lobby_details.html"
