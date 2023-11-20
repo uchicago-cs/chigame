@@ -7,14 +7,11 @@
   Lobbies
 {% endblock title %}
 {% block content %}
-
   <h1>List of Lobbies</h1>
   <form method="get">
-      {{ filter.form.as_p }}
-      <button type="submit">Filter</button>
-      <a href="?">Clear all Filters</a>
+    {{ filter.form.as_p }}
+    <button type="submit">Filter</button>
+    <a href="?">Clear all Filters</a>
   </form>
-
-
   {% render_table table %}
 {% endblock content %}
