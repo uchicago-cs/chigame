@@ -66,6 +66,14 @@ class LobbyUpdateView(UpdateView):
     def get_success_url(self):
         return reverse_lazy("lobby-detail", kwargs={"pk": self.object.pk})
 
+    def dispatch(self, request, *args, **kwargs):
+        # get the lobby object
+        self.object = self.get_object()
+        # check if the user making the request is the "host" of the lobby
+        if request.user != self.object.created_by:
+            return HttpResponseForbidden("You don't have permission to edit this lobby.")
+        return super().dispatch(request, *args, **kwargs)
+
 
 class GameDetailView(DetailView):
     model = Game
