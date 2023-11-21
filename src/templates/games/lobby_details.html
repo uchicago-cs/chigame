@@ -28,7 +28,7 @@
     <a href="{% url 'lobby-leave' lobby_detail.pk %}">Leave Lobby</a>
   </p>
 
-  {% if user == lobby.created_by %}
+  {% if user == lobby_detail.created_by %}
     <a href="{% url 'lobby-edit' lobby_detail.pk %}">Edit Lobby</a>
   {% endif %}
 
