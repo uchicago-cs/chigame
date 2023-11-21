@@ -16,6 +16,7 @@ from django_tables2 import SingleTableView
 from .forms import GameForm, LobbyForm
 from .models import Game, Lobby, Tournament
 from .tables import LobbyTable
+from .tasks import decrement_time_constraint
 
 
 class GameListView(ListView):
@@ -63,7 +64,10 @@ class LobbyCreateView(LoginRequiredMixin, CreateView):
     def form_valid(self, form):
         form.instance.created_by = self.request.user
         form.instance.lobby_created = timezone.now()
-        return super().form_valid(form)
+        response = super().form_valid(form)
+        # trigger countdown
+        decrement_time_constraint(self.object.id)
+        return response
 
 
 class ViewLobbyDetails(DetailView):

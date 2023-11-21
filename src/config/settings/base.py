@@ -77,6 +77,7 @@ DJANGO_APPS = [
     "rest_framework",
     "django_filters",
     "django_tables2",
+    "background_task",
 ]
 THIRD_PARTY_APPS = [
     "crispy_forms",

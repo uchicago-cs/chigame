@@ -2,6 +2,25 @@
 
 {% block content %}
   <h1>Lobby Details</h1>
+  <script>
+    window.onload = function() {
+      var timeConstraint = parseInt(document.getElementById("time-constraint").innerText);
+
+      function updateTimer() {
+        if (timeConstraint > 0) {
+          var minutes = Math.floor(timeConstraint / 60);
+          var seconds = timeConstraint % 60;
+          document.getElementById("time-constraint").innerText = minutes + "m " + seconds + "s ";
+        }
+      }
+
+      setInterval(updateTimer, 1000);
+      updateTimer();
+    };
+  </script>
+  <p>
+    <strong>Time Left:</strong> <span id="time-constraint">{{ lobby_detail.time_constraint }}</span>
+  </p>
   <p>
     <strong>Name:</strong> {{ lobby_detail.name }}
   </p>
