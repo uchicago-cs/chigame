@@ -27,4 +27,7 @@
   <p>
     <a href="{% url 'lobby-leave' lobby_detail.pk %}">Leave Lobby</a>
   </p>
+  {% if user.is_staff %}
+    <a href="{% url 'lobby-create' %}">Create Lobby</a>
+  {% endif %}
 {% endblock content %}
