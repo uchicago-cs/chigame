@@ -9,4 +9,7 @@
 {% block content %}
   <h1>List of Lobbies</h1>
   {% render_table table %}
+  {% if user.is_staff %}
+    <a href="{% url 'lobby-create' %}">Create Lobby</a>
+  {% endif %}
 {% endblock content %}
