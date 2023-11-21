@@ -89,6 +89,18 @@ class LobbyUpdateView(UpdateView):
         return super().dispatch(request, *args, **kwargs)
 
 
+class LobbyDeleteView(DeleteView):
+    model = Lobby
+    template_name = "games/lobby_confirm_delete.html"
+    success_url = reverse_lazy("lobby_list")
+
+    def get_object(self, queryset=None):
+        obj = super().get_object(queryset=queryset)
+        if self.request.user != obj.created_by:
+            raise HttpResponseForbidden("You don't have permission to delete this lobby.")
+        return obj
+
+
 class GameDetailView(DetailView):
     model = Game
     template_name = "games/game_detail.html"
