@@ -58,6 +58,15 @@ class ViewLobbyDetails(DetailView):
     context_object_name = "lobby_detail"
 
 
+class LobbyUpdateView(UpdateView):
+    model = Lobby
+    form_class = LobbyForm
+    template_name = "games/lobby_form.html"
+
+    def get_success_url(self):
+        return reverse_lazy("lobby-detail", kwargs={"pk": self.object.pk})
+
+
 class GameDetailView(DetailView):
     model = Game
     template_name = "games/game_detail.html"
