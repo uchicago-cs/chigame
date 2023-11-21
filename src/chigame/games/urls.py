@@ -1,7 +1,7 @@
 from django.urls import path
 
 from . import views
-from .views import LobbyListView, LobbyCreateView
+from .views import LobbyCreateView, LobbyListView
 
 urlpatterns = [
     path("lobby/", LobbyListView.as_view(), name="lobby-list"),
