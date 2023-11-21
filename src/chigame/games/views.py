@@ -78,7 +78,7 @@ class LobbyUpdateView(UpdateView):
     template_name = "games/lobby_form.html"
 
     def get_success_url(self):
-        return reverse_lazy("lobby-detail", kwargs={"pk": self.object.pk})
+        return reverse_lazy("lobby-details", kwargs={"pk": self.object.pk})
 
     def dispatch(self, request, *args, **kwargs):
         # get the lobby object
@@ -92,13 +92,13 @@ class LobbyUpdateView(UpdateView):
 class LobbyDeleteView(DeleteView):
     model = Lobby
     template_name = "games/lobby_confirm_delete.html"
-    success_url = reverse_lazy("lobby_list")
+    success_url = reverse_lazy("lobby-list")
 
-    def get_object(self, queryset=None):
-        obj = super().get_object(queryset=queryset)
-        if self.request.user != obj.created_by:
-            raise HttpResponseForbidden("You don't have permission to delete this lobby.")
-        return obj
+    def dispatch(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if request.user != self.object.created_by:
+            return HttpResponseForbidden("You don't have permission to delete this lobby.")
+        return super().dispatch(request, *args, **kwargs)
 
 
 class GameDetailView(DetailView):
