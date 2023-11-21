@@ -4,6 +4,7 @@ Base settings to build other settings files upon.
 from pathlib import Path
 
 import environ
+from machina import MACHINA_MAIN_STATIC_DIR, MACHINA_MAIN_TEMPLATE_DIR
 
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
 # src/chigame
@@ -74,6 +75,7 @@ DJANGO_APPS = [
     "django.contrib.admin",
     "django.forms",
     "rest_framework",
+    "django_filters",
     "django_tables2",
 ]
 THIRD_PARTY_APPS = [
@@ -82,6 +84,24 @@ THIRD_PARTY_APPS = [
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
+    # Django-machina dependencies:
+    # https://django-machina.readthedocs.io/en/latest/getting_started.html#django-settings
+    "mptt",
+    "haystack",
+    "widget_tweaks",
+    # Django-machina apps:
+    # https://django-machina.readthedocs.io/en/latest/getting_started.html#django-settings
+    "machina",
+    "machina.apps.forum",
+    "machina.apps.forum_conversation",
+    "machina.apps.forum_conversation.forum_attachments",
+    "machina.apps.forum_conversation.forum_polls",
+    "machina.apps.forum_feeds",
+    "machina.apps.forum_moderation",
+    "machina.apps.forum_search",
+    "machina.apps.forum_tracking",
+    "machina.apps.forum_member",
+    "machina.apps.forum_permission",
 ]
 
 LOCAL_APPS = [
@@ -139,6 +159,8 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "allauth.account.middleware.AccountMiddleware",
+    # https://django-machina.readthedocs.io/en/latest/getting_started.html#django-settings
+    "machina.apps.forum_permission.middleware.ForumPermissionMiddleware",
 ]
 
 # STATIC
@@ -148,7 +170,11 @@ STATIC_ROOT = str(BASE_DIR / "staticfiles")
 # https://docs.djangoproject.com/en/dev/ref/settings/#static-url
 STATIC_URL = "/static/"
 # https://docs.djangoproject.com/en/dev/ref/contrib/staticfiles/#std:setting-STATICFILES_DIRS
-STATICFILES_DIRS = [str(BASE_DIR / "static")]
+STATICFILES_DIRS = [
+    str(BASE_DIR / "static"),
+    # https://django-machina.readthedocs.io/en/latest/getting_started.html#django-settings
+    MACHINA_MAIN_STATIC_DIR,
+]
 # https://docs.djangoproject.com/en/dev/ref/contrib/staticfiles/#staticfiles-finders
 STATICFILES_FINDERS = [
     "django.contrib.staticfiles.finders.FileSystemFinder",
@@ -170,9 +196,13 @@ TEMPLATES = [
         # https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-TEMPLATES-BACKEND
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         # https://docs.djangoproject.com/en/dev/ref/settings/#dirs
-        "DIRS": [str(BASE_DIR / "templates")],
+        "DIRS": [
+            str(BASE_DIR / "templates"),
+            # https://django-machina.readthedocs.io/en/latest/getting_started.html#django-settings
+            MACHINA_MAIN_TEMPLATE_DIR,
+        ],
         # https://docs.djangoproject.com/en/dev/ref/settings/#app-dirs
-        "APP_DIRS": True,
+        # "APP_DIRS": True,
         "OPTIONS": {
             # https://docs.djangoproject.com/en/dev/ref/settings/#template-context-processors
             "context_processors": [
@@ -185,6 +215,13 @@ TEMPLATES = [
                 "django.template.context_processors.tz",
                 "django.contrib.messages.context_processors.messages",
                 "chigame.users.context_processors.allauth_settings",
+                # https://django-machina.readthedocs.io/en/latest/getting_started.html#django-settings
+                "machina.core.context_processors.metadata",
+            ],
+            "loaders": [
+                # https://django-machina.readthedocs.io/en/latest/getting_started.html#django-settings
+                "django.template.loaders.filesystem.Loader",
+                "django.template.loaders.app_directories.Loader",
             ],
         },
     }
@@ -282,3 +319,11 @@ SOCIALACCOUNT_FORMS = {"signup": "chigame.users.forms.UserSocialSignupForm"}
 
 # Add additional configuration below:
 # ------------------------------------------------------------------------------
+
+# Django-machina search backend
+# https://django-machina.readthedocs.io/en/latest/getting_started.html#django-haystack-settings
+HAYSTACK_CONNECTIONS = {
+    "default": {
+        "ENGINE": "haystack.backends.simple_backend.SimpleEngine",
+    },
+}

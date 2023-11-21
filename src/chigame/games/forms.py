@@ -16,8 +16,6 @@ class GameForm(forms.ModelForm):
         }
         widgets = {
             "name": forms.TextInput,
-            "category": forms.CheckboxSelectMultiple,
-            "mechanics": forms.CheckboxSelectMultiple,
             "image": forms.Textarea(attrs={"cols": 80, "rows": 1}),
         }
 
