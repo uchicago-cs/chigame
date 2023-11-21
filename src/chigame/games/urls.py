@@ -1,10 +1,11 @@
 from django.urls import path
 
 from . import views
-from .views import LobbyListView
+from .views import LobbyCreateView, LobbyListView
 
 urlpatterns = [
     path("lobby/", LobbyListView.as_view(), name="lobby-list"),
+    path("lobby/create/", LobbyCreateView.as_view(), name="lobby-create"),
     path("lobby/<int:pk>/", views.ViewLobbyDetails.as_view(), name="lobby-details"),
     path("lobby/<int:pk>/join", views.lobby_join, name="lobby-join"),
     path("lobby/<int:pk>/leave", views.lobby_leave, name="lobby-leave"),
