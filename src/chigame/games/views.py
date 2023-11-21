@@ -2,7 +2,7 @@ from functools import wraps
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import UserPassesTestMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render, reverse
@@ -52,11 +52,15 @@ def lobby_leave(request, pk):
     return redirect(reverse("lobby-details", kwargs={"pk": lobby.id}))
 
 
-class LobbyCreateView(CreateView):
+class LobbyCreateView(LoginRequiredMixin, CreateView):
     model = Lobby
     form_class = LobbyForm
     template_name = "games/lobby_form.html"
     success_url = reverse_lazy("lobby-list")
+
+    def form_valid(self, form):
+        form.instance.created_by = self.request.user
+        return super().form_valid(form)
 
 
 class ViewLobbyDetails(DetailView):
