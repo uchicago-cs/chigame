@@ -32,15 +32,23 @@
           </ul>
         {% endif %}
         <p>Players:</p>
-        <ul>
-          {% for player in tournament.get_all_players %}
-            <li>
-              <h3>
-                <a href="{% url 'users:detail' player.id %}">{{ player.name }}</a>
-              </h3>
-            </li>
-          {% endfor %}
-        </ul>
+        {% if tournament.get_all_players %}
+          <ul>
+            {% for player in tournament.get_all_players %}
+              <li>
+                <p>
+                  {% if player.name %}
+                    <a href="{% url 'users:detail' player.id %}">{{ player.name }}</a>
+                  {% else %}
+                    <a href="{% url 'users:detail' player.id %}">{{ player.email }}</a>
+                  {% endif %}
+                </p>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p>No player yet.</p>
+        {% endif %}
       </li>
     {% empty %}
       <li>No tournaments available.</li>
