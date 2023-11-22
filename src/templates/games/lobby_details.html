@@ -4,10 +4,9 @@
   <h1>Lobby Details</h1>
   <script>
     window.onload = function() {
-        var startTime = new Date(Date.parse(document.getElementById("countdown").innerText));
+        var startTimeString = document.getElementById("countdown").getAttribute("data-start-time");
+        var startTime = new Date(Date.parse(startTimeString));
         
-        console.log("start time:", startTime)
-
         function updateCountdown() {
             // get current date and time
             var currentDate = new Date();
@@ -15,7 +14,6 @@
             var timeDiff = startTime - currentDate;
             // check if the countdown has reached zero
             if (timeDiff <= 0) {
-                clearInterval(countdownInterval);
                 document.getElementById("countdown").innerHTML = "Match has started!";
             } else {
                 var days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
@@ -43,7 +41,7 @@
       };
   </script>
   <p>
-    <strong>Match starts in:</strong> <span id="countdown">{{ lobby_detail.match_start_time }}</span>
+    <strong>Match starts in:</strong> <span id="countdown" data-start-time="{{ lobby_detail.match_start_time_str }}"></span>
   </p>
   <p>
     <strong>Name:</strong> {{ lobby_detail.name }}

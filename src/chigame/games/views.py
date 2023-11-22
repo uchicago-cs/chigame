@@ -75,11 +75,23 @@ class ViewLobbyDetails(DetailView):
     template_name = "games/lobby_details.html"
     context_object_name = "lobby_detail"
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # format match_start_time as a string in ISO 8601 format
+        context['lobby_detail'].match_start_time_str = context['lobby_detail'].match_start_time.strftime('%Y-%m-%dT%H:%M:%S')
+        return context
+
 
 class LobbyUpdateView(UpdateView):
     model = Lobby
     form_class = LobbyForm
     template_name = "games/lobby_form.html"
+
+    def form_valid(self, form):
+        lobbyForm = form.save(commit=False)
+        lobbyForm.match_start_time = lobbyForm.lobby_created + timedelta(seconds=lobbyForm.time_constraint)
+        lobbyForm.save()
+        return super().form_valid(form)
 
     def get_success_url(self):
         return reverse_lazy("lobby-details", kwargs={"pk": self.object.pk})
