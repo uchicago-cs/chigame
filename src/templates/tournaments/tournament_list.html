@@ -30,9 +30,13 @@
         <ul>
           {% for player in tournament.get_all_players %}
             <li>
-              <h3>
-                <a href="{% url 'users:detail' player.id %}">{{ player.name }}</a>
-              </h3>
+              <p>
+                {% if player.name %}
+                  <a href="{% url 'users:detail' player.id %}">{{ player.name }}</a>
+                {% else %}
+                  <a href="{% url 'users:detail' player.id %}">{{ player.email }}</a>
+                {% endif %}
+              </p>
             </li>
           {% endfor %}
         </ul>

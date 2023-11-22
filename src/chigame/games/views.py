@@ -190,7 +190,6 @@ class TournamentUpdateView(UpdateView):
         "rules",
         "draw_rules",
         "num_winner",
-        "players",
     ]
 
     def dispatch(self, request, *args, **kwargs):
