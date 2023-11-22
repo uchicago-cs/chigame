@@ -285,14 +285,10 @@ class Chat(models.Model):
     other Chats. The messages are stored in the Message model.
     """
 
-    match = models.OneToOneField(Match, on_delete=models.CASCADE)
-    # match: the match in which the chat is taking place.
-
-    # visibility: a smallPositiveIntegerField representing the visibility of
-    # the chat. This may be added later.
+    tournament = models.OneToOneField(Tournament, on_delete=models.CASCADE, default=None)
 
     def __str__(self):  # may be changed later
-        return "Chat for match " + str(self.match)
+        return "Chat for tournament " + str(self.tournament)
 
 
 class Message(models.Model):
