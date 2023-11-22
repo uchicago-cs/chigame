@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from chigame.games.models import Game, Lobby, User
+from chigame.games.models import Game, Lobby, Message, User
 
 
 class GameSerializer(serializers.ModelSerializer):
@@ -36,3 +36,9 @@ class UserDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ("id", "name", "email")
+
+
+class MessageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Message
+        fields = ("update_on", "content", "sender", "chat")

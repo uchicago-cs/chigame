@@ -1,8 +1,14 @@
 # from django.shortcuts import render
 from rest_framework import generics
 
-from chigame.api.serializers import GameSerializer, LobbySerializer, UserDetailSerializer, UserListSerializer
-from chigame.games.models import Game, Lobby, User
+from chigame.api.serializers import (
+    GameSerializer,
+    LobbySerializer,
+    MessageSerializer,
+    UserDetailSerializer,
+    UserListSerializer,
+)
+from chigame.games.models import Game, Lobby, Message, User
 
 
 class GameListView(generics.ListCreateAPIView):
@@ -33,3 +39,8 @@ class UserListView(generics.ListCreateAPIView):
 class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = User.objects.all()
     serializer_class = UserDetailSerializer
+
+
+class MessageView(generics.CreateAPIView):
+    queryset = Message.objects.all()
+    serializer_class = MessageSerializer

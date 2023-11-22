@@ -308,6 +308,14 @@ class Message(models.Model):
     sender = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     # Even if the user is deleted, the message will still exist such that the
     # message history is preserved. The sender field will be set to null.
+    token_id = models.PositiveIntegerField(default=None)
+    update_on = models.PositiveIntegerField(default=None, null=True)
+
+    def save(self, *args, **kwargs):
+        if not self.token_id:
+            last_message = Message.objects.filter(chat=self.chat).order_by("-token_id").first()
+            self.token_id = last_message.token_id + 1 if last_message else 1
+        super().save(*args, **kwargs)
 
     def __str__(self):  # may be changed later
         return "Message from " + str(self.sender) + ": " + self.content
