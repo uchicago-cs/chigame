@@ -6,17 +6,19 @@
 {% block content %}
   <h1>{{ query_type }} Search Results</h1>
   <ul>
-    {% if query_type == "Users" %}
+    {% if nothing_found %}
+      <p>Oops! No {{ query_type }} matching your search criteria. Please try different search parameters.</p>
+    {% else if query_type == "Users" %}
       {% for user in object_list %}
         <li>
           <a href="{% url 'user-profile' user.id %}">{{ user.display_name }}</a>
         </li>
       {% endfor %}
-      {% if query_type == "Games" %}
-        {% for game in object_list %}
-          <li>
-            <a href="{% url 'game-detail' game.id %}">{{ game.name }}</a>
-          </li>
-        {% endfor %}
-      </ul>
-    {% endblock content %}
+    {% else if query_type == "Games" %}
+      {% for game in object_list %}
+        <li>
+          <a href="{% url 'game-detail' game.id %}">{{ game.name }}</a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% endblock content %}
