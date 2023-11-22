@@ -8,17 +8,18 @@
   <ul>
     {% if nothing_found %}
       <p>Oops! No {{ query_type }} matching your search criteria. Please try different search parameters.</p>
-    {% else if query_type == "Users" %}
-      {% for user in object_list %}
+    {% elif query_type == "Users" %}
+      {% for profile in object_list %}
         <li>
-          <a href="{% url 'user-profile' user.id %}">{{ user.display_name }}</a>
+          <a href="{% url 'users:user-profile' profile.user_id %}">{{ profile.display_name }}</a>
         </li>
       {% endfor %}
-    {% else if query_type == "Games" %}
+    {% elif query_type == "Games" %}
       {% for game in object_list %}
         <li>
           <a href="{% url 'game-detail' game.id %}">{{ game.name }}</a>
         </li>
       {% endfor %}
-    </ul>
-  {% endblock content %}
+    {% endif %}
+  </ul>
+{% endblock content %}
