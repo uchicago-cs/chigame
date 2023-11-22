@@ -19,4 +19,7 @@ urlpatterns = [
     path("tournaments/create/", views.TournamentCreateView.as_view(), name="tournament-create"),
     path("tournaments/<int:pk>/update/", views.TournamentUpdateView.as_view(), name="tournament-update"),
     path("tournaments/<int:pk>/delete/", views.TournamentDeleteView.as_view(), name="tournament-delete"),
+    # placeholder game
+    path("lobby/<int:pk>/coinflip", views.coin_flip_game, name="placeholder-game"),
+    path("lobby/<int:pk>/flipresult", views.check_guess, name="flip-result"),
 ]

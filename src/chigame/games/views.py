@@ -1,4 +1,5 @@
 from functools import wraps
+from random import choice
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -7,12 +8,13 @@ from django.core.exceptions import PermissionDenied
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render, reverse
 from django.urls import reverse_lazy
+from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 from django_tables2 import SingleTableView
 
 from .forms import GameForm
-from .models import Game, Lobby, Tournament
+from .models import Game, Lobby, Match, Player, Tournament
 from .tables import LobbyTable
 
 
@@ -209,3 +211,42 @@ def search_results(request):
     context = {"query_type": "Games", "object_list": object_list}
 
     return render(request, "pages/search_results.html", context)
+
+
+# Placeholder Game
+@login_required
+def coin_flip_game(request, pk):
+    return render(request, "games/game_coinflip.html", {"lobby_id": pk})
+
+
+@login_required
+def check_guess(request, pk):
+    user_guess = request.POST.get("user_guess")
+    coin_result = choice(["heads", "tails"])
+    correct_guess = user_guess == coin_result
+
+    lobby = get_object_or_404(Lobby, id=pk)
+
+    # Create Match instance linked to the fetched Lobby
+    match = Match.objects.create(
+        game_id=1,  # Replace with the actual Game ID
+        lobby=lobby,
+        date_played=timezone.now()
+        # Add other fields as needed
+    )
+
+    player = Player.objects.create(
+        user=request.user,
+        match=match,
+    )
+    if correct_guess:
+        player.outcome = Player.WIN
+    else:
+        player.outcome = Player.LOSE
+    player.save()
+
+    return render(
+        request,
+        "games/game_coinresult.html",
+        {"user_guess": user_guess, "coin_result": coin_result, "correct_guess": correct_guess},
+    )
