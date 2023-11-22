@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}
+Reviews for {{ game.name }}
+{% endblock title %}
+
+{% block content %}
+<h1>Reviews for {{ game.name }}</h1>
+
+{% if reviews %}
+<ul>
+    {% for review in reviews %}
+    <li>
+        <p>{{ review.user }} rated it {{ review.rating }}/5:</p>
+        <p>{{ review.review }}</p>
+        <hr>
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<p>No reviews available for {{ game.name }}.</p>
+{% endif %}
+
+<a href="{% url 'game-list' %}">Back to Games List</a>
+{% endblock content %}

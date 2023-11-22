@@ -10,9 +10,10 @@ from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 from django_tables2 import SingleTableView
+from django.views.generic.edit import FormMixin
 
-from .forms import GameForm
-from .models import Game, Lobby, Tournament
+from .forms import GameForm, ReviewForm
+from .models import Game, Lobby, Tournament, Review
 from .tables import LobbyTable
 
 
@@ -58,10 +59,33 @@ class ViewLobbyDetails(DetailView):
     context_object_name = "lobby_detail"
 
 
-class GameDetailView(DetailView):
+class GameDetailView(FormMixin, DetailView):
     model = Game
     template_name = "games/game_detail.html"
     context_object_name = "game"
+    form_class = ReviewForm
+
+    def get_success_url(self):
+        return reverse('game-detail', kwargs={'pk': self.object.pk})
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form'] = self.get_form()
+        context['reviews'] = Review.objects.filter(game=self.object)
+        return context
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        form = self.get_form()
+
+        if form.is_valid():
+            review = form.save(commit=False)
+            review.user = self.request.user
+            review.game = self.object
+            review.save()
+            return self.form_valid(form)
+        else:
+            return self.form_invalid(form)
 
 
 class GameCreateView(UserPassesTestMixin, CreateView):
@@ -209,3 +233,14 @@ def search_results(request):
     context = {"query_type": "Games", "object_list": object_list}
 
     return render(request, "pages/search_results.html", context)
+
+
+class ReviewListView(ListView):
+    model = Review
+    template_name = 'reviews/game_reviews.html'
+    context_object_name = 'reviews'
+
+    def get_queryset(self):
+        game_pk = self.kwargs['pk']
+        game = get_object_or_404(Game, pk=game_pk)
+        return Review.objects.filter(game=game)

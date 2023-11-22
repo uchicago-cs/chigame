@@ -60,10 +60,26 @@
     </div>
   </div>
   {% if user.is_staff %}
-    <div class="btn-group">
-      <a href="{% url 'game-edit' game.pk %}" class="btn btn-outline-primary">Edit</a>
-      <a href="#" class="btn btn-outline-primary">Delete</a>
+    <a href="{% url 'game-review-list' pk=game.pk %}">See All Reviews for {{ game.name }}</a>
+    <div class="row mb-3">
+        <div class="col-md-12">
+            <h2>Reviews</h2>
+            {% for review in reviews %}
+            <p>{{ review.user }} rated it {{ review.rating }}/5:</p>
+            <p>{{ review.review }}</p>
+            <hr>
+            {% endfor %}
+            {% if user.is_authenticated %}
+            <h3>Leave a Review</h3>
+            <form method="post" action="{% url 'game-detail' game.pk %}">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit">Submit Review</button>
+            </form>
+            {% else %}
+            <p>Please login to leave a review.</p>
+            {% endif %}
+        </div>
     </div>
-  {% endif %}
-  <a href="{% url 'game-list' %}">Back to Games List</a>
+    <a href="{% url 'game-list' %}">Back to Games List</a>
 {% endblock content %}
