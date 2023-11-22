@@ -202,6 +202,7 @@ class Tournament(models.Model):
     winners = models.ManyToManyField(User, related_name="won_tournaments", blank=True)  # allow multiple winners
     num_winner = models.PositiveIntegerField(default=1)  # number of possible winners for the tournament
     players = models.ManyToManyField(User, related_name="joined_tournaments", blank=True)
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="created_tournaments")
 
     def get_all_matches(self):
         return self.matches.all()

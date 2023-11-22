@@ -5,11 +5,14 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
 from django.db.models import Q
+from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render, reverse
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 from django_tables2 import SingleTableView
+
+from chigame.users.models import User
 
 from .forms import GameForm
 from .models import Game, Lobby, Tournament
@@ -114,18 +117,16 @@ def staff_required(view_func):
 
 class TournamentListView(ListView):
     model = Tournament
-    queryset = Tournament.objects.prefetch_related("matches").all()
     template_name = "tournaments/tournament_list.html"
     context_object_name = "tournament_list"
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        # Additional context can be added if needed
-        return context
+    def get_queryset(self):
+        # If the user is staff, show all tournaments
+        if self.request.user.is_staff:
+            return Tournament.objects.prefetch_related("matches").all()
 
-    # check if user is staff member
-    def test_func(self):
-        return self.request.user.is_staff
+        # For non-staff users, show only tournaments they are part of
+        return Tournament.objects.prefetch_related("matches").filter(players=self.request.user)
 
 
 class TournamentDetailView(DetailView):
@@ -134,7 +135,6 @@ class TournamentDetailView(DetailView):
     context_object_name = "tournament"
 
 
-@method_decorator(staff_required, name="dispatch")
 class TournamentCreateView(CreateView):
     model = Tournament
     template_name = "tournaments/tournament_create.html"
@@ -148,20 +148,35 @@ class TournamentCreateView(CreateView):
         "rules",
         "draw_rules",
         "num_winner",
-        "matches",
         "players",
     ]
-    # Note: "winner" is not included in the fields because it is not
-    # supposed to be set by the user. It will be set automatically
-    # when the tournament is over.
-    # Note: we may remove the "matches" field later for the same reason,
-    # but we keep it for now because it is convenient for testing.
+
+    def form_valid(self, form):
+        user = self.request.user
+        if user.tokens < 1:
+            # Raise a PermissionDenied exception to show the forbidden page
+            raise PermissionDenied("You do not have enough tokens to create a tournament.")
+
+        # Deduct a token from the user's account
+        user.tokens -= 1
+        user.save()
+
+        # Save the form instance but don't commit to the database yet
+        tournament = form.save(commit=False)
+        tournament.created_by = user
+        tournament.save()
+
+        # Add the creator to the players list
+        tournament.players.add(user)
+
+        # Redirect to the tournament's detail page
+        self.object = tournament
+        return HttpResponseRedirect(self.get_success_url())
 
     def get_success_url(self):
-        return reverse_lazy("tournament-detail", kwargs={"pk": self.object.pk})
+        return reverse("tournament-detail", kwargs={"pk": self.object.pk})
 
 
-@method_decorator(staff_required, name="dispatch")
 class TournamentUpdateView(UpdateView):
     model = Tournament
     template_name = "tournaments/tournament_update.html"
@@ -175,17 +190,35 @@ class TournamentUpdateView(UpdateView):
         "rules",
         "draw_rules",
         "num_winner",
-        "matches",
         "players",
     ]
-    # Note: "winner" is not included in the fields because it is not
-    # supposed to be set by the user. It will be set automatically
-    # when the tournament is over.
-    # Note: we may remove the "matches" field later for the same reason,
-    # but we keep it for now because it is convenient for testing.
+
+    def dispatch(self, request, *args, **kwargs):
+        # Get the tournament object
+        tournament = self.get_object()
+
+        # Check if the current user is the creator of the tournament
+        if tournament.created_by != request.user and not request.user.is_staff:
+            raise PermissionDenied("You do not have permission to edit this tournament.")
+
+        # Continue with the normal flow
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
-        return reverse_lazy("tournament-detail", kwargs={"pk": self.object.pk})
+        return reverse("tournament-detail", kwargs={"pk": self.object.pk})
+
+
+def distribute_tokens():
+    # Placeholder for future date check
+    # thirty_days_ago = datetime.now() - timedelta(days=30)
+    # users = User.objects.filter(tokens__lt=3, last_token_distribution__lt=thirty_days_ago)
+
+    users = User.objects.filter(tokens__lt=3)
+    for user in users:
+        # Add future logic for updating last_token_distribution
+        # user.last_token_distribution = datetime.now()
+        user.tokens += 1
+        user.save()
 
 
 @method_decorator(staff_required, name="dispatch")

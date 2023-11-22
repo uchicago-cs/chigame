@@ -67,7 +67,7 @@
   {% else %}
     <p>No matches yet.</p>
   {% endif %}
-  {% if user.is_staff %}
+  {% if request.user == tournament.created_by or request.user.is_staff %}
     <p>
       <a href="{% url 'tournament-update' tournament.id %}">Update</a>
     </p>
