@@ -1,4 +1,5 @@
 from functools import wraps
+from datetime import timedelta
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -13,10 +14,10 @@ from django.utils.decorators import method_decorator
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 from django_tables2 import SingleTableView
 
+from background_task.models import Task
 from .forms import GameForm, LobbyForm
 from .models import Game, Lobby, Tournament
 from .tables import LobbyTable
-from .tasks import decrement_time_constraint
 
 
 class GameListView(ListView):
@@ -64,9 +65,8 @@ class LobbyCreateView(LoginRequiredMixin, CreateView):
     def form_valid(self, form):
         form.instance.created_by = self.request.user
         form.instance.lobby_created = timezone.now()
+        form.instance.match_start_time = form.instance.lobby_created + timedelta(seconds=form.instance.time_constraint)
         response = super().form_valid(form)
-        # trigger countdown
-        decrement_time_constraint(self.object.id)
         return response
 
 

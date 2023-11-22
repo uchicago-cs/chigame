@@ -163,6 +163,7 @@ class Lobby(models.Model):
     max_players = models.PositiveIntegerField()
     time_constraint = models.PositiveIntegerField(default=300)
     lobby_created = models.DateTimeField(default=timezone.now)
+    match_start_time = models.DateTimeField(null=True, blank=True)
 
     # ================ VALIDATON ================
     def clean(self):
