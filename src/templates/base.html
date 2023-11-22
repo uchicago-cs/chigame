@@ -145,7 +145,7 @@
             if (query_type.value == "games") {
               search_bar.action = "{% url 'game-search-results' %}";
             } else if (query_type.value == "users") {
-              search_bar.action = "{% url 'user-search-results' %}"; // placeholder
+              search_bar.action = "{% url 'users:user-search-results' %}";
             }
           });
         });
