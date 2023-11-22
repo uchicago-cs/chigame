@@ -7,7 +7,7 @@
   <h1>{{ query_type }} Search Results</h1>
   <ul>
     {% if nothing_found %}
-      <p>Oops! No {{ query_type }} matching your search criteria. Please try different search parameters.</p>
+      <p>Oops! No {{ query_type }} matching your search criteria. Please try again with different search parameters.</p>
     {% elif query_type == "Users" %}
       {% for profile in object_list %}
         <li>
