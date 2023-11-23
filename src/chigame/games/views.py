@@ -2,17 +2,18 @@ from functools import wraps
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import UserPassesTestMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render, reverse
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
+from django.views.generic.edit import FormMixin
 from django_tables2 import SingleTableView
 
-from .forms import GameForm
-from .models import Game, Lobby, Tournament
+from .forms import GameForm, ReviewForm
+from .models import Game, Lobby, Review, Tournament
 from .tables import LobbyTable
 
 
@@ -58,10 +59,29 @@ class ViewLobbyDetails(DetailView):
     context_object_name = "lobby_detail"
 
 
-class GameDetailView(DetailView):
+class GameDetailView(LoginRequiredMixin, FormMixin, DetailView):
     model = Game
     template_name = "games/game_detail.html"
     context_object_name = "game"
+    form_class = ReviewForm
+
+    def get_success_url(self):
+        return reverse("game-detail", kwargs={"pk": self.object.pk})
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["form"] = self.get_form()
+        context["reviews"] = Review.objects.filter(game=self.object)
+        return context
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        return super().post(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        form.instance.game = self.object
+        return super().form_valid(form)
 
 
 class GameCreateView(UserPassesTestMixin, CreateView):
@@ -209,3 +229,14 @@ def search_results(request):
     context = {"query_type": "Games", "object_list": object_list}
 
     return render(request, "pages/search_results.html", context)
+
+
+class ReviewListView(ListView):
+    model = Review
+    template_name = "games/game_reviews.html"
+    context_object_name = "reviews"
+
+    def get_queryset(self):
+        game_pk = self.kwargs["pk"]
+        game = get_object_or_404(Game, pk=game_pk)
+        return Review.objects.filter(game=game)
