@@ -1,13 +1,12 @@
 // Simulated frontend data, replace with actual implementation
-let currentTokenId = 0; // Assume the frontend starts with token ID 0
+let currentTokenId = 0;
 const name = document.getElementById("name").value;
-console.log(name);
 
 const fakeMessage = [
   [{ tokenId: 1, updateOn: null, content: "Hello, World!", sender: "Alice" }],
   [{ tokenId: 2, updateOn: 1, content: "Updated message!", sender: "Alice" }],
   [
-    { tokenId: 3, updateOn: 2, content: null, sender: "Alice" }, // Deleted message
+    { tokenId: 3, updateOn: 2, content: null, sender: "Alice" },
   ],
   [{ tokenId: 4, updateOn: null, content: "New message!", sender: "Bob" }],
   [{ tokenId: 5, updateOn: 4, content: "Updated message!", sender: "Bob" }],
@@ -19,7 +18,7 @@ const fakeMessage = [
   [{ tokenId: 11, updateOn: null, content: "New Message 6", sender: "Bob" }],
   [{ tokenId: 12, updateOn: null, content: "New Message 7", sender: "Bob" }],
   [
-    { tokenId: 13, updateOn: 12, content: null, sender: "Bob" }, // Deleted message
+    { tokenId: 13, updateOn: 12, content: null, sender: "Bob" },
   ],
   [{ tokenId: 14, updateOn: null, content: "New Message 8", sender: "Bob" }],
   [{ tokenId: 15, updateOn: null, content: "New Message 9", sender: "Bob" }],
@@ -51,26 +50,18 @@ function getMessages(tokenId) {
   }
 }
 
-// Function to simulate receiving messages from the backend
 function updateView(tokenId) {
-  // Simulated backend response, replace with actual API call
-  // Here, we assume messages are hardcoded for demonstration purposes
-
   const messagesFromBackend = getMessages(tokenId);
-  if (messagesFromBackend == null) {
-    console.log("No new messages");
-  } else {
+  if (messagesFromBackend != null) {
     const messageContainer = document.getElementById("messageContainer");
 
     for (let i = 0; i < messagesFromBackend.length; i++) {
       const message = messagesFromBackend[i];
       if (message.updateOn != null) {
-        // modify the message in message Container that has the same tokenId as updateOn
         const messageElement = document.getElementById(message.updateOn);
         messageElement.textContent = getMessageText(message);
         messageElement.id = message.tokenId;
       } else {
-        // create a new message
         const messageElement = document.createElement("div");
         messageElement.textContent = getMessageText(message);
         messageElement.id = message.tokenId;
@@ -81,15 +72,13 @@ function updateView(tokenId) {
         messageContainer.appendChild(messageElement);
       }
     }
-
-    // Update the current token ID
-    console.log(messagesFromBackend[messagesFromBackend.length - 1].tokenId);
+    // console.log(messagesFromBackend[messagesFromBackend.length - 1].tokenId);
     currentTokenId =
       messagesFromBackend[messagesFromBackend.length - 1].tokenId;
+    scrollToBottom();
   }
 }
 
-// Function to format message text for display
 function getMessageText(message) {
   if (message.content !== null) {
     return message.sender + ": " + message.content;
@@ -103,21 +92,15 @@ function getMessageText(message) {
 document
   .getElementById("messageContainer")
   .addEventListener("click", function (event) {
-    // Check if the clicked element has the class 'message'
     if (event.target.classList.contains("message")) {
-      // Apply the effect (you can customize this part)
       event.target.style.backgroundColor = "#e0e0e0";
-
       console.log("Element clicked:", event.target.textContent);
     }
   });
 
-// Simulate initial message retrieval
 updateView(currentTokenId);
 
-// Simulate periodic message updates (you may use WebSocket or other real-time mechanisms)
 setInterval(() => {
-  console.log("Updating messages...");
   updateView(currentTokenId);
-  scrollToBottom();
-}, 2000); // Update every second, adjust as needed
+  // scrollToBottom();
+}, 2000);
