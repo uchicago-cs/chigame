@@ -358,6 +358,6 @@ class Message(models.Model):
 class Review(models.Model):
     "Represents a game review"
     review = models.TextField(blank=True, null=True)
-    rating = models.PositiveSmallIntegerField()
+    rating = models.PositiveSmallIntegerField(blank=True, null=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     game = models.ForeignKey(Game, on_delete=models.CASCADE)
