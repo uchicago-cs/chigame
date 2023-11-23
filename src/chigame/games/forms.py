@@ -25,5 +25,7 @@ class GameForm(forms.ModelForm):
 class LobbyForm(forms.ModelForm):
     class Meta:
         model = Lobby
-        fields = "__all__"
-
+        fields = ['name', 'game', 'game_mod_status', 'min_players', 'max_players', 'time_constraint', 'lobby_created']
+        widgets = {
+            "name": forms.TextInput
+        }
