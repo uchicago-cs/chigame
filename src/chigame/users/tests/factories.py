@@ -3,9 +3,10 @@ from typing import Any
 
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
-from factory import Faker, LazyAttribute, SubFactory, post_generation
+from factory import Faker, LazyAttribute, SubFactory, lazy_attribute, post_generation
 from factory.django import DjangoModelFactory
-from models import FriendInvitation, Notification
+
+from chigame.users.models import FriendInvitation, Notification
 
 
 class UserFactory(DjangoModelFactory):
@@ -33,23 +34,24 @@ class UserFactory(DjangoModelFactory):
         django_get_or_create = ["email"]
 
 
-def get_different_user(user):
-    receiver = user
-    while receiver.pk == user.pk:
-        receiver = SubFactory(UserFactory)
-    return receiver
-
-
 class FriendInvitationFactory(DjangoModelFactory):
     class Meta:
         model = FriendInvitation
 
     sender = SubFactory(UserFactory)
-    receiver = LazyAttribute(
-        lambda: get_different_user("..sender")
-    )  # special syntax in https://factoryboy.readthedocs.io/en/latest/reference.html#parameters
     accepted = Faker("boolean")
     timestamp = Faker("date_time_this_year")
+
+    @lazy_attribute
+    def receiver(self):
+        return FriendInvitationFactory.get_different_user(self.sender)
+
+    @staticmethod
+    def get_different_user(sender):
+        receiver = sender
+        while receiver.pk == sender.pk:
+            receiver = UserFactory()
+        return receiver
 
 
 class BaseNotificationFactory(DjangoModelFactory):
