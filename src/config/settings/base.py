@@ -83,13 +83,13 @@ THIRD_PARTY_APPS = [
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
-    # https://django-machina.readthedocs.io/en/latest/getting_started.html#django-settings
     # Django-machina dependencies:
+    # https://django-machina.readthedocs.io/en/latest/getting_started.html#django-settings
     "mptt",
     "haystack",
     "widget_tweaks",
-    # https://django-machina.readthedocs.io/en/latest/getting_started.html#django-settings
     # Django-machina apps:
+    # https://django-machina.readthedocs.io/en/latest/getting_started.html#django-settings
     "machina",
     "machina.apps.forum",
     "machina.apps.forum_conversation",
@@ -319,8 +319,8 @@ SOCIALACCOUNT_FORMS = {"signup": "chigame.users.forms.UserSocialSignupForm"}
 # Add additional configuration below:
 # ------------------------------------------------------------------------------
 
-# https://django-machina.readthedocs.io/en/latest/getting_started.html#django-haystack-settings
 # Django-machina search backend
+# https://django-machina.readthedocs.io/en/latest/getting_started.html#django-haystack-settings
 HAYSTACK_CONNECTIONS = {
     "default": {
         "ENGINE": "haystack.backends.simple_backend.SimpleEngine",

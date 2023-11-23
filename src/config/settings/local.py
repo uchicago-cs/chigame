@@ -21,8 +21,8 @@ CACHES = {
         "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
         "LOCATION": "",
     },
-    # https://django-machina.readthedocs.io/en/latest/getting_started.html#django-settings
     # django-machina attachments cache
+    # https://django-machina.readthedocs.io/en/latest/getting_started.html#django-settings
     "machina_attachments": {
         "BACKEND": "django.core.cache.backends.filebased.FileBasedCache",
         "LOCATION": "/tmp",
