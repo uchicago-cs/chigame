@@ -83,11 +83,13 @@ THIRD_PARTY_APPS = [
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
-    # Machina dependencies:
+    # https://django-machina.readthedocs.io/en/latest/getting_started.html#django-settings
+    # Django-machina dependencies:
     "mptt",
     "haystack",
     "widget_tweaks",
-    # Machina apps:
+    # https://django-machina.readthedocs.io/en/latest/getting_started.html#django-settings
+    # Django-machina apps:
     "machina",
     "machina.apps.forum",
     "machina.apps.forum_conversation",
@@ -156,6 +158,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "allauth.account.middleware.AccountMiddleware",
+    # https://django-machina.readthedocs.io/en/latest/getting_started.html#django-settings
     "machina.apps.forum_permission.middleware.ForumPermissionMiddleware",
 ]
 
@@ -168,6 +171,7 @@ STATIC_URL = "/static/"
 # https://docs.djangoproject.com/en/dev/ref/contrib/staticfiles/#std:setting-STATICFILES_DIRS
 STATICFILES_DIRS = [
     str(BASE_DIR / "static"),
+    # https://django-machina.readthedocs.io/en/latest/getting_started.html#django-settings
     MACHINA_MAIN_STATIC_DIR,
 ]
 # https://docs.djangoproject.com/en/dev/ref/contrib/staticfiles/#staticfiles-finders
@@ -193,6 +197,7 @@ TEMPLATES = [
         # https://docs.djangoproject.com/en/dev/ref/settings/#dirs
         "DIRS": [
             str(BASE_DIR / "templates"),
+            # https://django-machina.readthedocs.io/en/latest/getting_started.html#django-settings
             MACHINA_MAIN_TEMPLATE_DIR,
         ],
         # https://docs.djangoproject.com/en/dev/ref/settings/#app-dirs
@@ -209,9 +214,11 @@ TEMPLATES = [
                 "django.template.context_processors.tz",
                 "django.contrib.messages.context_processors.messages",
                 "chigame.users.context_processors.allauth_settings",
+                # https://django-machina.readthedocs.io/en/latest/getting_started.html#django-settings
                 "machina.core.context_processors.metadata",
             ],
             "loaders": [
+                # https://django-machina.readthedocs.io/en/latest/getting_started.html#django-settings
                 "django.template.loaders.filesystem.Loader",
                 "django.template.loaders.app_directories.Loader",
             ],
@@ -312,7 +319,8 @@ SOCIALACCOUNT_FORMS = {"signup": "chigame.users.forms.UserSocialSignupForm"}
 # Add additional configuration below:
 # ------------------------------------------------------------------------------
 
-# Machina
+# https://django-machina.readthedocs.io/en/latest/getting_started.html#django-haystack-settings
+# Django-machina search backend
 HAYSTACK_CONNECTIONS = {
     "default": {
         "ENGINE": "haystack.backends.simple_backend.SimpleEngine",

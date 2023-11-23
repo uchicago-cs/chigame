@@ -18,6 +18,8 @@ urlpatterns = [
     # urls to handle api requests
     path("api/", include("chigame.api.urls")),
     path("games/", include("chigame.games.urls")),
+    # https://django-machina.readthedocs.io/en/latest/getting_started.html#urls-configuration
+    # Django-machina forum
     path("forum/", include(machina_urls)),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
