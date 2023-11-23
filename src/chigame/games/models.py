@@ -1,4 +1,6 @@
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ValidationError
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils import timezone
 
@@ -34,12 +36,39 @@ class Game(models.Model):
     min_playtime = models.PositiveIntegerField(null=True, blank=True)
     max_playtime = models.PositiveIntegerField(null=True, blank=True)
 
-    complexity = models.PositiveSmallIntegerField(null=True, blank=True)  # 1-5, 1 being the easiest
-    category = models.ManyToManyField("Category", related_name="games", blank=True)
+    complexity = models.DecimalField(
+        max_digits=3, decimal_places=2, null=True, validators=[MinValueValidator(1), MaxValueValidator(5)]
+    )
+
+    categories = models.ManyToManyField("Category", related_name="games", blank=True)
     mechanics = models.ManyToManyField("Mechanic", related_name="games", blank=True)
 
     # ================ OTHER ================
     BGG_id = models.PositiveIntegerField(null=True, blank=True)  # BoardGameGeek ID
+
+    # ================ VALIDATON ================
+    def clean(self):
+        # Ensures min_players is not greater than max_players
+        if self.min_players and self.max_players and self.min_players > self.max_players:
+            raise ValidationError({"min_players": "min_players cannot be greater than max_players"})
+
+        # Validate playtime constraints for all combinations of min_playtime, max_playtime, and expected_playtime
+        if self.min_playtime is not None and self.max_playtime is not None:
+            if self.min_playtime > self.max_playtime:
+                raise ValidationError({"min_playtime": "min_playtime cannot be greater than max_playtime"})
+
+        if self.expected_playtime is not None:
+            if self.min_playtime is not None and self.expected_playtime < self.min_playtime:
+                raise ValidationError({"expected_playtime": "expected_playtime cannot be less than min_playtime"})
+
+            if self.max_playtime is not None and self.expected_playtime > self.max_playtime:
+                raise ValidationError({"expected_playtime": "expected_playtime cannot be greater than max_playtime"})
+
+    def save(self, *args, **kwargs):
+        # Calls full_clean to run all model validations, including the custom clean method and built-in field checks.
+        # https://docs.djangoproject.com/en/stable/ref/models/instances/#django.db.models.Model.full_clean
+        self.full_clean()
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name
@@ -89,6 +118,7 @@ class Category(models.Model):
 
     name = models.CharField(max_length=255, unique=True)
     description = models.TextField(null=True)
+    image = models.TextField(default="/static/images/no_picture_available.png")
 
     def __str__(self):
         return self.name
@@ -102,6 +132,7 @@ class Mechanic(models.Model):
 
     name = models.CharField(max_length=255, unique=True)
     description = models.TextField(null=True)
+    image = models.TextField(default="/static/images/no_picture_available.png")
 
     def __str__(self):
         return self.name
@@ -132,6 +163,17 @@ class Lobby(models.Model):
     max_players = models.PositiveIntegerField()
     time_constraint = models.PositiveIntegerField(default=300)
     lobby_created = models.DateTimeField(default=timezone.now)
+
+    # ================ VALIDATON ================
+    def clean(self):
+        # Ensures min_players is not greater than max_players
+        if self.min_players > self.max_players:
+            raise ValidationError({"min_players": "min_players cannot be greater than max_players"})
+
+    def save(self, *args, **kwargs):
+        # Calls full_clean to run all validations before saving
+        self.full_clean()
+        super().save(*args, **kwargs)
 
 
 class Match(models.Model):
@@ -198,9 +240,10 @@ class Tournament(models.Model):
     description = models.TextField()  # not limited to 255 characters
     rules = models.TextField()  # not limited to 255 characters
     draw_rules = models.TextField()  # not limited to 255 characters
-    matches = models.ManyToManyField(Match, related_name="matches")
+    matches = models.ManyToManyField(Match, related_name="matches", blank=True)
     winners = models.ManyToManyField(User, related_name="won_tournaments", blank=True)  # allow multiple winners
-    players = models.ManyToManyField(User)
+    num_winner = models.PositiveIntegerField(default=1)  # number of possible winners for the tournament
+    players = models.ManyToManyField(User, related_name="joined_tournaments", blank=True)
 
     def get_all_matches(self):
         return self.matches.all()
