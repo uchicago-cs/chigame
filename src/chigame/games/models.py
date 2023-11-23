@@ -15,7 +15,7 @@ class Game(models.Model):
     # ================ BASIC INFORMATION ================
     name = models.TextField()
     description = models.TextField()
-    year_published = models.PositiveIntegerField(null=True, blank=True)
+    year_published = models.IntegerField(null=True, blank=True)
 
     # NOTE:
     # Regular game images are not to be stored in the repository due to their large size.
