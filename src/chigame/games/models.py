@@ -353,3 +353,11 @@ class Message(models.Model):
 
     def __str__(self):  # may be changed later
         return "Message from " + str(self.sender) + ": " + self.content
+
+
+class Review(models.Model):
+    "Represents a game review"
+    review = models.TextField(blank=True, null=True)
+    rating = models.PositiveSmallIntegerField()
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    game = models.ForeignKey(Game, on_delete=models.CASCADE)
