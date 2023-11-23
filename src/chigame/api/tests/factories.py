@@ -56,10 +56,10 @@ class GameFactory(DjangoModelFactory):
 
         if extracted:
             for c in extracted:
-                self.category.add(c)
+                self.categories.add(c)
         else:
             # Add a random category if none are specified
-            self.category.add(CategoryFactory())
+            self.categories.add(CategoryFactory())
 
     @post_generation
     def mechanics(self, create, extracted, **kwargs):
