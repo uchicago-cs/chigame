@@ -102,7 +102,7 @@ def search_results(request):
     """
     object_list = Game.objects.filter(
         Q(name__icontains=query)
-        | Q(category__name__icontains=query)
+        | Q(categories__name__icontains=query)
         | Q(people__name__icontains=query)
         | Q(publishers__name__icontains=query)
     )
