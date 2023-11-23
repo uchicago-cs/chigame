@@ -318,10 +318,10 @@ SOCIALACCOUNT_FORMS = {"signup": "chigame.users.forms.UserSocialSignupForm"}
 
 
 # Add additional configuration below:
-# ------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 
-# Django-machina search backend
+# Django-machina search backend:
 # https://django-machina.readthedocs.io/en/latest/getting_started.html#django-haystack-settings
 HAYSTACK_CONNECTIONS = {
     "default": {
