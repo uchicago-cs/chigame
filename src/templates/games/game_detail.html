@@ -55,7 +55,16 @@
           <strong>Expected:</strong>{{ game.expected_playtime }} minutes
         </p>
         <h3 id="rule-description">Rules</h3>
-        <p>{{ game.rules }}</p>
+        <div class="mb-4">
+          <p>{{ game.rules }}</p>
+          <h3 id="new-review">Write a Review</h3>
+          <form method="post" action="{% url 'game-detail' pk=game.pk %}">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-primary">Submit Review</button>
+          </form>
+        </div>
+        <a href="{% url 'game-review-list' pk=game.pk %}">See All Reviews for {{ game.name }}</a>
       </div>
     </div>
   </div>
