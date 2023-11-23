@@ -2,8 +2,9 @@ from collections.abc import Sequence
 from typing import Any
 
 from django.contrib.auth import get_user_model
-from factory import Faker, post_generation
+from factory import Faker, SubFactory, post_generation
 from factory.django import DjangoModelFactory
+from models import Notification
 
 
 class UserFactory(DjangoModelFactory):
@@ -29,3 +30,24 @@ class UserFactory(DjangoModelFactory):
     class Meta:
         model = get_user_model()
         django_get_or_create = ["email"]
+
+
+class BaseNotificationFactory(DjangoModelFactory):
+    class Meta:
+        model = Notification
+
+    receiver = SubFactory(UserFactory)
+    first_sent = last_sent = Faker("date_time_this_year")
+    type = Faker(
+        "random_element",
+        elements=[
+            Notification.FRIEND_REQUEST,
+            Notification.REMINDER,
+            Notification.UPCOMING_MATCH,
+            Notification.MATCH_PROPOSAL,
+            Notification.GROUP_INVITATION,
+        ],
+    )
+    read = False
+    visible = True
+    message = Faker("sentence")
