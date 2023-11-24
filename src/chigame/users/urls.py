@@ -27,5 +27,5 @@ urlpatterns = [
     path("accept_friend_invitation/<int:pk>", view=accept_friend_invitation, name="accept-friend-invitation"),
     path("decline_friend_invitation/<int:pk>", view=decline_friend_invitation, name="decline-friend-invitation"),
     path("user_history/<int:pk>", views.user_history, name="user-history"),
-    path("search-results", view=user_search_results, name="user-search-results"),
+    path("search-results", user_search_results, name="user-search-results"),
 ]
