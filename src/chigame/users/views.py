@@ -182,6 +182,7 @@ def decline_friend_invitation(request, pk):
         messages.error(request, "This friend invitation does not exist")
     return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
 
+
 @login_required
 def user_inbox_view(request, pk):
     user = request.user
