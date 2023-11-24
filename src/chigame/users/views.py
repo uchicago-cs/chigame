@@ -188,7 +188,7 @@ def user_search_results(request):
     context = {"nothing_found": True, "query_type": "Users"}
     if query:
         users_list = UserProfile.objects.filter(Q(user__email__icontains=query) | Q(user__name__icontains=query))
-        if user_list.count() > 0:
+        if users_list.count() > 0:
             context.pop("nothing_found")
             context["object_list"] = users_list
-    return render(request, "pages/search_results.html", context={"nothing_found": True})
+    return render(request, "pages/search_results.html", context)
