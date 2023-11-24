@@ -1,4 +1,6 @@
-from factory import Faker, post_generation
+import random
+
+from factory import Faker, LazyAttribute, post_generation
 from factory.django import DjangoModelFactory
 
 from chigame.games.models import Category, Game, Mechanic
@@ -29,14 +31,19 @@ class GameFactory(DjangoModelFactory):
     year_published = Faker("pyint", min_value=1900, max_value=2023)
 
     rules = Faker("text", max_nb_chars=1000)
+
     min_players = Faker("pyint", min_value=1, max_value=10)
-    max_players = Faker("pyint", min_value=1, max_value=10)
+
+    # LazyAttribute allows setting a field's value based on other fields at runtime.
+    # In this case, we want max_players to be at least min_players, but no more than 10.
+    max_players = LazyAttribute(lambda x: random.randint(x.min_players, 10))
 
     suggested_age = Faker("pyint", min_value=1, max_value=18)
 
-    expected_playtime = Faker("pyint", min_value=1, max_value=1000)
+    # Ensure min_playtime is not greater than max_playtime
     min_playtime = Faker("pyint", min_value=1, max_value=1000)
-    max_playtime = Faker("pyint", min_value=1, max_value=1000)
+    max_playtime = LazyAttribute(lambda x: random.randint(x.min_playtime, 1000))
+    expected_playtime = LazyAttribute(lambda x: random.randint(x.min_playtime, x.max_playtime))
 
     complexity = Faker("pyint", min_value=1, max_value=5)
 
@@ -49,10 +56,10 @@ class GameFactory(DjangoModelFactory):
 
         if extracted:
             for c in extracted:
-                self.category.add(c)
+                self.categories.add(c)
         else:
             # Add a random category if none are specified
-            self.category.add(CategoryFactory())
+            self.categories.add(CategoryFactory())
 
     @post_generation
     def mechanics(self, create, extracted, **kwargs):

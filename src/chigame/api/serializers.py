@@ -26,13 +26,7 @@ class LobbySerializer(serializers.ModelSerializer):
         )
 
 
-class UserListSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ("id", "name", "email")
-
-
-class UserDetailSerializer(serializers.ModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ("id", "name", "email")
