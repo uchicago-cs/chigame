@@ -329,7 +329,7 @@ class Chat(models.Model):
 
     tournament = models.OneToOneField(Tournament, on_delete=models.CASCADE, default=None)
 
-    def __str__(self):  # may be changed later
+    def __str__(self):
         return "Chat for tournament " + str(self.tournament)
 
 
@@ -340,12 +340,9 @@ class Message(models.Model):
     """
 
     chat = models.ForeignKey(Chat, on_delete=models.CASCADE)
-    content = models.TextField()
-    timestamp = models.DateTimeField(auto_now_add=True)  # timestamp of the
-    # moment the message was created.
+    content = models.TextField(null=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
     sender = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-    # Even if the user is deleted, the message will still exist such that the
-    # message history is preserved. The sender field will be set to null.
     token_id = models.PositiveIntegerField(default=None)
     update_on = models.PositiveIntegerField(default=None, null=True)
 
@@ -355,5 +352,5 @@ class Message(models.Model):
             self.token_id = last_message.token_id + 1 if last_message else 1
         super().save(*args, **kwargs)
 
-    def __str__(self):  # may be changed later
+    def __str__(self):
         return "Message from " + str(self.sender) + ": " + self.content
