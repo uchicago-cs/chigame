@@ -235,6 +235,12 @@ class TournamentDeleteView(DeleteView):
     success_url = reverse_lazy("tournament-list")
 
 
+def TournamentChatDetailView(request, pk):
+    tournament = Tournament.objects.get(pk=pk)
+    context = {"tournament": tournament}
+    return render(request, "tournaments/tournament_chat.html", context)
+
+
 def search_results(request):
     query = request.GET.get("query")
 
