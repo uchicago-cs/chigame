@@ -47,6 +47,9 @@
       height: 100%;
       border-top-left-radius: 0;
       border-bottom-left-radius: 0;
+      border-top-right-radius: 5px;
+      border-bottom-right-radius: 5px;
+      border: 0.5px solid black;
       padding: 0;
       font-family: sans-serif;
     }
@@ -59,12 +62,17 @@
          id="name"
          name="variable"
          value="{{ request.user.name }}" />
-  <input type="hidden" id="id" name="variable" value="{{ request.user.id }}" />
+  <input type="hidden"
+         id="email"
+         name="variable"
+         value="{{ request.user.email }}" />
+  <input type="hidden" id="tID" name="variable" value="{{ tournament.pk }}" />
   <div id="messageContainer">
     <!-- Messages will be displayed here -->
   </div>
   <script src = {% static 'js/getChatUpdate.js' %}></script>
   <div id="sendContainer">
+    {% csrf_token %}
     <! -- Input field for message -->
     <input type="text"
            name="message"
@@ -74,8 +82,4 @@
     <button onclick="sendMessage()">Send</button>
   </div>
   <script src = {% static 'js/sendMessage.js' %}></script>
-  {% comment %} <div style=" width: 50%; left: 50%; top: 85%; transform: translate(-50%, 0); position: absolute; height: 8%; display: flex; justify-content: space-between; font-family: sans-serif; ">
-    <input type="text" name="message" oninput="{onChange}" style=" width: 80%; height: 100%; padding-left: 10px; border-top-left-radius: 5px; border-bottom-left-radius: 5px; border-top-right-radius: 0; border-bottom-right-radius: 0; border: 0; font-family: sans-serif; color: black; background-color: gray; " placeholder="Type your message here..." />
-    <button onclick="{onClick}" style=" width: 20%; height: 100%; border-top-left-radius: 0; border-bottom-left-radius: 0; padding: 0; font-family: sans-serif; ">Send</button>
-  </div> {% endcomment %}
 {% endblock content %}
