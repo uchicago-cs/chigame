@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from chigame.games.models import Game, Lobby, Message, User
+from chigame.games.models import Chat, Game, Lobby, Message, Tournament, User
 
 
 class GameSerializer(serializers.ModelSerializer):
@@ -33,15 +33,24 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class MessageSerializer(serializers.ModelSerializer):
-    sender = serializers.EmailField(write_only=True, source="sender")
+    sender = serializers.EmailField(write_only=True)
+
+    tournament = serializers.IntegerField(write_only=True)
 
     class Meta:
         model = Message
-        fields = ("update_on", "content", "sender", "chat")
+        fields = ("update_on", "content", "sender", "tournament")
 
     def create(self, validated_data):
         sender_email = validated_data.pop("sender")
+        tournament_id = validated_data.pop("tournament")
+
+        tournament = Tournament.objects.get(pk=tournament_id)
+        chat = Chat.objects.get(tournament=tournament)
+
         user = User.objects.get(email=sender_email)
         validated_data["sender"] = user
+        validated_data["chat"] = chat
+
         message = Message.objects.create(**validated_data)
         return message
