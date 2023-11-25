@@ -283,26 +283,23 @@ class Tournament(models.Model):
             game = self.game
             lobby = Lobby.objects.create(
                 match_status=Lobby.Lobbied,
-                name=self.name + " " + str(i),  # the name of the lobby can be changed later
+                name=self.name + " " + str(i),
                 game=game,
                 game_mod_status=Lobby.Default_game,
-                created_by=players[i],  # the field is currently set to the first player in the list
-                # members, # this field is not set yet (it is unclear what it should be set to)
+                created_by=players[i],
                 min_players=game.min_players,
-                max_players=game.max_players,
-                # time_constraint, # default: 300
-                # lobby_created, # default: the field is set to the current time
+                max_players=game.max_players
             )
-            lobby.members.set(players[i : i + self.game.max_players])  # the players in the lobby (why is this needed?)
+            lobby.members.set(players[i : i + self.game.max_players])
             lobby.save()
-            players_in_match = players[i : i + self.game.max_players]  # the players in the match
+            players_in_match = players[i : i + self.game.max_players]
             match = Match.objects.create(game=game, lobby=lobby, date_played=self.start_date)
             # date_played is set to the start date of the tournament for now
             match.players.set(players_in_match)
             match.save()
             brackets.append(match)
 
-            self.matches.add(match)  # add the match to the tournament
+            self.matches.add(match)
 
         return brackets
 
@@ -342,24 +339,22 @@ class Tournament(models.Model):
             game = self.game
             lobby = Lobby.objects.create(
                 match_status=Lobby.Lobbied,
-                name=self.name + " " + str(i),  # the name of the lobby can be changed later
+                name=self.name + " " + str(i),
                 game=game,
                 game_mod_status=Lobby.Default_game,
-                created_by=brackets[i].winners.all()[0],  # the field is currently set to the first player in the list
+                created_by=brackets[i].winners.all()[0],
                 min_players=game.min_players,
-                max_players=game.max_players,
-                # time_constraint, # default: 300
-                # lobby_created, # default: the field is set to the current time
+                max_players=game.max_players
             )
-            lobby.members.set(players[i : i + self.game.max_players])  # the players in the lobby (why is this needed?)
+            lobby.members.set(players[i : i + self.game.max_players])
             lobby.save()
-            players_in_match = players[i : i + self.game.max_players]  # the players in the match
+            players_in_match = players[i : i + self.game.max_players]
             match = Match.objects.create(game=game, lobby=lobby, date_played=self.start_date)
             match.players.set(players_in_match)
             match.save()
             next_round_brackets.append(match)
 
-            self.matches.add(match)  # add the match to the tournament
+            self.matches.add(match)
 
         return next_round_brackets
 
@@ -383,8 +378,8 @@ class Tournament(models.Model):
             for winner in bracket_winners:
                 winners.append(winner)
 
-        self.winners.set(winners)  # set the winners of the tournament
-        self.save()  # save the tournament to the database
+        self.winners.set(winners)
+        self.save() 
 
         # Note: we don't delete the tournament because we want to keep it in the database
 
