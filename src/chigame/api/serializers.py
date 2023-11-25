@@ -33,6 +33,15 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class MessageSerializer(serializers.ModelSerializer):
+    sender = serializers.EmailField(write_only=True, source="sender")
+
     class Meta:
         model = Message
         fields = ("update_on", "content", "sender", "chat")
+
+    def create(self, validated_data):
+        sender_email = validated_data.pop("sender")
+        user = User.objects.get(email=sender_email)
+        validated_data["sender"] = user
+        message = Message.objects.create(**validated_data)
+        return message
