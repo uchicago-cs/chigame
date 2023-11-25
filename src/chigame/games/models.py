@@ -1,3 +1,5 @@
+import random
+
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.utils import timezone
@@ -223,6 +225,119 @@ class Tournament(models.Model):
             + " to "
             + self.end_date.strftime("%m/%d/%Y")
         )
+
+    def create_tournaments_brackets(self) -> list[Match]:
+        """
+        Creates a list of brackets for the tournaments.
+
+        Returns:
+            a list of matches
+        """
+        players = [player for player in self.players.all()]  # the players in the tournament
+        brackets = []
+        random.shuffle(players)  # shuffle the players
+        # Create a list of brackets (match assignment) for the tournament
+        for i in range(0, len(players), self.game.max_players):
+            game = self.game
+            lobby = Lobby.objects.create(
+                match_status=Lobby.Lobbied,
+                game=game,
+                game_mod_status=Lobby.Default_game,
+                created_by=players[i],  # the field is currently set to the first player in the list
+                min_players=game.min_players,
+                max_players=game.max_players,
+                # time_constraint, # default: 300
+                # lobby_created, # default: the field is set to the current time
+            )
+            players_in_match = players[i : i + self.game.max_players]  # the players in the match
+            match = Match.objects.create(game=game, lobby=lobby, date_played=self.start_date)
+            # date_played is set to the start date of the tournament for now
+            match.players.set(players_in_match)
+            match.save()
+            brackets.append(match)
+
+            self.matches.add(match)  # add the match to the tournament
+
+        return brackets
+
+    def next_round_tournaments_brackets(self) -> list[Match]:
+        """
+        Creates a list of brackets for the next round of the tournaments.
+
+        Returns:
+            a list of matches
+        """
+        brackets = self.matches.all()  # the matches of the previous round
+        players = []
+
+        # get the winners of the previous round
+        for bracket in brackets:
+            bracket_players = bracket.players.all()
+            bracket_winners = [
+                player for player in bracket_players if player.outcome == Player.WIN
+            ]  # allow multiple winners
+            # currently only players who win instead of draw can advance to the next round
+            for winner in bracket_winners:
+                players.append(winner)
+
+        # check if the number of players is small enough to end the tournament
+        if len(players) < self.game.min_players:
+            self.end_tournament()
+            return []  # the tournament is finished
+
+        # clear the matches of the previous round
+        self.matches.clear()
+
+        # create the matches of the next round
+        random.shuffle(players)
+        next_round_brackets = []
+        # Create a list of brackets (match assignment) for the tournament
+        for i in range(0, len(brackets), self.game.max_players):
+            game = self.game
+            lobby = Lobby.objects.create(
+                match_status=Lobby.Lobbied,
+                game=game,
+                game_mod_status=Lobby.Default_game,
+                created_by=brackets[i].winners.all()[0],  # the field is currently set to the first player in the list
+                min_players=game.min_players,
+                max_players=game.max_players,
+                # time_constraint, # default: 300
+                # lobby_created, # default: the field is set to the current time
+            )
+            players_in_match = players[i : i + self.game.max_players]  # the players in the match
+            match = Match.objects.create(game=game, lobby=lobby, date_played=self.start_date)
+            match.players.set(players_in_match)
+            match.save()
+            next_round_brackets.append(match)
+
+            self.matches.add(match)  # add the match to the tournament
+
+        return next_round_brackets
+
+    def end_tournament(self) -> None:
+        """
+        Ends the tournament.
+
+        Returns:
+            None
+        """
+
+        winners = []
+        brackets = self.matches.all()
+        for bracket in brackets:  # the matches of the previous round
+            # get the winners of the previous round
+            bracket_players = bracket.players.all()
+            bracket_winners = [
+                player for player in bracket_players if player.outcome == Player.WIN
+            ]  # allow multiple winners
+            # currently only players who win instead of draw can advance to the next round
+            for winner in bracket_winners:
+                winners.append(winner)
+
+        self.winners.set(winners)  # set the winners of the tournament
+        self.save()  # save the tournament to the database
+
+        # Note: we don't delete the tournament because we want to keep it in the database
 
 
 class Announcement(models.Model):

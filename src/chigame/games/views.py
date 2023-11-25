@@ -14,7 +14,6 @@ from django_tables2 import SingleTableView
 from .forms import GameForm
 from .models import Game, Lobby, Tournament
 from .tables import LobbyTable
-from .tournaments_function import create_tournaments_brackets
 
 
 class GameListView(ListView):
@@ -162,7 +161,7 @@ class TournamentCreateView(CreateView):
     # overrides the default behavior of the CreateView class.
     def form_valid(self, form):
         response = super().form_valid(form)
-        create_tournaments_brackets(self.object)  # This should be changed later
+        self.object.create_tournaments_brackets()  # This should be changed later
         # because the brackets should not be created right after the tournament
         # is created. Instead, the brackets should be created when the registration
         # deadline is reached. But for now, we keep it this way for testing.
@@ -201,6 +200,28 @@ class TournamentUpdateView(UpdateView):
     # when the tournament is over.
     # Note: we may remove the "matches" field later for the same reason,
     # but we keep it for now because it is convenient for testing.
+
+    def form_valid(self, form):
+        # Get the current tournament from the database
+        current_tournament = get_object_or_404(Tournament, pk=self.kwargs["pk"])
+
+        # Check if the 'players' field has been modified
+        form_players = set(form.cleaned_data["players"])
+        current_players = set(current_tournament.players.all())
+        if len(form_players - current_players) > 0:  # if the players have been added
+            raise PermissionDenied("You cannot add new players to the tournament after it has started.")
+        elif len(current_players - form_players) > 0:  # if the players have been removed
+            removed_players = current_players - form_players  # get the players that have been removed
+            for player in removed_players:
+                related_match = current_tournament.matches.get(
+                    players__in=[player]
+                )  # get the match that the player is in
+                related_match.players.remove(player)
+                if related_match.players.count() == 0:  # if the match is empty, delete it
+                    related_match.delete()
+
+        # The super class's form_valid method will save the form data to the database
+        return super().form_valid(form)
 
     def get_success_url(self):
         return reverse_lazy("tournament-detail", kwargs={"pk": self.object.pk})
