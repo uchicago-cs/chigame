@@ -204,7 +204,7 @@ class Notification(models.Model):
     actor_content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     actor_object_id = models.PositiveIntegerField()
     actor = GenericForeignKey("actor_content_type", "actor_object_id")
-    message = models.CharField(max_length=255, blank=True, null=True, default="")
+    message = models.CharField(max_length=255, blank=True, null=True)
     objects = NotificationQuerySet.as_manager()
 
     def mark_as_read(self):

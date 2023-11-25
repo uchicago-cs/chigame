@@ -1,5 +1,18 @@
 {% extends "base.html" %}
 
 {% block content %}
-  {% for notification in notifications %}{{ notification.type }}{{ notification.message }}{% endfor %}
+  <div class="container mt-4">
+    <ul class="list-group">
+      {% for notification in notifications %}
+        <li class="list-group-item d-flex justify-content-between align-items-start border">
+          <div class="ms-2 me-auto">
+            <div class="fw-bold">{{ notification.type }}</div>
+            {% if notification.message %}{{ notification.message }}{% endif %}
+          </div>
+          <span class="badge bg-primary rounded-pill me-2">Mark as read</span>
+          <span class="badge bg-primary rounded-pill">Delete</span>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
 {% endblock content %}
