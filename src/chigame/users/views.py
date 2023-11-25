@@ -145,7 +145,10 @@ def cancel_friend_invitation(request, pk):
         return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
     except Notification.DoesNotExist:
         notification = Notification.objects.create(
-            actor=friendship, receiver=receiver, type=Notification.FRIEND_REQUEST
+            actor=friendship,
+            receiver=receiver,
+            type=Notification.FRIEND_REQUEST,
+            message=Notification.DEFAULT_MESSAGES[Notification.FRIEND_REQUES],
         )
         notification.mark_as_deleted()
     num, _ = friendship.delete()

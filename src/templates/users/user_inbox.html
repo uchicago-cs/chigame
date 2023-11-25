@@ -1,5 +1,5 @@
 {% extends "base.html" %}
 
 {% block content %}
-  {% for notification in notifications %}{{ notification.type }}{% endfor %}
+  {% for notification in notifications %}{{ notification.type }}{{ notification.message }}{% endfor %}
 {% endblock content %}
