@@ -112,13 +112,7 @@ def send_friend_invitation(request, pk):
 
     invitation, new = FriendInvitation.objects.filter(
         Q(sender=curr_user, receiver=other_user) | Q(sender=other_user, receiver=curr_user)
-    ).get_or_create(
-        defaults={
-            "sender": curr_user,
-            "receiver": other_user,
-            "message": Notification.DEFAULT_MESSAGES[Notification.FRIEND_REQUEST],
-        }
-    )
+    ).get_or_create(defaults={"sender": curr_user, "receiver": other_user})
     if new:
         messages.success(request, "Friendship invitation sent successfully.")
         notification = Notification.objects.create(
