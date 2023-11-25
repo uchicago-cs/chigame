@@ -148,7 +148,7 @@ def cancel_friend_invitation(request, pk):
             actor=friendship,
             receiver=receiver,
             type=Notification.FRIEND_REQUEST,
-            message=Notification.DEFAULT_MESSAGES[Notification.FRIEND_REQUES],
+            message=Notification.DEFAULT_MESSAGES[Notification.FRIEND_REQUEST],
         )
         notification.mark_as_deleted()
     num, _ = friendship.delete()
