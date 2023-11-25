@@ -98,7 +98,7 @@ class GameTests(APITestCase):
 
 
 class ChatTests(APITestCase):
-    def setUp(self):
+    def test_create_message(self):
         self.user1 = UserFactory()
         self.user2 = UserFactory()
         self.game = GameFactory()
@@ -106,7 +106,6 @@ class ChatTests(APITestCase):
         self.chat = ChatFactory(tournament=self.tournament)
         self.endpoint = reverse("api-chat-list")
 
-    def test_create_message(self):
         data1 = {
             "sender": self.user1.email,
             "tournament": self.tournament.id,
@@ -176,6 +175,12 @@ class ChatTests(APITestCase):
         self.assertEqual(4, Message.objects.get(id=4).token_id)
 
     def test_delete_message(self):
+        self.user1 = UserFactory()
+        self.user2 = UserFactory()
+        self.game = GameFactory()
+        self.tournament = TournamentFactory(game=self.game)
+        self.chat = ChatFactory(tournament=self.tournament)
+        self.endpoint = reverse("api-chat-list")
         data1 = {
             "sender": self.user1.email,
             "tournament": self.tournament.id,

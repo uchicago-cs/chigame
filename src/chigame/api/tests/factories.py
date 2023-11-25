@@ -1,6 +1,6 @@
 import random
 
-from factory import Faker, LazyAttribute, post_generation
+from factory import Faker, LazyAttribute, SubFactory, post_generation
 from factory.django import DjangoModelFactory
 
 from chigame.games.models import Category, Chat, Game, Mechanic, Tournament
@@ -89,7 +89,7 @@ class TournamentFactory(DjangoModelFactory):
         model = Tournament
 
     name = Faker("word")
-    game = GameFactory()
+    game = SubFactory(GameFactory)
     start_date = Faker("date_this_year")
     end_date = Faker("date_this_year")
     max_players = 16
@@ -102,4 +102,4 @@ class ChatFactory(DjangoModelFactory):
     class Meta:
         model = Chat
 
-    tournament = TournamentFactory()
+    tournament = SubFactory(TournamentFactory)
