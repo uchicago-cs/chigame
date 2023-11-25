@@ -119,7 +119,6 @@ def send_friend_invitation(request, pk):
             actor=invitation,
             receiver=other_user,
             type=Notification.FRIEND_REQUEST,
-            message=Notification.DEFAULT_MESSAGES[Notification.FRIEND_REQUEST],
         )
     elif invitation.sender.pk == other_user.pk:
         messages.info(request, "You already have a pending friend invitation from this profile.")
@@ -151,7 +150,6 @@ def cancel_friend_invitation(request, pk):
             actor=friendship,
             receiver=receiver,
             type=Notification.FRIEND_REQUEST,
-            message=Notification.DEFAULT_MESSAGES[Notification.FRIEND_REQUEST],
         )
         notification.mark_as_deleted()
     num, _ = friendship.delete()
