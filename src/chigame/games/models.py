@@ -283,14 +283,18 @@ class Tournament(models.Model):
             game = self.game
             lobby = Lobby.objects.create(
                 match_status=Lobby.Lobbied,
+                name=self.name + " " + str(i),  # the name of the lobby can be changed later
                 game=game,
                 game_mod_status=Lobby.Default_game,
                 created_by=players[i],  # the field is currently set to the first player in the list
+                # members, # this field is not set yet (it is unclear what it should be set to)
                 min_players=game.min_players,
                 max_players=game.max_players,
                 # time_constraint, # default: 300
                 # lobby_created, # default: the field is set to the current time
             )
+            lobby.members.set(players[i : i + self.game.max_players])  # the players in the lobby (why is this needed?)
+            lobby.save()
             players_in_match = players[i : i + self.game.max_players]  # the players in the match
             match = Match.objects.create(game=game, lobby=lobby, date_played=self.start_date)
             # date_played is set to the start date of the tournament for now
@@ -338,6 +342,7 @@ class Tournament(models.Model):
             game = self.game
             lobby = Lobby.objects.create(
                 match_status=Lobby.Lobbied,
+                name=self.name + " " + str(i),  # the name of the lobby can be changed later
                 game=game,
                 game_mod_status=Lobby.Default_game,
                 created_by=brackets[i].winners.all()[0],  # the field is currently set to the first player in the list
@@ -346,6 +351,8 @@ class Tournament(models.Model):
                 # time_constraint, # default: 300
                 # lobby_created, # default: the field is set to the current time
             )
+            lobby.members.set(players[i : i + self.game.max_players])  # the players in the lobby (why is this needed?)
+            lobby.save()
             players_in_match = players[i : i + self.game.max_players]  # the players in the match
             match = Match.objects.create(game=game, lobby=lobby, date_played=self.start_date)
             match.players.set(players_in_match)
