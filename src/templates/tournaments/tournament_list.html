@@ -15,9 +15,8 @@
         <p>Description: {{ tournament.description }}</p>
         <p>Rules: {{ tournament.rules }}</p>
         <p>Draw rules: {{ tournament.draw_rules }}</p>
-        <!-- Matches may be added later if needed -->
-        <p>Winners:</p>
         {% if tournament.get_all_winners %}
+          <p>Winners:</p>
           <ul>
             {% for winner in tournament.get_all_winners %}
               <li>
@@ -31,8 +30,6 @@
               </li>
             {% endfor %}
           </ul>
-        {% else %}
-          <p>No winner yet.</p>
         {% endif %}
         <p>Players:</p>
         {% if tournament.get_all_players %}

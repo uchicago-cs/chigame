@@ -12,6 +12,7 @@ from rest_framework import status
 from rest_framework.response import Response
 
 from .models import FriendInvitation, Notification, UserProfile
+from .tables import UserTable
 
 User = get_user_model()
 
@@ -54,6 +55,20 @@ user_redirect_view = UserRedirectView.as_view()
 @login_required
 def user_list(request):
     users = User.objects.all()
+    table = UserTable(users)
+    context = {"users": users, "table": table}
+
+    # Add information about top ranking users, total points collected, etc.
+
+    return render(request, "users/user_list.html", context)
+
+
+@login_required
+def user_detail(request):
+    users = User.objects.all()
+
+    # Shows a user detail page if logged in as a user
+    # Shows a list of all users if logged in as admin
 
     return render(request, "users/user_detail.html", {"users": users})
 
@@ -166,3 +181,15 @@ def decline_friend_invitation(request, pk):
     except FriendInvitation.DoesNotExist:
         messages.error(request, "This friend invitation does not exist")
     return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
+
+
+@login_required
+def user_inbox_view(request, pk):
+    user = request.user
+    notifications = Notification.objects.filter(receiver=user)
+    context = {"pk": pk, "user": user, "notifications": notifications}
+    if pk == user.id:
+        return render(request, "users/user_inbox.html", context)
+    else:
+        messages.error(request, "Not your inbox")
+        return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))

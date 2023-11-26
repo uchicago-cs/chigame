@@ -14,13 +14,12 @@ from django_tables2 import SingleTableView
 from .forms import GameForm
 from .models import Game, Lobby, Tournament
 from .tables import LobbyTable
-from .tournaments_function import create_tournaments_brackets, tournament_sign_up, tournament_withdraw
 
 
 class GameListView(ListView):
     model = Game
     queryset = Game.objects.all()
-    template_name = "games/game_list.html"
+    template_name = "games/game_grid.html"
 
 
 class LobbyListView(SingleTableView):
@@ -129,7 +128,7 @@ class TournamentListView(ListView):
         # "Withdraw" button
         tournament = Tournament.objects.get(id=request.POST.get("tournament_id"))
         if request.POST.get("action") == "join":
-            success = tournament_sign_up(request.user, tournament)
+            success = tournament.tournament_sign_up(request.user)
             if success == 0:
                 messages.success(request, "You have successfully joined this tournament")
                 return redirect(reverse_lazy("tournament-list"))
@@ -143,7 +142,7 @@ class TournamentListView(ListView):
                 raise Exception("Invalid return value")
 
         elif request.POST.get("action") == "withdraw":
-            success = tournament_withdraw(request.user, tournament)
+            success = tournament.tournament_withdraw(request.user)
             if success == 0:
                 messages.success(request, "You have successfully withdrawn from this tournament")
                 return redirect(reverse_lazy("tournament-list"))
@@ -170,7 +169,7 @@ class TournamentDetailView(DetailView):
         # "Withdraw" button
         tournament = Tournament.objects.get(id=request.POST.get("tournament_id"))
         if request.POST.get("action") == "join":
-            success = tournament_sign_up(request.user, tournament)
+            success = tournament.tournament_sign_up(request.user)
             if success == 0:
                 messages.success(request, "You have successfully joined this tournament")
                 return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
@@ -184,7 +183,7 @@ class TournamentDetailView(DetailView):
                 raise Exception("Invalid return value")
 
         elif request.POST.get("action") == "withdraw":
-            success = tournament_withdraw(request.user, tournament)
+            success = tournament.tournament_withdraw(request.user)
             if success == 0:
                 messages.success(request, "You have successfully withdrawn from this tournament")
                 return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
@@ -211,20 +210,20 @@ class TournamentCreateView(CreateView):
         "rules",
         "draw_rules",
         "num_winner",
-        "matches",
         "players",
     ]
     # Note: "winner" is not included in the fields because it is not
     # supposed to be set by the user. It will be set automatically
     # when the tournament is over.
-    # Note: we may remove the "matches" field later for the same reason,
-    # but we keep it for now because it is convenient for testing.
+    # Note: the "matches" field is not included in the fields because
+    # it is not supposed to be set by the user. It will be set automatically
+    # by the create tournament brackets mechanism.
 
     # This method is called when valid form data has been POSTed. It
     # overrides the default behavior of the CreateView class.
     def form_valid(self, form):
         response = super().form_valid(form)
-        create_tournaments_brackets(self.object)  # This should be changed later
+        self.object.create_tournaments_brackets()  # This should be changed later
         # because the brackets should not be created right after the tournament
         # is created. Instead, the brackets should be created when the registration
         # deadline is reached. But for now, we keep it this way for testing.
@@ -264,6 +263,28 @@ class TournamentUpdateView(UpdateView):
     # Note: we may remove the "matches" field later for the same reason,
     # but we keep it for now because it is convenient for testing.
 
+    def form_valid(self, form):
+        # Get the current tournament from the database
+        current_tournament = get_object_or_404(Tournament, pk=self.kwargs["pk"])
+
+        # Check if the 'players' field has been modified
+        form_players = set(form.cleaned_data["players"])
+        current_players = set(current_tournament.players.all())
+        if len(form_players - current_players) > 0:  # if the players have been added
+            raise PermissionDenied("You cannot add new players to the tournament after it has started.")
+        elif len(current_players - form_players) > 0:  # if the players have been removed
+            removed_players = current_players - form_players  # get the players that have been removed
+            for player in removed_players:
+                related_match = current_tournament.matches.get(
+                    players__in=[player]
+                )  # get the match that the player is in
+                related_match.players.remove(player)
+                if related_match.players.count() == 0:  # if the match is empty, delete it
+                    related_match.delete()
+
+        # The super class's form_valid method will save the form data to the database
+        return super().form_valid(form)
+
     def get_success_url(self):
         return reverse_lazy("tournament-detail", kwargs={"pk": self.object.pk})
 
@@ -274,6 +295,12 @@ class TournamentDeleteView(DeleteView):
     template_name = "tournaments/tournament_delete.html"
     context_object_name = "tournament"
     success_url = reverse_lazy("tournament-list")
+
+
+def TournamentChatDetailView(request, pk):
+    tournament = Tournament.objects.get(pk=pk)
+    context = {"tournament": tournament}
+    return render(request, "tournaments/tournament_chat.html", context)
 
 
 def search_results(request):
