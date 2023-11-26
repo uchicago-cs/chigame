@@ -190,7 +190,7 @@ def decline_friend_invitation(request, pk):
 @login_required
 def user_inbox_view(request, pk):
     user = request.user
-    notifications = Notification.objects.filter_by_receiver(user).is_unread()
+    notifications = Notification.objects.filter_by_receiver(user)
     default_notification_messages = Notification.DEFAULT_MESSAGES
     context = {
         "pk": pk,
@@ -219,6 +219,15 @@ def mark_notification_read(request, pk):
     try:
         notification = Notification.objects.get(pk=pk)
         notification.mark_as_read()
+    except Notification.DoesNotExist:
+        messages.error(request, "Something went wrong. This notification does not exist")
+    return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
+
+
+def mark_notification_unread(request, pk):
+    try:
+        notification = Notification.objects.get(pk=pk)
+        notification.mark_as_unread()
     except Notification.DoesNotExist:
         messages.error(request, "Something went wrong. This notification does not exist")
     return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))

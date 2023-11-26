@@ -6,6 +6,7 @@ from chigame.users.views import (
     decline_friend_invitation,
     delete_notification,
     mark_notification_read,
+    mark_notification_unread,
     send_friend_invitation,
     user_detail_view,
     user_inbox_view,
@@ -31,5 +32,6 @@ urlpatterns = [
     path("user_history/<int:pk>", views.user_history, name="user-history"),
     path("inbox/<int:pk>", view=user_inbox_view, name="user-inbox"),
     path("mark_notification_read/<int:pk>", view=mark_notification_read, name="mark-notification-read"),
+    path("mark_notification_unread/<int:pk>", view=mark_notification_unread, name="mark-notification-unread"),
     path("delete_notification/<int:pk>", view=delete_notification, name="delete-notification"),
 ]
