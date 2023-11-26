@@ -191,7 +191,13 @@ def decline_friend_invitation(request, pk):
 def user_inbox_view(request, pk):
     user = request.user
     notifications = Notification.objects.filter(receiver=user)
-    context = {"pk": pk, "user": user, "notifications": notifications}
+    default_notification_messages = Notification.DEFAULT_MESSAGES
+    context = {
+        "pk": pk,
+        "user": user,
+        "notifications": notifications,
+        "default_notification_messages": default_notification_messages,
+    }
     if pk == user.id:
         return render(request, "users/user_inbox.html", context)
     else:
