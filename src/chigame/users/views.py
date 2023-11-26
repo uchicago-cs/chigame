@@ -205,9 +205,13 @@ def user_inbox_view(request, pk):
         return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
 
 
+@login_required
 def delete_notification(request, pk):
     try:
         notification = Notification.objects.get(pk=pk)
+        if notification.receiver.pk != request.user.pk:
+            messages.error(request, "You can not delete this notification")
+            return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
         notification.mark_as_deleted()
         messages.success(request, "Notification deleted successfully")
     except Notification.DoesNotExist:
@@ -215,27 +219,39 @@ def delete_notification(request, pk):
     return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
 
 
+@login_required
 def mark_notification_read(request, pk):
     try:
         notification = Notification.objects.get(pk=pk)
+        if notification.receiver.pk != request.user.pk:
+            messages.error(request, "You can not mark this notification as read")
+            return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
         notification.mark_as_read()
     except Notification.DoesNotExist:
         messages.error(request, "Something went wrong. This notification does not exist")
     return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
 
 
+@login_required
 def mark_notification_unread(request, pk):
     try:
         notification = Notification.objects.get(pk=pk)
+        if notification.receiver.pk != request.user.pk:
+            messages.error(request, "You can not mark this notification as unread")
+            return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
         notification.mark_as_unread()
     except Notification.DoesNotExist:
         messages.error(request, "Something went wrong. This notification does not exist")
     return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
 
 
+@login_required
 def redirect_from_notification(request, pk):
     try:
         notification = Notification.objects.get(pk=pk)
+        if notification.receiver.pk != request.user.pk:
+            messages.error(request, "You can not redirect from this notification")
+            return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
         if notification.type == Notification.FRIEND_REQUEST:
             return redirect(reverse("users:user-profile", kwargs={"pk": notification.actor.sender.pk}))
     except Notification.DoesNotExist:
