@@ -379,7 +379,7 @@ class Tournament(models.Model):
                 winners.append(winner)
 
         self.winners.set(winners)
-        self.save() 
+        self.save()
 
         # Note: we don't delete the tournament because we want to keep it in the database
 
