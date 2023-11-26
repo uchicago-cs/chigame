@@ -190,7 +190,7 @@ def decline_friend_invitation(request, pk):
 @login_required
 def user_inbox_view(request, pk):
     user = request.user
-    notifications = Notification.objects.filter(receiver=user)
+    notifications = Notification.objects.filter_by_receiver(user).is_unread()
     default_notification_messages = Notification.DEFAULT_MESSAGES
     context = {
         "pk": pk,
