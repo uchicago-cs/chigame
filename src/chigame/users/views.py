@@ -240,4 +240,4 @@ def redirect_from_notification(request, pk):
             return redirect(reverse("users:user-profile", kwargs={"pk": notification.actor.sender.pk}))
     except Notification.DoesNotExist:
         messages.error(request, "Something went wrong. This notification does not exist")
-    return redirect(reverse("users:user-profile", kwargs={"pk": notification.receiver.pk}))
+    return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
