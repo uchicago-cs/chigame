@@ -203,3 +203,22 @@ def user_inbox_view(request, pk):
     else:
         messages.error(request, "Not your inbox")
         return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
+
+
+def delete_notification(request, pk):
+    try:
+        notification = Notification.objects.get(pk=pk)
+        notification.mark_as_deleted()
+        messages.success(request, "Notification deleted successfully")
+    except Notification.DoesNotExist:
+        messages.error(request, "Something went wrong. This notification does not exist")
+    return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
+
+
+def mark_notification_read(request, pk):
+    try:
+        notification = Notification.objects.get(pk=pk)
+        notification.mark_as_read()
+    except Notification.DoesNotExist:
+        messages.error(request, "Something went wrong. This notification does not exist")
+    return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))

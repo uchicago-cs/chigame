@@ -15,8 +15,8 @@
                 {{ default_notification_messages | get_dict_val:notification_type }}
               {% endif %}
             </div>
-            <span class="badge bg-primary rounded-pill me-2">Mark as read</span>
-            <span class="badge bg-primary rounded-pill">Delete</span>
+            <a href="{% url 'users:mark-notification-read' notification.pk %}"><span class="badge bg-primary rounded-pill me-2">Mark as read</span></a>
+            <a href="{% url 'users:delete-notification' notification.pk %}"><span class="badge bg-primary rounded-pill me-2">Delete</span></a>
           </li>
         {% endwith %}
       {% endfor %}
