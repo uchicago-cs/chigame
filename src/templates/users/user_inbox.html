@@ -7,7 +7,7 @@
     <ul class="list-group">
       {% for notification in notifications %}
         {% with notification_type=notification.type %}
-          <li class="list-group-item d-flex justify-content-between align-items-start border mb-3 {% if notification.read %}bg-secondary{% endif %}">
+          <li class="notification-container list-group-item d-flex justify-content-between align-items-start border mb-3 {% if notification.read %}bg-secondary{% endif %}">
             <div class="ms-2 me-auto">
               {% if notification.message %}
                 {{ notification.message }}
@@ -15,21 +15,43 @@
                 {{ default_notification_messages | get_dict_val:notification_type }}
               {% endif %}
             </div>
-            {% if notification.read %}
-              <a href="{% url 'users:mark-notification-unread' notification.pk %}">
-                <span class="badge bg-primary rounded-pill me-2">Mark as unread</span>
+            <div class="button-container">
+              {% if notification.read %}
+                <a href="{% url 'users:mark-notification-unread' notification.pk %}">
+                  <span class="badge bg-primary rounded-pill me-2">Mark as unread</span>
+                </a>
+              {% else %}
+                <a href="{% url 'users:mark-notification-read' notification.pk %}">
+                  <span class="badge bg-primary rounded-pill me-2">Mark as read</span>
+                </a>
+              {% endif %}
+              <a href="{% url 'users:delete-notification' notification.pk %}">
+                <span class="badge bg-danger rounded-pill me-2">Delete</span>
               </a>
-            {% else %}
-              <a href="{% url 'users:mark-notification-read' notification.pk %}">
-                <span class="badge bg-primary rounded-pill me-2">Mark as read</span>
-              </a>
-            {% endif %}
-            <a href="{% url 'users:delete-notification' notification.pk %}">
-              <span class="badge bg-danger rounded-pill me-2">Delete</span>
-            </a>
+            </div>
           </li>
         {% endwith %}
       {% endfor %}
     </ul>
   </div>
+  <script>
+    const notificationItems = document.querySelectorAll('.notification-container');
+
+
+    notificationItems.forEach(function(notificationItem) {
+      const buttonContainer = notificationItem.querySelector('.button-container');
+      buttonContainer.style.display = "none";
+      notificationItem.addEventListener("mouseover", function(event) {
+        if (buttonContainer) {
+          buttonContainer.style.display = 'flex';
+        }
+      });
+
+      notificationItem.addEventListener("mouseout", function(event) {
+        if (buttonContainer) {
+          buttonContainer.style.display = 'none';
+        }
+      });
+    });
+  </script>
 {% endblock content %}
