@@ -12,7 +12,7 @@
               {% if notification.message %}
                 <a>{{ notification.message }}</a>
               {% else %}
-                <a href="{% url 'users:notification-redirect' notification.pk %}">{{ default_notification_messages | get_dict_val:notification_type }}</a>
+                <a href="{% url 'users:notification-detail' notification.pk %}">{{ default_notification_messages | get_dict_val:notification_type }}</a>
               {% endif %}
             </div>
             <div class="button-container">

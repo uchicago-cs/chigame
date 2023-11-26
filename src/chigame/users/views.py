@@ -246,7 +246,7 @@ def mark_notification_unread(request, pk):
 
 
 @login_required
-def redirect_from_notification(request, pk):
+def notification_detail(request, pk):
     try:
         notification = Notification.objects.get(pk=pk)
         if notification.receiver.pk != request.user.pk:
