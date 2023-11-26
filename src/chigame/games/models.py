@@ -288,7 +288,7 @@ class Tournament(models.Model):
                 game_mod_status=Lobby.Default_game,
                 created_by=players[i],
                 min_players=game.min_players,
-                max_players=game.max_players
+                max_players=game.max_players,
             )
             lobby.members.set(players[i : i + self.game.max_players])
             lobby.save()
@@ -344,7 +344,7 @@ class Tournament(models.Model):
                 game_mod_status=Lobby.Default_game,
                 created_by=brackets[i].winners.all()[0],
                 min_players=game.min_players,
-                max_players=game.max_players
+                max_players=game.max_players,
             )
             lobby.members.set(players[i : i + self.game.max_players])
             lobby.save()
