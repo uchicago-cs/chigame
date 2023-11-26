@@ -231,3 +231,13 @@ def mark_notification_unread(request, pk):
     except Notification.DoesNotExist:
         messages.error(request, "Something went wrong. This notification does not exist")
     return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
+
+
+def redirect_from_notification(request, pk):
+    try:
+        notification = Notification.objects.get(pk=pk)
+        if notification.type == Notification.FRIEND_REQUEST:
+            return redirect(reverse("users:user-profile", kwargs={"pk": notification.actor.sender.pk}))
+    except Notification.DoesNotExist:
+        messages.error(request, "Something went wrong. This notification does not exist")
+    return redirect(reverse("users:user-profile", kwargs={"pk": notification.receiver.pk}))
