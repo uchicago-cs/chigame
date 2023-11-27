@@ -168,4 +168,6 @@ chigame_template/media/
 .env
 .envs/*
 !.envs/.local/
+
+# Mac icons
 *DS_Store

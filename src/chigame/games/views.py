@@ -39,12 +39,15 @@ class GameCreateView(UserPassesTestMixin, CreateView):
     success_url = reverse_lazy("game-list")  # URL to redirect after successful creation
 
     def test_func(self):
-        # Implement your logic to check if the user has permission to create a game
         return self.request.user.is_staff
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["is_create"] = True  # Used in the template to determine the mode
+
+        # Game create and edit views share the same template, so this variable lets us know which is which
+        # Currently, this is being so that BGG autofilling is only available when creating a game
+        context["is_create"] = True
+
         return context
 
 
@@ -61,6 +64,16 @@ class GameEditView(UserPassesTestMixin, UpdateView):
     # check if user is staff member
     def test_func(self):
         return self.request.user.is_staff
+        return True
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        # Game create and edit views share the same template, so this variable lets us know which is which
+        # Currently, this is being so that BGG autofilling is only available when creating a game
+        context["is_create"] = False
+
+        return context
 
 
 # =============== BGG Searching =================
@@ -85,6 +98,10 @@ def bgg_search_by_name(request):
 
         # Initialize a list to store game data
         games_list = []
+
+        # Iterates over all 'item' elements in the XML tree and retrieves the game details
+        # An example XML response can be found here:
+        # https://boardgamegeek.com/xmlapi2/search/search?type=boardgame&query=13&exact=1%22
         for game in root.findall(".//item"):
             bgg_id = game.get("id")
             game_data = bgg_get_game_details(bgg_id)
@@ -129,23 +146,26 @@ def bgg_get_game_details(bgg_id):
     complexity_value = details_root.find(".//averageweight").get("value")
     rounded_complexity = round(float(complexity_value), 2) if complexity_value else None
 
-    # Construct a dictionary with the game's details, parsing various elements from the API response
+    # Function to safely get the value from the XML tree
+    def get_value(xml_root, tag, attribute="value", default=None):
+        element = xml_root.find(f".//{tag}")
+        if element is not None:
+            return element.get(attribute) if attribute else element.text
+        return default
+
+    # Refactored game data structure
     game_data = {
         "BGG_id": bgg_id,
-        "name": details_root.find(".//name").get("value"),
-        "image": details_root.find(".//image").text
-        if details_root.find(".//image") is not None
-        else "/static/images/no_picture_available.png",
-        "description": details_root.find(".//description").text,
-        "year_published": int(details_root.find(".//yearpublished").get("value"))
-        if details_root.find(".//yearpublished") is not None
-        else None,
-        "min_players": details_root.find(".//minplayers").get("value"),
-        "max_players": details_root.find(".//maxplayers").get("value"),
-        "expected_playtime": details_root.find(".//playingtime").get("value"),
-        "min_playtime": details_root.find(".//minplaytime").get("value"),
-        "max_playtime": details_root.find(".//maxplaytime").get("value"),
-        "suggested_age": details_root.find(".//minage").get("value"),
+        "name": get_value(details_root, "name"),
+        "image": get_value(details_root, "image", attribute=None, default="/static/images/no_picture_available.png"),
+        "description": get_value(details_root, "description", attribute=None),
+        "year_published": int(get_value(details_root, "yearpublished", default=0)) or None,
+        "min_players": get_value(details_root, "minplayers"),
+        "max_players": get_value(details_root, "maxplayers"),
+        "expected_playtime": get_value(details_root, "playingtime"),
+        "min_playtime": get_value(details_root, "minplaytime"),
+        "max_playtime": get_value(details_root, "maxplaytime"),
+        "suggested_age": get_value(details_root, "minage"),
         "complexity": rounded_complexity,  # The rounded complexity rating of the game
         # Missing fields: category, mechanics
         # No rules field in BGG API

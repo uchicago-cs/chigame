@@ -15,7 +15,7 @@
   <!-- Game Form -->
   <form method="post" id="game_form">
     {% csrf_token %}
-    <!-- Manually render each form field -->
+    <!-- Manually render each form field so that we can in the search BGG button-->
     {% for field in form %}
       <div>
         {{ field.label_tag }} {{ field }}
@@ -39,7 +39,12 @@
 
         // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent
         fetch(`/games/bgg_search_by_name/?search_term=${encodeURIComponent(search_term)}`)
-          .then(response => response.json())
+          .then(response => {
+            if (!response.ok) {
+              throw new Error(`HTTP error! Status: ${response.status}`); // Throws an error for bad HTTP status
+            }
+            return response.json();
+          })
           .then(data => {
             var results = data.games_list;
             var resultsContainer = document.getElementById('bgg_search_results');
@@ -68,7 +73,13 @@
 
               resultsContainer.appendChild(gameDiv);
             });
+          })
+          .catch(error => {
+            console.error('There was a problem with the fetch operation:', error);
+            // Handle the error here, like displaying a message to the user
+            document.getElementById('bgg_search_results').innerHTML = `<p>Error fetching data: ${error.message}</p>`;
           });
+
       });
     </script>
   {% endif %}
