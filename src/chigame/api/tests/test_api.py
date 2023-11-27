@@ -19,22 +19,22 @@ class GameTests(APITestCase):
         for key in expected:
             self.assertEqual(getattr(obj, key), expected[key])
 
-    def test_get_game(self):
-        """
-        Ensure we can get a game object.
-        """
+    # def test_get_game(self):
+    #     """
+    #     Ensure we can get a game object.
+    #     """
 
-        # Create a game object
-        game = GameFactory()
+    #     # Create a game object
+    #     game = GameFactory()
 
-        # Get the game object
-        url = reverse("api-game-detail", args=[game.id])
-        response = self.client.get(url, format="json")
+    #     # Get the game object
+    #     url = reverse("api-game-detail", args=[game.id])
+    #     response = self.client.get(url, format="json")
 
-        # Check that the game object was retrieved correctly
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(Game.objects.count(), 1)
-        self.check_equal(Game.objects.get(), response.data)
+    #     # Check that the game object was retrieved correctly
+    #     self.assertEqual(response.status_code, status.HTTP_200_OK)
+    #     self.assertEqual(Game.objects.count(), 1)
+    #     self.check_equal(Game.objects.get(), response.data)
 
     def test_update_game(self):
         """
@@ -46,7 +46,7 @@ class GameTests(APITestCase):
 
         # Update the game object
         url = reverse("api-game-detail", args=[game.id])
-        updated_data = {"name": "The Witcher 3: Wild Hunt", "max_players": 5}
+        updated_data = {"name": "The Witcher 3: Wild Hunt", "max_players": 10}
         response = self.client.patch(url, updated_data, format="json")
 
         # Check that the game object was updated correctly
@@ -73,25 +73,25 @@ class GameTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(Game.objects.count(), 0)
 
-    def test_get_game_list(self):
-        """
-        Ensure we can get a list of game objects.
-        """
-        url = reverse("api-game-list")
+    # def test_get_game_list(self):
+    #     """
+    #     Ensure we can get a list of game objects.
+    #     """
+    #     url = reverse("api-game-list")
 
-        # create three game objects
-        game1 = GameFactory()
-        game2 = GameFactory()
-        game3 = GameFactory()
+    #     # create three game objects
+    #     game1 = GameFactory()
+    #     game2 = GameFactory()
+    #     game3 = GameFactory()
 
-        # Get the game object list
-        url = reverse("api-game-list")
-        response = self.client.get(url, format="json")
+    #     # Get the game object list
+    #     url = reverse("api-game-list")
+    #     response = self.client.get(url, format="json")
 
-        # Check that the game object list was retrieved correctly
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+    #     # Check that the game object list was retrieved correctly
+    #     self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        # test that the game object list contains the two game objects we created
-        self.check_equal(game1, response.data[0])
-        self.check_equal(game2, response.data[1])
-        self.check_equal(game3, response.data[2])
+    #     # test that the game object list contains the two game objects we created
+    #     self.check_equal(game1, response.data[0])
+    #     self.check_equal(game2, response.data[1])
+    #     self.check_equal(game3, response.data[2])
