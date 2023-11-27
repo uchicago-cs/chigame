@@ -206,46 +206,6 @@ def user_inbox_view(request, pk):
 
 
 @login_required
-def delete_notification(request, pk):
-    try:
-        notification = Notification.objects.get(pk=pk)
-        if notification.receiver.pk != request.user.pk:
-            messages.error(request, "You can not delete this notification")
-            return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
-        notification.mark_as_deleted()
-        messages.success(request, "Notification deleted successfully")
-    except Notification.DoesNotExist:
-        messages.error(request, "Something went wrong. This notification does not exist")
-    return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
-
-
-@login_required
-def mark_notification_read(request, pk):
-    try:
-        notification = Notification.objects.get(pk=pk)
-        if notification.receiver.pk != request.user.pk:
-            messages.error(request, "You can not mark this notification as read")
-            return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
-        notification.mark_as_read()
-    except Notification.DoesNotExist:
-        messages.error(request, "Something went wrong. This notification does not exist")
-    return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
-
-
-@login_required
-def mark_notification_unread(request, pk):
-    try:
-        notification = Notification.objects.get(pk=pk)
-        if notification.receiver.pk != request.user.pk:
-            messages.error(request, "You can not mark this notification as unread")
-            return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
-        notification.mark_as_unread()
-    except Notification.DoesNotExist:
-        messages.error(request, "Something went wrong. This notification does not exist")
-    return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
-
-
-@login_required
 def notification_detail(request, pk):
     try:
         notification = Notification.objects.get(pk=pk)
@@ -257,3 +217,21 @@ def notification_detail(request, pk):
     except Notification.DoesNotExist:
         messages.error(request, "Something went wrong. This notification does not exist")
     return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
+
+
+@login_required
+def act_on_inbox_notification(request, pk, action):
+    try:
+        notification = Notification.objects.get(pk=pk)
+        if notification.receiver.pk != request.user.pk:
+            messages.error(request, "You can not perform actions on this notification")
+            return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
+        if action == "mark_read":
+            notification.mark_as_read()
+        elif action == "mark_unread":
+            notification.mark_as_unread()
+        elif action == "delete":
+            notification.mark_as_deleted()
+    except Notification.DoesNotExist:
+        messages.error(request, "Something went wrong. This notification does not exist")
+    return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
