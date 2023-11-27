@@ -324,7 +324,7 @@ class Tournament(models.Model):
                 players.append(winner)
 
         # check if the number of players is small enough to end the tournament
-        if len(players) < self.num_winner:
+        if len(players) <= self.num_winner:
             self.end_tournament()
             return []  # the tournament is finished
 
