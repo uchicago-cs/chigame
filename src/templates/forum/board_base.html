@@ -1,4 +1,4 @@
-{% extends MACHINA_BASE_TEMPLATE_NAME %}
+{% extends "base.html" %}
 
 {% load static %}
 {% load i18n %}
@@ -18,7 +18,18 @@
 {% endblock css %}
 {% block body %}
   {% block header %}
-    {% include 'navbar.html' %}
+    {% block search_bar %}
+      <form class="form-inline my-2 ml-3 my-lg-0"
+            role="search"
+            action="{% url 'forum_search:search' %}">
+        <input class="form-control mr-sm-2"
+               type="search"
+               placeholder="Search"
+               aria-label="Search"
+               name="q" />
+        <button class="btn btn-outline-light my-2 my-sm-0" type="submit">{% trans "Search" %}</button>
+      </form>
+    {% endblock search_bar %}
   {% endblock header %}
   <div class="my-5 container" id="main_container">
     <div class="row">
