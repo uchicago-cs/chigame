@@ -6,7 +6,7 @@ from chigame.games.models import Game, Lobby, User
 class GameSerializer(serializers.ModelSerializer):
     class Meta:
         model = Game
-        fields = ("id", "name", "description", "min_players", "max_players")
+        fields = "__all__"
 
 
 class LobbySerializer(serializers.ModelSerializer):
