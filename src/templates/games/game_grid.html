@@ -54,7 +54,7 @@
             </div>
             <div class="card-body d-flex flex-column">
               <h4 class="card-title">{{ game.name }}</h4>
-              <p class="card-text flex-grow-1">{{ game.description|linebreaksbr }}</p>
+              <p class="card-text flex-grow-1">{{ game.description|linebreaksbr|truncatewords_html:20 }}</p>
               <div>
                 {% for category in game.category.all %}<span class="badge text-bg-primary">{{ category }}</span>{% endfor %}
               </div>
