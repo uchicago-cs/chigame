@@ -1,5 +1,6 @@
 import random
 
+import factory
 from factory import Faker, LazyAttribute, post_generation
 from factory.django import DjangoModelFactory
 
@@ -10,7 +11,7 @@ class CategoryFactory(DjangoModelFactory):
     class Meta:
         model = Category
 
-    name = Faker("word")
+    name = factory.Sequence(lambda n: f"Category {n+1}")
     description = Faker("text", max_nb_chars=200)
 
 
@@ -49,7 +50,7 @@ class GameFactory(DjangoModelFactory):
 
     BGG_id = Faker("pyint", min_value=1, max_value=1000000)
 
-    @post_generation
+    @factory.post_generation
     def categories(self, create, extracted, **kwargs):
         if not create:
             return
