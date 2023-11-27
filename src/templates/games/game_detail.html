@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}
+  {{ game.name }} Details
+{% endblock title %}
+{% block content %}
+  <div class="row mt-3 mb-3">
+    <div class="col-md-3">
+      <img src="{{ game.image }}" class="img-thumbnail" alt="game cover" />
+    </div>
+    <div class="col-md-9">
+      <h1 class="display-1">{{ game.name }}</h1>
+      <h3 class="text-body-secondary">{{ game.description|linebreaksbr }}</h3>
+      <p>Published in {{ game.year_published }}</p>
+      <p>Complexity: {{ game.complexity }}/5</p>
+      {% for category in game.category.all %}
+        <a href="#"><span class="badge rounded-pill text-bg-primary">{{ category }}</span></a>
+      {% endfor %}
+      {% for mechanic in game.mechanics.all %}
+        <a href="#"><span class="badge rounded-pill text-bg-secondary">{{ mechanic }}</span></a>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="row mb-3 bg-light p-3 rounded-2">
+    <div class="col-3">
+      <div id="description-list" class="list-group">
+        <a class="list-group-item list-group-item-action"
+           href="#player-description">Players</a>
+        <a class="list-group-item list-group-item-action"
+           href="#playtime-description">Playtime</a>
+        <a class="list-group-item list-group-item-action"
+           href="#rule-description">Rules</a>
+      </div>
+    </div>
+    <div class="col-9">
+      <div data-bs-target="#description-list" tabindex="0">
+        <h3 id="player-description">Players</h3>
+        <p>
+          <strong>Minimum:</strong>{{ game.min_players }}
+        </p>
+        <p>
+          <strong>Maximum:</strong>{{ game.max_players }}
+        </p>
+        <p>
+          <strong>Recommended Age:</strong>{{ game.suggested_age }}+
+        </p>
+        <h3 id="playtime-description">Playtime</h3>
+        <p>
+          <strong>Minimum:</strong>{{ game.min_playtime }} minutes
+        </p>
+        <p>
+          <strong>Maximum:</strong>{{ game.max_playtime }} minutes
+        </p>
+        <p>
+          <strong>Expected:</strong>{{ game.expected_playtime }} minutes
+        </p>
+        <h3 id="rule-description">Rules</h3>
+        <p>{{ game.rules }}</p>
+      </div>
+    </div>
+  </div>
+  {% if user.is_staff %}
+    <div class="btn-group">
+      <a href="{% url 'game-edit' game.pk %}" class="btn btn-outline-primary">Edit</a>
+      <a href="#" class="btn btn-outline-primary">Delete</a>
+    </div>
+  {% endif %}
+  <a href="{% url 'game-list' %}">Back to Games List</a>
+{% endblock content %}

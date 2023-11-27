@@ -6,6 +6,13 @@
 {% block content %}
   <h1>List of Games</h1>
   <ul>
-    {% for game in object_list %}<li>{{ game.name }}</li>{% endfor %}
+    {% for game in object_list %}
+      <li>
+        <a href="{% url 'game-detail' game.id %}">{{ game.name }}</a>
+      </li>
+    {% endfor %}
   </ul>
+  {% if user.is_staff %}
+    <a href="{% url 'game-create' %}">Create New Game</a>
+  {% endif %}
 {% endblock content %}

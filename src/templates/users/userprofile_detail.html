@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block title %}
+  User:
+  {{ object.display_name }}
+{% endblock title %}
+{% block content %}
+  <div class="container mt-5">
+    <div class="row">
+      <div class="col-md-6 offset-md-3">
+        <div class="card">
+          <div class="card-header">{{ object.display_name }}</div>
+          <div class="card-body">
+            <div class="media">
+              <div class="media-body">
+                <p>Bio: {{ object.bio }}</p>
+                {% if object.user == request.user %}
+                  <a href="{% url 'users:update' %}" class="btn btn-primary">Edit Profile</a>
+                {% elif is_friend %}
+                  <a class="btn btn-primary">Remove Friend</a>
+                {% elif friendship_request %}
+                  {% if friendship_request.sender_id == request.user.pk %}
+                    <a href="{% url 'users:cancel-friend-invitation' object.user.id %}"
+                       class="btn btn-primary">Cancel Friendship Request</a>
+                  {% else %}
+                    <a href="{% url 'users:accept-friend-invitation' friendship_request.id %}"
+                       class="btn btn-primary">Accept Friendship Request</a>
+                    <a href="{% url 'users:decline-friend-invitation' friendship_request.id %}"
+                       class="btn btn-primary">Decline Friendship Request</a>
+                  {% endif %}
+                {% else %}
+                  <a href="{% url 'users:add-friend' object.user.pk %}"
+                     class="btn btn-primary">Add Friend</a>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock content %}

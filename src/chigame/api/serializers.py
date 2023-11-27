@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from chigame.games.models import Game, Notification, Tournament
+from chigame.games.models import Game, Lobby, Notification, Tournament
 from chigame.users.models import User
 
 
@@ -38,3 +38,20 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ("email", "password", "name")
         extra_kwargs = {"password": {"write_only": True}}
+
+
+class LobbySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Lobby
+        fields = (
+            "id",
+            "name",
+            "game",
+            "game_mod_status",
+            "created_by",
+            "members",
+            "min_players",
+            "max_players",
+            "time_constraint",
+            "lobby_created",
+        )
