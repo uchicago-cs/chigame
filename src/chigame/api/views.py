@@ -3,7 +3,13 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics
 
 from chigame.api.filters import GameFilter
-from chigame.api.serializers import GameSerializer, LobbySerializer, UserSerializer
+from chigame.api.serializers import (
+    CategorySerializer,
+    GameSerializer,
+    LobbySerializer,
+    MechanicSerializer,
+    UserSerializer,
+)
 from chigame.games.models import Game, Lobby, User
 from chigame.users.models import UserProfile
 
@@ -18,6 +24,24 @@ class GameListView(generics.ListCreateAPIView):
 class GameDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Game.objects.all()
     serializer_class = GameSerializer
+
+
+class GameCategoriesAPIView(generics.RetrieveAPIView):
+    serializer_class = CategorySerializer
+
+    def get_queryset(self):
+        game_id = self.kwargs["pk"]
+        game = Game.objects.get(id=game_id)
+        return game.categories.all()
+
+
+class GameMechanicsAPIView(generics.RetrieveAPIView):
+    serializer_class = MechanicSerializer
+
+    def get_queryset(self):
+        game_id = self.kwargs["pk"]
+        game = Game.objects.get(id=game_id)
+        return game.mechanics.all()
 
 
 class UserFriendsAPIView(generics.RetrieveAPIView):
