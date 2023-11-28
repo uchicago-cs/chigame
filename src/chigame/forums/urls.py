@@ -3,4 +3,6 @@ from django.urls import path
 from . import views
 
 app_name = "forums"
-urlpatterns = [path("create", view=views.forum_create, name="forum-create")]
+urlpatterns = [
+    path("create", view=views.ForumCreateView.as_view(), name="forum-create"),
+]

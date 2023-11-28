@@ -1,0 +1,6 @@
+{% extends 'machina/forum/index.html' %}
+
+{% block content %}
+  {{ block.super }}
+  <a class="btn btn-primary" href="{% url 'forums:forum-create' %}">Create new forum</a>
+{% endblock content %}
