@@ -29,6 +29,8 @@
     <!-- Le javascript
     ================================================== -->
     {# Placed at the top of the document so pages load faster with defer #}
+    {% block js %}
+    {% endblock js %}
     {% block javascript %}
       <!-- Bootstrap JS -->
       <script defer
@@ -123,6 +125,7 @@
         {% endfor %}
       {% endif %}
       {% block content %}
+        <p>Coming soon!</p>
       {% endblock content %}
     </div>
     <!-- /container -->
