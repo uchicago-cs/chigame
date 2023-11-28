@@ -10,9 +10,9 @@ const fakeMessage = [
   ],
   [{ tokenId: 4, updateOn: null, content: "New message!", sender: "Bob" }],
   [{ tokenId: 5, updateOn: 4, content: "Updated message!", sender: "Bob" }],
-  [{ tokenId: 6, updateOn: null, content: "New Message 1", sender: "tester" }],
+  [{ tokenId: 6, updateOn: null, content: "New Message 1", sender: "test1" }],
   [{ tokenId: 7, updateOn: null, content: "New Message 2", sender: "Bob" }],
-  [{ tokenId: 8, updateOn: null, content: "New Message 3", sender: "Bob" }],
+  [{ tokenId: 8, updateOn: null, content: "New Message 3", sender: "test1" }],
   [{ tokenId: 9, updateOn: null, content: "New Message 4", sender: "Bob" }],
   [{ tokenId: 10, updateOn: null, content: "New Message 5", sender: "Bob" }],
   [{ tokenId: 11, updateOn: null, content: "New Message 6", sender: "Bob" }],
@@ -59,20 +59,27 @@ function updateView(tokenId) {
       const message = messagesFromBackend[i];
       if (message.updateOn != null) {
         const messageElement = document.getElementById(message.updateOn);
-        messageElement.textContent = getMessageText(message);
-        messageElement.id = message.tokenId;
+
+        messageElement.firstChild.textContent = getMessageText(message);
+        messageElement.firstChild.id = message.tokenId;
       } else {
         const messageElement = document.createElement("div");
-        messageElement.textContent = getMessageText(message);
+        messageElement.style.display = "flex";
+        var left = document.createElement("div");
+
+        left.textContent = getMessageText(message);
+        left.style.fontSize = "20px";
+
+        messageElement.appendChild(left);
         messageElement.id = message.tokenId;
-        messageElement.style.fontSize = "20px";
+
         if (message.sender == name) {
-          messageElement.classList.add("message");
+          left.classList.add("message");
         }
+
         messageContainer.appendChild(messageElement);
       }
     }
-    // console.log(messagesFromBackend[messagesFromBackend.length - 1].tokenId);
     currentTokenId =
       messagesFromBackend[messagesFromBackend.length - 1].tokenId;
     scrollToBottom();
@@ -93,10 +100,58 @@ document
   .getElementById("messageContainer")
   .addEventListener("click", function (event) {
     if (event.target.classList.contains("message")) {
-      event.target.style.backgroundColor = "#e0e0e0";
-      console.log("Element clicked:", event.target.textContent);
+
+      document.querySelectorAll(".delete-button").forEach((button) => {
+        button.parentNode.style.backgroundColor = "white";
+        button.remove();
+      });
+
+      event.target.parentNode.style.backgroundColor = "#e0e0e0";
+
+      var deleteButton = document.createElement("button");
+      deleteButton.textContent = "Delete";
+      deleteButton.classList.add("delete-button");
+      deleteButton.style.marginLeft = "10px";
+
+      deleteButton.addEventListener("click", function () {
+        const tokenId = event.target.parentNode.id;
+        deleteMessage(tokenId);
+        deleteButton.parentNode.style.backgroundColor = "white";
+        deleteButton.remove();
+      });
+
+      event.target.parentNode.appendChild(deleteButton);
+
     }
   });
+
+function deleteMessage(tokenId){
+  const email = document.getElementById("email").value;
+  const tID = document.getElementById("tID").value;
+  const csrfToken = document.getElementsByName('csrfmiddlewaretoken')[0].value;
+
+  if (message != "") {
+
+      var messageData ={
+          "sender": email,
+          "content": null,
+          "update_on": tokenId,
+          "tournament": tID
+      }
+
+      fetch("http://127.0.0.1:8000/api/tournaments/chat/", {
+          method: "POST",
+          headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': csrfToken
+          },
+          body: JSON.stringify(messageData),
+      })
+
+  }
+
+  console.log(messageData);
+}
 
 updateView(currentTokenId);
 
