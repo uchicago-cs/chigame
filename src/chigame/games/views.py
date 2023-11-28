@@ -91,6 +91,26 @@ class GameEditView(UserPassesTestMixin, UpdateView):
         return self.request.user.is_staff
 
 
+def search_results(request):
+    query = request.GET.get("query")
+
+    """
+    The Q object is an object used to encapsulate a collection of keyword
+    arguments that can be combined with logical operators (&, |, ~) which
+    allows for more advanced searches. More info can be found here at
+    https://docs.djangoproject.com/en/4.2/topics/db/queries/#complex-lookups-with-q-objects
+    """
+    object_list = Game.objects.filter(
+        Q(name__icontains=query)
+        | Q(categories__name__icontains=query)
+        | Q(people__name__icontains=query)
+        | Q(publishers__name__icontains=query)
+    )
+    context = {"query_type": "Games", "object_list": object_list}
+
+    return render(request, "pages/search_results.html", context)
+
+
 # Tournaments
 
 
@@ -122,10 +142,6 @@ class TournamentListView(ListView):
         context = super().get_context_data(**kwargs)
         # Additional context can be added if needed
         return context
-
-    # check if user is staff member
-    def test_func(self):
-        return self.request.user.is_staff
 
 
 class TournamentDetailView(DetailView):
@@ -239,18 +255,3 @@ def TournamentChatDetailView(request, pk):
     tournament = Tournament.objects.get(pk=pk)
     context = {"tournament": tournament}
     return render(request, "tournaments/tournament_chat.html", context)
-
-
-def search_results(request):
-    query = request.GET.get("query")
-
-    """
-    The Q object is an object used to encapsulate a collection of keyword
-    arguments that can be combined with logical operators (&, |, ~) which
-    allows for more advanced searches. More info can be found here at
-    https://docs.djangoproject.com/en/4.2/topics/db/queries/#complex-lookups-with-q-objects
-    """
-    object_list = Game.objects.filter(Q(name__icontains=query) | Q(category__name__icontains=query))
-    context = {"query_type": "Games", "object_list": object_list}
-
-    return render(request, "pages/search_results.html", context)
