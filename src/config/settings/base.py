@@ -75,6 +75,7 @@ DJANGO_APPS = [
     "django.contrib.admin",
     "django.forms",
     "rest_framework",
+    "django_filters",
     "django_tables2",
 ]
 THIRD_PARTY_APPS = [
@@ -197,6 +198,7 @@ TEMPLATES = [
         # https://docs.djangoproject.com/en/dev/ref/settings/#dirs
         "DIRS": [
             str(BASE_DIR / "templates"),
+            # Needed for django-machina to find the correct templates without cluttering the templates base directory
             str(BASE_DIR / "templates/forum"),
             # https://django-machina.readthedocs.io/en/latest/getting_started.html#django-settings
             MACHINA_MAIN_TEMPLATE_DIR,
@@ -318,8 +320,7 @@ SOCIALACCOUNT_FORMS = {"signup": "chigame.users.forms.UserSocialSignupForm"}
 
 
 # Add additional configuration below:
-# -----------------------------------------------------------------------------
-
+# ------------------------------------------------------------------------------
 
 # Django-machina search backend:
 # https://django-machina.readthedocs.io/en/latest/getting_started.html#django-haystack-settings
@@ -328,3 +329,10 @@ HAYSTACK_CONNECTIONS = {
         "ENGINE": "haystack.backends.simple_backend.SimpleEngine",
     },
 }
+
+
+# DJANGO-MACHINA SETTINGS
+# ------------------------------------------------------------------------------
+# https://django-machina.readthedocs.io/en/stable/settings.html
+MACHINA_FORUM_NAME = "ChiGame Forums"
+MACHINA_BASE_TEMPLATE_NAME = "base.html"
