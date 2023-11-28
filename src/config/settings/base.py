@@ -197,6 +197,7 @@ TEMPLATES = [
         # https://docs.djangoproject.com/en/dev/ref/settings/#dirs
         "DIRS": [
             str(BASE_DIR / "templates"),
+            # Needed for django-machina to discover the correct templates
             str(BASE_DIR / "templates/forum"),
             # https://django-machina.readthedocs.io/en/latest/getting_started.html#django-settings
             MACHINA_MAIN_TEMPLATE_DIR,

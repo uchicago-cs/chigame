@@ -60,11 +60,11 @@
               <li class="nav-item active">
                 <a class="nav-link" href="{% url 'home' %}">Home <span class="visually-hidden">(current)</span></a>
               </li>
-              <li class="nav-item active">
-                <a class="nav-link" href="{% url 'forum:index' %}">Forums</a>
-              </li>
               <li class="nav-item">
                 <a class="nav-link" href="{% url 'about' %}">About</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'forum:index' %}">Forums</a>
               </li>
               {% if request.user.is_authenticated %}
                 <li class="nav-item">
@@ -91,12 +91,13 @@
                 </li>
               {% endif %}
               <li>
-                <!-- Dynammically update search bar landing page depending on query_type-->
                 {% block search_bar %}
+                  <!-- Dynammically update search bar landing page depending on query_type-->
                   <form id="search-bar" action="{% url 'game-search-results' %}" method="get">
                     <select id="query-type" name="query_type">
                       <option value="games">Games</option>
                       <option value="users">Users</option>
+                      <option value="users">Forums</option>
                       <!-- Add more options here -->
                     </select>
                     <input id="query" name="query" type="text" placeholder="Search..." />
@@ -108,6 +109,8 @@
         </div>
       </nav>
     </div>
+    {% block body %}
+    {% endblock body %}
     <div class="container">
       {% if messages %}
         {% for message in messages %}
@@ -121,7 +124,6 @@
         {% endfor %}
       {% endif %}
       {% block content %}
-        <p>Coming soon!</p>
       {% endblock content %}
     </div>
     <!-- /container -->
@@ -150,6 +152,8 @@
             if (query_type.value == "games") {
               search_bar.action = "{% url 'game-search-results' %}";
             } else if (query_type.value == "users") {
+              search_bar.action = "{% url 'home' %}"; // placeholder
+            } else if (query_type.value == "forums") {
               search_bar.action = "{% url 'home' %}"; // placeholder
             }
           });
