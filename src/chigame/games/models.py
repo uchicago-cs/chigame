@@ -475,11 +475,17 @@ class Message(models.Model):
 
 class Review(models.Model):
     "Represents a game review"
+    title = models.TextField(blank=True, null=True)
     review = models.TextField(blank=True, null=True)
     rating = models.PositiveSmallIntegerField(blank=True, null=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     game = models.ForeignKey(Game, on_delete=models.CASCADE)
     is_public = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"Review {self.id} by {self.user} for {self.game}: {self.review}"
+
+    def clean(self):
+        if self.review is None and self.rating is None:
+            raise ValidationError("At least one of 'review' or 'rating' must be provided.")
