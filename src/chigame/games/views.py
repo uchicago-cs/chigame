@@ -104,6 +104,26 @@ class GameEditView(UserPassesTestMixin, UpdateView):
         return self.request.user.is_staff
 
 
+def search_results(request):
+    query = request.GET.get("query")
+
+    """
+    The Q object is an object used to encapsulate a collection of keyword
+    arguments that can be combined with logical operators (&, |, ~) which
+    allows for more advanced searches. More info can be found here at
+    https://docs.djangoproject.com/en/4.2/topics/db/queries/#complex-lookups-with-q-objects
+    """
+    object_list = Game.objects.filter(
+        Q(name__icontains=query)
+        | Q(categories__name__icontains=query)
+        | Q(people__name__icontains=query)
+        | Q(publishers__name__icontains=query)
+    )
+    context = {"query_type": "Games", "object_list": object_list}
+
+    return render(request, "pages/search_results.html", context)
+
+
 # Tournaments
 
 
@@ -136,6 +156,37 @@ class TournamentListView(ListView):
         # Additional context can be added if needed
         return context
 
+    def post(self, request, *args, **kwargs):
+        # This method is called when the user clicks the "Join Tournament" or
+        # "Withdraw" button
+        tournament = Tournament.objects.get(id=request.POST.get("tournament_id"))
+        if request.POST.get("action") == "join":
+            success = tournament.tournament_sign_up(request.user)
+            if success == 0:
+                messages.success(request, "You have successfully joined this tournament")
+                return redirect(reverse_lazy("tournament-list"))
+            elif success == 1:
+                messages.error(request, "You have already joined this tournament")
+                return redirect(reverse_lazy("tournament-list"))
+            elif success == 2:
+                messages.error(request, "This tournament is full")
+                return redirect(reverse_lazy("tournament-list"))
+            else:
+                raise Exception("Invalid return value")
+
+        elif request.POST.get("action") == "withdraw":
+            success = tournament.tournament_withdraw(request.user)
+            if success == 0:
+                messages.success(request, "You have successfully withdrawn from this tournament")
+                return redirect(reverse_lazy("tournament-list"))
+            elif success == 1:
+                messages.error(request, "You have not joined this tournament")
+                return redirect(reverse_lazy("tournament-list"))
+            else:
+                raise Exception("Invalid return value")
+        else:
+            raise ValueError("Invalid action")
+
     # check if user is staff member
     def test_func(self):
         return self.request.user.is_staff
@@ -145,6 +196,37 @@ class TournamentDetailView(DetailView):
     model = Tournament
     template_name = "tournaments/tournament_detail.html"
     context_object_name = "tournament"
+
+    def post(self, request, *args, **kwargs):
+        # This method is called when the user clicks the "Join Tournament" or
+        # "Withdraw" button
+        tournament = Tournament.objects.get(id=request.POST.get("tournament_id"))
+        if request.POST.get("action") == "join":
+            success = tournament.tournament_sign_up(request.user)
+            if success == 0:
+                messages.success(request, "You have successfully joined this tournament")
+                return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
+            elif success == 1:
+                messages.error(request, "You have already joined this tournament")
+                return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
+            elif success == 2:
+                messages.error(request, "This tournament is full")
+                return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
+            else:
+                raise Exception("Invalid return value")
+
+        elif request.POST.get("action") == "withdraw":
+            success = tournament.tournament_withdraw(request.user)
+            if success == 0:
+                messages.success(request, "You have successfully withdrawn from this tournament")
+                return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
+            elif success == 1:
+                messages.error(request, "You have not joined this tournament")
+                return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
+            else:
+                raise Exception("Invalid return value")
+        else:
+            raise ValueError("Invalid action")
 
 
 @method_decorator(staff_required, name="dispatch")
@@ -161,14 +243,26 @@ class TournamentCreateView(CreateView):
         "rules",
         "draw_rules",
         "num_winner",
-        "matches",
         "players",
     ]
     # Note: "winner" is not included in the fields because it is not
     # supposed to be set by the user. It will be set automatically
     # when the tournament is over.
-    # Note: we may remove the "matches" field later for the same reason,
-    # but we keep it for now because it is convenient for testing.
+    # Note: the "matches" field is not included in the fields because
+    # it is not supposed to be set by the user. It will be set automatically
+    # by the create tournament brackets mechanism.
+
+    # This method is called when valid form data has been POSTed. It
+    # overrides the default behavior of the CreateView class.
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        self.object.create_tournaments_brackets()  # This should be changed later
+        # because the brackets should not be created right after the tournament
+        # is created. Instead, the brackets should be created when the registration
+        # deadline is reached. But for now, we keep it this way for testing.
+
+        # Do something with brackets if needed
+        return response
 
     def get_success_url(self):
         return reverse_lazy("tournament-detail", kwargs={"pk": self.object.pk})
@@ -176,6 +270,11 @@ class TournamentCreateView(CreateView):
 
 @method_decorator(staff_required, name="dispatch")
 class TournamentUpdateView(UpdateView):
+    # Note: players should not be allowed to join a tournament after
+    # it has started, so it is discouraged (but still allowed) to add
+    # new users to "players". However, the new users will not be put
+    # into any matches automatically. The staff user will have to
+    # manually add them to the matches.
     model = Tournament
     template_name = "tournaments/tournament_update.html"
     fields = [
@@ -197,6 +296,28 @@ class TournamentUpdateView(UpdateView):
     # Note: we may remove the "matches" field later for the same reason,
     # but we keep it for now because it is convenient for testing.
 
+    def form_valid(self, form):
+        # Get the current tournament from the database
+        current_tournament = get_object_or_404(Tournament, pk=self.kwargs["pk"])
+
+        # Check if the 'players' field has been modified
+        form_players = set(form.cleaned_data["players"])
+        current_players = set(current_tournament.players.all())
+        if len(form_players - current_players) > 0:  # if the players have been added
+            raise PermissionDenied("You cannot add new players to the tournament after it has started.")
+        elif len(current_players - form_players) > 0:  # if the players have been removed
+            removed_players = current_players - form_players  # get the players that have been removed
+            for player in removed_players:
+                related_match = current_tournament.matches.get(
+                    players__in=[player]
+                )  # get the match that the player is in
+                related_match.players.remove(player)
+                if related_match.players.count() == 0:  # if the match is empty, delete it
+                    related_match.delete()
+
+        # The super class's form_valid method will save the form data to the database
+        return super().form_valid(form)
+
     def get_success_url(self):
         return reverse_lazy("tournament-detail", kwargs={"pk": self.object.pk})
 
@@ -213,18 +334,3 @@ def TournamentChatDetailView(request, pk):
     tournament = Tournament.objects.get(pk=pk)
     context = {"tournament": tournament}
     return render(request, "tournaments/tournament_chat.html", context)
-
-
-def search_results(request):
-    query = request.GET.get("query")
-
-    """
-    The Q object is an object used to encapsulate a collection of keyword
-    arguments that can be combined with logical operators (&, |, ~) which
-    allows for more advanced searches. More info can be found here at
-    https://docs.djangoproject.com/en/4.2/topics/db/queries/#complex-lookups-with-q-objects
-    """
-    object_list = Game.objects.filter(Q(name__icontains=query) | Q(category__name__icontains=query))
-    context = {"query_type": "Games", "object_list": object_list}
-
-    return render(request, "pages/search_results.html", context)
