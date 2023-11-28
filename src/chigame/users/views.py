@@ -185,6 +185,7 @@ def decline_friend_invitation(request, pk):
     return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
 
 
+
 def user_search_results(request):
     query = request.GET.get("query")
     context = {"nothing_found": True, "query_type": "Users"}
@@ -194,3 +195,15 @@ def user_search_results(request):
             context.pop("nothing_found")
             context["object_list"] = users_list
     return render(request, "pages/search_results.html", context)
+
+@login_required
+def user_inbox_view(request, pk):
+    user = request.user
+    notifications = Notification.objects.filter(receiver=user)
+    context = {"pk": pk, "user": user, "notifications": notifications}
+    if pk == user.id:
+        return render(request, "users/user_inbox.html", context)
+    else:
+        messages.error(request, "Not your inbox")
+        return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
+

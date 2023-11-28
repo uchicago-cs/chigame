@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block content %}
+  <h1>Chat for Match {{ tournament.pk }}</h1>
+  <style>
+    #messageContainer {
+      border: 1px solid #ccc;
+      padding: 10px;
+      border-radius: 5px;
+      max-width: 70%;
+      height: 50vh;
+      margin: 0 auto;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    h1 {
+      text-align: center;
+    }
+  </style>
+  <input type="hidden"
+         id="name"
+         name="variable"
+         value="{{ request.user.name }}" />
+  <div id="messageContainer">
+    <!-- Messages will be displayed here -->
+  </div>
+  <script src = {% static 'js/getChatUpdate.js' %}></script>
+{% endblock content %}
