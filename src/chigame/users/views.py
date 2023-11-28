@@ -90,7 +90,7 @@ def user_profile_detail_view(request, pk):
         is_friend = None
         friendship_request = None
         if request.user.pk:
-            profile.friends.filter(pk=request.user.pk).exists()
+            is_friend = profile.friends.filter(pk=request.user.pk).exists()
             if not is_friend:
                 curr_user = User.objects.get(pk=request.user.id)
                 other_user = profile.user
