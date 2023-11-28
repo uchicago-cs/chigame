@@ -52,3 +52,10 @@ class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
 class MessageView(generics.CreateAPIView):
     queryset = Message.objects.all()
     serializer_class = MessageSerializer
+
+
+class MessageFeedView(generics.ListAPIView):
+    queryset = Message.objects.all()
+    serializer_class = MessageSerializer
+    filter_backends = (DjangoFilterBackend,)  # Enable DjangoFilterBackend
+    filterset_fields = ("lobby",)  # Specify the filter class for this view
