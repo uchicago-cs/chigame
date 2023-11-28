@@ -535,3 +535,7 @@ class Review(models.Model):
     def clean(self):
         if self.review is None and self.rating is None:
             raise ValidationError("At least one of 'review' or 'rating' must be provided.")
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
