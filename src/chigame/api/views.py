@@ -1,4 +1,5 @@
 # from django.shortcuts import render
+from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics
 
@@ -25,7 +26,7 @@ class UserFriendsAPIView(generics.RetrieveAPIView):
 
     def get_queryset(self):
         user_id = self.kwargs["pk"]
-        user_profile = UserProfile.objects.get(user=user_id)
+        user_profile = get_object_or_404(UserProfile, user=user_id)
         return user_profile.friends.all()
 
 
@@ -47,6 +48,17 @@ class UserListView(generics.ListCreateAPIView):
 class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    lookup_field = "slug"
+
+    def get_object(self):
+        lookup_value = self.kwargs.get(self.lookup_field)
+
+        # If the lookup_value is an integer, use the id field
+        if lookup_value.isdigit():
+            return get_object_or_404(User, pk=lookup_value)
+        else:
+            # Otherwise, use the slug field
+            return get_object_or_404(User, username=lookup_value)
 
 
 class MessageView(generics.CreateAPIView):
