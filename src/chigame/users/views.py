@@ -87,14 +87,16 @@ def user_profile_detail_view(request, pk):
         profile = get_object_or_404(UserProfile, user__pk=pk)
         if request.user.pk == pk:
             return render(request, "users/userprofile_detail.html", {"object": profile})
-        is_friend = profile.friends.filter(pk=request.user.pk).exists()
+        is_friend = None
         friendship_request = None
-        if not is_friend:
-            curr_user = User.objects.get(pk=request.user.id)
-            other_user = profile.user
-            friendship_request = FriendInvitation.objects.filter(
-                Q(sender=curr_user, receiver=other_user) | Q(sender=other_user, receiver=curr_user)
-            ).first()
+        if request.user.pk:
+            is_friend = profile.friends.filter(pk=request.user.pk).exists()
+            if not is_friend:
+                curr_user = User.objects.get(pk=request.user.id)
+                other_user = profile.user
+                friendship_request = FriendInvitation.objects.filter(
+                    Q(sender=curr_user, receiver=other_user) | Q(sender=other_user, receiver=curr_user)
+                ).first()
         context = {"object": profile, "is_friend": is_friend, "friendship_request": friendship_request}
         return render(request, "users/userprofile_detail.html", context=context)
     except UserProfile.DoesNotExist:
@@ -181,3 +183,26 @@ def decline_friend_invitation(request, pk):
     except FriendInvitation.DoesNotExist:
         messages.error(request, "This friend invitation does not exist")
     return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
+
+
+def user_search_results(request):
+    query = request.GET.get("query")
+    context = {"nothing_found": True, "query_type": "Users"}
+    if query:
+        users_list = UserProfile.objects.filter(Q(user__email__icontains=query) | Q(user__name__icontains=query))
+        if users_list.count() > 0:
+            context.pop("nothing_found")
+            context["object_list"] = users_list
+    return render(request, "pages/search_results.html", context)
+
+
+@login_required
+def user_inbox_view(request, pk):
+    user = request.user
+    notifications = Notification.objects.filter(receiver=user)
+    context = {"pk": pk, "user": user, "notifications": notifications}
+    if pk == user.id:
+        return render(request, "users/user_inbox.html", context)
+    else:
+        messages.error(request, "Not your inbox")
+        return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))

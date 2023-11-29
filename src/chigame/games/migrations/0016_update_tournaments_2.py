@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("games", "0012_update_tournaments"),
+        ("games", "0015_message_token_id_message_update_on_and_more"),
     ]
 
     operations = [

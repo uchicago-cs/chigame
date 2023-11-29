@@ -72,6 +72,9 @@
                      href="{% url 'users:user-profile' request.user.pk %}">{% translate "My Profile" %}</a>
                 </li>
                 <li class="nav-item">
+                  <a class="nav-link" href="{% url 'users:user-inbox' request.user.pk %}">{% translate "Inbox" %}</a>
+                </li>
+                <li class="nav-item">
                   {# URL provided by django-allauth/account/urls.py #}
                   <a class="nav-link" href="{% url 'account_logout' %}">{% translate "Sign Out" %}</a>
                 </li>
@@ -95,7 +98,7 @@
                     <option value="users">Users</option>
                     <!-- Add more options here -->
                   </select>
-                  <input id="query" name="query" type="text" placeholder="Search..." />
+                  <input id="query-input" name="query" type="text" placeholder="Search..." />
                 </form>
               </li>
             </ul>
@@ -140,12 +143,21 @@
         document.addEventListener('DOMContentLoaded', function() {
           const search_bar = document.getElementById('search-bar');
           const query_type = document.getElementById('query-type');
+          const query_input = document.getElementById('query-input');
+
+          //do nothing if search bar is empty
+          search_bar.addEventListener("submit", function() {
+            event.preventDefault();
+            if (query_input.value.trim() !== '') {
+              search_bar.submit();
+            }
+          });
 
           query_type.addEventListener("change", function() {
             if (query_type.value == "games") {
               search_bar.action = "{% url 'game-search-results' %}";
             } else if (query_type.value == "users") {
-              search_bar.action = "{% url 'home' %}"; // placeholder
+              search_bar.action = "{% url 'users:user-search-results' %}";
             }
           });
         });
