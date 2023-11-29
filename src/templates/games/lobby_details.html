@@ -4,45 +4,49 @@
   <h1>Lobby Details</h1>
   <script>
     window.onload = function() {
-        var startTimeString = document.getElementById("countdown").getAttribute("data-start-time");
-        var startTime = new Date(Date.parse(startTimeString));
-        
-        function updateCountdown() {
-            // get current date and time
-            var currentDate = new Date();
-            // calculate the remaining time in milliseconds
-            var timeDiff = startTime - currentDate;
-            // check if the countdown has reached zero
-            if (timeDiff <= 0) {
-                document.getElementById("countdown").innerHTML = "Match has started!";
+      var startTimeString = document.getElementById("countdown").getAttribute("data-start-time");
+      var startTime = new Date(Date.parse(startTimeString));
+
+      function updateCountdown() {
+        // get current date and time
+        var currentDate = new Date();
+        // calculate the remaining time in milliseconds
+        var timeDiff = startTime - currentDate;
+        // check if the countdown has reached zero
+        if (timeDiff <= 0) {
+          document.getElementById("countdown").innerHTML = "Match has started!";
+          document.getElementById("JoinMatch").disabled = false;
+        } else {
+          document.getElementById("JoinMatch").disabled = true;
+          var days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+          var hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+          var minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+          var seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
+          // display the countdown
+          if (days == 0) {
+            if (hours == 0) {
+              if (minutes == 0) {
+                document.getElementById("countdown").innerHTML = seconds + "s";
+              } else {
+                document.getElementById("countdown").innerHTML = minutes + "m " + seconds + "s";
+              }
             } else {
-                var days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
-                var hours = Math.floor((timeDiff % (1000 * 60 * 60 *24)) / (1000 * 60 * 60));
-                var minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
-                var seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
-                // display the countdown
-                if (days == 0) {
-                    if (hours == 0) {
-                        if (minutes == 0) {
-                            document.getElementById("countdown").innerHTML = seconds + "s";
-                        } else {
-                            document.getElementById("countdown").innerHTML = minutes + "m " + seconds + "s";
-                        }
-                    } else {
-                        document.getElementById("countdown").innerHTML = hours + "h " + minutes + "m " + seconds + "s";
-                    }
-                } else {
-                    document.getElementById("countdown").innerHTML = days + "d " + hours + "h " + minutes + "m " + seconds + "s";
-                }
+              document.getElementById("countdown").innerHTML = hours + "h " + minutes + "m " + seconds + "s";
             }
+          } else {
+            document.getElementById("countdown").innerHTML = days + "d " + hours + "h " + minutes + "m " + seconds + "s";
+          }
         }
-        setInterval(updateCountdown, 1000);
-        updateCountdown();
-      };
+      }
+      setInterval(updateCountdown, 1000);
+      updateCountdown();
+    };
   </script>
   <p>
-    <strong>Match starts in:</strong> <span id="countdown" data-start-time="{{ lobby_detail.match_start_time_str }}"></span>
+    <strong>Match starts in:</strong> <span id="countdown"
+       data-start-time="{{ lobby_detail.match_start_time_str }}"></span>
   </p>
+  <button type="button" id="JoinMatch">Join Match</button>
   <p>
     <strong>Name:</strong> {{ lobby_detail.name }}
   </p>
