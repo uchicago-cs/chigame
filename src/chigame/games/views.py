@@ -20,6 +20,7 @@ class GameListView(ListView):
     model = Game
     queryset = Game.objects.all()
     template_name = "games/game_grid.html"
+    paginate_by = 20
 
 
 class LobbyListView(SingleTableView):
@@ -91,6 +92,26 @@ class GameEditView(UserPassesTestMixin, UpdateView):
         return self.request.user.is_staff
 
 
+def search_results(request):
+    query = request.GET.get("query")
+
+    """
+    The Q object is an object used to encapsulate a collection of keyword
+    arguments that can be combined with logical operators (&, |, ~) which
+    allows for more advanced searches. More info can be found here at
+    https://docs.djangoproject.com/en/4.2/topics/db/queries/#complex-lookups-with-q-objects
+    """
+    object_list = Game.objects.filter(
+        Q(name__icontains=query)
+        | Q(categories__name__icontains=query)
+        | Q(people__name__icontains=query)
+        | Q(publishers__name__icontains=query)
+    ).distinct()  # only show unique game objects (no duplicates)
+    context = {"query_type": "Games", "object_list": object_list}
+
+    return render(request, "games/game_grid.html", context)
+
+
 # Tournaments
 
 
@@ -123,6 +144,37 @@ class TournamentListView(ListView):
         # Additional context can be added if needed
         return context
 
+    def post(self, request, *args, **kwargs):
+        # This method is called when the user clicks the "Join Tournament" or
+        # "Withdraw" button
+        tournament = Tournament.objects.get(id=request.POST.get("tournament_id"))
+        if request.POST.get("action") == "join":
+            success = tournament.tournament_sign_up(request.user)
+            if success == 0:
+                messages.success(request, "You have successfully joined this tournament")
+                return redirect(reverse_lazy("tournament-list"))
+            elif success == 1:
+                messages.error(request, "You have already joined this tournament")
+                return redirect(reverse_lazy("tournament-list"))
+            elif success == 2:
+                messages.error(request, "This tournament is full")
+                return redirect(reverse_lazy("tournament-list"))
+            else:
+                raise Exception("Invalid return value")
+
+        elif request.POST.get("action") == "withdraw":
+            success = tournament.tournament_withdraw(request.user)
+            if success == 0:
+                messages.success(request, "You have successfully withdrawn from this tournament")
+                return redirect(reverse_lazy("tournament-list"))
+            elif success == 1:
+                messages.error(request, "You have not joined this tournament")
+                return redirect(reverse_lazy("tournament-list"))
+            else:
+                raise Exception("Invalid return value")
+        else:
+            raise ValueError("Invalid action")
+
     # check if user is staff member
     def test_func(self):
         return self.request.user.is_staff
@@ -132,6 +184,37 @@ class TournamentDetailView(DetailView):
     model = Tournament
     template_name = "tournaments/tournament_detail.html"
     context_object_name = "tournament"
+
+    def post(self, request, *args, **kwargs):
+        # This method is called when the user clicks the "Join Tournament" or
+        # "Withdraw" button
+        tournament = Tournament.objects.get(id=request.POST.get("tournament_id"))
+        if request.POST.get("action") == "join":
+            success = tournament.tournament_sign_up(request.user)
+            if success == 0:
+                messages.success(request, "You have successfully joined this tournament")
+                return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
+            elif success == 1:
+                messages.error(request, "You have already joined this tournament")
+                return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
+            elif success == 2:
+                messages.error(request, "This tournament is full")
+                return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
+            else:
+                raise Exception("Invalid return value")
+
+        elif request.POST.get("action") == "withdraw":
+            success = tournament.tournament_withdraw(request.user)
+            if success == 0:
+                messages.success(request, "You have successfully withdrawn from this tournament")
+                return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
+            elif success == 1:
+                messages.error(request, "You have not joined this tournament")
+                return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
+            else:
+                raise Exception("Invalid return value")
+        else:
+            raise ValueError("Invalid action")
 
 
 @method_decorator(staff_required, name="dispatch")
@@ -239,18 +322,3 @@ def TournamentChatDetailView(request, pk):
     tournament = Tournament.objects.get(pk=pk)
     context = {"tournament": tournament}
     return render(request, "tournaments/tournament_chat.html", context)
-
-
-def search_results(request):
-    query = request.GET.get("query")
-
-    """
-    The Q object is an object used to encapsulate a collection of keyword
-    arguments that can be combined with logical operators (&, |, ~) which
-    allows for more advanced searches. More info can be found here at
-    https://docs.djangoproject.com/en/4.2/topics/db/queries/#complex-lookups-with-q-objects
-    """
-    object_list = Game.objects.filter(Q(name__icontains=query) | Q(category__name__icontains=query))
-    context = {"query_type": "Games", "object_list": object_list}
-
-    return render(request, "pages/search_results.html", context)
