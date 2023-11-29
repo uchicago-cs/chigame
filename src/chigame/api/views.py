@@ -1,6 +1,6 @@
 # from django.shortcuts import render
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import generics
+from rest_framework import generics, permissions
 
 from chigame.api.filters import GameFilter
 from chigame.api.serializers import GameSerializer, LobbySerializer, UserSerializer
@@ -13,6 +13,9 @@ class GameListView(generics.ListCreateAPIView):
     serializer_class = GameSerializer
     filter_backends = (DjangoFilterBackend,)  # Enable DjangoFilterBackend
     filterset_class = GameFilter  # Specify the filter class for this view
+
+    authentication_classes = []
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
 
 class GameDetailView(generics.RetrieveUpdateDestroyAPIView):
