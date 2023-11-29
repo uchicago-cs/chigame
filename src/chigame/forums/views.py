@@ -9,7 +9,7 @@ class ForumCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
 
     success_message = "Forum successfully created!"
     template_name = "forum_form.html"
-    fields = ["name", "slug", "description", "image", "type"]
+    fields = ["name", "description", "image", "type"]
 
     def get_success_url(self):
-        return "/forum"
+        return "/forums"

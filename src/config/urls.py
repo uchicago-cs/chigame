@@ -20,8 +20,8 @@ urlpatterns = [
     path("games/", include("chigame.games.urls")),
     # Django-machina forum
     # https://django-machina.readthedocs.io/en/latest/getting_started.html#urls-configuration
-    path("forum/", include(machina_urls)),
-    path("forum/", include("chigame.forums.urls")),
+    path("forums/", include(machina_urls)),
+    path("forums/", include("chigame.forums.urls")),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 
