@@ -24,6 +24,7 @@ class GameListView(FilterView):
     queryset = Game.objects.all()
     template_name = "games/game_grid.html"
     filterset_class = GameFilter
+    paginate_by = 20
 
 
 class LobbyListView(SingleTableView):
@@ -109,10 +110,10 @@ def search_results(request):
         | Q(categories__name__icontains=query)
         | Q(people__name__icontains=query)
         | Q(publishers__name__icontains=query)
-    )
+    ).distinct()  # only show unique game objects (no duplicates)
     context = {"query_type": "Games", "object_list": object_list}
 
-    return render(request, "pages/search_results.html", context)
+    return render(request, "games/game_grid.html", context)
 
 
 # Tournaments

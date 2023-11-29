@@ -74,4 +74,37 @@
       <a class="btn btn-outline-success" href="{% url 'game-create' %}">Create New Game</a>
     </div>
   {% endif %}
+  <div class="container mt-5 mb-3">
+    <nav>
+      <ul class="pagination pagination-lg justify-content-center">
+        {% if page_obj.has_previous %}
+          <li class="page-item">
+            <a class="page-link" href="?page=1">« First</a>
+          </li>
+          <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">{{ page_obj.previous_page_number }}</a>
+          </li>
+        {% else %}
+          <li class="page-item disabled">
+            <a class="page-link">« First</a>
+          </li>
+        {% endif %}
+        <li class="page-item active" aria-current="page">
+          <a class="page-link">{{ page_obj.number }}</a>
+        </li>
+        {% if page_obj.has_next %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}">{{ page_obj.next_page_number }}</a>
+          </li>
+          <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last »</a>
+          </li>
+        {% else %}
+          <li class="page-item disabled">
+            <a class="page-link">Last »</a>
+          </li>
+        {% endif %}
+      </ul>
+    </nav>
+  </div>
 {% endblock content %}
