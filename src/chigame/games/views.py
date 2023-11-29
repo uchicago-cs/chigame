@@ -20,6 +20,7 @@ class GameListView(ListView):
     model = Game
     queryset = Game.objects.all()
     template_name = "games/game_grid.html"
+    paginate_by = 20
 
 
 class LobbyListView(SingleTableView):
