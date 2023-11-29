@@ -22,7 +22,7 @@ class User(AbstractUser):
     first_name = None  # type: ignore
     last_name = None  # type: ignore
     email = models.EmailField(_("email address"), unique=True)
-    username = None  # type: ignore
+    username = models.CharField(_("username"), max_length=255, unique=True, blank=True, null=True)
     tokens = models.PositiveSmallIntegerField(validators=[MaxValueValidator(3)], default=1)
 
     USERNAME_FIELD = "email"
