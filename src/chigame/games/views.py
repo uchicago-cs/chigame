@@ -9,22 +9,29 @@ from django.shortcuts import get_object_or_404, redirect, render, reverse
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
-from django_filters.views import FilterView
 from django_tables2 import SingleTableView
-
-from chigame.api.filters import GameFilter
 
 from .forms import GameForm
 from .models import Game, Lobby, Tournament
 from .tables import LobbyTable
 
 
-class GameListView(FilterView):
+class GameListView(ListView):
     model = Game
-    queryset = Game.objects.all()
     template_name = "games/game_grid.html"
-    filterset_class = GameFilter
     paginate_by = 20
+
+    def get_queryset(self):
+        """
+        Returns a queryset of Game objects sorted and filtered based on the URL parameters.
+        https://docs.djangoproject.com/en/4.2/ref/models/querysets/
+        """
+        queryset = super().get_queryset()
+        sort = self.request.GET.get("sort_by", "name-asc")
+        players = self.request.GET.get("players", "")
+        queryset = apply_sorting_and_filtering(queryset, sort, players)
+
+        return queryset
 
 
 class LobbyListView(SingleTableView):
@@ -96,8 +103,28 @@ class GameEditView(UserPassesTestMixin, UpdateView):
         return self.request.user.is_staff
 
 
+def apply_sorting_and_filtering(queryset, sort_param, players_param):
+    # Example value of sort_param: "name-asc" or "year_published-desc".
+    if sort_param:
+        sort_field, sort_direction = sort_param.rsplit("-", 1)
+        sort_order = "-" if sort_direction == "desc" else ""
+        queryset = queryset.order_by(f"{sort_order}{sort_field}")
+
+    # Filter by number of players. Handles numeric values and '10+' case.
+    if players_param:
+        if players_param.isdigit():
+            players = int(players_param)
+            queryset = queryset.filter(min_players__lte=players, max_players__gte=players)
+        elif players_param == "10+":
+            queryset = queryset.filter(max_players__gte=10)
+
+    return queryset
+
+
 def search_results(request):
     query = request.GET.get("query")
+    sort = request.GET.get("sort_by", "name-asc")
+    players = request.GET.get("players", "")
 
     """
     The Q object is an object used to encapsulate a collection of keyword
@@ -111,7 +138,16 @@ def search_results(request):
         | Q(people__name__icontains=query)
         | Q(publishers__name__icontains=query)
     ).distinct()  # only show unique game objects (no duplicates)
-    context = {"query_type": "Games", "object_list": object_list}
+
+    object_list = apply_sorting_and_filtering(object_list, sort, players)
+
+    context = {
+        "query_type": "Games",
+        "object_list": object_list,
+        "current_sort": sort,
+        "current_players": players,
+        "query": query,
+    }
 
     return render(request, "games/game_grid.html", context)
 

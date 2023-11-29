@@ -40,14 +40,65 @@
       filter: blur(10px);
     }
   </style>
-  <form method="get" class="form-inline">
-    {{ filter.form.as_p }}
-    <button type="submit">Search</button>
-    <a href="?">Clear Filters</a>
-  </form>
-  <h1 class="display-1 mt-3 mb-3">Games</h1>
+  <!-- Sorting and Filtering Bar -->
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <h1 class="display-1 mt-3 mb-3">Games</h1>
+    <form id="filter-form" class="d-flex gap-2" method="get">
+      <!-- Include the search query as a hidden field -->
+      {% if query %}<input type="hidden" name="query" value="{{ query }}" />{% endif %}
+      <!-- Players Filtering Dropdown -->
+      <div class="form-group">
+        <label for="filter-players" class="form-label">PLAYERS:</label>
+        <select id="filter-players"
+                name="players"
+                class="form-select"
+                onchange="updateFilterAndSorting()">
+          <option value="" {% if not request.GET.players %}selected{% endif %}>Any</option>
+          <option value="1" {% if request.GET.players == '1' %}selected{% endif %}>1 Player</option>
+          <option value="2" {% if request.GET.players == '2' %}selected{% endif %}>2 Players</option>
+          <option value="4" {% if request.GET.players == '4' %}selected{% endif %}>4 Players</option>
+          <option value="6" {% if request.GET.players == '6' %}selected{% endif %}>6 Players</option>
+          <option value="8" {% if request.GET.players == '8' %}selected{% endif %}>8 Players</option>
+          <option value="10+" {% if request.GET.players == '10+' %}selected{% endif %}>10+ Players</option>
+        </select>
+      </div>
+      <!-- Sorting Dropdown -->
+      <div class="form-group">
+        <label for="sort-by" class="form-label">SORT BY:</label>
+        <select id="sort-by"
+                name="sort_by"
+                class="form-select"
+                onchange="updateFilterAndSorting()">
+          <option value="name-asc"
+                  {% if request.GET.sort_by == 'name-asc' %}selected{% endif %}>Game Name - Ascending</option>
+          <option value="name-desc"
+                  {% if request.GET.sort_by == 'name-desc' %}selected{% endif %}>Game Name - Descending</option>
+          <option value="year_published-asc"
+                  {% if request.GET.sort_by == 'year_published-asc' %}selected{% endif %}>
+            Year
+            Published - Ascending
+          </option>
+          <option value="year_published-desc"
+                  {% if request.GET.sort_by == 'year_published-desc' %}selected{% endif %}>
+            Year
+            Published - Descending
+          </option>
+          <option value="max_playtime-asc"
+                  {% if request.GET.sort_by == 'max_playtime-asc' %}selected{% endif %}>
+            Playtime -
+            Shortest First
+          </option>
+          <option value="max_playtime-desc"
+                  {% if request.GET.sort_by == 'max_playtime-desc' %}selected{% endif %}>
+            Playtime
+            - Longest First
+          </option>
+        </select>
+      </div>
+    </form>
+  </div>
   <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
-    {% for game in filter.qs %}
+    {% for game in object_list %}
       <div class="col">
         <a href="{% url 'game-detail' game.id %}"
            class="text-decoration-none text-dark">
@@ -107,4 +158,10 @@
       </ul>
     </nav>
   </div>
+  <script>
+    // Update the filter and sorting when the user changes the dropdown
+    document.getElementById('filter-form').onchange = function() {
+      this.submit();
+    };
+  </script>
 {% endblock content %}
