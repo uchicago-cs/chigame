@@ -362,34 +362,17 @@ class TournamentDeleteView(DeleteView):
     success_url = reverse_lazy("tournament-list")
 
 
-def search_results(request):
-    query = request.GET.get("query")
-
-    """
-    The Q object is an object used to encapsulate a collection of keyword
-    arguments that can be combined with logical operators (&, |, ~) which
-    allows for more advanced searches. More info can be found here at
-    https://docs.djangoproject.com/en/4.2/topics/db/queries/#complex-lookups-with-q-objects
-    """
-    object_list = Game.objects.filter(Q(name__icontains=query) | Q(category__name__icontains=query))
-    context = {"query_type": "Games", "object_list": object_list}
-
-    return render(request, "pages/search_results.html", context)
-
-
 # Placeholder Game
 @login_required
 def coin_flip_game(request, pk):
+    # check if user has already played game
+    if Player.objects.filter(user=request.user, match_id__lobby__id=pk).exists():
+        return render(request, "games/game_already_played.html")
     return render(request, "games/game_coinflip.html", {"lobby_id": pk})
 
 
 @login_required
 def check_guess(request, pk):
-    # check if user has already played game
-    if Player.objects.filter(user=request.user, match_id__lobby__id=pk).exists():
-        # Redirect to an error page or display a message
-        return render(request, "games/game_already_played.html")
-
     user_guess = request.POST.get("user_guess")
     coin_result = choice(["heads", "tails"])
     correct_guess = user_guess == coin_result
@@ -424,8 +407,8 @@ def check_guess(request, pk):
         {"user_guess": user_guess, "coin_result": coin_result, "correct_guess": correct_guess},
     )
 
+
 def TournamentChatDetailView(request, pk):
     tournament = Tournament.objects.get(pk=pk)
     context = {"tournament": tournament}
     return render(request, "tournaments/tournament_chat.html", context)
-
