@@ -21,7 +21,7 @@ urlpatterns = [
     # Django-machina forum
     # https://django-machina.readthedocs.io/en/latest/getting_started.html#urls-configuration
     path("forums/", include(machina_urls)),
-    path("forums/", include("chigame.forums.urls")),
+    path("forums/", include("chigame.forums.base.urls")),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 
