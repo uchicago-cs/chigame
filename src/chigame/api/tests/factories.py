@@ -90,12 +90,15 @@ class TournamentFactory(DjangoModelFactory):
 
     name = Faker("word")
     game = SubFactory(GameFactory)
-    start_date = Faker("date_this_year")
-    end_date = Faker("date_this_year")
-    max_players = 16
+    registration_start_date = Faker("date_this_year")
+    registration_end_date = Faker("date_this_year")
+    tournament_start_date = Faker("date_this_year")
+    tournament_end_date = Faker("date_this_year")
+    max_players = Faker("pyint", min_value=1, max_value=1000)
     description = Faker("text")
     rules = Faker("text")
     draw_rules = Faker("text")
+    num_winner = Faker("pyint", min_value=1, max_value=1000)
 
 
 class ChatFactory(DjangoModelFactory):
