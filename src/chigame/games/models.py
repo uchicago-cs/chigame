@@ -253,7 +253,7 @@ class Tournament(models.Model):
     num_winner = models.PositiveIntegerField(default=1)  # number of possible winners for the tournament
     archived = models.BooleanField(default=False)  # whether the tournament is archived by the admin
 
-    matches = models.ManyToManyField(Match, related_name="matches", blank=True)
+    matches = models.ManyToManyField(Match, related_name="tournament", blank=True)
     winners = models.ManyToManyField(User, related_name="won_tournaments", blank=True)  # allow multiple winners
     players = models.ManyToManyField(User, related_name="joined_tournaments", blank=True)
 
@@ -262,17 +262,21 @@ class Tournament(models.Model):
         """
         Returns the status of the tournament.
         """
-        if self.registration_start_date > timezone.now():
+        if (
+            self.registration_start_date > timezone.now()
+        ):  # the period when the information of the tournament is displayed
             return "preparing"
-        elif self.registration_end_date > timezone.now():  # the registration period has started but not ended yet
+        elif (
+            self.registration_end_date > timezone.now()
+        ):  # the registration period has started, users can register for the tournament
             return "registration open"
         elif (
             self.tournament_start_date > timezone.now()
-        ):  # the registration period has ended but the tournament has not started yet
+        ):  # the period when the registration period has ended but the tournament has not started yet
             return "registration closed"
-        elif self.tournament_end_date > timezone.now():  # the tournament has started but not ended yet
+        elif self.tournament_end_date > timezone.now():  # the tournament has started, matches are being played
             return "tournament in progress"
-        else:  # the tournament has ended
+        else:  # all matches have finished. The tournament has ended
             return "tournament ended"
 
     def clean(self):  # restriction
@@ -505,9 +509,13 @@ class Tournament(models.Model):
         Returns:
             int: 0 if the user has successfully signed up for the tournament,
             1 if the user has already joined the tournament,
-            2 if the tournament is full, 3 if the tournament has already started,
-            4 if the tournament has already ended
+            2 if the tournament is full,
+            3 if the registration period of tournament has already ended
         """
+        if self.status != "registration open":
+            # The registration period has ended (the join and withdraw buttons only appear
+            # during the registration period)
+            return 3
         if user in self.players.all():
             # The user has already joined the tournament
             return 1
@@ -532,7 +540,12 @@ class Tournament(models.Model):
         Returns:
             int: 0 if the user has successfully withdrawn from the tournament,
             1 if the user has not joined the tournament
+            3 if the registration period of tournament has already ended
         """
+        if self.status != "registration open":
+            # The registration period has ended (the join and withdraw buttons only appear
+            # during the registration period)
+            return 3
         if user not in self.players.all():
             # The user has not joined the tournament
             return 1

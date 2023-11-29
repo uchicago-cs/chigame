@@ -92,7 +92,7 @@
   {% else %}
     <p>No matches yet.</p>
   {% endif %}
-  {% if user.is_authenticated %}
+  {% if user.is_authenticated and tournament.status == "registration open" %}
     <form method="post">
       {% csrf_token %}
       <input type="hidden" name="tournament_id" value="{{ tournament.id }}" />
@@ -104,6 +104,22 @@
       <input type="hidden" name="tournament_id" value="{{ tournament.id }}" />
       <input type="hidden" name="action" value="withdraw" />
       <button type="submit" id="Withdraw">Withdraw</button>
+    </form>
+  {% endif %}
+  {% if tournament.status == "tournament in progress" %}
+    {% if user.is_authenticated and user in tournament.get_all_players %}
+      <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="tournament_id" value="{{ tournament.id }}" />
+        <input type="hidden" name="action" value="join_match" />
+        <button type="submit" id="Join_match">Join the match</button>
+      </form>
+    {% endif %}
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="tournament_id" value="{{ tournament.id }}" />
+      <input type="hidden" name="action" value="spectate" />
+      <button type="submit" id="Spectate">Spectate</button>
     </form>
   {% endif %}
   <!-- You can add more fields as needed -->

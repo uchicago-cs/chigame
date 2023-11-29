@@ -158,6 +158,9 @@ class TournamentListView(ListView):
             elif success == 2:
                 messages.error(request, "This tournament is full")
                 return redirect(reverse_lazy("tournament-list"))
+            elif success == 3:
+                messages.error(request, "The registration period for this tournament has ended")
+                return redirect(reverse_lazy("tournament-list"))
             else:
                 raise Exception("Invalid return value")
 
@@ -168,6 +171,9 @@ class TournamentListView(ListView):
                 return redirect(reverse_lazy("tournament-list"))
             elif success == 1:
                 messages.error(request, "You have not joined this tournament")
+                return redirect(reverse_lazy("tournament-list"))
+            elif success == 3:
+                messages.error(request, "The registration period for this tournament has ended")
                 return redirect(reverse_lazy("tournament-list"))
             else:
                 raise Exception("Invalid return value")
@@ -184,6 +190,14 @@ class TournamentDetailView(DetailView):
     template_name = "tournaments/tournament_detail.html"
     context_object_name = "tournament"
 
+    def get(self, request, *args, **kwargs):
+        super().get(request, *args, **kwargs)
+        tournament = Tournament.objects.get(id=self.kwargs["pk"])
+        if tournament.matches.count() == 0 and tournament.status == "registration closed":
+            # if the tournament matches have not been created
+            tournament.create_tournaments_brackets()
+        return self.render_to_response(self.get_context_data())
+
     def post(self, request, *args, **kwargs):
         # This method is called when the user clicks the "Join Tournament" or
         # "Withdraw" button
@@ -199,6 +213,9 @@ class TournamentDetailView(DetailView):
             elif success == 2:
                 messages.error(request, "This tournament is full")
                 return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
+            elif success == 3:
+                messages.error(request, "The registration period for this tournament has ended")
+                return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
             else:
                 raise Exception("Invalid return value")
 
@@ -210,8 +227,20 @@ class TournamentDetailView(DetailView):
             elif success == 1:
                 messages.error(request, "You have not joined this tournament")
                 return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
+            elif success == 3:
+                messages.error(request, "The registration period for this tournament has ended")
+                return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
             else:
                 raise Exception("Invalid return value")
+
+        elif request.POST.get("action") == "join_match":
+            pass  # allow players to join their own matches
+            return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
+
+        elif request.POST.get("action") == "spectate":
+            pass  # allow anyone to spectate
+            return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
+
         else:
             raise ValueError("Invalid action")
 
@@ -245,10 +274,6 @@ class TournamentCreateView(CreateView):
     # overrides the default behavior of the CreateView class.
     def form_valid(self, form):
         response = super().form_valid(form)
-        self.object.create_tournaments_brackets()  # This should be changed later
-        # because the brackets should not be created right after the tournament
-        # is created. Instead, the brackets should be created when the registration
-        # deadline is reached. But for now, we keep it this way for testing.
 
         # Do something with brackets if needed
         return response
