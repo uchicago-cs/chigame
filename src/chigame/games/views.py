@@ -221,19 +221,28 @@ def coin_flip_game(request, pk):
 
 @login_required
 def check_guess(request, pk):
+    # check if user has already played game
+    if Player.objects.filter(user=request.user, match_id__lobby__id=pk).exists():
+        # Redirect to an error page or display a message
+        return render(request, "games/game_already_played.html")
+
     user_guess = request.POST.get("user_guess")
     coin_result = choice(["heads", "tails"])
     correct_guess = user_guess == coin_result
 
     lobby = get_object_or_404(Lobby, id=pk)
 
-    # Create Match instance linked to the fetched Lobby
-    match = Match.objects.create(
-        game_id=1,  # Replace with the actual Game ID
-        lobby=lobby,
-        date_played=timezone.now()
-        # Add other fields as needed
-    )
+    # allows two users to play the game
+    if Match.objects.filter(lobby__id=pk).exists():
+        match = get_object_or_404(Match, lobby__id=pk)
+    else:
+        # Create Match instance linked to the fetched Lobby
+        match = Match.objects.create(
+            game_id=1,  # Replace with the actual Game ID
+            lobby=lobby,
+            date_played=timezone.now()
+            # Add other fields as needed
+        )
 
     player = Player.objects.create(
         user=request.user,
