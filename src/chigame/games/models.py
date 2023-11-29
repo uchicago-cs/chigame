@@ -404,7 +404,7 @@ class Tournament(models.Model):
             lobby.members.set(players[i : i + self.game.max_players])
             lobby.save()
             players_in_match = players[i : i + self.game.max_players]
-            match = Match.objects.create(game=game, lobby=lobby, date_played=self.start_date)
+            match = Match.objects.create(game=game, lobby=lobby, date_played=self.tournament_start_date)
             # date_played is set to the start date of the tournament for now
             match.players.set(players_in_match)
             match.save()
@@ -460,7 +460,7 @@ class Tournament(models.Model):
             lobby.members.set(players[i : i + self.game.max_players])
             lobby.save()
             players_in_match = players[i : i + self.game.max_players]
-            match = Match.objects.create(game=game, lobby=lobby, date_played=self.start_date)
+            match = Match.objects.create(game=game, lobby=lobby, date_played=self.tournament_start_date)
             match.players.set(players_in_match)
             match.save()
             next_round_brackets.append(match)
