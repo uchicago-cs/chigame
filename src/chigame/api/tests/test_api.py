@@ -46,7 +46,7 @@ class GameTests(APITestCase):
 
         # Update the game object
         url = reverse("api-game-detail", args=[game.id])
-        updated_data = {"name": "The Witcher 3: Wild Hunt", "max_players": 5}
+        updated_data = {"name": "The Witcher 3: Wild Hunt", "max_players": 10}
         response = self.client.patch(url, updated_data, format="json")
 
         # Check that the game object was updated correctly
