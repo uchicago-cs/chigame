@@ -71,7 +71,7 @@ class LobbyUpdateView(UpdateView):
         # get the lobby object
         self.object = self.get_object()
         # check if the user making the request is the "host" of the lobby
-        if request.user != self.object.created_by:
+        if request.user != self.object.created_by and not request.user.is_staff:
             return HttpResponseForbidden("You don't have permission to edit this lobby.")
         return super().dispatch(request, *args, **kwargs)
 
@@ -83,7 +83,7 @@ class LobbyDeleteView(DeleteView):
 
     def dispatch(self, request, *args, **kwargs):
         self.object = self.get_object()
-        if request.user != self.object.created_by:
+        if request.user != self.object.created_by and not request.user.is_staff:
             return HttpResponseForbidden("You don't have permission to delete this lobby.")
         return super().dispatch(request, *args, **kwargs)
 
