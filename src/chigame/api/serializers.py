@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
-from chigame.games.models import Chat, Game, Lobby, Message, Tournament, User, Category, Mechanic
+from chigame.games.models import Category, Chat, Game, Lobby, Mechanic, Message, Tournament, User
+
 
 class GameSerializer(serializers.ModelSerializer):
     class Meta:
@@ -41,6 +42,7 @@ class MechanicSerializer(serializers.ModelSerializer):
     class Meta:
         model = Mechanic
         fields = "__all__"
+
 
 class MessageSerializer(serializers.ModelSerializer):
     sender = serializers.EmailField(write_only=True)
