@@ -3,16 +3,15 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics
 
 from chigame.api.filters import GameFilter
-
 from chigame.api.serializers import (
     CategorySerializer,
     GameSerializer,
     LobbySerializer,
     MechanicSerializer,
-    MessageSerializer
+    MessageSerializer,
     UserSerializer,
 )
-from chigame.games.models import Game, Lobby, User, Message
+from chigame.games.models import Game, Lobby, Message, User
 from chigame.users.models import UserProfile
 
 
