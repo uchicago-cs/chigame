@@ -10,22 +10,25 @@
   <p>Rules: {{ tournament.rules }}</p>
   <p>Draw rules: {{ tournament.draw_rules }}</p>
   <p>Players:</p>
-  <ul>
-    {% for player in tournament.get_all_players %}
-      <li>
-        <p>
-          {% if player.name %}
-            <a href="{% url 'users:detail' player.id %}">{{ player.name }}</a>
-          {% else %}
-            <a href="{% url 'users:detail' player.id %}">{{ player.email }}</a>
-          {% endif %}
-        </p>
-        <!-- You can add more fields as needed -->
-      </li>
-    {% endfor %}
-  </ul>
-  <p>Winners:</p>
+  {% if tournament.get_all_players %}
+    <ul>
+      {% for player in tournament.get_all_players %}
+        <li>
+          <p>
+            {% if player.name %}
+              <a href="{% url 'users:detail' player.id %}">{{ player.name }}</a>
+            {% else %}
+              <a href="{% url 'users:detail' player.id %}">{{ player.email }}</a>
+            {% endif %}
+          </p>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No player yet.</p>
+  {% endif %}
   {% if tournament.get_all_winners %}
+    <p>Winners:</p>
     <ul>
       {% for winner in tournament.get_all_winners %}
         <li>
@@ -39,8 +42,6 @@
         </li>
       {% endfor %}
     </ul>
-  {% else %}
-    <p>No winner yet.</p>
   {% endif %}
   <!-- You can add more fields as needed -->
   <p>Matches:</p>
@@ -67,6 +68,21 @@
   {% else %}
     <p>No matches yet.</p>
   {% endif %}
+  {% if user.is_authenticated %}
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="tournament_id" value="{{ tournament.id }}" />
+      <input type="hidden" name="action" value="join" />
+      <button type="submit" id="Join">Join</button>
+    </form>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="tournament_id" value="{{ tournament.id }}" />
+      <input type="hidden" name="action" value="withdraw" />
+      <button type="submit" id="Withdraw">Withdraw</button>
+    </form>
+  {% endif %}
+  <!-- You can add more fields as needed -->
   {% if user.is_staff %}
     <p>
       <a href="{% url 'tournament-update' tournament.id %}">Update</a>
