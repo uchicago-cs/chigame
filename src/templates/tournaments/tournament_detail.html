@@ -13,14 +13,28 @@
       <a href="{% url 'tournament-detail' tournament.id %}">{{ tournament.name }}</a> ({{ tournament.status }})
     </h1>
     {% if tournament.status == "tournament ended" %}
-      {% if tournament.archived == True %}
-        <img src="{% static 'images/tournaments_icons/Archived_icon.png' %}"
-             alt="Archived"
-             width="30" />
-      {% elif tournament.archived == False %}
-        <img src="{% static 'images/tournaments_icons/Unarchived_icon.png' %}"
-             alt="Not archived"
-             width="30" />
+      {% if tournament.archived %}
+        <form method="post">
+          {% csrf_token %}
+          <input type="hidden" name="tournament_id" value="{{ tournament.id }}" />
+          <input type="hidden" name="action" value="unarchive" />
+          <button type="submit">
+            <img src="{% static 'images/tournaments_icons/Archived_icon.png' %}"
+                 alt="Archived"
+                 width="30" />
+          </button>
+        </form>
+      {% else %}
+        <form method="post">
+          {% csrf_token %}
+          <input type="hidden" name="tournament_id" value="{{ tournament.id }}" />
+          <input type="hidden" name="action" value="archive" />
+          <button type="submit">
+            <img src="{% static 'images/tournaments_icons/Unarchived_icon.png' %}"
+                 alt="Not archived"
+                 width="30" />
+          </button>
+        </form>
       {% endif %}
     {% endif %}
   </div>

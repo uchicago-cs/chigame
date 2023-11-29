@@ -12,11 +12,11 @@
   <form method="post">
     {% csrf_token %}
     <input type="hidden" name="tournament_id" value="{{ tournament.id }}" />
-    <input type="hidden" name="action" value="switch_archive" />
-    <button type="submit">Switch to Archived Tournament List</button>
+    <input type="hidden" name="action" value="switch_all" />
+    <button type="submit">Switch to All Tournament List</button>
   </form>
   <ul>
-    {% for tournament in tournament_list %}
+    {% for tournament in archived_tournament_list %}
       <li>
         <div class="tournament-header">
           <h2 class="tournament-name">
