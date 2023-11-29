@@ -7,8 +7,8 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from chigame.api.tests.factories import GameFactory
-from chigame.games.models import Game
+from chigame.api.tests.factories import ChatFactory, GameFactory, TournamentFactory, UserFactory
+from chigame.games.models import Game, Message
 
 
 class GameTests(APITestCase):
@@ -95,3 +95,190 @@ class GameTests(APITestCase):
     #     self.check_equal(game1, response.data[0])
     #     self.check_equal(game2, response.data[1])
     #     self.check_equal(game3, response.data[2])
+
+
+class ChatTests(APITestCase):
+    def test_create_message(self):
+        self.user1 = UserFactory()
+        self.user2 = UserFactory()
+        self.game = GameFactory()
+        self.tournament = TournamentFactory(game=self.game)
+        self.chat = ChatFactory(tournament=self.tournament)
+        self.endpoint = reverse("api-chat-list")
+
+        data1 = {
+            "sender": self.user1.email,
+            "tournament": self.tournament.id,
+            "content": "test script 1!",
+            "update_on": None,
+        }
+
+        response = self.client.post(self.endpoint, data1, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data["content"], data1["content"])
+        self.assertEqual(data1["sender"], Message.objects.get(id=1).sender.email)
+        self.assertEqual(data1["tournament"], Message.objects.get(id=1).chat.tournament.id)
+        self.assertEqual(data1["update_on"], Message.objects.get(id=1).update_on)
+        self.assertEqual(data1["content"], Message.objects.get(id=1).content)
+        self.assertEqual(1, Message.objects.get(id=1).token_id)
+
+        data2 = {
+            "sender": self.user2.email,
+            "tournament": self.tournament.id,
+            "content": "test script 2!",
+            "update_on": None,
+        }
+
+        response = self.client.post(self.endpoint, data2, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data["content"], data2["content"])
+        self.assertEqual(data2["sender"], Message.objects.get(id=2).sender.email)
+        self.assertEqual(data2["tournament"], Message.objects.get(id=2).chat.tournament.id)
+        self.assertEqual(data2["update_on"], Message.objects.get(id=2).update_on)
+        self.assertEqual(data2["content"], Message.objects.get(id=2).content)
+        self.assertEqual(2, Message.objects.get(id=2).token_id)
+
+        data3 = {
+            "sender": self.user1.email,
+            "tournament": self.tournament.id,
+            "content": "test script 3!",
+            "update_on": None,
+        }
+
+        response = self.client.post(self.endpoint, data3, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data["content"], data3["content"])
+        self.assertEqual(data3["sender"], Message.objects.get(id=3).sender.email)
+        self.assertEqual(data3["tournament"], Message.objects.get(id=3).chat.tournament.id)
+        self.assertEqual(data3["update_on"], Message.objects.get(id=3).update_on)
+        self.assertEqual(data3["content"], Message.objects.get(id=3).content)
+        self.assertEqual(3, Message.objects.get(id=3).token_id)
+
+        data4 = {
+            "sender": self.user2.email,
+            "tournament": self.tournament.id,
+            "content": "test script 4!",
+            "update_on": None,
+        }
+
+        response = self.client.post(self.endpoint, data4, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data["content"], data4["content"])
+        self.assertEqual(data4["sender"], Message.objects.get(id=4).sender.email)
+        self.assertEqual(data4["tournament"], Message.objects.get(id=4).chat.tournament.id)
+        self.assertEqual(data4["update_on"], Message.objects.get(id=4).update_on)
+        self.assertEqual(data4["content"], Message.objects.get(id=4).content)
+        self.assertEqual(4, Message.objects.get(id=4).token_id)
+
+    def test_delete_message(self):
+        self.user1 = UserFactory()
+        self.user2 = UserFactory()
+        self.game = GameFactory()
+        self.tournament = TournamentFactory(game=self.game)
+        self.chat = ChatFactory(tournament=self.tournament)
+        self.endpoint = reverse("api-chat-list")
+        data1 = {
+            "sender": self.user1.email,
+            "tournament": self.tournament.id,
+            "content": "test script 1!",
+            "update_on": None,
+        }
+
+        response = self.client.post(self.endpoint, data1, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data["content"], data1["content"])
+        self.assertEqual(data1["sender"], Message.objects.get(id=1).sender.email)
+        self.assertEqual(data1["tournament"], Message.objects.get(id=1).chat.tournament.id)
+        self.assertEqual(data1["update_on"], Message.objects.get(id=1).update_on)
+        self.assertEqual(data1["content"], Message.objects.get(id=1).content)
+        self.assertEqual(1, Message.objects.get(id=1).token_id)
+
+        data2 = {
+            "sender": self.user2.email,
+            "tournament": self.tournament.id,
+            "content": "test script 2!",
+            "update_on": None,
+        }
+
+        response = self.client.post(self.endpoint, data2, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data["content"], data2["content"])
+        self.assertEqual(data2["sender"], Message.objects.get(id=2).sender.email)
+        self.assertEqual(data2["tournament"], Message.objects.get(id=2).chat.tournament.id)
+        self.assertEqual(data2["update_on"], Message.objects.get(id=2).update_on)
+        self.assertEqual(data2["content"], Message.objects.get(id=2).content)
+        self.assertEqual(2, Message.objects.get(id=2).token_id)
+
+        data3 = {
+            "sender": self.user1.email,
+            "tournament": self.tournament.id,
+            "content": "test script 3!",
+            "update_on": None,
+        }
+
+        response = self.client.post(self.endpoint, data3, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data["content"], data3["content"])
+        self.assertEqual(data3["sender"], Message.objects.get(id=3).sender.email)
+        self.assertEqual(data3["tournament"], Message.objects.get(id=3).chat.tournament.id)
+        self.assertEqual(data3["update_on"], Message.objects.get(id=3).update_on)
+        self.assertEqual(data3["content"], Message.objects.get(id=3).content)
+        self.assertEqual(3, Message.objects.get(id=3).token_id)
+
+        data4 = {
+            "sender": self.user2.email,
+            "tournament": self.tournament.id,
+            "content": "test script 4!",
+            "update_on": None,
+        }
+
+        response = self.client.post(self.endpoint, data4, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data["content"], data4["content"])
+        self.assertEqual(data4["sender"], Message.objects.get(id=4).sender.email)
+        self.assertEqual(data4["tournament"], Message.objects.get(id=4).chat.tournament.id)
+        self.assertEqual(data4["update_on"], Message.objects.get(id=4).update_on)
+        self.assertEqual(data4["content"], Message.objects.get(id=4).content)
+        self.assertEqual(4, Message.objects.get(id=4).token_id)
+
+        delete1 = {"sender": self.user1.email, "tournament": self.tournament.id, "content": None, "update_on": 1}
+
+        response = self.client.post(self.endpoint, delete1, format="json")
+
+        self.assertEqual(5, Message.objects.count())
+        self.assertEqual(delete1["sender"], Message.objects.get(id=5).sender.email)
+        self.assertEqual(delete1["tournament"], Message.objects.get(id=5).chat.tournament.id)
+        self.assertEqual(delete1["update_on"], Message.objects.get(id=5).update_on)
+        self.assertEqual(delete1["content"], Message.objects.get(id=5).content)
+        self.assertEqual(5, Message.objects.get(id=5).token_id)
+
+        self.assertEqual(data1["sender"], Message.objects.get(id=1).sender.email)
+        self.assertEqual(data1["tournament"], Message.objects.get(id=1).chat.tournament.id)
+        self.assertEqual(data1["update_on"], Message.objects.get(id=1).update_on)
+        self.assertEqual(data1["content"], Message.objects.get(id=1).content)
+        self.assertEqual(1, Message.objects.get(id=1).token_id)
+
+        delete2 = {"sender": self.user2.email, "tournament": self.tournament.id, "content": None, "update_on": 2}
+
+        response = self.client.post(self.endpoint, delete2, format="json")
+
+        self.assertEqual(6, Message.objects.count())
+        self.assertEqual(delete2["sender"], Message.objects.get(id=6).sender.email)
+        self.assertEqual(delete2["tournament"], Message.objects.get(id=6).chat.tournament.id)
+        self.assertEqual(delete2["update_on"], Message.objects.get(id=6).update_on)
+        self.assertEqual(delete2["content"], Message.objects.get(id=6).content)
+        self.assertEqual(6, Message.objects.get(id=6).token_id)
+
+        self.assertEqual(data2["sender"], Message.objects.get(id=2).sender.email)
+        self.assertEqual(data2["tournament"], Message.objects.get(id=2).chat.tournament.id)
+        self.assertEqual(data2["update_on"], Message.objects.get(id=2).update_on)
+        self.assertEqual(data2["content"], Message.objects.get(id=2).content)
+        self.assertEqual(2, Message.objects.get(id=2).token_id)
