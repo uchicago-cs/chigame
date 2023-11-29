@@ -1,6 +1,9 @@
 import random
+
+import factory
 from factory import Faker, LazyAttribute, SubFactory, post_generation
 from factory.django import DjangoModelFactory
+
 from chigame.games.models import Category, Chat, Game, Mechanic, Tournament
 from chigame.users.models import User
 
