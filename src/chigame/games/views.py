@@ -153,21 +153,24 @@ class TournamentCreateView(CreateView):
 
     def form_valid(self, form):
         user = self.request.user
-        if user.tokens < 1:
+
+        # Check if the user is not a staff member and has less than one token
+        if not user.is_staff and user.tokens < 1:
             # Raise a PermissionDenied exception to show the forbidden page
             raise PermissionDenied("You do not have enough tokens to create a tournament.")
 
-        # Deduct a token from the user's account
-        user.tokens -= 1
-        user.save()
+        # If the user is not staff, deduct a token
+        if not user.is_staff:
+            user.tokens -= 1
+            user.save()
 
         # Save the form instance but don't commit to the database yet
         tournament = form.save(commit=False)
         tournament.created_by = user
         tournament.save()
 
-        # Add the creator to the players list
-        tournament.players.add(user)
+        players = form.cleaned_data["players"]
+        tournament.players.add(*players)
 
         # Redirect to the tournament's detail page
         self.object = tournament
@@ -190,6 +193,7 @@ class TournamentUpdateView(UpdateView):
         "rules",
         "draw_rules",
         "num_winner",
+        "players",
     ]
 
     def dispatch(self, request, *args, **kwargs):
