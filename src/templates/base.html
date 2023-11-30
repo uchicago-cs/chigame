@@ -14,7 +14,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="ChiGame" />
     <meta name="author" content="University of Chicago" />
-    <link rel="icon" href="{% static 'images/favicons/favicon.ico' %}" />
+    <link rel="icon" href="{% static 'images/favicons/chigame.ico' %}" />
     {% block css %}
       <!-- Latest compiled and minified Bootstrap CSS -->
       <link rel="stylesheet"
@@ -56,6 +56,9 @@
                   aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
           </button>
+          <img class="navbar-logo img-fluid align-top"
+               src="{% static 'images/logos/logo.png' %}"
+               alt="ChiGame Logo" />
           <a class="navbar-brand" href="{% url 'home' %}">ChiGame</a>
           <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav mr-auto">
@@ -68,7 +71,13 @@
               <li class="nav-item">
                 <a class="nav-link" href="{% url 'forum:index' %}">Forums</a>
               </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'lobby-list' %}">Lobbies</a>
+              </li>
               {% if request.user.is_authenticated %}
+                <li class="nav-item">
+                  <a class="nav-link" href="{% url 'game-list' %}">Games</a>
+                </li>
                 <li class="nav-item">
                   <a class="nav-link" href="{% url 'tournament-list' %}">Tournaments</a>
                 </li>
@@ -97,7 +106,7 @@
               {% endif %}
               <li>
                 {% block search_bar %}
-                  <!-- Dynammically update search bar landing page depending on query_type-->
+                  <!-- Dynamically update search bar landing page depending on query_type-->
                   <form id="search-bar" action="{% url 'game-search-results' %}" method="get">
                     <select id="query-type" name="query_type">
                       <option value="games">Games</option>
@@ -105,8 +114,8 @@
                       <!-- Add more options here -->
                     </select>
                     <input id="query" name="query" type="text" placeholder="Search..." />
-                  {% endblock search_bar %}
-                </form>
+                  </form>
+                {% endblock search_bar %}
               </li>
             </ul>
           </div>
@@ -152,12 +161,21 @@
         document.addEventListener('DOMContentLoaded', function() {
           const search_bar = document.getElementById('search-bar');
           const query_type = document.getElementById('query-type');
+          const query_input = document.getElementById('query-input');
+
+          //do nothing if search bar is empty
+          search_bar.addEventListener("submit", function() {
+            event.preventDefault();
+            if (query_input.value.trim() !== '') {
+              search_bar.submit();
+            }
+          });
 
           query_type.addEventListener("change", function() {
             if (query_type.value == "games") {
               search_bar.action = "{% url 'game-search-results' %}";
             } else if (query_type.value == "users") {
-              search_bar.action = "{% url 'home' %}"; // placeholder
+              search_bar.action = "{% url 'users:user-search-results' %}";
             } else if (query_type.value == "forums") {
               search_bar.action = "{% url 'home' %}"; // placeholder
             }
