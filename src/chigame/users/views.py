@@ -3,13 +3,18 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
+from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import DetailView, RedirectView, UpdateView
+from rest_framework import status
+from rest_framework.response import Response
+
 
 from .models import FriendInvitation, Notification, UserProfile, GameInvitation, TournamentInvitation
 from chigame.games.models import Match, Tournament
+from .tables import UserTable
 
 User = get_user_model()
 
@@ -52,17 +57,48 @@ user_redirect_view = UserRedirectView.as_view()
 @login_required
 def user_list(request):
     users = User.objects.all()
+    table = UserTable(users)
+    context = {"users": users, "table": table}
+
+    # Add information about top ranking users, total points collected, etc.
+
+    return render(request, "users/user_list.html", context)
+
+
+@login_required
+def user_detail(request):
+    users = User.objects.all()
+
+    # Shows a user detail page if logged in as a user
+    # Shows a list of all users if logged in as admin
 
     return render(request, "users/user_detail.html", {"users": users})
+
+
+def user_history(request, pk):
+    try:
+        user = User.objects.get(pk=pk)
+
+        return render(request, "users/user_history.html", {"user": user})
+    except User.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
 
 
 def user_profile_detail_view(request, pk):
     try:
         profile = get_object_or_404(UserProfile, user__pk=pk)
-        is_friend = profile.friends.filter(pk=request.user.pk).exists()
+        if request.user.pk == pk:
+            return render(request, "users/userprofile_detail.html", {"object": profile})
+        is_friend = None
         friendship_request = None
-        if not is_friend:
-            friendship_request = FriendInvitation.objects.filter(sender=request.user.pk, receiver=pk).exists()
+        if request.user.pk:
+            is_friend = profile.friends.filter(pk=request.user.pk).exists()
+            if not is_friend:
+                curr_user = User.objects.get(pk=request.user.id)
+                other_user = profile.user
+                friendship_request = FriendInvitation.objects.filter(
+                    Q(sender=curr_user, receiver=other_user) | Q(sender=other_user, receiver=curr_user)
+                ).first()
         context = {"object": profile, "is_friend": is_friend, "friendship_request": friendship_request}
         return render(request, "users/userprofile_detail.html", context=context)
     except UserProfile.DoesNotExist:
@@ -72,28 +108,30 @@ def user_profile_detail_view(request, pk):
 
 @login_required
 def send_friend_invitation(request, pk):
-    sender = User.objects.get(pk=request.user.id)
-    receiver = User.objects.get(pk=pk)
-
-    if sender.id == receiver.id:
+    curr_user = User.objects.get(pk=request.user.id)
+    other_user = User.objects.get(pk=pk)
+    if curr_user.id == other_user.id:
         messages.error(request, "You can't send friendship invitation to yourself")
         return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
-    if sender.id != receiver.id:
-        friend_request, new = FriendInvitation.objects.get_or_create(sender=sender, receiver=receiver)
 
+    invitation, new = FriendInvitation.objects.filter(
+        Q(sender=curr_user, receiver=other_user) | Q(sender=other_user, receiver=curr_user)
+    ).get_or_create(defaults={"sender": curr_user, "receiver": other_user})
     if new:
         messages.success(request, "Friendship invitation sent successfully.")
         notification = Notification.objects.create(
-            actor=friend_request, receiver=receiver, type=Notification.FRIEND_REQUEST
+            actor=invitation, receiver=other_user, type=Notification.FRIEND_REQUEST
         )
+    elif invitation.sender.pk == other_user.pk:
+        messages.info(request, "You already have a pending friend invitation from this profile.")
     else:
         messages.info(request, "Friendship invitation already sent before.")
         try:
-            notification = Notification.objects.get_by_actor(friend_request, receiver=receiver)
+            notification = Notification.objects.get_by_actor(invitation, receiver=other_user)
             notification.renew_notification()
         except Notification.DoesNotExist:
             notification = Notification.objects.create(
-                actor=friend_request, receiver=receiver, type=Notification.FRIEND_REQUEST
+                actor=invitation, receiver=other_user, type=Notification.FRIEND_REQUEST
             )
     return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
 
@@ -124,6 +162,7 @@ def cancel_friend_invitation(request, pk):
 
 
 @login_required
+
 def remove_friend(request, pk):
     sender = User.objects.get(pk=request.user.id)
     receiver = User.objects.get(pk=pk)
@@ -149,3 +188,51 @@ def invite_to_tournament(request, pk, tournament_id):
     TournamentInvitation.objects.create(sender=sender, receiver=receiver, tournament=tournament)
     messages.success(request, "Invitation to tournament sent successfully.")
     return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
+
+def accept_friend_invitation(request, pk):
+    try:
+        friendship = FriendInvitation.objects.get(pk=pk)
+        if friendship.receiver.pk != request.user.pk:
+            messages.error(request, "You are not the receiver of this friend invitation ")
+        else:
+            friendship.accept_invitation()
+    except FriendInvitation.DoesNotExist:
+        messages.error(request, "This friend invitation does not exist")
+    return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
+
+
+@login_required
+def decline_friend_invitation(request, pk):
+    try:
+        friendship = FriendInvitation.objects.get(pk=pk)
+        if friendship.receiver.pk != request.user.pk:
+            messages.error(request, "You are not the receiver of this friend invitation ")
+        else:
+            friendship.delete()
+    except FriendInvitation.DoesNotExist:
+        messages.error(request, "This friend invitation does not exist")
+    return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
+
+
+def user_search_results(request):
+    query = request.GET.get("query")
+    context = {"nothing_found": True, "query_type": "Users"}
+    if query:
+        users_list = UserProfile.objects.filter(Q(user__email__icontains=query) | Q(user__name__icontains=query))
+        if users_list.count() > 0:
+            context.pop("nothing_found")
+            context["object_list"] = users_list
+    return render(request, "pages/search_results.html", context)
+
+
+@login_required
+def user_inbox_view(request, pk):
+    user = request.user
+    notifications = Notification.objects.filter(receiver=user)
+    context = {"pk": pk, "user": user, "notifications": notifications}
+    if pk == user.id:
+        return render(request, "users/user_inbox.html", context)
+    else:
+        messages.error(request, "Not your inbox")
+        return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
+

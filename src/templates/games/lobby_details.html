@@ -19,6 +19,16 @@
   </p>
   <h2>Members:</h2>
   <ul>
-    {% for member in lobby_detail.members.all %}<li>{{ member.username }}</li>{% endfor %}
+    {% for member in lobby_detail.members.all %}<li>{{ member.email }}</li>{% endfor %}
   </ul>
+  <p>
+    <a href="{% url 'lobby-join' lobby_detail.pk %}">Join Lobby</a>
+  </p>
+  <p>
+    <a href="{% url 'lobby-leave' lobby_detail.pk %}">Leave Lobby</a>
+  </p>
+  {% if user == lobby_detail.created_by %}
+    <a href="{% url 'lobby-edit' lobby_detail.pk %}">Edit Lobby</a>
+    &emsp;<a href="{% url 'lobby-delete' lobby_detail.pk %}">Delete Lobby</a>
+  {% endif %}
 {% endblock content %}

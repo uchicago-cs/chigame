@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+<!DOCTYPE html>
+{% load static %}
+
+{% block title %}
+  Example Game
+{% endblock title %}
+{% block content %}
+  <h1>Welcome to the Coin Flip Game!</h1>
+  <p>Can you guess the outcome of the coin flip?</p>
+  <form method="post" action="{% url 'flip-result' pk=lobby_id %}">
+    {% csrf_token %}
+    <label for="user_guess">Choose Heads or Tails:</label>
+    <select id="user_guess" name="user_guess">
+      <option value="heads">Heads</option>
+      <option value="tails">Tails</option>
+    </select>
+    <button type="submit" class="btn btn-primary">Make Your Guess</button>
+  </form>
+  <div class="mt-4">
+    <p>Feeling lucky? Make your choice and let's see if you're right!</p>
+    <img src="{% static 'images/coin.png' %}"
+         alt="Coin Image"
+         class="img-fluid" />
+  </div>
+{% endblock content %}

@@ -159,9 +159,13 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 .idea/
 
+# Misago Sandbox Demo Repo
+src/sandbox/misago-demo/Misago
+
 chigame_template/media/
 
 .pytest_cache/
 .env
 .envs/*
 !.envs/.local/
+*DS_Store
