@@ -29,6 +29,8 @@
     <!-- Le javascript
     ================================================== -->
     {# Placed at the top of the document so pages load faster with defer #}
+    {% block js %}
+    {% endblock js %}
     {% block javascript %}
       <!-- Bootstrap JS -->
       <script defer
@@ -67,6 +69,9 @@
                 <a class="nav-link" href="{% url 'about' %}">About</a>
               </li>
               <li class="nav-item">
+                <a class="nav-link" href="{% url 'forum:index' %}">Forums</a>
+              </li>
+              <li class="nav-item">
                 <a class="nav-link" href="{% url 'lobby-list' %}">Lobbies</a>
               </li>
               {% if request.user.is_authenticated %}
@@ -100,21 +105,25 @@
                 </li>
               {% endif %}
               <li>
-                <!-- Dynammically update search bar landing page depending on query_type-->
-                <form id="search-bar" action="{% url 'game-search-results' %}" method="get">
-                  <select id="query-type" name="query_type">
-                    <option value="games">Games</option>
-                    <option value="users">Users</option>
-                    <!-- Add more options here -->
-                  </select>
-                  <input id="query-input" name="query" type="text" placeholder="Search..." />
-                </form>
+                {% block search_bar %}
+                  <!-- Dynamically update search bar landing page depending on query_type-->
+                  <form id="search-bar" action="{% url 'game-search-results' %}" method="get">
+                    <select id="query-type" name="query_type">
+                      <option value="games">Games</option>
+                      <option value="users">Users</option>
+                      <!-- Add more options here -->
+                    </select>
+                    <input id="query" name="query" type="text" placeholder="Search..." />
+                  </form>
+                {% endblock search_bar %}
               </li>
             </ul>
           </div>
         </div>
       </nav>
     </div>
+    {% block body %}
+    {% endblock body %}
     <div class="container">
       {% if messages %}
         {% for message in messages %}
@@ -167,6 +176,8 @@
               search_bar.action = "{% url 'game-search-results' %}";
             } else if (query_type.value == "users") {
               search_bar.action = "{% url 'users:user-search-results' %}";
+            } else if (query_type.value == "forums") {
+              search_bar.action = "{% url 'home' %}"; // placeholder
             }
           });
         });
