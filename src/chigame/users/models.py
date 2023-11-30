@@ -8,7 +8,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from chigame.users.managers import UserManager
-from chigame.games.models import Match, Tournament
+#from chigame.games.models import Match, Tournament
 
 class User(AbstractUser):
     """
