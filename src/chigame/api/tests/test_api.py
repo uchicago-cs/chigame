@@ -306,3 +306,26 @@ class UserTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(User.objects.count(), 0)
+
+    def test_user_post(self):
+        user = {"name": "BillyBob", "email": "billy@uchicago.edu"}
+
+        url = reverse("api-user-list")
+        response = self.client.post(url, data=user, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(User.objects.count(), 1)
+        self.assertEqual(response.data["email"], user["email"])
+        self.assertEqual(response.data["name"], user["name"])
+
+    def test_user_patch(self):
+        user = UserFactory()
+        url = reverse("api-user-detail", kwargs={"pk": user.id})
+
+        updated_data = {"name": "Johnn"}
+
+        response = self.client.patch(url, data=updated_data, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(User.objects.count(), 1)
+        self.assertEqual(response.data["name"], updated_data["name"])
