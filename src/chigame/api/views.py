@@ -5,7 +5,13 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from chigame.api.filters import GameFilter
-from chigame.api.serializers import GameSerializer, LobbySerializer, MessageSerializer, UserSerializer
+from chigame.api.serializers import (
+    GameSerializer,
+    LobbySerializer,
+    MessageFeedSerializer,
+    MessageSerializer,
+    UserSerializer,
+)
 from chigame.games.models import Game, Lobby, Message, User
 from chigame.users.models import UserProfile
 
@@ -69,7 +75,7 @@ class MessageFeedView(APIView):
             )
 
             # Serialize the messages
-            serializer = MessageSerializer(messages, many=True)
+            serializer = MessageFeedSerializer(messages, many=True)
 
             return Response(serializer.data, status=status.HTTP_200_OK)
 
