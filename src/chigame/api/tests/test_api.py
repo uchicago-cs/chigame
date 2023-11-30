@@ -1,12 +1,16 @@
 # from django.test import TestCase
 
 # Create your tests here.
-
 # Compare this snippet from src/chigame/api/tests.py:
 from django.urls import reverse
+
+# Related third party imports
 from rest_framework import status
 from rest_framework.test import APITestCase
+from rest_framework.utils.serializer_helpers import ReturnDict
 
+# Local application/library specific imports
+from chigame.api.serializers import GameSerializer
 from chigame.api.tests.factories import ChatFactory, GameFactory, TournamentFactory, UserFactory
 from chigame.games.models import Game, Message
 
@@ -17,7 +21,14 @@ class GameTests(APITestCase):
         Helper function to check that the object data matches the expected data.
         """
         for key in expected:
-            self.assertEqual(getattr(obj, key), expected[key])
+            if isinstance(obj, (ReturnDict, dict)):
+                # Use key indexing for dictionaries and ReturnDict
+                obj_value = obj[key]
+            else:
+                # Use getattr for object instances
+                obj_value = getattr(obj, key, None)
+
+            self.assertEqual(obj_value, expected[key])
 
     # def test_get_game(self):
     #     """
@@ -35,6 +46,82 @@ class GameTests(APITestCase):
     #     self.assertEqual(response.status_code, status.HTTP_200_OK)
     #     self.assertEqual(Game.objects.count(), 1)
     #     self.check_equal(Game.objects.get(), response.data)
+
+    def test_get_game(self):
+        """
+        Ensure we can get a game object.
+        """
+
+        # Create a game object
+        game = GameFactory()
+
+        # Get the game object
+        url = reverse("api-game-list")
+        response = self.client.get(url, format="json")
+        serialized_game = GameSerializer(game).data
+
+        # Check that the game object was retrieved correctly
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(Game.objects.count(), 1)
+        self.check_equal(serialized_game, response.data[0])
+
+    def test_get_game_list1(self):
+        """
+        Ensure we can get a list of game objects.
+        """
+        url = reverse("api-game-list")
+
+        # create three game objects
+        game1 = GameFactory()
+        game2 = GameFactory()
+        game3 = GameFactory()
+
+        # Get the game object list
+        url = reverse("api-game-list")
+        response = self.client.get(url, format="json")
+
+        # Check that the game object list was retrieved correctly
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # test that the game object list contains the two game objects we created
+        self.assertEqual(Game.objects.count(), 3)
+        serialized_game1 = GameSerializer(game1).data
+        serialized_game2 = GameSerializer(game2).data
+        serialized_game3 = GameSerializer(game3).data
+
+        self.check_equal(serialized_game1, response.data[0])
+        self.check_equal(serialized_game2, response.data[1])
+        self.check_equal(serialized_game3, response.data[2])
+
+    def test_game_list2(self):
+        """
+        Ensure we can get a list of game objects.
+        """
+        url = reverse("api-game-list")
+
+        # create four game objects
+        game1 = GameFactory()
+        game2 = GameFactory()
+        game3 = GameFactory()
+        game4 = GameFactory()
+
+        # Get the game object list
+        url = reverse("api-game-list")
+        response = self.client.get(url, format="json")
+
+        # Check that the game object list was retrieved correctly
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        serialized_game1 = GameSerializer(game1).data
+        serialized_game2 = GameSerializer(game2).data
+        serialized_game3 = GameSerializer(game3).data
+        serialized_game4 = GameSerializer(game4).data
+
+        # test that the game object list contains the two game objects we created
+        self.check_equal(serialized_game1, response.data[0])
+        self.check_equal(serialized_game2, response.data[1])
+        self.check_equal(serialized_game3, response.data[2])
+        self.check_equal(serialized_game4, response.data[3])
 
     def test_update_game(self):
         """
