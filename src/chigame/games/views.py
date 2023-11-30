@@ -2,16 +2,18 @@ from functools import wraps
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import UserPassesTestMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
 from django.db.models import Q
+from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render, reverse
 from django.urls import reverse_lazy
+from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 from django_tables2 import SingleTableView
 
-from .forms import GameForm
+from .forms import GameForm, LobbyForm
 from .models import Game, Lobby, Tournament
 from .tables import LobbyTable
 
@@ -20,6 +22,7 @@ class GameListView(ListView):
     model = Game
     queryset = Game.objects.all()
     template_name = "games/game_grid.html"
+    paginate_by = 20
 
 
 class LobbyListView(SingleTableView):
@@ -52,10 +55,51 @@ def lobby_leave(request, pk):
     return redirect(reverse("lobby-details", kwargs={"pk": lobby.id}))
 
 
+class LobbyCreateView(LoginRequiredMixin, CreateView):
+    model = Lobby
+    form_class = LobbyForm
+    template_name = "games/lobby_form.html"
+    success_url = reverse_lazy("lobby-list")
+
+    def form_valid(self, form):
+        form.instance.created_by = self.request.user
+        form.instance.lobby_created = timezone.now()
+        return super().form_valid(form)
+
+
 class ViewLobbyDetails(DetailView):
     model = Lobby
     template_name = "games/lobby_details.html"
     context_object_name = "lobby_detail"
+
+
+class LobbyUpdateView(UpdateView):
+    model = Lobby
+    form_class = LobbyForm
+    template_name = "games/lobby_form.html"
+
+    def get_success_url(self):
+        return reverse_lazy("lobby-details", kwargs={"pk": self.object.pk})
+
+    def dispatch(self, request, *args, **kwargs):
+        # get the lobby object
+        self.object = self.get_object()
+        # check if the user making the request is the "host" of the lobby
+        if request.user != self.object.created_by and not request.user.is_staff:
+            return HttpResponseForbidden("You don't have permission to edit this lobby.")
+        return super().dispatch(request, *args, **kwargs)
+
+
+class LobbyDeleteView(DeleteView):
+    model = Lobby
+    template_name = "games/lobby_confirm_delete.html"
+    success_url = reverse_lazy("lobby-list")
+
+    def dispatch(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if request.user != self.object.created_by and not request.user.is_staff:
+            return HttpResponseForbidden("You don't have permission to delete this lobby.")
+        return super().dispatch(request, *args, **kwargs)
 
 
 class GameDetailView(DetailView):
@@ -105,10 +149,10 @@ def search_results(request):
         | Q(categories__name__icontains=query)
         | Q(people__name__icontains=query)
         | Q(publishers__name__icontains=query)
-    )
+    ).distinct()  # only show unique game objects (no duplicates)
     context = {"query_type": "Games", "object_list": object_list}
 
-    return render(request, "pages/search_results.html", context)
+    return render(request, "games/game_grid.html", context)
 
 
 # Tournaments
