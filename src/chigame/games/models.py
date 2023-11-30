@@ -11,7 +11,7 @@ from chigame.users.models import Group, Notification, User
 
 class Game(models.Model):
     """
-    A game like Chess, Checkers, etc.
+    A game like Chess, Checkers, Go, etc.
     """
 
     # ================ BASIC INFORMATION ================
@@ -324,7 +324,7 @@ class Tournament(models.Model):
                 players.append(winner)
 
         # check if the number of players is small enough to end the tournament
-        if len(players) < self.game.min_players:
+        if len(players) <= self.num_winner:
             self.end_tournament()
             return []  # the tournament is finished
 
@@ -382,6 +382,52 @@ class Tournament(models.Model):
         self.save()
 
         # Note: we don't delete the tournament because we want to keep it in the database
+
+    def tournament_sign_up(self, user: User) -> int:
+        """
+        Signs up a user for a tournament. If the user has already joined the
+        tournament, nothing happens.
+
+        Args:
+            user: the user
+
+        Returns:
+            int: 0 if the user has successfully signed up for the tournament,
+            1 if the user has already joined the tournament,
+            2 if the tournament is full, 3 if the tournament has already started,
+            4 if the tournament has already ended
+        """
+        if user in self.players.all():
+            # The user has already joined the tournament
+            return 1
+        if self.players.count() >= self.max_players:
+            # The tournament is full
+            return 2
+        self.players.add(user)
+        self.save()
+        return 0
+
+    def tournament_withdraw(
+        self,
+        user: User,
+    ) -> int:
+        """
+        Withdraws a user from a tournament. If the user has not joined the
+        tournament, nothing happens.
+
+        Args:
+            user: the user
+
+        Returns:
+            int: 0 if the user has successfully withdrawn from the tournament,
+            1 if the user has not joined the tournament
+        """
+        if user not in self.players.all():
+            # The user has not joined the tournament
+            return 1
+        self.players.remove(user)
+        self.save()
+        return 0
 
 
 class Announcement(models.Model):
