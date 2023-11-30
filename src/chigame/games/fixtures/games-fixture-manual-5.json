@@ -48,7 +48,7 @@
             "max_playtime": 90,
             "complexity": 2,
             "BGG_id": 13,
-            "category": [1],
+            "categories": [1],
             "mechanics": [1, 2]
         }
     },
@@ -88,7 +88,7 @@
             "max_playtime": 60,
             "complexity": 1,
             "BGG_id": 9209,
-            "category": [1],
+            "categories": [1],
             "mechanics": [2]
         }
     },
@@ -128,7 +128,7 @@
             "max_playtime": 60,
             "complexity": 2,
             "BGG_id": 30549,
-            "category": [1],
+            "categories": [1],
             "mechanics": [1]
         }
     },
@@ -168,7 +168,7 @@
             "max_playtime": 45,
             "complexity": 2,
             "BGG_id": 178900,
-            "category": [2],
+            "categories": [2],
             "mechanics": [2]
         }
     },
@@ -208,7 +208,7 @@
             "max_playtime": 150,
             "complexity": 3,
             "BGG_id": 169786,
-            "category": [1],
+            "categories": [1],
             "mechanics": [1, 2]
         }
     },
