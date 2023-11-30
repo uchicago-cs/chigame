@@ -5,7 +5,6 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
 from django.db.models import Q
-from django.http import HttpResponseRedirect
 from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render, reverse
 from django.urls import reverse_lazy
@@ -15,6 +14,7 @@ from django.views.generic import CreateView, DeleteView, DetailView, ListView, U
 from django_tables2 import SingleTableView
 
 from chigame.users.models import User
+
 from .forms import GameForm, LobbyForm
 from .models import Game, Lobby, Tournament
 from .tables import LobbyTable
@@ -190,7 +190,7 @@ class TournamentListView(ListView):
 
         # For non-staff users, show only tournaments they are part of
         return Tournament.objects.prefetch_related("matches").filter(players=self.request.user)
-      
+
     def post(self, request, *args, **kwargs):
         # This method is called when the user clicks the "Join Tournament" or
         # "Withdraw" button
@@ -225,7 +225,6 @@ class TournamentListView(ListView):
     # check if user is staff member
     def test_func(self):
         return self.request.user.is_staff
-
 
 
 class TournamentDetailView(DetailView):
