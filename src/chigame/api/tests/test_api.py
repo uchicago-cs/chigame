@@ -299,6 +299,7 @@ class UserTests(APITestCase):
 
     def test_user_delete(self):
         user = UserFactory()
+        self.assertEqual(User.objects.count(), 1)
 
         url = reverse("api-user-detail", args=[user.id])
         response = self.client.delete(url, format="json")
