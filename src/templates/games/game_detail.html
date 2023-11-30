@@ -10,7 +10,14 @@
     </div>
     <div class="col-md-9">
       <h1 class="display-1">{{ game.name }}</h1>
-      <h4>{{ game.min_players }}–{{ game.max_players }} players</h4>
+      <h4>
+        {% if game.min_players == game.max_players %}
+          {{ game.min_players }}
+        {% else %}
+          {{ game.min_players }}–{{ game.max_players }}
+        {% endif %}
+        players
+      </h4>
       <h4>Complexity: {{ game.complexity }}/5</h4>
       {% for category in game.category.all %}
         <a href="#"><span class="badge rounded-pill text-bg-primary">{{ category }}</span></a>
@@ -42,15 +49,26 @@
         <p class="lead">Published in {{ game.year_published }}</p>
         <p>{{ game.description|linebreaksbr }}</p>
         <h3 id="player-description">Players</h3>
-        <p>{{ game.min_players }}–{{ game.max_players }} players</p>
+        <p>
+          {% if game.min_players == game.max_players %}
+            {{ game.min_players }}
+          {% else %}
+            {{ game.min_players }}–{{ game.max_players }}
+          {% endif %}
+          players
+        </p>
         <p>
           <strong>Recommended Age:</strong> {{ game.suggested_age }}+
         </p>
         <h3 id="playtime-description">Playtime</h3>
-        <p>{{ game.min_playtime }}–{{ game.max_playtime }} minutes</p>
-        <p>
-          <strong>Expected:</strong> {{ game.expected_playtime }} minutes
-        </p>
+        {% if game.min_playtime == game.max_playtime %}
+          <p>{{ game.min_playtime }} minutes</p>
+        {% else %}
+          <p>{{ game.min_playtime }}–{{ game.max_playtime }} minutes</p>
+          <p>
+            <strong>Expected:</strong> {{ game.expected_playtime }} minutes
+          </p>
+        {% endif %}
         <h3 id="rule-description">Rules</h3>
         <p>{{ game.rules }}</p>
       </div>
