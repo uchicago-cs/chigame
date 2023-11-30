@@ -113,8 +113,7 @@
                       <option value="users">Users</option>
                       <option value="forums">Forums</option>
                     </select>
-                    <input id="query" name="query" type="text" placeholder="Search..." />
-                    <input type="hidden" name="q" id="hidden-query" />
+                    <input id="query-input" name="q" type="text" placeholder="Search..." />
                   </form>
                 {% endblock search_bar %}
               </li>
@@ -162,23 +161,23 @@
         document.addEventListener('DOMContentLoaded', function() {
           const search_bar = document.getElementById('search-bar');
           const query_type = document.getElementById('query-type');
-          const query_input = document.getElementById('query');
-          const hidden_query_input = document.getElementById('hidden-query');
+          const query_input = document.getElementById('query-input');
 
           query_type.addEventListener("change", function() {
             if (query_type.value === "games") {
               search_bar.action = "{% url 'game-search-results' %}";
-            } else if (query_type.value === "users") {
-              search_bar.action = "{% url 'home' %}"; // Placeholder URL for 'users'
+            } else if (query_type.value == "users") {
+              search_bar.action = "{% url 'users:user-search-results' %}";
             } else if (query_type.value === "forums") {
               search_bar.action = "{% url 'forum_search:search' %}";
             }
           });
 
-          query_input.addEventListener("input", function() {
-            hidden_query_input.value = query_input.value;
+          search_bar.addEventListener("submit", function(event) {
+            if (!query_input.value.trim()) {
+              event.preventDefault();
+            }
           });
-
         });
       </script>
     {% endblock inline_javascript %}

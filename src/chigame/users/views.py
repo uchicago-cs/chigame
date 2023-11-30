@@ -186,7 +186,8 @@ def decline_friend_invitation(request, pk):
 
 
 def user_search_results(request):
-    query = request.GET.get("query")
+    # Must be "q" and not "query" as django machina framework expects a "q" input
+    query = request.GET.get("q")
     context = {"nothing_found": True, "query_type": "Users"}
     if query:
         users_list = UserProfile.objects.filter(Q(user__email__icontains=query) | Q(user__name__icontains=query))

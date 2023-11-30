@@ -136,7 +136,8 @@ class GameEditView(UserPassesTestMixin, UpdateView):
 
 
 def search_results(request):
-    query = request.GET.get("query")
+    # Must be "q" and not "query" as django machina framework expects a "q" input
+    query = request.GET.get("q")
 
     """
     The Q object is an object used to encapsulate a collection of keyword
