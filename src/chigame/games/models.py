@@ -523,7 +523,9 @@ class Review(models.Model):
     "Represents a game review"
     title = models.TextField(blank=True, null=True)
     review = models.TextField(blank=True, null=True)
-    rating = models.PositiveSmallIntegerField(blank=True, null=True)
+    rating = models.DecimalField(
+        max_digits=3, decimal_places=2, blank=True, null=True, validators=[MinValueValidator(1), MaxValueValidator(5)]
+    )  # the ratings will range from 1-5 with one being a low rating and 5 being a high rating
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     game = models.ForeignKey(Game, on_delete=models.CASCADE)
     is_public = models.BooleanField(default=True)
@@ -533,7 +535,7 @@ class Review(models.Model):
         return f"Review {self.id} by {self.user} for {self.game}: {self.review}"
 
     def clean(self):
-        if self.review is None and self.rating is None:
+        if (self.review == "" and self.rating is None) or (self.rating == "" and self.review is None):
             raise ValidationError("At least one of 'review' or 'rating' must be provided.")
 
     def save(self, *args, **kwargs):
