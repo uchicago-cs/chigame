@@ -14,7 +14,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="ChiGame" />
     <meta name="author" content="University of Chicago" />
-    <link rel="icon" href="{% static 'images/favicons/favicon.ico' %}" />
+    <link rel="icon" href="{% static 'images/favicons/chigame.ico' %}" />
     {% block css %}
       <!-- Latest compiled and minified Bootstrap CSS -->
       <link rel="stylesheet"
@@ -29,6 +29,8 @@
     <!-- Le javascript
     ================================================== -->
     {# Placed at the top of the document so pages load faster with defer #}
+    {% block js %}
+    {% endblock js %}
     {% block javascript %}
       <!-- Bootstrap JS -->
       <script defer
@@ -54,6 +56,9 @@
                   aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
           </button>
+          <img class="navbar-logo img-fluid align-top"
+               src="{% static 'images/logos/logo.png' %}"
+               alt="ChiGame Logo" />
           <a class="navbar-brand" href="{% url 'home' %}">ChiGame</a>
           <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav mr-auto">
@@ -63,7 +68,16 @@
               <li class="nav-item">
                 <a class="nav-link" href="{% url 'about' %}">About</a>
               </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'forum:index' %}">Forums</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'lobby-list' %}">Lobbies</a>
+              </li>
               {% if request.user.is_authenticated %}
+                <li class="nav-item">
+                  <a class="nav-link" href="{% url 'game-list' %}">Games</a>
+                </li>
                 <li class="nav-item">
                   <a class="nav-link" href="{% url 'tournament-list' %}">Tournaments</a>
                 </li>
@@ -91,21 +105,25 @@
                 </li>
               {% endif %}
               <li>
-                <form id="search-bar" action="{% url 'game-search-results' %}" method="get">
-                  <select id="query-type" name="query_type">
-                    <option value="games">Games</option>
-                    <option value="users">Users</option>
-                    <option value="forums">Forums</option>
-                  </select>
-                  <input id="query" name="query" type="text" placeholder="Search..." />
-                  <input type="hidden" name="q" id="hidden-query" />
-                </form>
+                {% block search_bar %}
+                  <!-- Dynamically update search bar landing page depending on query_type-->
+                  <form id="search-bar" action="{% url 'game-search-results' %}" method="get">
+                    <select id="query-type" name="query_type">
+                      <option value="games">Games</option>
+                      <option value="users">Users</option>
+                      <!-- Add more options here -->
+                    </select>
+                    <input id="query" name="query" type="text" placeholder="Search..." />
+                  </form>
+                {% endblock search_bar %}
               </li>
             </ul>
           </div>
         </div>
       </nav>
     </div>
+    {% block body %}
+    {% endblock body %}
     <div class="container">
       {% if messages %}
         {% for message in messages %}
@@ -143,23 +161,25 @@
         document.addEventListener('DOMContentLoaded', function() {
           const search_bar = document.getElementById('search-bar');
           const query_type = document.getElementById('query-type');
-          const query_input = document.getElementById('query');
-          const hidden_query_input = document.getElementById('hidden-query');
+          const query_input = document.getElementById('query-input');
 
-          query_type.addEventListener("change", function() {
-            if (query_type.value === "games") {
-              search_bar.action = "{% url 'game-search-results' %}";
-            } else if (query_type.value === "users") {
-              search_bar.action = "{% url 'home' %}"; // Placeholder URL for 'users'
-            } else if (query_type.value === "forums") {
-              search_bar.action = "{% url 'forum_search:search' %}";
+          //do nothing if search bar is empty
+          search_bar.addEventListener("submit", function() {
+            event.preventDefault();
+            if (query_input.value.trim() !== '') {
+              search_bar.submit();
             }
           });
 
-          query_input.addEventListener("input", function() {
-            hidden_query_input.value = query_input.value;
+          query_type.addEventListener("change", function() {
+            if (query_type.value == "games") {
+              search_bar.action = "{% url 'game-search-results' %}";
+            } else if (query_type.value == "users") {
+              search_bar.action = "{% url 'users:user-search-results' %}";
+            } else if (query_type.value == "forums") {
+              search_bar.action = "{% url 'home' %}"; // placeholder
+            }
           });
-
         });
       </script>
     {% endblock inline_javascript %}
