@@ -41,10 +41,6 @@ class User(AbstractUser):
 
     objects = UserManager()
 
-    def clean(self) -> None:
-        super().clean()
-        self.validate_username(self.username)
-
     def get_absolute_url(self) -> str:
         """Get URL for user's detail view.
 
