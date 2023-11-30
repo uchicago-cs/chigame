@@ -11,7 +11,7 @@ from chigame.users.models import Group, Notification, User
 
 class Game(models.Model):
     """
-    A game like Chess, Checkers, etc.
+    A game like Chess, Checkers, Go, etc.
     """
 
     # ================ BASIC INFORMATION ================
