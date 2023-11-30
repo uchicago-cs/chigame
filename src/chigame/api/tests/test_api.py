@@ -288,7 +288,13 @@ class UserTests(APITestCase):
     def test_user_get(self):
         user = UserFactory()
 
-        url = reverse("users", kwargs={"pk": user.id})
+        list_url = reverse("api-user-list")
+        detail_url = reverse("api-user-detail", kwargs={"pk": user.id})
 
-        response = self.client.get(url)
-        assert response.status_code == 200
+        # Your list view test
+        list_response = self.client.get(list_url)
+        assert list_response.status_code == 200
+
+        # Your detail view test
+        detail_response = self.client.get(detail_url)
+        assert detail_response.status_code == 200
