@@ -76,10 +76,10 @@
                 {% if post.enable_signature and post.poster.forum_profile.signature %}
                   <div class="post-signature">{{ post.poster.forum_profile.signature.rendered }}</div>
                 {% endif %}
-                {# Like button #}
+                {# Vote buttons #}
                 <div class="d-flex p-2 flex-column w-25">
                   <button id="likeBtn">Like</button>
-                  <span id="likeCount">{{ post.like_counter }} likes</span>
+                  <span id="likeCount">{{ post.like_counter }} likes {{ canary }}</span>
                   <button id="dislikeBtn">Dislike</button>
                 </div>
                 {% if post.updates_count %}
