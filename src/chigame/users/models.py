@@ -95,9 +95,9 @@ class GameInvitation(models.Model):
     """
     An invitation to join a match of a game
     """
-    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='game_invitations_sent')
-    receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='game_invitations_received')
-    match = models.ForeignKey(Match, on_delete=models.CASCADE)
+    sender = models.ForeignKey("chigame.users.User", on_delete=models.CASCADE, related_name='game_invitations_sent')
+    receiver = models.ForeignKey("chigame.users.User", on_delete=models.CASCADE, related_name='game_invitations_received')
+    match = models.ForeignKey("chigame.games.Match", on_delete=models.CASCADE)
     accepted = models.BooleanField(default=False)
     timestamp = models.DateTimeField(auto_now_add=True)
 
@@ -105,9 +105,9 @@ class TournamentInvitation(models.Model):
     """
     An invitation to join a tournament
     """
-    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tournament_invitations_sent')
-    receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tournament_invitations_received')
-    tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE)  
+    sender = models.ForeignKey("chigame.users.User", on_delete=models.CASCADE, related_name='tournament_invitations_sent')
+    receiver = models.ForeignKey("chigame.users.User", on_delete=models.CASCADE, related_name='tournament_invitations_received')
+    tournament = models.ForeignKey("chigame.games.Tournament", on_delete=models.CASCADE)  
     accepted = models.BooleanField(default=False)
     timestamp = models.DateTimeField(auto_now_add=True)
     
