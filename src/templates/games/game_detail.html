@@ -10,14 +10,18 @@
     </div>
     <div class="col-md-9">
       <h1 class="display-1">{{ game.name }}</h1>
-      <p>Published in {{ game.year_published }}</p>
-      <p>Complexity: {{ game.complexity }}/5</p>
+      <h4>{{ game.min_players }}–{{ game.max_players }} players</h4>
+      <h4>Complexity: {{ game.complexity }}/5</h4>
       {% for category in game.category.all %}
         <a href="#"><span class="badge rounded-pill text-bg-primary">{{ category }}</span></a>
       {% endfor %}
       {% for mechanic in game.mechanics.all %}
         <a href="#"><span class="badge rounded-pill text-bg-secondary">{{ mechanic }}</span></a>
       {% endfor %}
+      <div class="btn-group btn-group-lg mt-3">
+        <a href="#" class="btn btn-outline-primary">Join a Match</a>
+        <a href="#" class="btn btn-outline-primary">Create a Match</a>
+      </div>
     </div>
   </div>
   <div class="row mb-3 bg-light p-3 rounded-2">
@@ -35,6 +39,7 @@
     <div class="col-9">
       <div data-bs-target="#description-list" tabindex="0">
         <h3 id="description">Description</h3>
+        <p class="lead">Published in {{ game.year_published }}</p>
         <p>{{ game.description|linebreaksbr }}</p>
         <h3 id="player-description">Players</h3>
         <p>{{ game.min_players }}–{{ game.max_players }} players</p>

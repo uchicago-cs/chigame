@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
+from django.core.paginator import Paginator
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render, reverse
 from django.urls import reverse_lazy
@@ -125,6 +126,7 @@ def search_results(request):
     query = request.GET.get("query")
     sort = request.GET.get("sort_by", "name-asc")
     players = request.GET.get("players", "")
+    page_number = request.GET.get("page")
 
     """
     The Q object is an object used to encapsulate a collection of keyword
@@ -141,9 +143,13 @@ def search_results(request):
 
     object_list = apply_sorting_and_filtering(object_list, sort, players)
 
+    paginator = Paginator(object_list, 20)
+    page_obj = paginator.get_page(page_number)
+
     context = {
         "query_type": "Games",
         "object_list": object_list,
+        "page_obj": page_obj,
         "current_sort": sort,
         "current_players": players,
         "query": query,

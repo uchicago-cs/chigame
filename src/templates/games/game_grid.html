@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% load url_tags %}
+
 {% block title %}
   Games
 {% endblock title %}
@@ -98,7 +100,7 @@
     </form>
   </div>
   <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
-    {% for game in object_list %}
+    {% for game in page_obj %}
       <div class="col">
         <a href="{% url 'game-detail' game.id %}"
            class="text-decoration-none text-dark">
@@ -110,7 +112,7 @@
             </div>
             <div class="card-body d-flex flex-column">
               <h4 class="card-title">{{ game.name }}</h4>
-              <p class="card-text flex-grow-1">{{ game.description|linebreaksbr|truncatewords_html:20 }}</p>
+              <p class="card-text flex-grow-1">{{ game.description|linebreaksbr|truncatewords:20 }}</p>
               <div>
                 {% for category in game.category.all %}<span class="badge text-bg-primary">{{ category }}</span>{% endfor %}
               </div>
@@ -130,10 +132,11 @@
       <ul class="pagination pagination-lg justify-content-center">
         {% if page_obj.has_previous %}
           <li class="page-item">
-            <a class="page-link" href="?page=1">« First</a>
+            <a class="page-link" href="?{% updated_params page=1 %}">« First</a>
           </li>
           <li class="page-item">
-            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">{{ page_obj.previous_page_number }}</a>
+            <a class="page-link"
+               href="?{% updated_params page=page_obj.previous_page_number %}">{{ page_obj.previous_page_number }}</a>
           </li>
         {% else %}
           <li class="page-item disabled">
@@ -145,10 +148,12 @@
         </li>
         {% if page_obj.has_next %}
           <li class="page-item">
-            <a class="page-link" href="?page={{ page_obj.next_page_number }}">{{ page_obj.next_page_number }}</a>
+            <a class="page-link"
+               href="?{% updated_params page=page_obj.next_page_number %}">{{ page_obj.next_page_number }}</a>
           </li>
           <li class="page-item">
-            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last »</a>
+            <a class="page-link"
+               href="?{% updated_params page=page_obj.paginator.num_pages %}">Last »</a>
           </li>
         {% else %}
           <li class="page-item disabled">
