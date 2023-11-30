@@ -1,5 +1,3 @@
-from collections import defaultdict
-
 from django.core.exceptions import ValidationError
 from django.db.models import F, IntegerField, Sum
 from django.db.models.functions import Coalesce
@@ -53,21 +51,3 @@ class TopicView(BaseTopicView):
         )
 
         return qs
-
-    def get_context_data(self, **kwargs):
-        # Get the posts associated with this topic
-        topic = self.get_topic()
-        posts = Post.objects.select_related("topic").filter(topic=topic)
-
-        votes = Vote.objects.filter(post__in=posts)
-        filtered_votes = defaultdict(int)
-
-        for post in posts:
-            filtered_votes[post] = 0
-
-        for vote in votes:
-            filtered_votes[vote.post] += vote.rating
-
-        print(filtered_votes)
-
-        return super().get_context_data(**kwargs)

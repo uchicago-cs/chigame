@@ -32,26 +32,6 @@
         {% endif %}
         <div id="{{ post.id }}" class="my-3 card post">
           <div class="card-body">
-            <div class="col-md-2 d-none d-md-block post-sidebar">
-              {% if post.poster %}
-                <div class="avatar">
-                  <a href="{% url 'forum_member:profile' post.poster_id %}">
-                    {% include "partials/avatar.html" with profile=post.poster.forum_profile show_placeholder=True %}
-                  </a>
-                </div>
-                <div class="username">
-                  <a href="{% url 'forum_member:profile' post.poster_id %}"><b>{{ post.poster|forum_member_display_name }}</b></a>
-                </div>
-                <div class="posts-count text-muted">
-                  <b>{% trans "Posts:" %}</b>&nbsp;{{ post.poster.forum_profile.posts_count }}
-                </div>
-              {% else %}
-                <div class="username">
-                  <b>{{ post.username }}</b>
-                </div>
-                <div class="username text-muted">{% trans "Anonymous user" %}</div>
-              {% endif %}
-            </div>
             <div class="row">
               <div class="col-md-10 post-content-wrapper">
                 <div class="float-right post-controls">
@@ -97,15 +77,12 @@
                   <div class="post-signature">{{ post.poster.forum_profile.signature.rendered }}</div>
                 {% endif %}
                 {# Vote buttons #}
-                <form class="vote-form" method="post">
-                  {% csrf_token %}
-                  <input type="hidden" name="post_id" value="{{ post.id }}" />
-                  <div class="d-flex p-2 flex-column w-25">
-                    <button class="like-button" type="submit" name="rate" value="like">Like</button>
-                    <span class="likeCount">{{ post.like_counter }} likes {{ post.rating }}</span>
-                    <button class="dislike-button" type="submit" name="rate" value="dislike">Dislike</button>
-                  </div>
-                </form>
+                <input type="hidden" name="post_id" value="{{ post.id }}" />
+                <div class="d-flex p-2 flex-column w-25">
+                  <button class="like-button" type="submit" name="rate" value="like">Like</button>
+                  <span class="likeCount">{{ post.like_counter }} likes {{ post.rating }}</span>
+                  <button class="dislike-button" type="submit" name="rate" value="dislike">Dislike</button>
+                </div>
                 {% if post.updates_count %}
                   <div class="mt-4 edit-info">
                     <small class="text-muted">
@@ -126,6 +103,26 @@
                   </div>
                 {% endif %}
               </div>
+              <div class="col-md-2 d-none d-md-block post-sidebar">
+                {% if post.poster %}
+                  <div class="avatar">
+                    <a href="{% url 'forum_member:profile' post.poster_id %}">
+                      {% include "partials/avatar.html" with profile=post.poster.forum_profile show_placeholder=True %}
+                    </a>
+                  </div>
+                  <div class="username">
+                    <a href="{% url 'forum_member:profile' post.poster_id %}"><b>{{ post.poster|forum_member_display_name }}</b></a>
+                  </div>
+                  <div class="posts-count text-muted">
+                    <b>{% trans "Posts:" %}</b>&nbsp;{{ post.poster.forum_profile.posts_count }}
+                  </div>
+                {% else %}
+                  <div class="username">
+                    <b>{{ post.username }}</b>
+                  </div>
+                  <div class="username text-muted">{% trans "Anonymous user" %}</div>
+                {% endif %}
+              </div>
             </div>
           </div>
         </div>
@@ -143,10 +140,8 @@
     </div>
   </div>
   <script>
-    $(document).on('submit', '.vote-form', function(e) {
+    $(document).on('click', '.like-button', function(e) {
       e.preventDefault();
-      var form = e.target;
-      console.log(form.rate);
       var post_id = e.target.closest('.post').id;
 
       $.ajax({
@@ -154,11 +149,29 @@
         url: '{{ request.path }}',
         data: {
           post_id: post_id,
-          rate: form.rate.value,
-          csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
+          rate: 'like',
+          csrfmiddlewaretoken: "{{ csrf_token }}"
         },
         success: function() {
           alert('Liked!');
+        }
+      })
+    });
+
+    $(document).on('click', '.dislike-button', function(e) {
+      e.preventDefault();
+      var post_id = e.target.closest('.post').id;
+
+      $.ajax({
+        type: 'POST',
+        url: '{{ request.path }}',
+        data: {
+          post_id: post_id,
+          rate: 'dislike',
+          csrfmiddlewaretoken: "{{ csrf_token }}"
+        },
+        success: function() {
+          alert('Disliked!');
         }
       })
     });
