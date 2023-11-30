@@ -282,3 +282,13 @@ class ChatTests(APITestCase):
         self.assertEqual(data2["update_on"], Message.objects.get(id=2).update_on)
         self.assertEqual(data2["content"], Message.objects.get(id=2).content)
         self.assertEqual(2, Message.objects.get(id=2).token_id)
+
+
+class UserTests(APITestCase):
+    def test_user_get(self):
+        user = UserFactory()
+
+        url = reverse("users", kwargs={"pk": user.id})
+
+        response = self.client.get(url)
+        assert response.status_code == 200
