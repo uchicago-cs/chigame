@@ -21,12 +21,8 @@ user_patterns = [
 ]
 
 urlpatterns = [
-    # GAME API URLS
     path("games/", include(game_patterns)),
-    # LOBBY API URLS
     path("lobbies/", include(lobby_patterns)),
-    # USER API URLS
     path("users/", include(user_patterns)),
-    # CHAT API URLS
     path("tournaments/chat/", views.MessageView.as_view(), name="api-chat-list"),
 ]
