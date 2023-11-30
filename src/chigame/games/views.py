@@ -6,6 +6,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
 from django.db.models import Q
 from django.http import HttpResponseForbidden
+from django.http.response import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render, reverse
 from django.urls import reverse_lazy
 from django.utils import timezone
@@ -303,6 +304,7 @@ class TournamentCreateView(CreateView):
 
         # Redirect to the tournament's detail page
         self.object = tournament
+        return HttpResponseRedirect(self.get_success_url())
 
     def get_success_url(self):
         return reverse("tournament-detail", kwargs={"pk": self.object.pk})
