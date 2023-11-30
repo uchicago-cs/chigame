@@ -8,7 +8,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from chigame.api.tests.factories import ChatFactory, GameFactory, TournamentFactory, UserFactory
-from chigame.games.models import Game, Message
+from chigame.games.models import Game, Message, User
 
 
 class GameTests(APITestCase):
@@ -291,10 +291,17 @@ class UserTests(APITestCase):
         list_url = reverse("api-user-list")
         detail_url = reverse("api-user-detail", kwargs={"pk": user.id})
 
-        # Your list view test
         list_response = self.client.get(list_url)
         assert list_response.status_code == 200
 
-        # Your detail view test
         detail_response = self.client.get(detail_url)
         assert detail_response.status_code == 200
+
+    def test_user_delete(self):
+        user = UserFactory()
+
+        url = reverse("api-user-detail", args=[user.id])
+        response = self.client.delete(url, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(User.objects.count(), 0)
