@@ -9,6 +9,7 @@ from django.utils.translation import gettext_lazy as _
 from django.views.generic import DetailView, RedirectView, UpdateView
 
 from .models import FriendInvitation, Notification, UserProfile, GameInvitation, TournamentInvitation
+from chigame.games.models import Match, Tournament
 
 User = get_user_model()
 
@@ -135,8 +136,8 @@ def remove_friend(request, pk):
 def invite_to_game(request, pk, match_id):
     sender = User.objects.get(pk=request.user.id)
     receiver = User.objects.get(pk=pk)
-    match = User.objects.get(pk=match_id)  
-    GameInvitation.objects.create(sender=sender, receiver=receiver, group=group, match=match)
+    match = Match.objects.get(pk=match_id)  
+    GameInvitation.objects.create(sender=sender, receiver=receiver, match=match)
     messages.success(request, "Invitation to game sent successfully.")
     return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
 
@@ -144,7 +145,7 @@ def invite_to_game(request, pk, match_id):
 def invite_to_tournament(request, pk, tournament_id):
     sender = User.objects.get(pk=request.user.id)
     receiver = User.objects.get(pk=pk)
-    tournament = User.objects.get(pk=tournament_id) 
+    tournament = Tournament.objects.get(pk=tournament_id) 
     TournamentInvitation.objects.create(sender=sender, receiver=receiver, tournament=tournament)
     messages.success(request, "Invitation to tournament sent successfully.")
     return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
