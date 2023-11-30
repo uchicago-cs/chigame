@@ -7,6 +7,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
 from django.db.models import Q
+from django.db.models.functions import Lower
 from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render, reverse
 from django.urls import reverse_lazy
@@ -153,7 +154,14 @@ def apply_sorting_and_filtering(queryset, sort_param, players_param):
     if sort_param:
         sort_field, sort_direction = sort_param.rsplit("-", 1)
         sort_order = "-" if sort_direction == "desc" else ""
-        queryset = queryset.order_by(f"{sort_order}{sort_field}")
+
+        if sort_field == "name":
+            if sort_direction == "desc":
+                queryset = queryset.order_by(Lower("name").desc())
+            else:
+                queryset = queryset.order_by(Lower("name"))
+        else:
+            queryset = queryset.order_by(f"{sort_order}{sort_field}")
 
     # Filter by number of players. Handles numeric values and '10+' case.
     if players_param:
