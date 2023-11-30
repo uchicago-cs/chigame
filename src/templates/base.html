@@ -111,9 +111,10 @@
                     <select id="query-type" name="query_type">
                       <option value="games">Games</option>
                       <option value="users">Users</option>
-                      <!-- Add more options here -->
+                      <option value="forums">Forums</option>
                     </select>
                     <input id="query" name="query" type="text" placeholder="Search..." />
+                    <input type="hidden" name="q" id="hidden-query" />
                   </form>
                 {% endblock search_bar %}
               </li>
@@ -161,25 +162,23 @@
         document.addEventListener('DOMContentLoaded', function() {
           const search_bar = document.getElementById('search-bar');
           const query_type = document.getElementById('query-type');
-          const query_input = document.getElementById('query-input');
-
-          //do nothing if search bar is empty
-          search_bar.addEventListener("submit", function() {
-            event.preventDefault();
-            if (query_input.value.trim() !== '') {
-              search_bar.submit();
-            }
-          });
+          const query_input = document.getElementById('query');
+          const hidden_query_input = document.getElementById('hidden-query');
 
           query_type.addEventListener("change", function() {
-            if (query_type.value == "games") {
+            if (query_type.value === "games") {
               search_bar.action = "{% url 'game-search-results' %}";
-            } else if (query_type.value == "users") {
-              search_bar.action = "{% url 'users:user-search-results' %}";
-            } else if (query_type.value == "forums") {
-              search_bar.action = "{% url 'home' %}"; // placeholder
+            } else if (query_type.value === "users") {
+              search_bar.action = "{% url 'home' %}"; // Placeholder URL for 'users'
+            } else if (query_type.value === "forums") {
+              search_bar.action = "{% url 'forum_search:search' %}";
             }
           });
+
+          query_input.addEventListener("input", function() {
+            hidden_query_input.value = query_input.value;
+          });
+
         });
       </script>
     {% endblock inline_javascript %}
