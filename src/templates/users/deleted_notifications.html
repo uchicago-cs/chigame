@@ -4,8 +4,10 @@
 
 {% block content %}
   <div class="container mt-4">
-    <a href="{% url 'users:user-inbox' pk=request.user.pk %}" class="btn btn-primary">Back</a>
-    <br><br>
+    <a href="{% url 'users:user-inbox' pk=request.user.pk %}"
+       class="btn btn-primary">Back</a>
+    <br />
+    <br />
     <ul class="list-group">
       {% for notification in notifications %}
         {% with notification_type=notification.type %}
@@ -20,7 +22,7 @@
             <div class="button-container">
               <a href="{% url 'users:act-on-inbox-notification' notification.pk 'move_to_inbox' %}">
                 <span class="badge bg-primary rounded-pill me-2">
-                    <i class="bi bi-envelope-open"></i> MOVE TO INBOX
+                  <i class="bi bi-envelope-open"></i> MOVE TO INBOX
                 </span>
               </a>
             </div>
