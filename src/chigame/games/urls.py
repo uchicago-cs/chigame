@@ -1,13 +1,18 @@
 from django.urls import path
 
 from . import views
-from .views import LobbyListView
+from .views import LobbyCreateView
 
 urlpatterns = [
-    path("lobby/", LobbyListView.as_view(), name="lobby-list"),
+    # lobbies
+    path("lobby/", views.lobby_list, name="lobby-list"),
+    path("lobby/create/", LobbyCreateView.as_view(), name="lobby-create"),
     path("lobby/<int:pk>/", views.ViewLobbyDetails.as_view(), name="lobby-details"),
     path("lobby/<int:pk>/join", views.lobby_join, name="lobby-join"),
     path("lobby/<int:pk>/leave", views.lobby_leave, name="lobby-leave"),
+    path("lobby/<int:pk>/edit/", views.LobbyUpdateView.as_view(), name="lobby-edit"),
+    path("lobby/<int:pk>/delete/", views.LobbyDeleteView.as_view(), name="lobby-delete"),
+    # games
     path("", views.GameListView.as_view(), name="game-list"),
     path("create/", views.GameCreateView.as_view(), name="game-create"),
     path("<int:pk>/edit", views.GameEditView.as_view(), name="game-edit"),
@@ -19,6 +24,9 @@ urlpatterns = [
     path("tournaments/create/", views.TournamentCreateView.as_view(), name="tournament-create"),
     path("tournaments/<int:pk>/update/", views.TournamentUpdateView.as_view(), name="tournament-update"),
     path("tournaments/<int:pk>/delete/", views.TournamentDeleteView.as_view(), name="tournament-delete"),
+    # placeholder game
+    path("lobby/<int:pk>/coinflip", views.coin_flip_game, name="placeholder-game"),
+    path("lobby/<int:pk>/flipresult", views.check_guess, name="flip-result"),
     # tournament bracket display
     path('tournament-bracket/<int:tournament_id>/', views.TournamentBracketView.as_view(), name='tournament-bracket'),
     # chat in tournaments
