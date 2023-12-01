@@ -27,6 +27,11 @@ https://github.com/ellmetha/django-machina/blob/main/machina/templates/machina/b
            placeholder="Search Forums"
            aria-label="Search"
            name="q" />
+    <form class="form-inline my-2 ml-3 my-lg-0"
+          role="search"
+          action="{% url 'forum_search:search' %}">
+      <button class="btn btn-large btn-primary" type="submit">{% trans "Advanced Search" %}</button>
+    </form>
   </form>
 {% endblock search_bar %}
 {% block body %}
