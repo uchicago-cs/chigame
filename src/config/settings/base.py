@@ -322,17 +322,19 @@ SOCIALACCOUNT_FORMS = {"signup": "chigame.users.forms.UserSocialSignupForm"}
 # Add additional configuration below:
 # ------------------------------------------------------------------------------
 
-# Django-machina search backend:
+# DJANGO-MACHINA SETTINGS
+# ------------------------------------------------------------------------------
 # https://django-machina.readthedocs.io/en/latest/getting_started.html#django-haystack-settings
 HAYSTACK_CONNECTIONS = {
     "default": {
-        "ENGINE": "haystack.backends.simple_backend.SimpleEngine",
+        "ENGINE": "haystack.backends.whoosh_backend.WhooshEngine",
+        "PATH": str(BASE_DIR / "chigame/forums/search_index"),
     },
 }
 
+# https://django-haystack.readthedocs.io/en/latest/signal_processors.html
+HAYSTACK_SIGNAL_PROCESSOR = "haystack.signals.RealtimeSignalProcessor"
 
-# DJANGO-MACHINA SETTINGS
-# ------------------------------------------------------------------------------
 # https://django-machina.readthedocs.io/en/stable/settings.html
 MACHINA_FORUM_NAME = "ChiGame Forums"
 MACHINA_BASE_TEMPLATE_NAME = "base.html"
