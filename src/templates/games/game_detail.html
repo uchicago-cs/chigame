@@ -46,7 +46,19 @@
     <div class="col-9">
       <div data-bs-target="#description-list" tabindex="0">
         <h3 id="description">Description</h3>
-        <p class="lead">Published in {{ game.year_published }}</p>
+        {# there is no year 0 so if this is the year published don't display it #}
+        {% if game.year_published != 0 %}
+          <p class="lead">
+            Published in
+            {% if game.year_published < 0 %}
+              {# this code performs the operation: game.year_published * -1 #}
+              {# if multiplication is used elsewhere then it might be best to create a custom template tag #}
+              {% widthratio game.year_published 1 -1 %} BCE
+            {% else %}
+              {{ game.year_published }}
+            {% endif %}
+          </p>
+        {% endif %}
         <p>{{ game.description|linebreaksbr }}</p>
         <h3 id="player-description">Players</h3>
         <p>
