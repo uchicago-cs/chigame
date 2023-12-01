@@ -1,9 +1,10 @@
 from django.core.exceptions import ValidationError
 from django.db.models import Case, F, IntegerField, Sum, When
 from django.db.models.functions import Coalesce
-from django.http import HttpResponseRedirect
+from django.http import HttpResponse
 from machina.apps.forum_conversation.views import TopicView as BaseTopicView
 from machina.core.db.models import get_model
+from rest_framework import status
 
 from .models import Vote
 
@@ -40,10 +41,11 @@ class TopicView(BaseTopicView):
                 vote = Vote.objects.create(rating=rating, post=post, poster=post.poster)
                 vote.full_clean()
                 vote.save()
+                return HttpResponse(status=status.HTTP_201_CREATED)
             except (Post.DoesNotExist, ValidationError):
-                pass
+                return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
-        return HttpResponseRedirect(self.request.path_info)
+        return HttpResponse(status=status.HTTP_204_NO_CONTENT)
 
     def get_queryset(self):
         """Returns the list of items for this view."""
