@@ -212,7 +212,7 @@ def user_inbox_view(request, pk):
 def friend_list_view(request, pk):
     user = request.user
     profile = get_object_or_404(UserProfile, user__pk=pk)
-    friends = profile.friends
+    friends = profile.friends.all()
     context = {"pk": pk, "user": user, "friends": friends, "profile": profile}
     if pk == user.id:
         return render(request, "users/user_friend_list.html", context)
