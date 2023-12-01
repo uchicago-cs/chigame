@@ -1,5 +1,5 @@
 from django.core.exceptions import ValidationError
-from django.db.models import F, IntegerField, Sum
+from django.db.models import Case, F, IntegerField, Sum, When
 from django.db.models.functions import Coalesce
 from django.http import HttpResponseRedirect
 from machina.apps.forum_conversation.views import TopicView as BaseTopicView
@@ -28,13 +28,19 @@ class TopicView(BaseTopicView):
                 else:
                     raise ValidationError
 
-                # Create a new `Vote`
                 post = Post.objects.filter(pk=liked_post).first()
-                vote = Vote(rating=rating, post=post, poster=post.poster)
+                vote = Vote.objects.get(rating=rating, post=post, poster=post.poster)
+
+                # Remove the vote if it existed previously
+                vote.delete()
+            except Vote.DoesNotExist:
+                Vote.objects.filter(post=post, poster=post.poster).delete()
+
+                # Create a new `Vote`
+                vote = Vote.objects.create(rating=rating, post=post, poster=post.poster)
                 vote.full_clean()
                 vote.save()
             except (Post.DoesNotExist, ValidationError):
-                print("An error occurred")
                 pass
 
         return HttpResponseRedirect(self.request.path_info)
@@ -47,7 +53,17 @@ class TopicView(BaseTopicView):
             .exclude(approved=False)
             .select_related("poster", "updated_by")
             .prefetch_related("attachments", "poster__forum_profile")
-            .annotate(rating=Coalesce(Sum(F("vote__rating"), output_field=IntegerField()), 0))
+            .annotate(
+                rating=Coalesce(Sum(F("vote__rating"), output_field=IntegerField()), 0),
+                user_rating=Coalesce(
+                    Case(
+                        When(vote__poster=self.request.user, then=F("vote__rating")),
+                        default=0,
+                        output_field=IntegerField(),
+                    ),
+                    0,
+                ),
+            )
         )
 
         return qs

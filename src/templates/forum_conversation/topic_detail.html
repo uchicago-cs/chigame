@@ -77,10 +77,12 @@
                   <div class="post-signature">{{ post.poster.forum_profile.signature.rendered }}</div>
                 {% endif %}
                 {# Vote buttons #}
-                <input type="hidden" name="post_id" value="{{ post.id }}" />
-                <div class="d-flex p-2 flex-column w-25">
+                <div class="vote-container d-flex p-2 flex-column w-25"
+                     data-post-id="{{ post.id }}"
+                     data-user-rating="{{ post.user_rating }}"
+                     data-rating="{{ post.rating }}">
                   <button class="like-button" type="submit" name="rate" value="like">Like</button>
-                  <span class="likeCount">{{ post.like_counter }} likes {{ post.rating }}</span>
+                  <span class="like-count">{{ post.rating }}</span>
                   <button class="dislike-button" type="submit" name="rate" value="dislike">Dislike</button>
                 </div>
                 {% if post.updates_count %}
@@ -140,38 +142,51 @@
     </div>
   </div>
   <script>
-    $(document).on('click', '.like-button', function(e) {
-      e.preventDefault();
-      var post_id = e.target.closest('.post').id;
+    $('.like-button, .dislike-button').click(function() {
+      var vote = $(this).val();
+      var voteContainer = $(this).closest('.vote-container');
+      var postId = voteContainer.data('post-id');
+      var userRating = voteContainer.data('user-rating');
+      var likeCountElement = voteContainer.find('.like-count');
+      var likeCountInt = parseInt(likeCountElement.text());
+      var voteDelta = 0;
 
+      if (isNaN(likeCountInt)) {
+        alert('Failed to add like to non-number');
+        return;
+      }
+
+      // Increase or decrease the HTML value depending on the button clicked
+      if (vote === "like") {
+        voteDelta = 1;
+        voteDelta += userRating === 1 ? -2 : userRating === -1 ? 1 : 0;
+        likeCountElement.text(`${likeCountInt + voteDelta}`);
+
+        // Change the user rating
+        voteContainer.data('user-rating', userRating === 1 ? 0 : 1)
+
+      } else if (vote === "dislike") {
+        voteDelta = -1;
+        voteDelta += userRating === -1 ? 2 : userRating === 1 ? -1 : 0;
+        likeCountElement.text(`${likeCountInt + voteDelta}`);
+
+        // Change the user rating
+        voteContainer.data('user-rating', userRating === -1 ? 0 : -1)
+      } else {
+        return;
+      }
+
+      // Send the vote to the backend
       $.ajax({
         type: 'POST',
         url: '{{ request.path }}',
         data: {
-          post_id: post_id,
-          rate: 'like',
+          post_id: postId,
+          rate: vote,
           csrfmiddlewaretoken: "{{ csrf_token }}"
         },
         success: function() {
-          alert('Liked!');
-        }
-      })
-    });
-
-    $(document).on('click', '.dislike-button', function(e) {
-      e.preventDefault();
-      var post_id = e.target.closest('.post').id;
-
-      $.ajax({
-        type: 'POST',
-        url: '{{ request.path }}',
-        data: {
-          post_id: post_id,
-          rate: 'dislike',
-          csrfmiddlewaretoken: "{{ csrf_token }}"
-        },
-        success: function() {
-          alert('Disliked!');
+          console.log(`${vote}d!`);
         }
       })
     });
