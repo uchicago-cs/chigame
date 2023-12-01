@@ -204,6 +204,7 @@ def user_inbox_view(request, pk):
         messages.error(request, "Not your inbox")
         return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
 
+
 @login_required
 def deleted_notifications_view(request, pk):
     user = request.user
