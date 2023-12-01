@@ -1,7 +1,7 @@
 import random
 
 from factory import Faker, LazyAttribute, Sequence, SubFactory, post_generation
-from factory.django import DjangoModelFactory
+from django import DjangoModelFactory
 
 from chigame.games.models import Category, Chat, Game, Lobby, Mechanic, Tournament
 from chigame.users.models import User
@@ -112,15 +112,15 @@ class LobbyFactory(DjangoModelFactory):
     class Meta:
         model = Lobby
 
-    match_status = factory.Iterator([Lobby.Lobbied, Lobby.Viewable, Lobby.Finished])
+    match_status = Iterator([Lobby.Lobbied, Lobby.Viewable, Lobby.Finished])
 
-    name = factory.Sequence(lambda n: f"lobby_{n}")
-    game = factory.SubFactory(GameFactory)
+    name = Sequence(lambda n: f"lobby_{n}")
+    game = SubFactory(GameFactory)
 
-    game_mod_status = factory.Iterator([Lobby.Default_game, Lobby.Modified_game])
+    game_mod_status = Iterator([Lobby.Default_game, Lobby.Modified_game])
 
-    created_by = factory.SubFactory(UserFactory)
-    min_players = factory.LazyAttribute(lambda x: random.randint(2, 6))
-    max_players = factory.LazyAttribute(lambda o: random.randint(o.min_players, 10))
-    time_constraint = factory.LazyAttribute(lambda x: random.randint(100, 500))
-    lobby_created = factory.LazyFunction(timezone.now)
+    created_by = SubFactory(UserFactory)
+    min_players = LazyAttribute(lambda x: random.randint(2, 6))
+    max_players = LazyAttribute(lambda o: random.randint(o.min_players, 10))
+    time_constraint = LazyAttribute(lambda x: random.randint(100, 500))
+    lobby_created = LazyFunction(timezone.now)
