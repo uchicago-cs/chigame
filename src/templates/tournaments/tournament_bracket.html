@@ -1,23 +1,27 @@
-{% extends "base.html" %} {% load static %} {% block content %}
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="stylesheet" href="{% static 'css/tournament_bracket.css' %}" />
-    <link rel="stylesheet" href="{% static 'style.css' %}" />
-    <title>{{ tournament_name }} Bracket</title>
-  </head>
-  <body>
-    <div class="frame">
-      <div class="div">
-        <div class="group">
-          <div class="overlap-group">
-            <div class="rectangle"></div>
-            <div class="rectangle-2"></div>
-            <div class="text-wrapper">
-              {% if players.1 %}{{ players.1.username }}{% endif %}
+{% extends "base.html" %} 
+
+{% load static %} 
+
+{% block content %}
+  <!DOCTYPE html>
+  <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <link rel="stylesheet" href="{% static 'css/tournament_bracket.css' %}" />
+      <link rel="stylesheet" href="{% static 'style.css' %}" />
+      <title>{{ tournament_name }} Bracket</title>
+    </head>
+    <body>
+      <div class="frame">
+        <div class="div">
+          <div class="group">
+            <div class="overlap-group">
+              <div class="rectangle"></div>
+              <div class="rectangle-2"></div>
+              <div class="text-wrapper">
+                {% if players.1 %}{{ players.1.username }}{% endif %}
             </div>
-            <div class="text-wrapper-2">0</div>
+          <div class="text-wrapper-2">0</div>
           </div>
           <div class="overlap">
             <div class="rectangle-3"></div>
