@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+<!DOCTYPE html>
+{% block title %}
+  Example Game
+{% endblock title %}
+{% block content %}
+  <h1>Coin Flip Result</h1>
+  <p>Your guess: {{ user_guess }}</p>
+  <p>Coin result: {{ coin_result }}</p>
+  {% if correct_guess %}
+    <p>Congratulations! You guessed correctly!</p>
+  {% else %}
+    <p>Sorry, your guess was incorrect.</p>
+  {% endif %}
+{% endblock content %}
