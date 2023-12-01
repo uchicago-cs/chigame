@@ -4,6 +4,7 @@ from chigame.users.views import (
     accept_friend_invitation,
     cancel_friend_invitation,
     decline_friend_invitation,
+    friend_list_view,
     send_friend_invitation,
     user_detail_view,
     user_inbox_view,
@@ -30,4 +31,5 @@ urlpatterns = [
     path("user_history/<int:pk>", views.user_history, name="user-history"),
     path("search-results", view=user_search_results, name="user-search-results"),
     path("inbox/<int:pk>", view=user_inbox_view, name="user-inbox"),
+    path("profile/<int:pk>/friends", view=friend_list_view, name="friend-list"),
 ]
