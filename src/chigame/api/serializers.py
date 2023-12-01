@@ -1,6 +1,5 @@
 from rest_framework import serializers
 
-
 from chigame.games.models import Chat, Game, Lobby, Message, Tournament, User
 
 
@@ -51,13 +50,6 @@ class LobbySerializer(serializers.ModelSerializer):
         )
 
 
-
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ("id", "name", "email")
-
-
 class MessageSerializer(serializers.ModelSerializer):
     sender = serializers.EmailField(write_only=True)
 
@@ -80,4 +72,3 @@ class MessageSerializer(serializers.ModelSerializer):
 
         message = Message.objects.create(**validated_data)
         return message
-

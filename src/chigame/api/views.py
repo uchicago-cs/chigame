@@ -1,6 +1,7 @@
 # from django.shortcuts import render
 
 from dj_rest_auth.models import TokenModel
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, status
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
@@ -8,17 +9,16 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
 
-from chigame.api.serializers import GameSerializer, LobbySerializer, TournamentSerializer, UserSerializer
-from chigame.games.models import Game, Lobby, Tournament
-from chigame.users.models import User, UserProfile
-
-from django_filters.rest_framework import DjangoFilterBackend
-
 from chigame.api.filters import GameFilter
-from chigame.api.serializers import GameSerializer, LobbySerializer, MessageSerializer, UserSerializer
-from chigame.games.models import Game, Lobby, Message, User
-from chigame.users.models import UserProfile
-
+from chigame.api.serializers import (
+    GameSerializer,
+    LobbySerializer,
+    MessageSerializer,
+    TournamentSerializer,
+    UserSerializer,
+)
+from chigame.games.models import Game, Lobby, Message, Tournament
+from chigame.users.models import User, UserProfile
 
 
 class GameListView(generics.ListCreateAPIView):
@@ -31,7 +31,6 @@ class GameListView(generics.ListCreateAPIView):
 class GameDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Game.objects.all()
     serializer_class = GameSerializer
-
 
 
 class UserListView(generics.ListAPIView):
@@ -66,6 +65,7 @@ class TournamentListView(generics.ListAPIView):
     queryset = Tournament.objects.all()
     serializer_class = TournamentSerializer
 
+
 class UserFriendsAPIView(generics.RetrieveAPIView):
     serializer_class = UserSerializer
 
@@ -73,7 +73,6 @@ class UserFriendsAPIView(generics.RetrieveAPIView):
         user_id = self.kwargs["pk"]
         user_profile = UserProfile.objects.get(user=user_id)
         return user_profile.friends.all()
-
 
 
 class LobbyListView(generics.ListCreateAPIView):
@@ -91,7 +90,6 @@ class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = UserSerializer
 
 
-
 class CustomTokenObtainPairView(TokenObtainPairView):
     # Add any custom behavior if needed
     pass
@@ -106,12 +104,7 @@ class CustomTokenVerifyView(TokenVerifyView):
     # Add any custom behavior if needed
     pass
 
-class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-
 
 class MessageView(generics.CreateAPIView):
     queryset = Message.objects.all()
     serializer_class = MessageSerializer
-
