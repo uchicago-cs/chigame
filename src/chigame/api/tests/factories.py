@@ -112,7 +112,7 @@ class LobbyFactory(DjangoModelFactory):
     class Meta:
         model = Lobby
 
-    match_status = Iterator([Lobby.Lobbied, Lobby.Viewable, Lobby.Finished])
+    match_status = factory.Iterator([Lobby.Lobbied, Lobby.Viewable, Lobby.Finished])
 
     name = Sequence(lambda n: f"lobby_{n}")
     game = SubFactory(GameFactory)
@@ -124,3 +124,5 @@ class LobbyFactory(DjangoModelFactory):
     max_players = LazyAttribute(lambda o: random.randint(o.min_players, 10))
     time_constraint = LazyAttribute(lambda x: random.randint(100, 500))
     lobby_created = LazyFunction(timezone.now)
+    created_by = SubFactory(UserFactory)
+    lobby_created = Faker("date_time_this_decade")
