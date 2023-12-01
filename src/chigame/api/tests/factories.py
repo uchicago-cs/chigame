@@ -3,7 +3,7 @@ import random
 from factory import Faker, LazyAttribute, Sequence, SubFactory, post_generation
 from factory.django import DjangoModelFactory
 
-from chigame.games.models import Category, Chat, Game, Mechanic, Tournament
+from chigame.games.models import Category, Chat, Game, Lobby, Mechanic, Tournament
 from chigame.users.models import User
 
 
@@ -103,3 +103,18 @@ class ChatFactory(DjangoModelFactory):
         model = Chat
 
     tournament = SubFactory(TournamentFactory)
+
+
+class LobbyFactory(DjangoModelFactory):
+    class Meta:
+        model = Lobby
+
+    match_status = Lobby.Lobbied
+    name = Faker("word")
+    game = SubFactory(GameFactory)
+    game_mod_status = Lobby.Default_game
+    created_by = SubFactory(UserFactory)
+    min_players = 2
+    max_players = 4
+    time_constraint = 300
+    lobby_created = Faker("date_time_this_decade")
