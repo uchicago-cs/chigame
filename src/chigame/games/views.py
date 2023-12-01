@@ -15,7 +15,7 @@ from django.views.generic import CreateView, DeleteView, DetailView, ListView, U
 
 from .filters import LobbyFilter
 from .forms import GameForm, LobbyForm
-from .models import Game, Lobby, Match, Player, Tournament
+from .models import Chat, Game, Lobby, Match, Player, Tournament
 from .tables import LobbyTable
 
 
@@ -358,6 +358,11 @@ class TournamentUpdateView(UpdateView):
 
     def get_success_url(self):
         return reverse_lazy("tournament-detail", kwargs={"pk": self.object.pk})
+
+    def create_chat(self):
+        # Auto-create a chat for this respective tournament
+        chat = Chat(tournament=self)
+        chat.save()
 
 
 @method_decorator(staff_required, name="dispatch")
