@@ -105,17 +105,16 @@
                 </li>
               {% endif %}
               <li>
-                {% block search_bar %}
-                  <!-- Dynamically update search bar landing page depending on query_type-->
-                  <form id="search-bar" action="{% url 'game-search-results' %}" method="get">
-                    <select id="query-type" name="query_type">
-                      <option value="games">Games</option>
-                      <option value="users">Users</option>
-                      <!-- Add more options here -->
-                    </select>
-                    <input id="query" name="query" type="text" placeholder="Search..." />
-                  </form>
-                {% endblock search_bar %}
+                <!-- Dynamically update search bar landing page depending on query_type-->
+                <form id="search-bar" action="{% url 'game-search-results' %}" method="get">
+                  <select id="query-type" name="query_type">
+                    <option value="games">Games</option>
+                    <option value="users">Users</option>
+                    <option value="forums">Forums</option>
+                  </select>
+                  <!-- Name must remain as "q" as django-machina expects that name -->
+                  <input id="query-input" name="q" type="text" placeholder="Search..." />
+                </form>
               </li>
             </ul>
           </div>
@@ -163,21 +162,19 @@
           const query_type = document.getElementById('query-type');
           const query_input = document.getElementById('query-input');
 
-          //do nothing if search bar is empty
-          search_bar.addEventListener("submit", function() {
-            event.preventDefault();
-            if (query_input.value.trim() !== '') {
-              search_bar.submit();
-            }
-          });
-
           query_type.addEventListener("change", function() {
-            if (query_type.value == "games") {
+            if (query_type.value === "games") {
               search_bar.action = "{% url 'game-search-results' %}";
             } else if (query_type.value == "users") {
               search_bar.action = "{% url 'users:user-search-results' %}";
-            } else if (query_type.value == "forums") {
-              search_bar.action = "{% url 'home' %}"; // placeholder
+            } else if (query_type.value === "forums") {
+              search_bar.action = "{% url 'forum_search:search' %}";
+            }
+          });
+
+          search_bar.addEventListener("submit", function(event) {
+            if (!query_input.value.trim()) {
+              event.preventDefault();
             }
           });
         });
