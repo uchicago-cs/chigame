@@ -2,12 +2,17 @@
 
 from dj_rest_auth.models import TokenModel
 from django_filters.rest_framework import DjangoFilterBackend
+
 from rest_framework import generics, status
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
+
+
+from rest_framework.pagination import PageNumberPagination
+
 
 from chigame.api.filters import GameFilter
 from chigame.api.serializers import (
@@ -26,6 +31,7 @@ class GameListView(generics.ListCreateAPIView):
     serializer_class = GameSerializer
     filter_backends = (DjangoFilterBackend,)  # Enable DjangoFilterBackend
     filterset_class = GameFilter  # Specify the filter class for this view
+    pagination_class = PageNumberPagination
 
 
 class GameDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -78,6 +84,7 @@ class UserFriendsAPIView(generics.RetrieveAPIView):
 class LobbyListView(generics.ListCreateAPIView):
     queryset = Lobby.objects.all()
     serializer_class = LobbySerializer
+    pagination_class = PageNumberPagination
 
 
 class LobbyDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -88,6 +95,7 @@ class LobbyDetailView(generics.RetrieveUpdateDestroyAPIView):
 class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    pagination_class = PageNumberPagination
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):
