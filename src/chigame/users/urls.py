@@ -30,6 +30,7 @@ urlpatterns = [
     path("decline_friend_invitation/<int:pk>", view=decline_friend_invitation, name="decline-friend-invitation"),
     path("user_history/<int:pk>", views.user_history, name="user-history"),
     path("inbox/<int:pk>", view=user_inbox_view, name="user-inbox"),
+    path("inbox/<int:pk>/deleted_notifications", views.deleted_notifications_view, name="deleted-notifications"),
     path("notification_detail/<int:pk>", view=notification_detail, name="notification-detail"),
     path(
         "act_on_inbox_notification/<int:pk>/<str:action>",

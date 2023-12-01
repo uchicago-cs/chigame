@@ -204,6 +204,24 @@ def user_inbox_view(request, pk):
         messages.error(request, "Not your inbox")
         return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
 
+@login_required
+def deleted_notifications_view(request, pk):
+    user = request.user
+    notifications = Notification.objects.filter_by_receiver(user, deleted=True)
+    print(str(Notification.objects.filter_by_receiver(user).query))
+    default_notification_messages = Notification.DEFAULT_MESSAGES
+    context = {
+        "pk": pk,
+        "user": user,
+        "notifications": notifications,
+        "default_notification_messages": default_notification_messages,
+    }
+    if pk == user.id:
+        return render(request, "users/deleted_notifications.html", context)
+    else:
+        messages.error(request, "Not your inbox")
+        return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
+
 
 @login_required
 def notification_detail(request, pk):
@@ -232,6 +250,8 @@ def act_on_inbox_notification(request, pk, action):
             notification.mark_as_unread()
         elif action == "delete":
             notification.mark_as_deleted()
+        elif action == "move_to_inbox":
+            notification.mark_as_unread()
     except Notification.DoesNotExist:
         messages.error(request, "Something went wrong. This notification does not exist")
     return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
