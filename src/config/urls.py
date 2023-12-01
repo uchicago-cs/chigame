@@ -4,6 +4,7 @@ from django.contrib import admin
 from django.urls import include, path
 from django.views import defaults as default_views
 from django.views.generic import TemplateView
+from machina import urls as machina_urls
 
 urlpatterns = [
     path("", TemplateView.as_view(template_name="pages/home.html"), name="home"),
@@ -17,7 +18,12 @@ urlpatterns = [
     # urls to handle api requests
     path("api/", include("chigame.api.urls")),
     path("games/", include("chigame.games.urls")),
+
     path("account/", include("django.contrib.auth.urls")),
+    # Django-machina forum
+    # https://django-machina.readthedocs.io/en/latest/getting_started.html#urls-configuration
+    path("forum/", include(machina_urls)),
+
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 
