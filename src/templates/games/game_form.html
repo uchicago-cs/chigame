@@ -54,6 +54,7 @@
               // Create a div for each game
               var gameDiv = document.createElement('div');
               gameDiv.innerHTML = `<img src="${game.image}" style="width:50px; height:50px; vertical-align:middle; margin-right: 10px;" /> <span>${game.name}</span>`;
+              // Some basic CSS to lay out search results in a readable way
               gameDiv.style.cursor = 'pointer';
               gameDiv.style.padding = '10px';
               gameDiv.style.borderBottom = '1px solid #ddd';
@@ -65,7 +66,8 @@
                 Object.keys(game).forEach(key => {
                   let element = document.getElementById(`id_${key}`);
                   if (element) {
-                    element.value = game[key];
+                    let apiFieldValue = game[key];
+                    element.value = apiFieldValue;
                   }
                 });
                 resultsContainer.innerHTML = ''; // Clear results after selection
