@@ -104,7 +104,7 @@
                   <a id="log-in-link" class="nav-link" href="{% url 'account_login' %}">{% translate "Sign In" %}</a>
                 </li>
               {% endif %}
-              <li>
+              <li class="nav-item d-flex align-items-center">
                 <!-- Dynamically update search bar landing page depending on query_type-->
                 <form id="search-bar" action="{% url 'game-search-results' %}" method="get">
                   <select id="query-type" name="query_type">
@@ -113,7 +113,12 @@
                     <option value="forums">Forums</option>
                   </select>
                   <!-- Name must remain as "q" as django-machina expects that name -->
-                  <input id="query-input" name="q" type="text" placeholder="Search..." />
+                  <div class="d-inline-flex align-items-center">
+                    <input id="query-input" name="q" type="text" placeholder="Search..." />
+                    <button id="advanced-search-button"
+                            class="btn btn-large btn-primary ms-2 d-none"
+                            type="button">{% trans "Advanced Search" %}</button>
+                  </div>
                 </form>
               </li>
             </ul>
@@ -161,6 +166,7 @@
           const search_bar = document.getElementById('search-bar');
           const query_type = document.getElementById('query-type');
           const query_input = document.getElementById('query-input');
+          const advancedSearchButton = document.getElementById('advanced-search-button');
 
           query_type.addEventListener("change", function() {
             if (query_type.value === "games") {
@@ -170,6 +176,17 @@
             } else if (query_type.value === "forums") {
               search_bar.action = "{% url 'forum_search:search' %}";
             }
+
+            if (query_type.value === "forums") {
+              advancedSearchButton.classList.remove('d-none');
+            } else {
+              advancedSearchButton.classList.add('d-none');
+            }
+          });
+
+          advancedSearchButton.addEventListener("click", function(event) {
+            query_input.value = ''; // Clear the input field
+            search_bar.submit(); // Manually submit the form if needed
           });
 
           search_bar.addEventListener("submit", function(event) {
