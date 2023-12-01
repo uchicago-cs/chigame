@@ -12,6 +12,8 @@ from django.views.generic import DetailView, RedirectView, UpdateView
 from rest_framework import status
 from rest_framework.response import Response
 
+from chigame.games.models import Player
+
 from .models import FriendInvitation, Notification, UserProfile
 from .tables import FriendsTable, UserTable
 
@@ -75,8 +77,9 @@ def user_list(request):
 def user_history(request, pk):
     try:
         user = User.objects.get(pk=pk)
+        player = Player.objects.get(pk=pk)
 
-        return render(request, "users/user_history.html", {"user": user})
+        return render(request, "users/user_history.html", {"user": user, "player": player})
     except User.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
