@@ -2,17 +2,13 @@
 
 from dj_rest_auth.models import TokenModel
 from django_filters.rest_framework import DjangoFilterBackend
-
 from rest_framework import generics, status
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
-
-
-from rest_framework.pagination import PageNumberPagination
-
 
 from chigame.api.filters import GameFilter
 from chigame.api.serializers import (
