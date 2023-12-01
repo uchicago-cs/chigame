@@ -1,6 +1,7 @@
 # from django.shortcuts import render
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics
+from rest_framework.pagination import PageNumberPagination
 
 from chigame.api.filters import GameFilter
 from chigame.api.serializers import (
@@ -20,6 +21,7 @@ class GameListView(generics.ListCreateAPIView):
     serializer_class = GameSerializer
     filter_backends = (DjangoFilterBackend,)  # Enable DjangoFilterBackend
     filterset_class = GameFilter  # Specify the filter class for this view
+    pagination_class = PageNumberPagination
 
 
 class GameDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -57,6 +59,7 @@ class UserFriendsAPIView(generics.RetrieveAPIView):
 class LobbyListView(generics.ListCreateAPIView):
     queryset = Lobby.objects.all()
     serializer_class = LobbySerializer
+    pagination_class = PageNumberPagination
 
 
 class LobbyDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -67,6 +70,7 @@ class LobbyDetailView(generics.RetrieveUpdateDestroyAPIView):
 class UserListView(generics.ListCreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    pagination_class = PageNumberPagination
 
 
 class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
