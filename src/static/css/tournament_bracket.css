@@ -1,28 +1,34 @@
 .frame {
     background-color: rgba(255, 255, 255, 1);
+    background: linear-gradient(
+        180deg,
+        rgb(17.01, 106.26, 240.12) 0%,
+        rgba(0.93, 1.3, 1.87, 0.01) 99.98%,
+        rgba(0.93, 1.3, 1.87, 0.01) 99.99%,
+        rgba(0, 0, 0, 0) 100%
+    );
     display: flex;
     flex-direction: row;
     justify-content: center;
-    width: 100%;
+    width: 170%;
   }
   
   .frame .div {
-    background-color: rgba(255, 255, 255, 1);
     background: linear-gradient(
-      180deg,
-      rgb(17.01, 106.26, 240.12) 0%,
-      rgba(0.93, 1.3, 1.87, 0.01) 99.98%,
-      rgba(0.93, 1.3, 1.87, 0.01) 99.99%,
-      rgba(0, 0, 0, 0) 100%
+        180deg,
+        rgb(17.01, 106.26, 240.12) 0%,
+        rgba(0.93, 1.3, 1.87, 0.01) 99.98%,
+        rgba(0.93, 1.3, 1.87, 0.01) 99.99%,
+        rgba(0, 0, 0, 0) 100%
     );
-    width: 1920px;
-    height: 1080px;
+    width: 170%; /* Use 100% to fill the width of the container */
+    height: 150vh; /* Use 100vh for full viewport height */
     position: relative;
-  }
+}
   
   .frame .group {
     position: absolute;
-    width: 368px;
+    width: 375px;
     height: 130px;
     top: 183px;
     left: 178px;
@@ -69,7 +75,7 @@
     position: absolute;
     width: 279px;
     height: 62px;
-    top: 3px;
+    top: 12px;
     left: 3px;
     font-family: "Faster One-Regular", Helvetica;
     font-weight: 400;
@@ -84,7 +90,7 @@
     position: absolute;
     width: 76px;
     height: 64px;
-    top: 0;
+    top: 14px;
     left: 280px;
     font-family: "Faster One-Regular", Helvetica;
     font-weight: 400;
@@ -136,7 +142,7 @@
     position: absolute;
     width: 76px;
     height: 64px;
-    top: 1px;
+    top: 12px;
     left: 280px;
     font-family: "Faster One-Regular", Helvetica;
     font-weight: 400;
@@ -229,6 +235,7 @@
     height: 5px;
     top: 214px;
     left: 0;
+    background-color: #000;
   }
   
   .frame .overlap-group-wrapper {
@@ -251,6 +258,7 @@
     height: 5px;
     top: 0;
     left: 0;
+    background-color: #000;
   }
   
   .frame .line-2 {
@@ -259,6 +267,7 @@
     height: 219px;
     top: 4px;
     left: 42px;
+    background-color: #000;
   }
   
   .frame .line-3 {
@@ -267,6 +276,7 @@
     height: 5px;
     top: 100px;
     left: 42px;
+    background-color: #000;
   }
   
   .frame .div-wrapper {
@@ -297,6 +307,7 @@
     height: 5px;
     top: 489px;
     left: 1px;
+    background-color: #000;
   }
   
   .frame .line-5 {
@@ -305,6 +316,7 @@
     position: absolute;
     width: 5px;
     left: 42px;
+    background-color: #000;
   }
   
   .frame .line-6 {
@@ -313,6 +325,7 @@
     height: 5px;
     top: 221px;
     left: 42px;
+    background-color: #000;
   }
   
   .frame .line-7 {
@@ -321,5 +334,6 @@
     position: absolute;
     width: 5px;
     left: 42px;
+    background-color: #000;
   }
   

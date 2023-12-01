@@ -268,7 +268,7 @@ class Tournament(models.Model):
             + self.end_date.strftime("%m/%d/%Y")
         )
 
-    def create_tournaments_brackets(self) -> list[Match]:
+    def create_tournaments_brackets(self):
         """
         Creates a list of brackets for the tournaments.
 
@@ -303,7 +303,7 @@ class Tournament(models.Model):
 
         return brackets
 
-    def next_round_tournaments_brackets(self) -> list[Match]:
+    def next_round_tournaments_brackets(self):
         """
         Creates a list of brackets for the next round of the tournaments.
 
