@@ -1,6 +1,6 @@
 import random
 
-from factory import Faker, LazyAttribute, SubFactory, post_generation
+from factory import Faker, LazyAttribute, Sequence, SubFactory, post_generation
 from factory.django import DjangoModelFactory
 
 from chigame.games.models import Category, Chat, Game, Mechanic, Tournament
@@ -11,7 +11,7 @@ class CategoryFactory(DjangoModelFactory):
     class Meta:
         model = Category
 
-    name = Faker("word")
+    name = Sequence(lambda n: f"Category {n+1}")
     description = Faker("text", max_nb_chars=200)
 
 
