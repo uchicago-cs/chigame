@@ -9,47 +9,39 @@
     <br />
     <br />
     <ul class="list-group">
-      <form method="post" action="{% url 'users:bulk-inbox' %}">
-        {% csrf_token %}
-        {% for notification in notifications %}
-          {% with notification_type=notification.type %}
-            <li class="notification-container list-group-item d-flex justify-content-between align-items-start border mb-3 {% if notification.read %}bg-secondary{% endif %}">
-              <div class="ms-2 me-auto">
-                <label>
-                  <input type="checkbox" name="notification[]" value="{{ notification.id }}" />
-                </label>
-                {% if notification.message %}
-                  <a>{{ notification.message }}</a>
-                {% else %}
-                  <a href="{% url 'users:notification-detail' notification.pk %}">{{ default_notification_messages | get_dict_val:notification_type }}</a>
-                {% endif %}
-              </div>
-              <div class="button-container">
-                {% if notification.read %}
-                  <a href="{% url 'users:act-on-inbox-notification' notification.pk 'mark_unread' %}">
-                    <span class="badge bg-primary rounded-pill me-2">
-                      <i class="bi bi-envelope"></i> MARK UNREAD
-                    </span>
-                  </a>
-                {% else %}
-                  <a href="{% url 'users:act-on-inbox-notification' notification.pk 'mark_read' %}">
-                    <span class="badge bg-primary rounded-pill me-2">
-                      <i class="bi bi-envelope-open"></i> MARK READ
-                    </span>
-                  </a>
-                {% endif %}
-                <a href="{% url 'users:act-on-inbox-notification' notification.pk 'delete' %}">
-                  <span class="badge bg-danger rounded-pill me-2">
-                    <i class="bi bi-trash3"></i> DELETE
+      {% for notification in notifications %}
+        {% with notification_type=notification.type %}
+          <li class="notification-container list-group-item d-flex justify-content-between align-items-start border mb-3 {% if notification.read %}bg-secondary{% endif %}">
+            <div class="ms-2 me-auto">
+              {% if notification.message %}
+                <a>{{ notification.message }}</a>
+              {% else %}
+                <a href="{% url 'users:notification-detail' notification.pk %}">{{ default_notification_messages | get_dict_val:notification_type }}</a>
+              {% endif %}
+            </div>
+            <div class="button-container">
+              {% if notification.read %}
+                <a href="{% url 'users:act-on-inbox-notification' notification.pk 'mark_unread' %}">
+                  <span class="badge bg-primary rounded-pill me-2">
+                    <i class="bi bi-envelope"></i> MARK UNREAD
                   </span>
                 </a>
-              </div>
-            </li>
-          {% endwith %}
-        {% endfor %}
-        <button class="btn btn-primary" type="submit" name="delete_all" value="1">Delete All Marked</button>
-        <button class="btn btn-primary" type="submit" name="mark_all" value="1">Mark All As Read</button>
-      </form>
+              {% else %}
+                <a href="{% url 'users:act-on-inbox-notification' notification.pk 'mark_read' %}">
+                  <span class="badge bg-primary rounded-pill me-2">
+                    <i class="bi bi-envelope-open"></i> MARK READ
+                  </span>
+                </a>
+              {% endif %}
+              <a href="{% url 'users:act-on-inbox-notification' notification.pk 'delete' %}">
+                <span class="badge bg-danger rounded-pill me-2">
+                  <i class="bi bi-trash3"></i> DELETE
+                </span>
+              </a>
+            </div>
+          </li>
+        {% endwith %}
+      {% endfor %}
     </ul>
   </div>
   <script>

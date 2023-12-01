@@ -269,18 +269,3 @@ def act_on_inbox_notification(request, pk, action):
     except Notification.DoesNotExist:
         messages.error(request, "Something went wrong. This notification does not exist")
     return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
-
-
-@login_required
-def bulk_inbox(request):
-    if request.method == "POST":
-        selected_notifications = request.POST.getlist("notification[]")
-        if "delete_all" in request.POST:
-            for pk in selected_notifications:
-                notification = Notification.objects.get(pk=pk)
-                notification.mark_as_deleted()
-        if "mark_all" in request.POST:
-            for pk in selected_notifications:
-                notification = Notification.objects.get(pk=pk)
-                notification.mark_as_read()
-    return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
