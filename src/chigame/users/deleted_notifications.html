@@ -4,10 +4,8 @@
 
 {% block content %}
   <div class="container mt-4">
-    <a href="{% url 'users:deleted-notifications' pk=request.user.pk %}"
-       class="btn btn-primary">Show Deleted Notifications</a>
-    <br />
-    <br />
+    <a href="{% url 'users:user-inbox' pk=request.user.pk %}"
+       class="btn btn-primary">Back</a>
     <ul class="list-group">
       {% for notification in notifications %}
         {% with notification_type=notification.type %}
