@@ -1,19 +1,15 @@
 # from django.shortcuts import render
-from rest_framework import generics
+from dj_rest_auth.models import TokenModel
+from rest_framework import generics, status
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
 
-from chigame.api.serializers import (
-    GameSerializer,
-    LobbySerializer,
-    NotificationSerializer,
-    TournamentSerializer,
-    UserSerializer,
-)
-from chigame.games.models import Game, Lobby, Notification, Tournament
+from chigame.api.serializers import GameSerializer, LobbySerializer, TournamentSerializer, UserSerializer
+from chigame.games.models import Game, Lobby, Tournament
 from chigame.users.models import User, UserProfile
-
-from .permissions import IsUnauthenticated
 
 
 class GameListView(generics.ListCreateAPIView):
@@ -30,16 +26,22 @@ class UserListView(generics.ListAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
 
 
-class UserRegistrationView(generics.CreateAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = [IsUnauthenticated]
+class UserRegistrationView(APIView):
+    permission_classes = [IsAuthenticated]
 
-    def perform_create(self, serializer):
-        user = serializer.save()
-        UserProfile.objects.create(user=user, display_name=user.name)
+    def post(self, request, *args, **kwargs):
+        serializer_class = UserSerializer(data=request.data)
+        if serializer_class.is_valid():
+            user = serializer_class.save()
+            UserProfile.objects.create(user=user, display_name=user.name)
+            refresh = TokenModel.objects.create(user=user)
+            access_token = str(refresh.key)
+
+            return Response({"access_token": access_token}, status=status.HTTP_201_CREATED)
+        return Response(serializer_class.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class TournamentCreateView(generics.CreateAPIView):
@@ -51,11 +53,6 @@ class TournamentCreateView(generics.CreateAPIView):
 class TournamentListView(generics.ListAPIView):
     queryset = Tournament.objects.all()
     serializer_class = TournamentSerializer
-
-
-class NotificationListView(generics.ListAPIView):
-    queryset = Notification.objects.all()
-    serializer_class = NotificationSerializer
 
 
 class LobbyListView(generics.ListCreateAPIView):

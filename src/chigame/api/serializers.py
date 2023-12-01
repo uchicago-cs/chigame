@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from chigame.games.models import Game, Lobby, Notification, Tournament
+from chigame.games.models import Game, Lobby, Tournament
 from chigame.users.models import User
 
 
@@ -8,12 +8,6 @@ class GameSerializer(serializers.ModelSerializer):
     class Meta:
         model = Game
         fields = ("id", "name", "description", "min_players", "max_players")
-
-
-class NotificationSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Notification
-        fields = ("recipients", "content", "timestamp")
 
 
 class TournamentSerializer(serializers.ModelSerializer):
