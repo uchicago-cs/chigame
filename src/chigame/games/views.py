@@ -303,6 +303,11 @@ class TournamentCreateView(CreateView):
     def get_success_url(self):
         return reverse_lazy("tournament-detail", kwargs={"pk": self.object.pk})
 
+    def create_chat(self):
+        # Auto-create a chat for this respective tournament
+        chat = Chat(tournament=self)
+        chat.save()
+
 
 @method_decorator(staff_required, name="dispatch")
 class TournamentUpdateView(UpdateView):
@@ -358,11 +363,6 @@ class TournamentUpdateView(UpdateView):
 
     def get_success_url(self):
         return reverse_lazy("tournament-detail", kwargs={"pk": self.object.pk})
-
-    def create_chat(self):
-        # Auto-create a chat for this respective tournament
-        chat = Chat(tournament=self)
-        chat.save()
 
 
 @method_decorator(staff_required, name="dispatch")
