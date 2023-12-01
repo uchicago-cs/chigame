@@ -1,4 +1,5 @@
 from functools import wraps
+from random import choice
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -11,10 +12,10 @@ from django.urls import reverse_lazy
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
-from django_tables2 import SingleTableView
 
+from .filters import LobbyFilter
 from .forms import GameForm, LobbyForm
-from .models import Game, Lobby, Tournament
+from .models import Game, Lobby, Match, Player, Tournament
 from .tables import LobbyTable
 
 
@@ -25,10 +26,12 @@ class GameListView(ListView):
     paginate_by = 20
 
 
-class LobbyListView(SingleTableView):
-    model = Lobby
-    table_class = LobbyTable
-    template_name = "games/lobby_list.html"
+def lobby_list(request):
+    queryset = Lobby.objects.all()
+    filter = LobbyFilter(request.GET, queryset=queryset)
+    table = LobbyTable(filter.qs)
+
+    return render(request, "games/lobby_list.html", {"table": table, "filter": filter})
 
 
 @login_required
@@ -460,6 +463,52 @@ class TournamentArchivedListView(ListView):
     # check if user is staff member
     def test_func(self):
         return self.request.user.is_staff
+
+
+# Placeholder Game
+@login_required
+def coin_flip_game(request, pk):
+    # check if user has already played game
+    if Player.objects.filter(user=request.user, match_id__lobby__id=pk).exists():
+        return render(request, "games/game_already_played.html")
+    return render(request, "games/game_coinflip.html", {"lobby_id": pk})
+
+
+@login_required
+def check_guess(request, pk):
+    user_guess = request.POST.get("user_guess")
+    coin_result = choice(["heads", "tails"])
+    correct_guess = user_guess == coin_result
+
+    lobby = get_object_or_404(Lobby, id=pk)
+
+    # allows two users to play the game
+    if Match.objects.filter(lobby__id=pk).exists():
+        match = get_object_or_404(Match, lobby__id=pk)
+    else:
+        # Create Match instance linked to the fetched Lobby
+        match = Match.objects.create(
+            game_id=1,  # Replace with the actual Game ID
+            lobby=lobby,
+            date_played=timezone.now()
+            # Add other fields as needed
+        )
+
+    player = Player.objects.create(
+        user=request.user,
+        match=match,
+    )
+    if correct_guess:
+        player.outcome = Player.WIN
+    else:
+        player.outcome = Player.LOSE
+    player.save()
+
+    return render(
+        request,
+        "games/game_coinresult.html",
+        {"user_guess": user_guess, "coin_result": coin_result, "correct_guess": correct_guess},
+    )
 
 
 def TournamentChatDetailView(request, pk):

@@ -1,11 +1,11 @@
 from django.urls import path
 
 from . import views
-from .views import LobbyCreateView, LobbyListView
+from .views import LobbyCreateView
 
 urlpatterns = [
     # lobbies
-    path("lobby/", LobbyListView.as_view(), name="lobby-list"),
+    path("lobby/", views.lobby_list, name="lobby-list"),
     path("lobby/create/", LobbyCreateView.as_view(), name="lobby-create"),
     path("lobby/<int:pk>/", views.ViewLobbyDetails.as_view(), name="lobby-details"),
     path("lobby/<int:pk>/join", views.lobby_join, name="lobby-join"),
@@ -25,6 +25,9 @@ urlpatterns = [
     path("tournaments/<int:pk>/update/", views.TournamentUpdateView.as_view(), name="tournament-update"),
     path("tournaments/<int:pk>/delete/", views.TournamentDeleteView.as_view(), name="tournament-delete"),
     path("tournaments/archived/", views.TournamentArchivedListView.as_view(), name="tournament-archived"),
+    # placeholder game
+    path("lobby/<int:pk>/coinflip", views.coin_flip_game, name="placeholder-game"),
+    path("lobby/<int:pk>/flipresult", views.check_guess, name="flip-result"),
     # chat in tournaments
     path("tournaments/<int:pk>/chat/", views.TournamentChatDetailView, name="tournament-chat"),
 ]

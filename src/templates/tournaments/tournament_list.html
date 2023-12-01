@@ -24,27 +24,39 @@
           </h2>
           {% if tournament.status == "tournament ended" %}
             {% if tournament.archived %}
-              <form method="post">
-                {% csrf_token %}
-                <input type="hidden" name="tournament_id" value="{{ tournament.id }}" />
-                <input type="hidden" name="action" value="unarchive" />
-                <button type="submit">
-                  <img src="{% static 'images/tournaments_icons/Archived_icon.png' %}"
-                       alt="Archived"
-                       width="30" />
-                </button>
-              </form>
+              {% if user.is_staff %}
+                <form method="post">
+                  {% csrf_token %}
+                  <input type="hidden" name="tournament_id" value="{{ tournament.id }}" />
+                  <input type="hidden" name="action" value="unarchive" />
+                  <button type="submit">
+                    <img src="{% static 'images/tournaments_icons/Archived_icon.png' %}"
+                         alt="Archived"
+                         width="30" />
+                  </button>
+                </form>
+              {% else %}
+                <img src="{% static 'images/tournaments_icons/Archived_icon.png' %}"
+                     alt="Archived"
+                     width="30" />
+              {% endif %}
             {% else %}
-              <form method="post">
-                {% csrf_token %}
-                <input type="hidden" name="tournament_id" value="{{ tournament.id }}" />
-                <input type="hidden" name="action" value="archive" />
-                <button type="submit">
-                  <img src="{% static 'images/tournaments_icons/Unarchived_icon.png' %}"
-                       alt="Not archived"
-                       width="30" />
-                </button>
-              </form>
+              {% if user.is_staff %}
+                <form method="post">
+                  {% csrf_token %}
+                  <input type="hidden" name="tournament_id" value="{{ tournament.id }}" />
+                  <input type="hidden" name="action" value="archive" />
+                  <button type="submit">
+                    <img src="{% static 'images/tournaments_icons/Unarchived_icon.png' %}"
+                         alt="Not archived"
+                         width="30" />
+                  </button>
+                </form>
+              {% else %}
+                <img src="{% static 'images/tournaments_icons/Unarchived_icon.png' %}"
+                     alt="Not archived"
+                     width="30" />
+              {% endif %}
             {% endif %}
           {% endif %}
         </div>
