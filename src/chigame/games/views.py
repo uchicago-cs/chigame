@@ -136,7 +136,6 @@ class GameEditView(UserPassesTestMixin, UpdateView):
 
 
 def search_results(request):
-    # Must be "q" and not "query" as django machina framework expects a "q" input
     query = request.GET.get("q")
 
     """
