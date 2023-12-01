@@ -1,4 +1,8 @@
+import random
+
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ValidationError
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils import timezone
 
@@ -7,13 +11,13 @@ from chigame.users.models import Group, Notification, User
 
 class Game(models.Model):
     """
-    A game like Chess, Checkers, etc.
+    A game like Chess, Checkers, Go, etc.
     """
 
     # ================ BASIC INFORMATION ================
     name = models.TextField()
     description = models.TextField()
-    year_published = models.PositiveIntegerField(null=True, blank=True)
+    year_published = models.IntegerField(null=True, blank=True)
 
     # NOTE:
     # Regular game images are not to be stored in the repository due to their large size.
@@ -34,12 +38,39 @@ class Game(models.Model):
     min_playtime = models.PositiveIntegerField(null=True, blank=True)
     max_playtime = models.PositiveIntegerField(null=True, blank=True)
 
-    complexity = models.PositiveSmallIntegerField(null=True, blank=True)  # 1-5, 1 being the easiest
-    category = models.ManyToManyField("Category", related_name="games", blank=True)
+    complexity = models.DecimalField(
+        max_digits=3, decimal_places=2, null=True, validators=[MinValueValidator(1), MaxValueValidator(5)]
+    )
+
+    categories = models.ManyToManyField("Category", related_name="games", blank=True)
     mechanics = models.ManyToManyField("Mechanic", related_name="games", blank=True)
 
     # ================ OTHER ================
     BGG_id = models.PositiveIntegerField(null=True, blank=True)  # BoardGameGeek ID
+
+    # ================ VALIDATON ================
+    def clean(self):
+        # Ensures min_players is not greater than max_players
+        if self.min_players and self.max_players and self.min_players > self.max_players:
+            raise ValidationError({"min_players": "min_players cannot be greater than max_players"})
+
+        # Validate playtime constraints for all combinations of min_playtime, max_playtime, and expected_playtime
+        if self.min_playtime is not None and self.max_playtime is not None:
+            if self.min_playtime > self.max_playtime:
+                raise ValidationError({"min_playtime": "min_playtime cannot be greater than max_playtime"})
+
+        if self.expected_playtime is not None:
+            if self.min_playtime is not None and self.expected_playtime < self.min_playtime:
+                raise ValidationError({"expected_playtime": "expected_playtime cannot be less than min_playtime"})
+
+            if self.max_playtime is not None and self.expected_playtime > self.max_playtime:
+                raise ValidationError({"expected_playtime": "expected_playtime cannot be greater than max_playtime"})
+
+    def save(self, *args, **kwargs):
+        # Calls full_clean to run all model validations, including the custom clean method and built-in field checks.
+        # https://docs.djangoproject.com/en/stable/ref/models/instances/#django.db.models.Model.full_clean
+        self.full_clean()
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name
@@ -89,6 +120,7 @@ class Category(models.Model):
 
     name = models.CharField(max_length=255, unique=True)
     description = models.TextField(null=True)
+    image = models.TextField(default="/static/images/no_picture_available.png")
 
     def __str__(self):
         return self.name
@@ -102,6 +134,7 @@ class Mechanic(models.Model):
 
     name = models.CharField(max_length=255, unique=True)
     description = models.TextField(null=True)
+    image = models.TextField(default="/static/images/no_picture_available.png")
 
     def __str__(self):
         return self.name
@@ -132,6 +165,17 @@ class Lobby(models.Model):
     max_players = models.PositiveIntegerField()
     time_constraint = models.PositiveIntegerField(default=300)
     lobby_created = models.DateTimeField(default=timezone.now)
+
+    # ================ VALIDATON ================
+    def clean(self):
+        # Ensures min_players is not greater than max_players
+        if self.min_players > self.max_players:
+            raise ValidationError({"min_players": "min_players cannot be greater than max_players"})
+
+    def save(self, *args, **kwargs):
+        # Calls full_clean to run all validations before saving
+        self.full_clean()
+        super().save(*args, **kwargs)
 
 
 class Match(models.Model):
@@ -188,20 +232,117 @@ class Tournament(models.Model):
     """
     A tournament of a game, between a set of players. Each object represents a
     single-elimination tournament.
+
+    The schedule of the tournament is as follows:
+    1. Pre-tournament registration period, during which players can see the information of the tournament
+    2. Registration period, during which players can register for the tournament
+    3. Tournament, during which players play matches
+    4. Post-tournament period, during which players can see the results of the tournament
     """
 
     name = models.CharField(max_length=255)
     game = models.ForeignKey(Game, on_delete=models.CASCADE)
-    start_date = models.DateTimeField()
-    end_date = models.DateTimeField()
+    registration_start_date = models.DateTimeField()  # the start date of the registration period
+    registration_end_date = models.DateTimeField()  # the end date of the registration period
+    tournament_start_date = models.DateTimeField()  # the start date of the tournament
+    tournament_end_date = models.DateTimeField()  # the end date of the tournament
     max_players = models.PositiveIntegerField()
     description = models.TextField()  # not limited to 255 characters
     rules = models.TextField()  # not limited to 255 characters
     draw_rules = models.TextField()  # not limited to 255 characters
+    num_winner = models.PositiveIntegerField(default=1)  # number of possible winners for the tournament
+    archived = models.BooleanField(default=False)  # whether the tournament is archived by the admin
+
     matches = models.ManyToManyField(Match, related_name="matches", blank=True)
     winners = models.ManyToManyField(User, related_name="won_tournaments", blank=True)  # allow multiple winners
-    num_winner = models.PositiveIntegerField(default=1)  # number of possible winners for the tournament
     players = models.ManyToManyField(User, related_name="joined_tournaments", blank=True)
+
+    @property
+    def status(self):
+        """
+        Returns the status of the tournament.
+        """
+        if self.registration_start_date > timezone.now():
+            return "preparing"
+        elif self.registration_end_date > timezone.now():  # the registration period has started but not ended yet
+            return "registration open"
+        elif (
+            self.tournament_start_date > timezone.now()
+        ):  # the registration period has ended but the tournament has not started yet
+            return "registration closed"
+        elif self.tournament_end_date > timezone.now():  # the tournament has started but not ended yet
+            return "tournament in progress"
+        else:  # the tournament has ended
+            return "tournament ended"
+
+    def clean(self):  # restriction
+        super().clean()  # call the parent class's clean() method
+
+        # Section: players
+
+        # the number of winners cannot be greater than the number of players, but can be equal to it
+        if self.num_winner > self.max_players:
+            raise ValidationError("The number of winners cannot be greater than the number of players.")
+
+        # the number of winners should be greater than 0
+        if self.num_winner <= 0:
+            raise ValidationError("The number of winners should be greater than 0.")
+
+        # the number of players should be less than or equal to the maximum number of players
+        if self.pk is not None:  # the tournament is being updated
+            if self.players.count() > self.max_players:
+                raise ValidationError(
+                    "The number of players should be less than or equal to the maximum number of players."
+                )
+
+        # the winners should also be players
+        if self.pk is not None:  # the tournament is being updated
+            for winner in self.winners.all():
+                if winner not in self.players.all():
+                    raise ValidationError("The winners should also be players.")
+
+        # Section: dates
+
+        # check if the dates are valid
+        if self.registration_start_date is None:
+            raise ValidationError("The registration start date is not valid.")
+        if self.registration_end_date is None:
+            raise ValidationError("The registration end date is not valid.")
+        if self.tournament_start_date is None:
+            raise ValidationError("The tournament start date is not valid.")
+        if self.tournament_end_date is None:
+            raise ValidationError("The tournament end date is not valid.")
+
+        # all the dates should be in the future (the current time is not allowed)
+        # when the tournament is created and would not be checked when the tournament is updated (
+        # the date cannot be changed after the tournament is created)
+        if self.pk is None:  # the tournament is being created
+            if self.registration_start_date < timezone.now():
+                raise ValidationError("The registration start date should be in the future.")
+            if self.registration_end_date < timezone.now():
+                raise ValidationError("The registration end date should be in the future.")
+            if self.tournament_start_date < timezone.now():
+                raise ValidationError("The tournament start date should be in the future.")
+            if self.tournament_end_date < timezone.now():
+                raise ValidationError("The tournament end date should be in the future.")
+
+        # the registration start date should be earlier than the registration end date
+        if self.registration_start_date > self.registration_end_date:
+            raise ValidationError("The registration start date should be earlier than the registration end date.")
+
+        # the tournament start date should be earlier than the tournament end date
+        if self.tournament_start_date > self.tournament_end_date:
+            raise ValidationError("The tournament start date should be earlier than the tournament end date.")
+
+        # the registration end date should be earlier than the tournament start date
+        if self.registration_end_date > self.tournament_start_date:
+            raise ValidationError("The registration end date should be earlier than the tournament start date.")
+
+        # Section: archived
+
+        # the tournament can only be archived if it has ended
+        if self.archived and self.status != "tournament ended":
+            raise ValidationError("The tournament can only be archived if it has ended.")
 
     def get_all_matches(self):
         return self.matches.all()
@@ -212,6 +353,20 @@ class Tournament(models.Model):
     def get_all_players(self):
         return self.players.all()
 
+    def set_archive(self, archive):
+        """
+        Sets the archive field of the tournament. The tournament can only be archived if it has ended.
+        """
+        if not isinstance(archive, bool):
+            raise TypeError("The archive field should be a boolean.")
+
+        # the tournament can only be archived if it has ended
+        if self.status != "tournament ended":
+            raise ValidationError("The tournament can only be archived if it has ended.")
+
+        self.archived = archive
+        self.save()
+
     def __str__(self):  # may be changed later
         return (
             "Tournament "
@@ -219,10 +374,171 @@ class Tournament(models.Model):
             + ": "
             + self.game.name
             + " from "
-            + self.start_date.strftime("%m/%d/%Y")
+            + self.tournament_start_date.strftime("%m/%d/%Y")
             + " to "
-            + self.end_date.strftime("%m/%d/%Y")
+            + self.tournament_end_date.strftime("%m/%d/%Y")
         )
+
+    def create_tournaments_brackets(self) -> list[Match]:
+        """
+        Creates a list of brackets for the tournaments.
+
+        Returns:
+            a list of matches
+        """
+        players = [player for player in self.players.all()]  # the players in the tournament
+        brackets = []
+        random.shuffle(players)  # shuffle the players
+        # Create a list of brackets (match assignment) for the tournament
+        for i in range(0, len(players), self.game.max_players):
+            game = self.game
+            lobby = Lobby.objects.create(
+                match_status=Lobby.Lobbied,
+                name=self.name + " " + str(i),
+                game=game,
+                game_mod_status=Lobby.Default_game,
+                created_by=players[i],
+                min_players=game.min_players,
+                max_players=game.max_players,
+            )
+            lobby.members.set(players[i : i + self.game.max_players])
+            lobby.save()
+            players_in_match = players[i : i + self.game.max_players]
+            match = Match.objects.create(game=game, lobby=lobby, date_played=self.tournament_start_date)
+            # date_played is set to the start date of the tournament for now
+            match.players.set(players_in_match)
+            match.save()
+            brackets.append(match)
+
+            self.matches.add(match)
+
+        return brackets
+
+    def next_round_tournaments_brackets(self) -> list[Match]:
+        """
+        Creates a list of brackets for the next round of the tournaments.
+
+        Returns:
+            a list of matches
+        """
+        brackets = self.matches.all()  # the matches of the previous round
+        players = []
+
+        # get the winners of the previous round
+        for bracket in brackets:
+            bracket_players = bracket.players.all()
+            bracket_winners = [
+                player for player in bracket_players if player.outcome == Player.WIN
+            ]  # allow multiple winners
+            # currently only players who win instead of draw can advance to the next round
+            for winner in bracket_winners:
+                players.append(winner)
+
+        # check if the number of players is small enough to end the tournament
+        if len(players) <= self.num_winner:
+            self.end_tournament()
+            return []  # the tournament is finished
+
+        # clear the matches of the previous round
+        self.matches.clear()
+
+        # create the matches of the next round
+        random.shuffle(players)
+        next_round_brackets = []
+        # Create a list of brackets (match assignment) for the tournament
+        for i in range(0, len(brackets), self.game.max_players):
+            game = self.game
+            lobby = Lobby.objects.create(
+                match_status=Lobby.Lobbied,
+                name=self.name + " " + str(i),
+                game=game,
+                game_mod_status=Lobby.Default_game,
+                created_by=brackets[i].winners.all()[0],
+                min_players=game.min_players,
+                max_players=game.max_players,
+            )
+            lobby.members.set(players[i : i + self.game.max_players])
+            lobby.save()
+            players_in_match = players[i : i + self.game.max_players]
+            match = Match.objects.create(game=game, lobby=lobby, date_played=self.tournament_start_date)
+            match.players.set(players_in_match)
+            match.save()
+            next_round_brackets.append(match)
+
+            self.matches.add(match)
+
+        return next_round_brackets
+
+    def end_tournament(self) -> None:
+        """
+        Ends the tournament.
+
+        Returns:
+            None
+        """
+
+        winners = []
+        brackets = self.matches.all()
+        for bracket in brackets:  # the matches of the previous round
+            # get the winners of the previous round
+            bracket_players = bracket.players.all()
+            bracket_winners = [
+                player for player in bracket_players if player.outcome == Player.WIN
+            ]  # allow multiple winners
+            # currently only players who win instead of draw can advance to the next round
+            for winner in bracket_winners:
+                winners.append(winner)
+
+        self.winners.set(winners)
+        self.save()
+
+        # Note: we don't delete the tournament because we want to keep it in the database
+
+    def tournament_sign_up(self, user: User) -> int:
+        """
+        Signs up a user for a tournament. If the user has already joined the
+        tournament, nothing happens.
+
+        Args:
+            user: the user
+
+        Returns:
+            int: 0 if the user has successfully signed up for the tournament,
+            1 if the user has already joined the tournament,
+            2 if the tournament is full, 3 if the tournament has already started,
+            4 if the tournament has already ended
+        """
+        if user in self.players.all():
+            # The user has already joined the tournament
+            return 1
+        if self.players.count() >= self.max_players:
+            # The tournament is full
+            return 2
+        self.players.add(user)
+        self.save()
+        return 0
+
+    def tournament_withdraw(
+        self,
+        user: User,
+    ) -> int:
+        """
+        Withdraws a user from a tournament. If the user has not joined the
+        tournament, nothing happens.
+
+        Args:
+            user: the user
+
+        Returns:
+            int: 0 if the user has successfully withdrawn from the tournament,
+            1 if the user has not joined the tournament
+        """
+        if user not in self.players.all():
+            # The user has not joined the tournament
+            return 1
+        self.players.remove(user)
+        self.save()
+        return 0
 
 
 class Announcement(models.Model):
@@ -285,14 +601,10 @@ class Chat(models.Model):
     other Chats. The messages are stored in the Message model.
     """
 
-    match = models.OneToOneField(Match, on_delete=models.CASCADE)
-    # match: the match in which the chat is taking place.
+    tournament = models.OneToOneField(Tournament, on_delete=models.CASCADE, default=None)
 
-    # visibility: a smallPositiveIntegerField representing the visibility of
-    # the chat. This may be added later.
-
-    def __str__(self):  # may be changed later
-        return "Chat for match " + str(self.match)
+    def __str__(self):
+        return "Chat for tournament " + str(self.tournament)
 
 
 class Message(models.Model):
@@ -302,12 +614,17 @@ class Message(models.Model):
     """
 
     chat = models.ForeignKey(Chat, on_delete=models.CASCADE)
-    content = models.TextField()
-    timestamp = models.DateTimeField(auto_now_add=True)  # timestamp of the
-    # moment the message was created.
+    content = models.TextField(null=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
     sender = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-    # Even if the user is deleted, the message will still exist such that the
-    # message history is preserved. The sender field will be set to null.
+    token_id = models.PositiveIntegerField(default=None)
+    update_on = models.PositiveIntegerField(default=None, null=True)
 
-    def __str__(self):  # may be changed later
+    def save(self, *args, **kwargs):
+        if not self.token_id:
+            last_message = Message.objects.filter(chat=self.chat).order_by("-token_id").first()
+            self.token_id = last_message.token_id + 1 if last_message else 1
+        super().save(*args, **kwargs)
+
+    def __str__(self):
         return "Message from " + str(self.sender) + ": " + self.content

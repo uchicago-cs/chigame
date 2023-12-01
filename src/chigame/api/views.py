@@ -1,4 +1,5 @@
 # from django.shortcuts import render
+
 from dj_rest_auth.models import TokenModel
 from rest_framework import generics, status
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
@@ -11,15 +12,26 @@ from chigame.api.serializers import GameSerializer, LobbySerializer, TournamentS
 from chigame.games.models import Game, Lobby, Tournament
 from chigame.users.models import User, UserProfile
 
+from django_filters.rest_framework import DjangoFilterBackend
+
+from chigame.api.filters import GameFilter
+from chigame.api.serializers import GameSerializer, LobbySerializer, MessageSerializer, UserSerializer
+from chigame.games.models import Game, Lobby, Message, User
+from chigame.users.models import UserProfile
+
+
 
 class GameListView(generics.ListCreateAPIView):
     queryset = Game.objects.all()
     serializer_class = GameSerializer
+    filter_backends = (DjangoFilterBackend,)  # Enable DjangoFilterBackend
+    filterset_class = GameFilter  # Specify the filter class for this view
 
 
 class GameDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Game.objects.all()
     serializer_class = GameSerializer
+
 
 
 class UserListView(generics.ListAPIView):
@@ -54,6 +66,15 @@ class TournamentListView(generics.ListAPIView):
     queryset = Tournament.objects.all()
     serializer_class = TournamentSerializer
 
+class UserFriendsAPIView(generics.RetrieveAPIView):
+    serializer_class = UserSerializer
+
+    def get_queryset(self):
+        user_id = self.kwargs["pk"]
+        user_profile = UserProfile.objects.get(user=user_id)
+        return user_profile.friends.all()
+
+
 
 class LobbyListView(generics.ListCreateAPIView):
     queryset = Lobby.objects.all()
@@ -70,6 +91,7 @@ class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = UserSerializer
 
 
+
 class CustomTokenObtainPairView(TokenObtainPairView):
     # Add any custom behavior if needed
     pass
@@ -83,3 +105,13 @@ class CustomTokenRefreshView(TokenRefreshView):
 class CustomTokenVerifyView(TokenVerifyView):
     # Add any custom behavior if needed
     pass
+
+class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+
+class MessageView(generics.CreateAPIView):
+    queryset = Message.objects.all()
+    serializer_class = MessageSerializer
+
