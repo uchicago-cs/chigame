@@ -8,7 +8,6 @@ from chigame.users.models import User
 
 from django.utils import timezone
 
-
 class CategoryFactory(DjangoModelFactory):
     class Meta:
         model = Category
