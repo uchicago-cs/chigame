@@ -12,8 +12,8 @@ from django.urls import reverse_lazy
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
-from django_tables2 import SingleTableView
 
+from .filters import LobbyFilter
 from .forms import GameForm, LobbyForm
 from .models import Game, Lobby, Match, Player, Tournament
 from .tables import LobbyTable
@@ -26,10 +26,12 @@ class GameListView(ListView):
     paginate_by = 20
 
 
-class LobbyListView(SingleTableView):
-    model = Lobby
-    table_class = LobbyTable
-    template_name = "games/lobby_list.html"
+def lobby_list(request):
+    queryset = Lobby.objects.all()
+    filter = LobbyFilter(request.GET, queryset=queryset)
+    table = LobbyTable(filter.qs)
+
+    return render(request, "games/lobby_list.html", {"table": table, "filter": filter})
 
 
 @login_required
