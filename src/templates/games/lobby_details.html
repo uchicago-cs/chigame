@@ -4,7 +4,6 @@
   <h1>{{ lobby_detail.name }}</h1>
   <p>
     <strong>Game:</strong> {{ lobby_detail.game }}
-    <p>{{ lobby_detail.match_status }}</p>
     <strong>Created By:</strong> {{ lobby_detail.created_by }}
   </p>
   {% if lobby_detail.match_status == 1 %}
@@ -55,10 +54,10 @@
       <span>Match In-Progress</span>
     {% endif %}
   {% else %}
-    <span>Match Finished</span>
+    <span>Match Closed</span>
   {% endif %}
   <p>
-    <a href="{% url 'lobby-list' lobby_detail.pk %}">Back to Lobbies</a>
+    <a href="{% url 'lobby-list' %}">Back to Lobbies</a>
   </p>
   <!-- Timer Script -->
   <script>
@@ -86,7 +85,7 @@
         if (remainingSeconds > 0) {
           setTimeout(updateTime, 1000);
         } else {
-          if ("{{ lobby_detail.match_status}}" == 1 && ("{{lobby_detail.members.all.count}}" >= "{{lobby_detail.min_players}}")) {
+          if ("{{ lobby_detail.match_status}}" == 1) {
             const lobbyId = "{{ lobby_detail.pk }}";
             updateMatchStatus(lobbyId);
           }

@@ -83,9 +83,11 @@ def update_match_status(request, pk):
     # A bit weird: sends Ajax request to change match status when timer runs out.
     lobby = get_object_or_404(Lobby, id=pk)
 
-    if lobby.match_status != 2:
+    if lobby.members.all().count() >= lobby.min_players:
         lobby.match_status = 2
-        lobby.save()
+    else:
+        lobby.match_status = 3
+    lobby.save()
 
     return JsonResponse({"message": "Match status updated successfully"})
 
@@ -405,7 +407,7 @@ def check_guess(request, pk):
     else:
         # Create Match instance linked to the fetched Lobby
         match = Match.objects.create(
-            game_id=1,  # Replace with the actual Game ID
+            game_id=lobby.game.id,
             lobby=lobby,
             date_played=timezone.now()
             # Add other fields as needed
@@ -424,7 +426,8 @@ def check_guess(request, pk):
     # Checks if everyone has played
     if match.players.all().count() == lobby.members.all().count():
         lobby.match_status = 3
-
+    match.save()
+    lobby.save()
     return render(
         request,
         "games/game_coinresult.html",
