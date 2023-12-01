@@ -1,18 +1,18 @@
 import random
 
-from factory import Faker, LazyAttribute, Sequence, SubFactory, post_generation, LazyFunction, Iterator
+from django.utils import timezone
+from factory import Faker, Iterator, LazyAttribute, LazyFunction, Sequence, SubFactory, post_generation
 from factory.django import DjangoModelFactory
 
-from chigame.games.models import Category, Chat, Game, Lobby, Mechanic, Tournament,  Lobby
+from chigame.games.models import Category, Chat, Game, Lobby, Mechanic, Tournament
 from chigame.users.models import User
 
-from django.utils import timezone
 
 class CategoryFactory(DjangoModelFactory):
     class Meta:
         model = Category
 
-    name = Sequence(lambda n: f"Category {n+1}")
+    name = Sequence(lambda n: f"Category {n + 1}")
     description = Faker("text", max_nb_chars=200)
 
 
@@ -36,8 +36,8 @@ class GameFactory(DjangoModelFactory):
 
     min_players = Faker("pyint", min_value=1, max_value=10)
 
-    # LazyAttribute allows setting a field's value based on other fields at runtime.
-    # In this case, we want max_players to be at least min_players, but no more than 10.
+    # LazyAttribute allows setting a field's value based on other fields at runtime
+    # In this case, we want max_players to be at least min_players, but no more than 10
     max_players = LazyAttribute(lambda x: random.randint(x.min_players, 10))
 
     suggested_age = Faker("pyint", min_value=1, max_value=18)
