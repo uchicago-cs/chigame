@@ -199,6 +199,8 @@ class Notification(models.Model):
     type = models.PositiveIntegerField(choices=NOTIFICATION_TYPES)
     read = models.BooleanField(default=False)
     visible = models.BooleanField(default=True)
+    spam = models.BooleanField(default=False)
+    bookmark = models.BooleanField(default=False)
     actor_content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     actor_object_id = models.PositiveIntegerField()
     actor = GenericForeignKey("actor_content_type", "actor_object_id")
