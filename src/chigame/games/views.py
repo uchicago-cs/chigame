@@ -190,6 +190,12 @@ class TournamentListView(ListView):
         # Additional context can be added if needed
         return context
 
+    def get(self, request, *args, **kwargs):
+        super().get(request, *args, **kwargs)
+        for tournament in self.object_list:
+            tournament.check_and_end_tournament()  # check if the tournament has ended
+        return self.render_to_response(self.get_context_data())
+
     def post(self, request, *args, **kwargs):
         # This method is called when the user clicks the "Join Tournament" or
         # "Withdraw" button
@@ -243,6 +249,7 @@ class TournamentDetailView(DetailView):
         if tournament.matches.count() == 0 and tournament.status == "registration closed":
             # if the tournament matches have not been created
             tournament.create_tournaments_brackets()
+        tournament.check_and_end_tournament()  # check if the tournament has ended
         return self.render_to_response(self.get_context_data())
 
     def post(self, request, *args, **kwargs):

@@ -276,7 +276,7 @@ class Tournament(models.Model):
             return "registration closed"
         elif self.tournament_end_date > timezone.now():  # the tournament has started, matches are being played
             return "tournament in progress"
-        else:  # all matches have finished. The tournament has ended
+        else:  # all matches have finished. The tournament has ended (any matches that have not finished are forfeited)
             return "tournament ended"
 
     def clean(self):  # restriction
@@ -371,6 +371,24 @@ class Tournament(models.Model):
         self.archived = archive
         self.save()
 
+    def check_and_end_tournament(self):
+        """
+        Checks if the tournament end date has reached and ends the tournament if it has.
+        Any matches that have not finished are forfeited.
+        """
+        if self.status == "tournament ended":
+            brackets = self.matches.all()
+            for bracket in brackets:
+                assert isinstance(bracket, Match)
+                bracket_users = bracket.players.all()
+                bracket_players = [Player.objects.get(user=user, match=bracket) for user in bracket_users]
+                bracket_with_outcome = any(player.outcome is not None for player in bracket_players)
+                if not bracket_with_outcome:  # the match has not finished
+                    for player in bracket_players:
+                        player.outcome = Player.WITHDRAWAL  # forfeit
+                        player.save()
+            self.end_tournament()
+
     def __str__(self):  # may be changed later
         return (
             "Tournament "
@@ -430,13 +448,15 @@ class Tournament(models.Model):
 
         # get the winners of the previous round
         for bracket in brackets:
-            bracket_players = bracket.players.all()
+            assert isinstance(bracket, Match)
+            bracket_users = bracket.players.all()
+            bracket_players = [Player.objects.get(user=user, match=bracket) for user in bracket_users]
             bracket_winners = [
                 player for player in bracket_players if player.outcome == Player.WIN
             ]  # allow multiple winners
             # currently only players who win instead of draw can advance to the next round
             for winner in bracket_winners:
-                players.append(winner)
+                players.append(winner.user)
 
         # check if the number of players is small enough to end the tournament
         if len(players) <= self.num_winner:
@@ -485,15 +505,18 @@ class Tournament(models.Model):
         brackets = self.matches.all()
         for bracket in brackets:  # the matches of the previous round
             # get the winners of the previous round
-            bracket_players = bracket.players.all()
+            assert isinstance(bracket, Match)
+            bracket_users = bracket.players.all()
+            bracket_players = [Player.objects.get(user=user, match=bracket) for user in bracket_users]
             bracket_winners = [
-                player for player in bracket_players if player.outcome == Player.WIN
+                player.user for player in bracket_players if player.outcome == Player.WIN
             ]  # allow multiple winners
             # currently only players who win instead of draw can advance to the next round
             for winner in bracket_winners:
                 winners.append(winner)
 
         self.winners.set(winners)
+        self.matches.clear()
         self.save()
 
         # Note: we don't delete the tournament because we want to keep it in the database
