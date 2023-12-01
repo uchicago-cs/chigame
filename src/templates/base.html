@@ -160,7 +160,7 @@
     </script>
       {% endcomment %}
       {% comment %}
-      Dynammically change the autocomplete optins and where the search bar sends a GET
+      Dynammically change the autocomplete options and where the search bar sends a GET
       request to based on the selected value of the query type dropdown menu.
       {% endcomment %}
       {# disable djlint for this section because the linter breaks the template tags #}
@@ -169,8 +169,9 @@
           const search_bar = document.getElementById('search-bar');
           const query_type = document.getElementById('query-type');
           const query_input = document.getElementById('query-input');
+          const AUTOCOMPLETION_RESULTS_LIMIT = 10;
 
-          //do nothing if search bar is empty
+          // do nothing if search bar is empty
           search_bar.addEventListener("submit", function() {
             event.preventDefault();
             if (query_input.value.trim() !== '') {
@@ -179,7 +180,7 @@
           });
 
           // by default, query autocompletes game names
-          {% get_games as games %}
+          {% get_games as games %} // fetch game names for autocomplete
           var game_names = [
             {% for game in games %}
               {
@@ -201,7 +202,7 @@
                   return matcher.test(tag.label)
                 })
                 // only display the first 10 results
-                response(results.slice(0, 10));
+                response(results.slice(0, AUTOCOMPLETION_RESULTS_LIMIT));
               },
               // clicking on the autocomplete tag takes you to the game detail page
               select: function(event, ui) {
@@ -209,12 +210,12 @@
               }
           });
 
-          // if the query type changes, update the landing page and autocomplete
+          // if the query type changes, update the landing page and autocomplete options
 	      query_type.addEventListener("change", function() {
             if (query_type.value == "games") {
               search_bar.action = "{% url 'game-search-results' %}";
 
-	          {% get_games as games %}
+	          {% get_games as games %}  // fetch game names for autocomplete
               var game_names = [
                 {% for game in games %}
                   {
@@ -224,37 +225,40 @@
                 {% endfor %}
               ];
               $("#query").autocomplete({
-                  source: function(request, response) {
-                    /*
-                    new regular expression object (RegExp) to search for pattern
-                    request.term is the string entered into the search bar
-                    "i" means that the matching is case insensitive
-                    */
-                    var matcher = new RegExp($.ui.autocomplete.escapeRegex(request.term), "i");
-                    // results is all of the game names that match the term in the search bar
-                    var results = $.grep(game_names, function(tag){
-                      return matcher.test(tag.label)
-                    })
-                    // only display the first 10 results
-                    response(results.slice(0, 10));
-                  },
-                  // clicking on the autocomplete tag takes you to the game detail page
-                  select: function(event, ui) {
-                    window.location.href = ui.item.url;
-                  }
+                source: function(request, response) {
+                  /*
+                  new regular expression object (RegExp) to search for pattern
+                  request.term is the string entered into the search bar
+                  "i" means that the matching is case insensitive
+                  */
+                  var matcher = new RegExp($.ui.autocomplete.escapeRegex(request.term), "i");
+                  // results is all of the game names that match the term in the search bar
+                  var results = $.grep(game_names, function(tag){
+                    return matcher.test(tag.label)
+                  })
+                  // only display the first 10 results
+                  response(results.slice(0, AUTOCOMPLETION_RESULTS_LIMIT));
+                },
+                // clicking on the autocomplete tag takes you to the game detail page
+                select: function(event, ui) {
+                  window.location.href = ui.item.url;
+                }
               });
             } else if (query_type.value == "users") {
               search_bar.action = "{% url 'users:user-search-results' %}";
+              $("#query").autocomplete({
+                source: []  // placeholder; replace with list of usernames
+              });
             } else if (query_type.value == "forums") {
               search_bar.action = "{% url 'home' %}"; // placeholder
               $("#query").autocomplete({
-                disabled: true  // turn off autocomplete for users option
+                source: []  // placeholder; replace with list of forums
               });
             }
           });
         });
 </script><!-- djlint:on -->
-{# turn djlint back on#}
+{# turn djlint back on so that the rest of the code is checked for format/stylistic errors#}
 {% endblock inline_javascript %}
 </body>
 </html>
