@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
 from django.db.models import Q
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render, reverse
 from django.urls import reverse_lazy
 from django.utils import timezone
@@ -41,6 +41,9 @@ def lobby_join(request, pk):
         messages.error(request, "Already joined.")
         return redirect(reverse("lobby-details", kwargs={"pk": lobby.id}))
     lobby.members.add(request.user)
+    if lobby.members.all().count() == lobby.max_players:
+        lobby.match_status = 2
+    lobby.save()
     return redirect(reverse("lobby-details", kwargs={"pk": lobby.id}))
 
 
@@ -72,6 +75,17 @@ class ViewLobbyDetails(DetailView):
     model = Lobby
     template_name = "games/lobby_details.html"
     context_object_name = "lobby_detail"
+
+
+def update_match_status(request, pk):
+    # A bit weird: sends Ajax request to change match status when timer runs out.
+    lobby = get_object_or_404(Lobby, id=pk)
+
+    if lobby.match_status != 2:
+        lobby.match_status = 2
+        lobby.save()
+
+    return JsonResponse({"message": "Match status updated successfully"})
 
 
 class LobbyUpdateView(UpdateView):
@@ -400,6 +414,10 @@ def check_guess(request, pk):
     else:
         player.outcome = Player.LOSE
     player.save()
+
+    # Checks if everyone has played
+    if match.players.all().count() == lobby.members.all().count():
+        lobby.match_status = 3
 
     return render(
         request,

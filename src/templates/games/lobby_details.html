@@ -1,34 +1,113 @@
 {% extends "base.html" %}
 
 {% block content %}
-  <h1>Lobby Details</h1>
-  <p>
-    <strong>Name:</strong> {{ lobby_detail.name }}
-  </p>
+  <h1>{{ lobby_detail.name }}</h1>
   <p>
     <strong>Game:</strong> {{ lobby_detail.game }}
-  </p>
-  <p>
+    <p>{{ lobby_detail.match_status }}</p>
     <strong>Created By:</strong> {{ lobby_detail.created_by }}
   </p>
+  {% if lobby_detail.match_status == 1 %}
+    <p>
+      Lobby Remains Open For: <span id="elapsed-time"></span>
+    </p>
+  {% endif %}
   <p>
-    <strong>Minimum Players:</strong> {{ lobby_detail.min_players }}
+    <strong>Players Allowed:</strong> {{ lobby_detail.min_players }} - {{ lobby_detail.max_players }}
   </p>
-  <p>
-    <strong>Maximum Players:</strong> {{ lobby_detail.max_players }}
-  </p>
-  <h2>Members:</h2>
+  <h3>
+    Currently, there
+    {% if lobby_detail.members.all.count == 1 %}
+      is 1 user
+    {% else %}
+      are {{ lobby_detail.members.all.count }} users
+    {% endif %}
+    in the lobby:
+  </h3>
   <ul>
     {% for member in lobby_detail.members.all %}<li>{{ member.email }}</li>{% endfor %}
   </ul>
-  <p>
-    <a href="{% url 'lobby-join' lobby_detail.pk %}">Join Lobby</a>
-  </p>
-  <p>
-    <a href="{% url 'lobby-leave' lobby_detail.pk %}">Leave Lobby</a>
-  </p>
-  {% if user == lobby_detail.created_by %}
-    <a href="{% url 'lobby-edit' lobby_detail.pk %}">Edit Lobby</a>
-    &emsp;<a href="{% url 'lobby-delete' lobby_detail.pk %}">Delete Lobby</a>
+  <!-- This is the control for which buttons appear -->
+  {% if lobby_detail.match_status == 1 %}
+    {% if user in lobby_detail.members.all %}
+      <p>
+        <a href="{% url 'lobby-leave' lobby_detail.pk %}">Leave Lobby</a>
+      </p>
+    {% else %}
+      <p>
+        <a href="{% url 'lobby-join' lobby_detail.pk %}">Join Lobby</a>
+      </p>
+    {% endif %}
+    {% if user == lobby_detail.created_by %}
+      <p>
+        <a href="{% url 'lobby-edit' lobby_detail.pk %}">Edit Lobby</a>
+      </p>
+      <p>
+        <a href="{% url 'lobby-delete' lobby_detail.pk %}">Delete Lobby</a>
+      </p>
+    {% endif %}
+  {% elif lobby_detail.match_status == 2 %}
+    {% if user in lobby_detail.members.all %}
+      <p>
+        <a href="{% url 'placeholder-game' lobby_detail.pk %}">Join Game</a>
+      </p>
+    {% else %}
+      <span>Match In-Progress</span>
+    {% endif %}
+  {% else %}
+    <span>Match Finished</span>
   {% endif %}
+  <p>
+    <a href="{% url 'lobby-list' lobby_detail.pk %}">Back to Lobbies</a>
+  </p>
+  <!-- Timer Script -->
+  <script>
+    // Hey! Datetime is in milliseconds so everything p much
+    // needs to be divided by 1000.
+    document.addEventListener("DOMContentLoaded", function() {
+      const lobbyCreated = new Date("{{ lobby_detail.lobby_created|date:'c' }}");
+      const elapsedTimeElement = document.getElementById("elapsed-time");
+      const timeConstraint = parseInt("{{ lobby_detail.time_constraint }}", 10);
+
+
+      function updateTime() {
+        //console.log("lobby_created:", "{{ lobby_detail.lobby_created }}");
+        //console.log("time_constraint:", "{{ lobby_detail.time_constraint }}");
+        const currentTime = new Date();
+        const elapsedTime = Math.floor((currentTime - lobbyCreated) / 1000);
+        const remainingSeconds = Math.max(0, timeConstraint - elapsedTime);
+
+        const minutes = Math.floor(remainingSeconds / 60);
+        const seconds = remainingSeconds % 60;
+        const formattedTime = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+
+        elapsedTimeElement.textContent = formattedTime;
+
+        if (remainingSeconds > 0) {
+          setTimeout(updateTime, 1000);
+        } else {
+          if ("{{ lobby_detail.match_status}}" == 1 && ("{{lobby_detail.members.all.count}}" >= "{{lobby_detail.min_players}}")) {
+            const lobbyId = "{{ lobby_detail.pk }}";
+            updateMatchStatus(lobbyId);
+          }
+        }
+      }
+
+      function updateMatchStatus(lobbyId) {
+        // Eugh. AJAX request to the Django view
+        fetch(`/games/lobby/${lobbyId}/update_match_status/`)
+          .then(response => response.json())
+          .then(data => console.log(data)) // You can handle the response as needed
+          .catch(error => console.error('Error updating match status:', error));
+        const updatedMatchStatus = data.match_status;
+        const matchStatusElement = document.getElementById("match-status");
+        if (matchStatusElement) {
+          matchStatusElement.textContent = updatedMatchStatus;
+        }
+      }
+
+      // Initial update
+      updateTime();
+    });
+  </script>
 {% endblock content %}
