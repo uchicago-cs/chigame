@@ -166,7 +166,7 @@
             if (query_type.value == "games") {
               search_bar.action = "{% url 'game-search-results' %}";
             } else if (query_type.value == "users") {
-              search_bar.action = "{% url 'home' %}"; // placeholder
+              search_bar.action = "{% url 'users:user-search-results' %}";
             } else if (query_type.value == "forums") {
               search_bar.action = "{% url 'home' %}"; // placeholder
             }
