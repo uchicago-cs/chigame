@@ -104,18 +104,43 @@
                   <a id="log-in-link" class="nav-link" href="{% url 'account_login' %}">{% translate "Sign In" %}</a>
                 </li>
               {% endif %}
-              <li>
-                {% block search_bar %}
-                  <!-- Dynamically update search bar landing page depending on query_type-->
-                  <form id="search-bar" action="{% url 'game-search-results' %}" method="get">
-                    <select id="query-type" name="query_type">
-                      <option value="games">Games</option>
-                      <option value="users">Users</option>
-                      <!-- Add more options here -->
+              <li class="nav-item">
+                <form id="search-bar"
+                      action="{% url 'game-search-results' %}"
+                      method="get"
+                      class="d-flex align-items-center">
+                  <div>
+                    {% url 'forum:index' as forum_url %}
+                    {% url 'forum_search:search' as forum_search_url %}
+                    {% url 'games:index' as games_url %}
+                    {% url 'game-search-results' as game_search_url %}
+                    {% url 'users:user-search-results' as users_search_url %}
+                    <select id="query-type" name="query_type" class="form-select">
+                      <option value="games"
+                              {% if request.path == games_url or request.path == games_search_url %}selected{% endif %}>
+                        Games
+                      </option>
+                      <option value="users"
+                              {% if request.path == users_search_url %}selected{% endif %}>Users</option>
+                      <option value="forums"
+                              {% if request.path == forum_url or request.path == forum_search_url %}selected{% endif %}>
+                        Forums
+                      </option>
                     </select>
-                    <input id="query" name="query" type="text" placeholder="Search..." />
-                  </form>
-                {% endblock search_bar %}
+                  </div>
+                  <div>
+                    <input id="query-input"
+                           name="q"
+                           type="text"
+                           placeholder="Search..."
+                           class="form-control me-2" />
+                  </div>
+                  <div>
+                    <button id="advanced-search-button"
+                            class="btn btn-large btn-primary d-none"
+                            type="button">{% trans "Advanced Search" %}</button>
+                  </div>
+                </form>
               </li>
             </ul>
           </div>
@@ -162,22 +187,33 @@
           const search_bar = document.getElementById('search-bar');
           const query_type = document.getElementById('query-type');
           const query_input = document.getElementById('query-input');
+          const advancedSearchButton = document.getElementById('advanced-search-button');
 
-          //do nothing if search bar is empty
-          search_bar.addEventListener("submit", function() {
-            event.preventDefault();
-            if (query_input.value.trim() !== '') {
-              search_bar.submit();
+          function updateFormAction() {
+            if (query_type.value === "games") {
+              search_bar.action = "{% url 'game-search-results' %}";
+            } else if (query_type.value === "users") {
+              search_bar.action = "{% url 'users:user-search-results' %}";
+            } else if (query_type.value === "forums") {
+              search_bar.action = "{% url 'forum_search:search' %}";
             }
+
+            advancedSearchButton.classList.toggle('d-none', query_type.value !== "forums");
+          }
+
+          updateFormAction();
+
+
+          query_type.addEventListener("change", updateFormAction);
+
+          advancedSearchButton.addEventListener("click", function(event) {
+            query_input.value = '';
+            search_bar.submit();
           });
 
-          query_type.addEventListener("change", function() {
-            if (query_type.value == "games") {
-              search_bar.action = "{% url 'game-search-results' %}";
-            } else if (query_type.value == "users") {
-              search_bar.action = "{% url 'users:user-search-results' %}";
-            } else if (query_type.value == "forums") {
-              search_bar.action = "{% url 'home' %}"; // placeholder
+          search_bar.addEventListener("submit", function(event) {
+            if (!query_input.value.trim()) {
+              event.preventDefault();
             }
           });
         });

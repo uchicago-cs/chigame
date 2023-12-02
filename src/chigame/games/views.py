@@ -139,7 +139,7 @@ class GameEditView(UserPassesTestMixin, UpdateView):
 
 
 def search_results(request):
-    query = request.GET.get("query")
+    query = request.GET.get("q")
 
     """
     The Q object is an object used to encapsulate a collection of keyword
