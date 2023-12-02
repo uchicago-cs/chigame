@@ -322,6 +322,12 @@ SOCIALACCOUNT_FORMS = {"signup": "chigame.users.forms.UserSocialSignupForm"}
 # Add additional configuration below:
 # ------------------------------------------------------------------------------
 
+# REST FRAMEWORK
+REST_FRAMEWORK = {
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 10,
+}
+
 # DJANGO-MACHINA SETTINGS
 # ------------------------------------------------------------------------------
 # https://django-machina.readthedocs.io/en/latest/getting_started.html#django-haystack-settings
