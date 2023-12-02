@@ -94,3 +94,7 @@ class TestUserDetailView:
         assert isinstance(response, HttpResponseRedirect)
         assert response.status_code == 302
         assert response.url == f"{login_url}?next=/fake-url/"
+
+
+class TestAdminUserDetailView:
+    pass
