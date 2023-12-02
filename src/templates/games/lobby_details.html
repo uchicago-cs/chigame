@@ -1,31 +1,50 @@
 {% extends "base.html" %}
 
 {% block content %}
-  <h1>{{ lobby_detail.name }}</h1>
+  <h2>{{ lobby_detail.name }}</h2>
   <p>
-    <strong>Game:</strong> {{ lobby_detail.game }}
-    <strong>Created By:</strong> {{ lobby_detail.created_by }}
+    <strong>Playing {{ lobby_detail.game }}, Organized by {{ lobby_detail.created_by }}.</strong>
   </p>
-  {% if lobby_detail.match_status == 1 %}
-    <p>
-      Lobby Remains Open For: <span id="elapsed-time"></span>
-    </p>
-  {% endif %}
   <p>
     <strong>Players Allowed:</strong> {{ lobby_detail.min_players }} - {{ lobby_detail.max_players }}
   </p>
+  <!-- Match Status Display -->
+  {% if lobby_detail.match_status == 1 %}
+    <p>
+      <strong>Lobby Remains Open For:</strong> <span id="elapsed-time"></span>
+    </p>
+  {% elif lobby_detail.match_status == 2 %}
+    <p>
+      <strong>Lobby is now closed. Match is in-progress.</strong>
+    </p>
+  {% else %}
+    <p>Match is finished, or was cancelled due to insufficient players.</p>
+  {% endif %}
+  <!-- Match Status Display END -->
+  <!-- Lobby Members Display -->
   <h3>
-    Currently, there
+    There
     {% if lobby_detail.members.all.count == 1 %}
-      is 1 user
+      {% if lobby_detail.match_status == 3 %}
+        was
+      {% else %}
+        is
+      {% endif %}
+      1 user
     {% else %}
-      are {{ lobby_detail.members.all.count }} users
+      {% if lobby_detail.match_status == 3 %}
+        were
+      {% else %}
+        are
+      {% endif %}
+      {{ lobby_detail.members.all.count }} users
     {% endif %}
-    in the lobby:
+    in this lobby:
   </h3>
   <ul>
     {% for member in lobby_detail.members.all %}<li>{{ member.email }}</li>{% endfor %}
   </ul>
+  <!-- Lobby Members Display END -->
   <!-- This is the control for which buttons appear -->
   {% if lobby_detail.match_status == 1 %}
     {% if user in lobby_detail.members.all %}
@@ -50,11 +69,8 @@
       <p>
         <a href="{% url 'placeholder-game' lobby_detail.pk %}">Join Game</a>
       </p>
-    {% else %}
-      <span>Match In-Progress</span>
     {% endif %}
   {% else %}
-    <span>Match Closed</span>
   {% endif %}
   <p>
     <a href="{% url 'lobby-list' %}">Back to Lobbies</a>
@@ -80,6 +96,7 @@
         const seconds = remainingSeconds % 60;
         const formattedTime = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
 
+
         elapsedTimeElement.textContent = formattedTime;
 
         if (remainingSeconds > 0) {
@@ -88,6 +105,7 @@
           if ("{{ lobby_detail.match_status}}" == 1) {
             const lobbyId = "{{ lobby_detail.pk }}";
             updateMatchStatus(lobbyId);
+            window.location.reload(); // Basically forcing a page refresh
           }
         }
       }
@@ -96,16 +114,18 @@
         // Eugh. AJAX request to the Django view
         fetch(`/games/lobby/${lobbyId}/update_match_status/`)
           .then(response => response.json())
-          .then(data => console.log(data)) // You can handle the response as needed
+          .then(data => {
+            console.log(data);
+            const updatedMatchStatus = data.match_status;
+            const matchStatusElement = document.getElementById("match-status");
+            if (matchStatusElement) {
+              matchStatusElement.textContent = updatedMatchStatus;
+              window.location.reload(); // Move the reload here, after processing the AJAX response
+            }
+          })
           .catch(error => console.error('Error updating match status:', error));
-        const updatedMatchStatus = data.match_status;
-        const matchStatusElement = document.getElementById("match-status");
-        if (matchStatusElement) {
-          matchStatusElement.textContent = updatedMatchStatus;
-        }
       }
 
-      // Initial update
       updateTime();
     });
   </script>
