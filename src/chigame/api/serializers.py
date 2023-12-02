@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from chigame.games.models import Chat, Game, Lobby, Message, Tournament, User
+from chigame.users.models import FriendInvitation, UserProfile
 
 
 class GameSerializer(serializers.ModelSerializer):
@@ -29,8 +30,14 @@ class TournamentSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ("email", "password", "name")
-        extra_kwargs = {"password": {"write_only": True}}
+        fields = ("id", "email", "password", "name", "is_staff")
+        extra_kwargs = {"password": {"write_only": True}, "id": {"read_only": True}}
+
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserProfile
+        fields = "__all__"
 
 
 class LobbySerializer(serializers.ModelSerializer):
@@ -72,3 +79,9 @@ class MessageSerializer(serializers.ModelSerializer):
 
         message = Message.objects.create(**validated_data)
         return message
+
+
+class FriendInvitationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FriendInvitation
+        fields = "__all__"

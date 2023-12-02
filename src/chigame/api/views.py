@@ -1,6 +1,7 @@
 # from django.shortcuts import render
 
 from dj_rest_auth.models import TokenModel
+from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, status
 from rest_framework.pagination import PageNumberPagination
@@ -12,14 +13,16 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from chigame.api.filters import GameFilter
 from chigame.api.serializers import (
+    FriendInvitationSerializer,
     GameSerializer,
     LobbySerializer,
     MessageSerializer,
     TournamentSerializer,
+    UserProfileSerializer,
     UserSerializer,
 )
 from chigame.games.models import Game, Lobby, Message, Tournament
-from chigame.users.models import User, UserProfile
+from chigame.users.models import FriendInvitation, User, UserProfile
 
 
 class GameListView(generics.ListCreateAPIView):
@@ -112,3 +115,80 @@ class CustomTokenVerifyView(TokenVerifyView):
 class MessageView(generics.CreateAPIView):
     queryset = Message.objects.all()
     serializer_class = MessageSerializer
+
+
+class SendFriendInvitationView(APIView):
+    def post(self, request, *args, **kwargs):
+        sender_pk = self.kwargs["sender_pk"]
+        receiver_pk = self.kwargs["receiver_pk"]
+
+        sender = get_object_or_404(User, pk=sender_pk)
+        receiver = get_object_or_404(User, pk=receiver_pk)
+
+        if sender == receiver:
+            return Response(
+                {"detail": "You cannot send an invitation to yourself."}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        invitation = FriendInvitation(sender=sender, receiver=receiver)
+        invitation.save()
+
+        serializer = FriendInvitationSerializer(invitation)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class AcceptFriendInvitationView(APIView):
+    def post(self, request, *args, **kwargs):
+        invitation_pk = self.kwargs["invitation_pk"]
+        invitation = get_object_or_404(FriendInvitation, pk=invitation_pk)
+
+        if invitation.accepted:
+            return Response(
+                {"detail": "This invitation has already been accepted."}, status=status.HTTP_400_BAD_REQUEST
+            )
+        invitation.accept_invitation()  # Error with this method in the users.models
+        serializer = FriendInvitationSerializer(invitation)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class FriendInvitationList(generics.ListAPIView):
+    queryset = FriendInvitation.objects.all()
+    serializer_class = FriendInvitationSerializer
+
+
+class UserProfileCreateView(APIView):
+    def post(self, request, *args, **kwargs):
+        user_pk = self.kwargs["user_pk"]
+        user = get_object_or_404(User, pk=user_pk)
+        existing_profile = UserProfile.objects.filter(user=user).first()
+        if existing_profile:
+            serializer = UserProfileSerializer(existing_profile)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        serializer = UserProfileSerializer(data=request.data)
+        if serializer.is_valid():
+            profile = serializer.save(user=user)
+            return Response(UserProfileSerializer(profile).data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserProfileListView(generics.ListAPIView):
+    queryset = UserProfile.objects.all()
+    serializer_class = UserProfileSerializer
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+
+
+class UserProfileUpdateView(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+
+    def patch(self, request, *args, **kwargs):
+        user_profile_pk = self.kwargs["user_profile_pk"]
+        user_profile = get_object_or_404(UserProfile, pk=user_profile_pk)
+
+        serializer = UserProfileSerializer(user_profile, data=request.data, partial=True)
+        if serializer.is_valid():
+            updated_profile = serializer.save()
+            return Response(UserProfileSerializer(updated_profile).data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
