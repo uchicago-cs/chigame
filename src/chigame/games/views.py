@@ -177,7 +177,7 @@ def apply_sorting_and_filtering(queryset, sort_param, players_param):
 
 
 def search_results(request):
-    query = request.GET.get("query")
+    query_input = request.GET.get("query-input")
     sort = request.GET.get("sort_by", "name-asc")
     players = request.GET.get("players", "")
     page_number = request.GET.get("page")
@@ -189,10 +189,10 @@ def search_results(request):
     https://docs.djangoproject.com/en/4.2/topics/db/queries/#complex-lookups-with-q-objects
     """
     object_list = Game.objects.filter(
-        Q(name__icontains=query)
-        | Q(categories__name__icontains=query)
-        | Q(people__name__icontains=query)
-        | Q(publishers__name__icontains=query)
+        Q(name__icontains=query_input)
+        | Q(categories__name__icontains=query_input)
+        | Q(people__name__icontains=query_input)
+        | Q(publishers__name__icontains=query_input)
     ).distinct()  # only show unique game objects (no duplicates)
 
     object_list = apply_sorting_and_filtering(object_list, sort, players)
@@ -206,7 +206,7 @@ def search_results(request):
         "page_obj": page_obj,
         "current_sort": sort,
         "current_players": players,
-        "query": query,
+        "query-input": query,
     }
 
     return render(request, "games/game_grid.html", context)

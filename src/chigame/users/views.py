@@ -186,10 +186,12 @@ def decline_friend_invitation(request, pk):
 
 
 def user_search_results(request):
-    query = request.GET.get("query")
+    query_input = request.GET.get("query-input")
     context = {"nothing_found": True, "query_type": "Users"}
-    if query:
-        users_list = UserProfile.objects.filter(Q(user__email__icontains=query) | Q(user__name__icontains=query))
+    if query_input:
+        users_list = UserProfile.objects.filter(
+            Q(user__email__icontains=query_input) | Q(user__name__icontains=query_input)
+        )
         if users_list.count() > 0:
             context.pop("nothing_found")
             context["object_list"] = users_list
