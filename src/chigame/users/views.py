@@ -118,7 +118,9 @@ def send_friend_invitation(request, pk):
     if new:
         messages.success(request, "Friendship invitation sent successfully.")
         notification = Notification.objects.create(
-            actor=invitation, receiver=other_user, type=Notification.FRIEND_REQUEST
+            actor=invitation,
+            receiver=other_user,
+            type=Notification.FRIEND_REQUEST,
         )
     elif invitation.sender.pk == other_user.pk:
         messages.info(request, "You already have a pending friend invitation from this profile.")
@@ -147,7 +149,9 @@ def cancel_friend_invitation(request, pk):
         return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
     except Notification.DoesNotExist:
         notification = Notification.objects.create(
-            actor=friendship, receiver=receiver, type=Notification.FRIEND_REQUEST
+            actor=friendship,
+            receiver=receiver,
+            type=Notification.FRIEND_REQUEST,
         )
         notification.mark_as_deleted()
     num, _ = friendship.delete()
@@ -186,10 +190,12 @@ def decline_friend_invitation(request, pk):
 
 
 def user_search_results(request):
-    query = request.GET.get("query")
+    query_input = request.GET.get("query-input")
     context = {"nothing_found": True, "query_type": "Users"}
-    if query:
-        users_list = UserProfile.objects.filter(Q(user__email__icontains=query) | Q(user__name__icontains=query))
+    if query_input:
+        users_list = UserProfile.objects.filter(
+            Q(user__email__icontains=query_input) | Q(user__name__icontains=query_input)
+        )
         if users_list.count() > 0:
             context.pop("nothing_found")
             context["object_list"] = users_list
@@ -199,10 +205,48 @@ def user_search_results(request):
 @login_required
 def user_inbox_view(request, pk):
     user = request.user
-    notifications = Notification.objects.filter(receiver=user)
-    context = {"pk": pk, "user": user, "notifications": notifications}
+    notifications = Notification.objects.filter_by_receiver(user)
+    default_notification_messages = Notification.DEFAULT_MESSAGES
+    context = {
+        "pk": pk,
+        "user": user,
+        "notifications": notifications,
+        "default_notification_messages": default_notification_messages,
+    }
     if pk == user.id:
         return render(request, "users/user_inbox.html", context)
     else:
         messages.error(request, "Not your inbox")
         return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
+
+
+@login_required
+def notification_detail(request, pk):
+    try:
+        notification = Notification.objects.get(pk=pk)
+        if notification.receiver.pk != request.user.pk:
+            messages.error(request, "You can not redirect from this notification")
+            return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
+        if notification.type == Notification.FRIEND_REQUEST:
+            return redirect(reverse("users:user-profile", kwargs={"pk": notification.actor.sender.pk}))
+    except Notification.DoesNotExist:
+        messages.error(request, "Something went wrong. This notification does not exist")
+    return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
+
+
+@login_required
+def act_on_inbox_notification(request, pk, action):
+    try:
+        notification = Notification.objects.get(pk=pk)
+        if notification.receiver.pk != request.user.pk:
+            messages.error(request, "You can not perform actions on this notification")
+            return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
+        if action == "mark_read":
+            notification.mark_as_read()
+        elif action == "mark_unread":
+            notification.mark_as_unread()
+        elif action == "delete":
+            notification.mark_as_deleted()
+    except Notification.DoesNotExist:
+        messages.error(request, "Something went wrong. This notification does not exist")
+    return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))

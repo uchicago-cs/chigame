@@ -2,8 +2,10 @@ from django.urls import path
 
 from chigame.users.views import (
     accept_friend_invitation,
+    act_on_inbox_notification,
     cancel_friend_invitation,
     decline_friend_invitation,
+    notification_detail,
     send_friend_invitation,
     user_detail_view,
     user_inbox_view,
@@ -30,4 +32,10 @@ urlpatterns = [
     path("user_history/<int:pk>", views.user_history, name="user-history"),
     path("search-results", view=user_search_results, name="user-search-results"),
     path("inbox/<int:pk>", view=user_inbox_view, name="user-inbox"),
+    path("notification_detail/<int:pk>", view=notification_detail, name="notification-detail"),
+    path(
+        "act_on_inbox_notification/<int:pk>/<str:action>",
+        view=act_on_inbox_notification,
+        name="act-on-inbox-notification",
+    ),
 ]

@@ -193,6 +193,8 @@ class Notification(models.Model):
         (GROUP_INVITATION, "GROUP_INVITATION"),
     )
 
+    DEFAULT_MESSAGES = {FRIEND_REQUEST: "You have a friend invitation"}
+
     receiver = models.ForeignKey(User, on_delete=models.CASCADE)
     first_sent = models.DateTimeField(auto_now_add=True)
     last_sent = models.DateTimeField(auto_now_add=True)
