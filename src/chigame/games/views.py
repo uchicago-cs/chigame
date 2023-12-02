@@ -139,7 +139,7 @@ class GameEditView(UserPassesTestMixin, UpdateView):
 
 
 def search_results(request):
-    query = request.GET.get("q")
+    query_input = request.GET.get("q")
 
     """
     The Q object is an object used to encapsulate a collection of keyword
@@ -148,10 +148,10 @@ def search_results(request):
     https://docs.djangoproject.com/en/4.2/topics/db/queries/#complex-lookups-with-q-objects
     """
     object_list = Game.objects.filter(
-        Q(name__icontains=query)
-        | Q(categories__name__icontains=query)
-        | Q(people__name__icontains=query)
-        | Q(publishers__name__icontains=query)
+        Q(name__icontains=query_input)
+        | Q(categories__name__icontains=query_input)
+        | Q(people__name__icontains=query_input)
+        | Q(publishers__name__icontains=query_input)
     ).distinct()  # only show unique game objects (no duplicates)
     context = {"query_type": "Games", "object_list": object_list}
 
