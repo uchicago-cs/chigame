@@ -1,18 +1,21 @@
 from functools import wraps
+from random import choice
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import UserPassesTestMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
 from django.db.models import Q
+from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render, reverse
 from django.urls import reverse_lazy
+from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
-from django_tables2 import SingleTableView
 
-from .forms import GameForm
-from .models import Game, Lobby, Tournament
+from .filters import LobbyFilter
+from .forms import GameForm, LobbyForm
+from .models import Game, Lobby, Match, Player, Tournament
 from .tables import LobbyTable
 
 
@@ -20,12 +23,15 @@ class GameListView(ListView):
     model = Game
     queryset = Game.objects.all()
     template_name = "games/game_grid.html"
+    paginate_by = 20
 
 
-class LobbyListView(SingleTableView):
-    model = Lobby
-    table_class = LobbyTable
-    template_name = "games/lobby_list.html"
+def lobby_list(request):
+    queryset = Lobby.objects.all()
+    filter = LobbyFilter(request.GET, queryset=queryset)
+    table = LobbyTable(filter.qs)
+
+    return render(request, "games/lobby_list.html", {"table": table, "filter": filter})
 
 
 @login_required
@@ -52,10 +58,51 @@ def lobby_leave(request, pk):
     return redirect(reverse("lobby-details", kwargs={"pk": lobby.id}))
 
 
+class LobbyCreateView(LoginRequiredMixin, CreateView):
+    model = Lobby
+    form_class = LobbyForm
+    template_name = "games/lobby_form.html"
+    success_url = reverse_lazy("lobby-list")
+
+    def form_valid(self, form):
+        form.instance.created_by = self.request.user
+        form.instance.lobby_created = timezone.now()
+        return super().form_valid(form)
+
+
 class ViewLobbyDetails(DetailView):
     model = Lobby
     template_name = "games/lobby_details.html"
     context_object_name = "lobby_detail"
+
+
+class LobbyUpdateView(UpdateView):
+    model = Lobby
+    form_class = LobbyForm
+    template_name = "games/lobby_form.html"
+
+    def get_success_url(self):
+        return reverse_lazy("lobby-details", kwargs={"pk": self.object.pk})
+
+    def dispatch(self, request, *args, **kwargs):
+        # get the lobby object
+        self.object = self.get_object()
+        # check if the user making the request is the "host" of the lobby
+        if request.user != self.object.created_by and not request.user.is_staff:
+            return HttpResponseForbidden("You don't have permission to edit this lobby.")
+        return super().dispatch(request, *args, **kwargs)
+
+
+class LobbyDeleteView(DeleteView):
+    model = Lobby
+    template_name = "games/lobby_confirm_delete.html"
+    success_url = reverse_lazy("lobby-list")
+
+    def dispatch(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if request.user != self.object.created_by and not request.user.is_staff:
+            return HttpResponseForbidden("You don't have permission to delete this lobby.")
+        return super().dispatch(request, *args, **kwargs)
 
 
 class GameDetailView(DetailView):
@@ -91,6 +138,26 @@ class GameEditView(UserPassesTestMixin, UpdateView):
         return self.request.user.is_staff
 
 
+def search_results(request):
+    query_input = request.GET.get("query-input")
+
+    """
+    The Q object is an object used to encapsulate a collection of keyword
+    arguments that can be combined with logical operators (&, |, ~) which
+    allows for more advanced searches. More info can be found here at
+    https://docs.djangoproject.com/en/4.2/topics/db/queries/#complex-lookups-with-q-objects
+    """
+    object_list = Game.objects.filter(
+        Q(name__icontains=query_input)
+        | Q(categories__name__icontains=query_input)
+        | Q(people__name__icontains=query_input)
+        | Q(publishers__name__icontains=query_input)
+    ).distinct()  # only show unique game objects (no duplicates)
+    context = {"query_type": "Games", "object_list": object_list}
+
+    return render(request, "games/game_grid.html", context)
+
+
 # Tournaments
 
 
@@ -123,6 +190,37 @@ class TournamentListView(ListView):
         # Additional context can be added if needed
         return context
 
+    def post(self, request, *args, **kwargs):
+        # This method is called when the user clicks the "Join Tournament" or
+        # "Withdraw" button
+        tournament = Tournament.objects.get(id=request.POST.get("tournament_id"))
+        if request.POST.get("action") == "join":
+            success = tournament.tournament_sign_up(request.user)
+            if success == 0:
+                messages.success(request, "You have successfully joined this tournament")
+                return redirect(reverse_lazy("tournament-list"))
+            elif success == 1:
+                messages.error(request, "You have already joined this tournament")
+                return redirect(reverse_lazy("tournament-list"))
+            elif success == 2:
+                messages.error(request, "This tournament is full")
+                return redirect(reverse_lazy("tournament-list"))
+            else:
+                raise Exception("Invalid return value")
+
+        elif request.POST.get("action") == "withdraw":
+            success = tournament.tournament_withdraw(request.user)
+            if success == 0:
+                messages.success(request, "You have successfully withdrawn from this tournament")
+                return redirect(reverse_lazy("tournament-list"))
+            elif success == 1:
+                messages.error(request, "You have not joined this tournament")
+                return redirect(reverse_lazy("tournament-list"))
+            else:
+                raise Exception("Invalid return value")
+        else:
+            raise ValueError("Invalid action")
+
     # check if user is staff member
     def test_func(self):
         return self.request.user.is_staff
@@ -133,6 +231,37 @@ class TournamentDetailView(DetailView):
     template_name = "tournaments/tournament_detail.html"
     context_object_name = "tournament"
 
+    def post(self, request, *args, **kwargs):
+        # This method is called when the user clicks the "Join Tournament" or
+        # "Withdraw" button
+        tournament = Tournament.objects.get(id=request.POST.get("tournament_id"))
+        if request.POST.get("action") == "join":
+            success = tournament.tournament_sign_up(request.user)
+            if success == 0:
+                messages.success(request, "You have successfully joined this tournament")
+                return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
+            elif success == 1:
+                messages.error(request, "You have already joined this tournament")
+                return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
+            elif success == 2:
+                messages.error(request, "This tournament is full")
+                return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
+            else:
+                raise Exception("Invalid return value")
+
+        elif request.POST.get("action") == "withdraw":
+            success = tournament.tournament_withdraw(request.user)
+            if success == 0:
+                messages.success(request, "You have successfully withdrawn from this tournament")
+                return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
+            elif success == 1:
+                messages.error(request, "You have not joined this tournament")
+                return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
+            else:
+                raise Exception("Invalid return value")
+        else:
+            raise ValueError("Invalid action")
+
 
 @method_decorator(staff_required, name="dispatch")
 class TournamentCreateView(CreateView):
@@ -141,14 +270,16 @@ class TournamentCreateView(CreateView):
     fields = [
         "name",
         "game",
-        "start_date",
-        "end_date",
+        "registration_start_date",
+        "registration_end_date",
+        "tournament_start_date",
+        "tournament_end_date",
         "max_players",
         "description",
         "rules",
         "draw_rules",
         "num_winner",
-        "players",
+        "players",  # This field should be removed in the production version. For testing only.
     ]
     # Note: "winner" is not included in the fields because it is not
     # supposed to be set by the user. It will be set automatically
@@ -185,8 +316,6 @@ class TournamentUpdateView(UpdateView):
     fields = [
         "name",
         "game",
-        "start_date",
-        "end_date",
         "max_players",
         "description",
         "rules",
@@ -195,6 +324,10 @@ class TournamentUpdateView(UpdateView):
         "matches",
         "players",
     ]
+    # Note: the "registration_start_date" and "registration_end_date",
+    # "tournament_start_date" and "tournament_end_date" fields are not
+    # included because they are not supposed to be updated once the tournament is created.
+
     # Note: "winner" is not included in the fields because it is not
     # supposed to be set by the user. It will be set automatically
     # when the tournament is over.
@@ -235,22 +368,53 @@ class TournamentDeleteView(DeleteView):
     success_url = reverse_lazy("tournament-list")
 
 
+# Placeholder Game
+@login_required
+def coin_flip_game(request, pk):
+    # check if user has already played game
+    if Player.objects.filter(user=request.user, match_id__lobby__id=pk).exists():
+        return render(request, "games/game_already_played.html")
+    return render(request, "games/game_coinflip.html", {"lobby_id": pk})
+
+
+@login_required
+def check_guess(request, pk):
+    user_guess = request.POST.get("user_guess")
+    coin_result = choice(["heads", "tails"])
+    correct_guess = user_guess == coin_result
+
+    lobby = get_object_or_404(Lobby, id=pk)
+
+    # allows two users to play the game
+    if Match.objects.filter(lobby__id=pk).exists():
+        match = get_object_or_404(Match, lobby__id=pk)
+    else:
+        # Create Match instance linked to the fetched Lobby
+        match = Match.objects.create(
+            game_id=1,  # Replace with the actual Game ID
+            lobby=lobby,
+            date_played=timezone.now()
+            # Add other fields as needed
+        )
+
+    player = Player.objects.create(
+        user=request.user,
+        match=match,
+    )
+    if correct_guess:
+        player.outcome = Player.WIN
+    else:
+        player.outcome = Player.LOSE
+    player.save()
+
+    return render(
+        request,
+        "games/game_coinresult.html",
+        {"user_guess": user_guess, "coin_result": coin_result, "correct_guess": correct_guess},
+    )
+
+
 def TournamentChatDetailView(request, pk):
     tournament = Tournament.objects.get(pk=pk)
     context = {"tournament": tournament}
     return render(request, "tournaments/tournament_chat.html", context)
-
-
-def search_results(request):
-    query = request.GET.get("query")
-
-    """
-    The Q object is an object used to encapsulate a collection of keyword
-    arguments that can be combined with logical operators (&, |, ~) which
-    allows for more advanced searches. More info can be found here at
-    https://docs.djangoproject.com/en/4.2/topics/db/queries/#complex-lookups-with-q-objects
-    """
-    object_list = Game.objects.filter(Q(name__icontains=query) | Q(category__name__icontains=query))
-    context = {"query_type": "Games", "object_list": object_list}
-
-    return render(request, "pages/search_results.html", context)
