@@ -198,11 +198,11 @@ class TournamentListView(ListView):
             success = tournament.tournament_sign_up(request.user)
             if success == 0:
                 messages.success(request, "You have successfully joined this tournament")
-                
+
                 # Redirect to the tournament bracket page
                 bracket_url = reverse("tournament-bracket", args=[tournament.id])
                 return redirect(bracket_url)
-            
+
             elif success == 1:
                 messages.error(request, "You have already joined this tournament")
                 return redirect(reverse_lazy("tournament-list"))
@@ -420,11 +420,12 @@ def check_guess(request, pk):
         {"user_guess": user_guess, "coin_result": coin_result, "correct_guess": correct_guess},
     )
 
+
 class TournamentBracketView(TemplateView):
     template_name = "tournaments/tournament_bracket.html"
 
     def get_context_data(self, **kwargs):
-        tournament_id = self.kwargs['tournament_id']
+        tournament_id = self.kwargs["tournament_id"]
         tournament = Tournament.objects.get(id=tournament_id)
 
         # Fetching required information
@@ -434,15 +435,16 @@ class TournamentBracketView(TemplateView):
         winner = tournament.get_all_winners().first()  # Assuming one winner for simplicity
 
         context = {
-            'tournament_name': tournament_name,
-            'game_name': game_name,
-            'players': players,
-            'winner': winner,
+            "tournament_name": tournament_name,
+            "game_name": game_name,
+            "players": players,
+            "winner": winner,
             # Add more context data if needed
         }
 
         return context
-    
+
+
 def TournamentChatDetailView(request, pk):
     tournament = Tournament.objects.get(pk=pk)
     context = {"tournament": tournament}
