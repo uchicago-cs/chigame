@@ -206,7 +206,7 @@ def search_results(request):
         "page_obj": page_obj,
         "current_sort": sort,
         "current_players": players,
-        "query-input": query,
+        "query-input": query_input,
     }
 
     return render(request, "games/game_grid.html", context)
