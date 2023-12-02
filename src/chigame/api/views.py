@@ -4,9 +4,9 @@ from rest_framework import generics
 from rest_framework.pagination import PageNumberPagination
 
 from chigame.api.filters import GameFilter
-from chigame.api.serializers import GameSerializer, LobbySerializer, MessageSerializer, UserSerializer
+from chigame.api.serializers import GameSerializer, GroupSerializer, LobbySerializer, MessageSerializer, UserSerializer
 from chigame.games.models import Game, Lobby, Message, User
-from chigame.users.models import UserProfile
+from chigame.users.models import Group, UserProfile
 
 
 class GameListView(generics.ListCreateAPIView):
@@ -56,3 +56,21 @@ class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
 class MessageView(generics.CreateAPIView):
     queryset = Message.objects.all()
     serializer_class = MessageSerializer
+
+
+class GroupMembersView(generics.ListAPIView):
+    serializer_class = UserSerializer
+
+    def get_queryset(self):
+        group_id = self.kwargs["pk"]
+        group = Group.objects.get(pk=group_id)
+        return group.members.all()
+
+
+class UserGroupsView(generics.ListAPIView):
+    serializer_class = GroupSerializer
+
+    def get_queryset(self):
+        user_id = self.kwargs["pk"]
+        groups = Group.objects.filter(members__pk=user_id)
+        return groups

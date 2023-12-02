@@ -15,4 +15,7 @@ urlpatterns = [
     path("users/<int:pk>/friends/", views.UserFriendsAPIView.as_view(), name="api-user-friends"),
     # CHAT API URLS
     path("tournaments/chat/", views.MessageView.as_view(), name="api-chat-list"),
+    # GROUP API URLS
+    path("groups/<int:pk>/members/", views.GroupMembersView.as_view(), name="api-group-members"),
+    path("users/<int:pk>/groups/", views.UserGroupsView.as_view(), name="api-user-groups"),
 ]
