@@ -418,3 +418,10 @@ def TournamentChatDetailView(request, pk):
     tournament = Tournament.objects.get(pk=pk)
     context = {"tournament": tournament}
     return render(request, "tournaments/tournament_chat.html", context)
+
+
+class GameFavortiteListView(ListView):
+    model = Game
+    queryset = Game.objects.all()
+    template_name = "games/game_grid.html"
+    paginate_by = 20
