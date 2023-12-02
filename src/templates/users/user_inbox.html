@@ -1,5 +1,61 @@
 {% extends "base.html" %}
 
+{% load custom_filters %}
+
 {% block content %}
-  {% for notification in notifications %}{{ notification.type }}{% endfor %}
+  <div class="container mt-4">
+    <ul class="list-group">
+      {% for notification in notifications %}
+        {% with notification_type=notification.type %}
+          <li class="notification-container list-group-item d-flex justify-content-between align-items-start border mb-3 {% if notification.read %}bg-secondary{% endif %}">
+            <div class="ms-2 me-auto">
+              {% if notification.message %}
+                <a>{{ notification.message }}</a>
+              {% else %}
+                <a href="{% url 'users:notification-detail' notification.pk %}">{{ default_notification_messages | get_dict_val:notification_type }}</a>
+              {% endif %}
+            </div>
+            <div class="button-container">
+              {% if notification.read %}
+                <a href="{% url 'users:act-on-inbox-notification' notification.pk 'mark_unread' %}">
+                  <span class="badge bg-primary rounded-pill me-2">
+                    <i class="bi bi-envelope"></i> MARK UNREAD
+                  </span>
+                </a>
+              {% else %}
+                <a href="{% url 'users:act-on-inbox-notification' notification.pk 'mark_read' %}">
+                  <span class="badge bg-primary rounded-pill me-2">
+                    <i class="bi bi-envelope-open"></i> MARK READ
+                  </span>
+                </a>
+              {% endif %}
+              <a href="{% url 'users:act-on-inbox-notification' notification.pk 'delete' %}">
+                <span class="badge bg-danger rounded-pill me-2">
+                  <i class="bi bi-trash3"></i> DELETE
+                </span>
+              </a>
+            </div>
+          </li>
+        {% endwith %}
+      {% endfor %}
+    </ul>
+  </div>
+  <script>
+    const notificationItems = document.querySelectorAll('.notification-container');
+    notificationItems.forEach(function(notificationItem) {
+      const buttonContainer = notificationItem.querySelector('.button-container');
+      buttonContainer.style.display = "none";
+      notificationItem.addEventListener("mouseover", function(event) {
+        if (buttonContainer) {
+          buttonContainer.style.display = 'flex';
+        }
+      });
+
+      notificationItem.addEventListener("mouseout", function(event) {
+        if (buttonContainer) {
+          buttonContainer.style.display = 'none';
+        }
+      });
+    });
+  </script>
 {% endblock content %}
