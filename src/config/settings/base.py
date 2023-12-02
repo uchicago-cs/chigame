@@ -333,12 +333,22 @@ REST_FRAMEWORK = {
 # https://django-machina.readthedocs.io/en/latest/getting_started.html#django-haystack-settings
 HAYSTACK_CONNECTIONS = {
     "default": {
+        # https://django-haystack.readthedocs.io/en/latest/tutorial.html#whoosh
+        # https://whoosh.readthedocs.io/en/latest/index.html
         "ENGINE": "haystack.backends.whoosh_backend.WhooshEngine",
+        # Directory where the Whoosh index is located. This directory has been
+        # included in .gitignore and should be updated there also if changed.
         "PATH": str(BASE_DIR / "chigame/forums/search_index"),
     },
 }
 
+# This setting enables realtime indexing of updated/deleted forum content.
+# NOTE: This solution works well for low traffic applications (e.g. during dev)
+# but alternative solutions (e.g. queued search) will become more appropriate
+# when chigame is deployed to the web. See these links for further details.
+# https://django-haystack.readthedocs.io/en/latest/tutorial.html#reindex
 # https://django-haystack.readthedocs.io/en/latest/signal_processors.html
+# https://github.com/django-haystack/queued_search
 HAYSTACK_SIGNAL_PROCESSOR = "haystack.signals.RealtimeSignalProcessor"
 
 # https://django-machina.readthedocs.io/en/stable/settings.html
