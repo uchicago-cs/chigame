@@ -330,6 +330,8 @@ REST_FRAMEWORK = {
 
 # DJANGO-MACHINA SETTINGS
 # ------------------------------------------------------------------------------
+
+# Haystack search backend
 # https://django-machina.readthedocs.io/en/latest/getting_started.html#django-haystack-settings
 HAYSTACK_CONNECTIONS = {
     "default": {
@@ -342,7 +344,8 @@ HAYSTACK_CONNECTIONS = {
     },
 }
 
-# This setting enables realtime indexing of updated/deleted forum content.
+# This setting enables realtime indexing of updated/deleted forum content to
+# make it searchable.
 # NOTE: This solution works well for low traffic applications (e.g. during dev)
 # but alternative solutions (e.g. queued search) will become more appropriate
 # when chigame is deployed to the web. See these links for further details.
