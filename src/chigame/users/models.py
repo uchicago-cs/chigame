@@ -146,10 +146,12 @@ class NotificationQuerySet(models.QuerySet):
         except ContentType.DoesNotExist:
             raise ValueError(f"The model {actor.label} is not registered in content type")
 
-    def filter_by_receiver(self, receiver, include_deleted=False):
+    def filter_by_receiver(self, receiver, deleted=False):
         queryset = self.filter(receiver=receiver)
-        if not include_deleted:
+        if not deleted:
             queryset = queryset.is_not_deleted()
+        else:
+            queryset = queryset.is_deleted()
         return queryset
 
     def filter_by_type(self, type, include_deleted=False):
@@ -204,6 +206,8 @@ class Notification(models.Model):
         (GROUP_INVITATION, "GROUP_INVITATION"),
     )
 
+    DEFAULT_MESSAGES = {FRIEND_REQUEST: "You have a friend invitation"}
+
     receiver = models.ForeignKey(User, on_delete=models.CASCADE)
     first_sent = models.DateTimeField(auto_now_add=True)
     last_sent = models.DateTimeField(auto_now_add=True)
@@ -224,7 +228,9 @@ class Notification(models.Model):
     def mark_as_unread(self):
         if self.read:
             self.read = False
-            self.save()
+        if not self.visible:
+            self.visible = True
+        self.save()
 
     def mark_as_deleted(self):
         if self.visible:
