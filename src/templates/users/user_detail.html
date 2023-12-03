@@ -54,8 +54,7 @@
     {% if request.user.is_staff %}
       <!-- Additional content for admin -->
       <div class="row">
-        <div class="col-sm-12">
-          <!-- Admin-specific content goes here -->
+        <div class="col-sm-12" <!-- Admin-specific content goes here -->
           <ul>
             {% for user in users %}
               <li>
@@ -65,8 +64,7 @@
             {% endfor %}
           </ul>
         </div>
+        <!-- End Additional content for admin -->
       </div>
-      <!-- End Additional content for admin -->
     {% endif %}
-  </div>
-{% endblock content %}
+  {% endblock content %}
