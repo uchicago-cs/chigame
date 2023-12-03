@@ -13,7 +13,7 @@ from django.shortcuts import get_object_or_404, redirect, render, reverse
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.utils.decorators import method_decorator
-from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
+from django.views.generic import CreateView, DeleteView, DetailView, ListView, TemplateView, UpdateView
 
 from .filters import LobbyFilter
 from .forms import GameForm, LobbyForm
@@ -252,7 +252,11 @@ class TournamentListView(ListView):
             success = tournament.tournament_sign_up(request.user)
             if success == 0:
                 messages.success(request, "You have successfully joined this tournament")
-                return redirect(reverse_lazy("tournament-list"))
+
+                # Redirect to the tournament bracket page
+                bracket_url = reverse("tournament-bracket", args=[tournament.id])
+                return redirect(bracket_url)
+
             elif success == 1:
                 messages.error(request, "You have already joined this tournament")
                 return redirect(reverse_lazy("tournament-list"))
@@ -293,7 +297,10 @@ class TournamentDetailView(DetailView):
             success = tournament.tournament_sign_up(request.user)
             if success == 0:
                 messages.success(request, "You have successfully joined this tournament")
-                return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
+
+                # Redirect to the tournament bracket page
+                bracket_url = reverse("tournament-bracket", args=[tournament.id])
+                return redirect(bracket_url)
             elif success == 1:
                 messages.error(request, "You have already joined this tournament")
                 return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
@@ -466,6 +473,30 @@ def check_guess(request, pk):
         "games/game_coinresult.html",
         {"user_guess": user_guess, "coin_result": coin_result, "correct_guess": correct_guess},
     )
+
+
+class TournamentBracketView(TemplateView):
+    template_name = "tournaments/tournament_bracket.html"
+
+    def get_context_data(self, **kwargs):
+        tournament_id = self.kwargs["tournament_id"]
+        tournament = Tournament.objects.get(id=tournament_id)
+
+        # Fetching required information
+        tournament_name = tournament.name
+        game_name = tournament.game.name
+        players = tournament.players.all()
+        winner = tournament.get_all_winners().first()  # Assuming one winner for simplicity
+
+        context = {
+            "tournament_name": tournament_name,
+            "game_name": game_name,
+            "players": players,
+            "winner": winner,
+            # Add more context data if needed
+        }
+
+        return context
 
 
 def TournamentChatDetailView(request, pk):

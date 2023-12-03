@@ -27,6 +27,8 @@ urlpatterns = [
     # placeholder game
     path("lobby/<int:pk>/coinflip", views.coin_flip_game, name="placeholder-game"),
     path("lobby/<int:pk>/flipresult", views.check_guess, name="flip-result"),
+    # tournament bracket display
+    path("tournament-bracket/<int:tournament_id>/", views.TournamentBracketView.as_view(), name="tournament-bracket"),
     # chat in tournaments
     path("tournaments/<int:pk>/chat/", views.TournamentChatDetailView, name="tournament-chat"),
 ]
