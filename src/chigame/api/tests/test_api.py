@@ -289,3 +289,15 @@ class LobbyTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(Lobby.objects.count(), 0)
+
+    def test_lobby_patch(self):
+        lobby = LobbyFactory()
+        url = reverse("api-lobby-detail", kwargs={"pk": lobby.id})
+
+        updated_data = {"name": "Penultimate Lobby"}
+
+        response = self.client.patch(url, data=updated_data, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(Lobby.objects.count(), 1)
+        self.assertEqual(response.data["name"], updated_data["name"])
