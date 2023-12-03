@@ -6,6 +6,7 @@ from django.contrib.contenttypes.models import ContentType
 from factory import Faker, LazyAttribute, SubFactory, lazy_attribute, post_generation
 from factory.django import DjangoModelFactory
 
+from chigame.games.models import Game, Tournament
 from chigame.users.models import FriendInvitation, Notification
 
 
@@ -82,3 +83,31 @@ class FriendInvitationNotificationFactory(BaseNotificationFactory):
     actor = LazyAttribute(lambda x: x.actor)
     actor_content_type = LazyAttribute(lambda x: ContentType.objects.get(model=x.actor._meta.model_name))
     actor_object_id = LazyAttribute(lambda x: x.actor.pk)
+
+
+class GameFactory(DjangoModelFactory):
+    class Meta:
+        model = Game
+
+    name = Faker("name")
+    description = Faker("sentence", nb_words=8)
+    min_players = Faker("random_int", min=1, max=10)
+    max_players = Faker("random_int", min=11, max=20)
+    complexity = Faker("random_int", min=1.1, max=4.9)
+
+
+class TournamentFactory(DjangoModelFactory):
+    class Meta:
+        model = Tournament
+
+    name = Faker("name")
+    game = SubFactory(GameFactory)
+    registration_start_date = Faker("date_time_between", start_date="-1d", end_date="now")
+    registration_end_date = Faker("date_time_between", start_date=("registration_start_date"), end_date="+7d")
+    tournament_start_date = Faker("date_time_between", start_date=("registration_end_date"), end_date="+14d")
+    tournament_end_date = Faker("date_time_between", start_date=("tournament_start_date"), end_date="+30d")
+    max_players = Faker("random_int", min=21, max=30)
+    description = None
+    rules = None
+    draw_rules = None
+    num_winner = 1

@@ -11,7 +11,7 @@ from django.utils.translation import gettext_lazy as _
 
 from chigame.users.forms import UserAdminChangeForm
 from chigame.users.models import User
-from chigame.users.tests.factories import UserFactory
+from chigame.users.tests.factories import GameFactory, TournamentFactory, UserFactory
 from chigame.users.views import UserRedirectView, UserUpdateView, user_detail_view
 
 pytestmark = pytest.mark.django_db
@@ -97,4 +97,34 @@ class TestUserDetailView:
 
 
 class TestAdminUserDetailView:
-    pass
+    def setUp(self):
+        self.staff_user = User.objects.create_user(
+            username="staffuser", password="password", email="staffuser@example.com", is_staff=True
+        )
+        games = GameFactory.create_batch(1)
+        tournaments = TournamentFactory.create_batch(1)
+        assert games != tournaments
+
+    # def test_create_tournament_link_accessible_by_staff(self, client):
+    #     # Log in as the staff user
+    #     client.login(username='staffuser', password='password', email='staffuser@example.com')
+
+    #     # Get the tournaments page
+    #     response = client.get(reverse('tournament-list'))
+
+    #     # Check if the "Create a new tournament" link is present in the response
+    #     assert '<a href="{}">Create a new tournament</a>'.format(reverse('tournament-create')) in response
+
+    #     # Check if the status code is 200 (OK)
+    #     assert response.status_code == 200
+
+    # def test_admin_user_list_view(self, user: User, rf:RequestFactory, client):
+    #     request = rf.get("games/tournaments")
+    #     request.user = UserFactory()
+    #     user.is_staff = True
+    #     response = client.get(reverse("tournament-list"))
+
+    #     self.assertContains(response,
+    #     '<a href="{}">Create a new tournament</a>'.format(reverse('tournament-create')))
+    #     print(response.content)
+    #     assert "tournaments" in response.context
