@@ -63,13 +63,12 @@ class GameTests(APITestCase):
         # Check that the game object was retrieved correctly
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(Game.objects.count(), 1)
-        self.check_equal(serialized_game, response.data[0])
+        self.check_equal(serialized_game, response.data["results"][0])
 
     def test_get_game_list1(self):
         """
         Ensure we can get a list of game objects.
         """
-        url = reverse("api-game-list")
 
         # create three game objects
         game1 = GameFactory()
@@ -89,9 +88,9 @@ class GameTests(APITestCase):
         serialized_game2 = GameSerializer(game2).data
         serialized_game3 = GameSerializer(game3).data
 
-        self.check_equal(serialized_game1, response.data[0])
-        self.check_equal(serialized_game2, response.data[1])
-        self.check_equal(serialized_game3, response.data[2])
+        self.check_equal(serialized_game1, response.data["results"][0])
+        self.check_equal(serialized_game2, response.data["results"][1])
+        self.check_equal(serialized_game3, response.data["results"][2])
 
     def test_game_list2(self):
         """
@@ -118,10 +117,10 @@ class GameTests(APITestCase):
         serialized_game4 = GameSerializer(game4).data
 
         # test that the game object list contains the two game objects we created
-        self.check_equal(serialized_game1, response.data[0])
-        self.check_equal(serialized_game2, response.data[1])
-        self.check_equal(serialized_game3, response.data[2])
-        self.check_equal(serialized_game4, response.data[3])
+        self.check_equal(serialized_game1, response.data["results"][0])
+        self.check_equal(serialized_game2, response.data["results"][1])
+        self.check_equal(serialized_game3, response.data["results"][2])
+        self.check_equal(serialized_game4, response.data["results"][3])
 
     def test_update_game(self):
         """
