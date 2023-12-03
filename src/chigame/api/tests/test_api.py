@@ -1,14 +1,9 @@
-# from django.test import TestCase
-
-# Create your tests here.
-
-# Compare this snippet from src/chigame/api/tests.py:
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from chigame.api.tests.factories import ChatFactory, GameFactory, TournamentFactory, UserFactory
-from chigame.games.models import Game, Message
+from chigame.api.tests.factories import ChatFactory, GameFactory, LobbyFactory, TournamentFactory, UserFactory
+from chigame.games.models import Game, Lobby, Message
 
 
 class GameTests(APITestCase):
@@ -282,3 +277,15 @@ class ChatTests(APITestCase):
         self.assertEqual(data2["update_on"], Message.objects.get(id=2).update_on)
         self.assertEqual(data2["content"], Message.objects.get(id=2).content)
         self.assertEqual(2, Message.objects.get(id=2).token_id)
+
+
+class LobbyTests(APITestCase):
+    def test_lobby_delete(self):
+        lobby = LobbyFactory()
+        self.assertEqual(Lobby.objects.count(), 1)
+
+        url = reverse("api-lobby-detail", args=[lobby.id])
+        response = self.client.delete(url, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(Lobby.objects.count(), 0)
