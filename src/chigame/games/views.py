@@ -300,7 +300,9 @@ class TournamentDetailView(DetailView):
     def get(self, request, *args, **kwargs):
         super().get(request, *args, **kwargs)
         tournament = Tournament.objects.get(id=self.kwargs["pk"])
-        if tournament.matches.count() == 0 and tournament.status == "registration closed":
+        if tournament.matches.count() == 0 and (
+            tournament.status == "registration closed" or tournament.status == "tournament in progress"
+        ):
             # if the tournament matches have not been created
             tournament.create_tournaments_brackets()
         tournament.check_and_end_tournament()  # check if the tournament has ended

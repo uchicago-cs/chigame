@@ -331,15 +331,15 @@ class Tournament(models.Model):
                 raise ValidationError("The tournament end date should be in the future.")
 
         # the registration start date should be earlier than the registration end date
-        if self.registration_start_date > self.registration_end_date:
+        if self.registration_start_date >= self.registration_end_date:
             raise ValidationError("The registration start date should be earlier than the registration end date.")
 
         # the tournament start date should be earlier than the tournament end date
-        if self.tournament_start_date > self.tournament_end_date:
+        if self.tournament_start_date >= self.tournament_end_date:
             raise ValidationError("The tournament start date should be earlier than the tournament end date.")
 
         # the registration end date should be earlier than the tournament start date
-        if self.registration_end_date > self.tournament_start_date:
+        if self.registration_end_date >= self.tournament_start_date:
             raise ValidationError("The registration end date should be earlier than the tournament start date.")
 
         # Section: archived
