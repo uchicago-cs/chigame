@@ -9,7 +9,7 @@
   <div class="container">
     <div class="row">
       <div class="col-sm-12">
-        <h2>My Details:</h2>
+        <h2>My Account:</h2>
       </div>
     </div>
     {% if object == request.user %}
@@ -49,22 +49,10 @@
           </ul>
         </div>
       </div>
-      <!-- End Action buttons -->
+    {% else %}
+      <!-- Display a message or take a different action -->
+      <p>This account does not belong to you. Access is forbidden.</p>
     {% endif %}
-    {% if request.user.is_staff %}
-      <!-- Additional content for admin -->
-      <div class="row">
-        <div class="col-sm-12" <!-- Admin-specific content goes here -->
-          <ul>
-            {% for user in users %}
-              <li>
-                {{ user.username }}
-                {{ user.email }}
-              </li>
-            {% endfor %}
-          </ul>
-        </div>
-        <!-- End Additional content for admin -->
-      </div>
-    {% endif %}
-  {% endblock content %}
+    <!-- End Action buttons -->
+  </div>
+{% endblock content %}
