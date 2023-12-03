@@ -114,20 +114,17 @@
                 </li>
               {% endif %}
               <li>
-                {% block search_bar %}
-                  <!-- Dynamically update search bar landing page depending on query_type-->
-                  <form id="search-bar" action="{% url 'game-search-results' %}" method="get">
-                    <select id="query-type" name="query_type">
-                      <option value="games">Games</option>
-                      <option value="users">Users</option>
-                      <!-- Add more options here -->
-                    </select>
-                    <input id="query-input"
-                           name="query-input"
-                           type="text"
-                           placeholder="Search..." />
-                  </form>
-                {% endblock search_bar %}
+                <!-- Dynamically update search bar landing page depending on query_type-->
+                <form id="search-bar" action="{% url 'game-search-results' %}" method="get">
+                  <select id="query-type" name="query_type">
+                    <option value="games">Games</option>
+                    <option value="users">Users</option>
+                    <option value="forums">Forums</option>
+                    <!-- Add more options here -->
+                  </select>
+                  <!-- Name must remain as "q" as django-machina expects that name -->
+                  <input id="query-input" name="q" type="text" placeholder="Search..." />
+                </form>
               </li>
             </ul>
           </div>
@@ -177,14 +174,6 @@
           const query_input = document.getElementById('query-input');
           const AUTOCOMPLETION_RESULTS_LIMIT = 10;
 
-          // do nothing if search bar is empty
-          search_bar.addEventListener("submit", function() {
-            event.preventDefault();
-            if (query_input.value.trim() !== '') {
-              search_bar.submit();
-            }
-          });
-
           // by default, query autocompletes game names
           {% get_games as games %} // fetch game names for autocomplete
           var game_names = [
@@ -217,11 +206,12 @@
           });
 
           // if the query type changes, update the landing page and autocomplete options
-	      query_type.addEventListener("change", function() {
-            if (query_type.value == "games") {
+	      
+          query_type.addEventListener("change", function() {
+            if (query_type.value === "games") {
               search_bar.action = "{% url 'game-search-results' %}";
 
-	          {% get_games as games %}  // fetch game names for autocomplete
+	            {% get_games as games %}  // fetch game names for autocomplete
               var game_names = [
                 {% for game in games %}
                   {
@@ -254,12 +244,19 @@
               search_bar.action = "{% url 'users:user-search-results' %}";
               $("#query").autocomplete({
                 source: []  // placeholder; replace with list of usernames
-              });
-            } else if (query_type.value == "forums") {
-              search_bar.action = "{% url 'home' %}"; // placeholder
+              });           
+            } else if (query_type.value === "forums") {
+              search_bar.action = "{% url 'forum_search:search' %}";
               $("#query").autocomplete({
                 source: []  // placeholder; replace with list of forums
               });
+            }
+          });
+  
+          // do nothing if search bar is empty
+          search_bar.addEventListener("submit", function(event) {
+            if (!query_input.value.trim()) {
+              event.preventDefault();
             }
           });
         });
