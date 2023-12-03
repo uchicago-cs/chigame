@@ -180,7 +180,7 @@ def decline_friend_invitation(request, pk):
 
 
 def user_search_results(request):
-    query_input = request.GET.get("query-input")
+    query_input = request.GET.get("q")
     context = {"nothing_found": True, "query_type": "Users"}
     if query_input:
         users_list = UserProfile.objects.filter(

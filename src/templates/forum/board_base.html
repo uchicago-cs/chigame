@@ -19,17 +19,6 @@ https://github.com/ellmetha/django-machina/blob/main/machina/templates/machina/b
         href="{% static 'css/machina.board_theme.min.css' %}" />
   <link rel="stylesheet" href="{% static 'machina/custom-styling.css' %}" />
 {% endblock css %}
-{% block search_bar %}
-  <form class="form-inline my-2 ml-3 my-lg-0"
-        role="search"
-        action="{% url 'forum_search:search' %}">
-    <input class="form-control mr-sm-2"
-           type="search"
-           placeholder="Search Forums"
-           aria-label="Search"
-           name="q" />
-  </form>
-{% endblock search_bar %}
 {% block body %}
   <div class="my-5 container" id="main_container">
     <div class="row">
