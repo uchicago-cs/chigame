@@ -177,7 +177,7 @@ def apply_sorting_and_filtering(queryset, sort_param, players_param):
 
 
 def search_results(request):
-    query_input = request.GET.get("query-input")
+    query_input = request.GET.get("q")
     sort = request.GET.get("sort_by", "name-asc")
     players = request.GET.get("players", "")
     page_number = request.GET.get("page")
