@@ -214,7 +214,6 @@ def user_inbox_view(request, pk):
 def deleted_notifications_view(request, pk):
     user = request.user
     notifications = Notification.objects.filter_by_receiver(user, deleted=True)
-    print(str(Notification.objects.filter_by_receiver(user).query))
     default_notification_messages = Notification.DEFAULT_MESSAGES
     context = {
         "pk": pk,
