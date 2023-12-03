@@ -184,7 +184,7 @@
               },
             {% endfor %}
           ];
-          $("#query").autocomplete({
+          $("#query-input").autocomplete({
               source: function(request, response) {
                 /*
                 new regular expression object (RegExp) to search for pattern
@@ -219,7 +219,7 @@
                   },
                 {% endfor %}
               ];
-              $("#query").autocomplete({
+              $("#query-input").autocomplete({
                 source: function(request, response) {
                   /*
                   new regular expression object (RegExp) to search for pattern
@@ -241,12 +241,12 @@
               });
             } else if (query_type.value == "users") {
               search_bar.action = "{% url 'users:user-search-results' %}";
-              $("#query").autocomplete({
+              $("#query-input").autocomplete({
                 source: []  // placeholder; replace with list of usernames
               });
             } else if (query_type.value === "forums") {
               search_bar.action = "{% url 'forum_search:search' %}";
-              $("#query").autocomplete({
+              $("#query-input").autocomplete({
                 source: []  // placeholder; replace with list of forums
               });
             }
