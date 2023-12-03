@@ -12,7 +12,7 @@ from django.views.generic import DetailView, RedirectView, UpdateView
 from rest_framework import status
 from rest_framework.response import Response
 
-from chigame.games.models import Player
+from chigame.games.models import Game, Player, Tournament
 
 from .models import FriendInvitation, Notification, UserProfile
 from .tables import FriendsTable, UserTable
@@ -78,8 +78,14 @@ def user_history(request, pk):
     try:
         user = User.objects.get(pk=pk)
         player = Player.objects.get(pk=pk)
+        games = Game.objects.all()
+        tournaments = Tournament.objects.filter(winners=user)
 
-        return render(request, "users/user_history.html", {"user": user, "player": player})
+        return render(
+            request,
+            "users/user_history.html",
+            {"user": user, "player": player, "games": games, "tournaments": tournaments},
+        )
     except User.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
 

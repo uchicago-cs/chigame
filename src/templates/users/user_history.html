@@ -1,7 +1,14 @@
 {% extends "base.html" %}
 
 {% block content %}
-  <h2>User Historical Information</h2>
+  <h2>
+    User Historical Information
+    <style>
+      .tournament-item {
+        margin-left: 20px;
+      }
+    </style>
+  </h2>
   <ul>
     <li>Name: {{ user.name }}</li>
     <!-- Add additional information here -->
@@ -10,8 +17,12 @@
       <!-- {{ user.games_played }}  TO BE IMPLEMENTED-->
     </li>
     <li>
-      Games Won:
-      {{ player.outcome }}
+      Tournaments Won:
+      {% if tournaments is not None %}
+        {% for tourney in tournaments %}<li class="tournament-item">{{ tourney.name }}</li>{% endfor %}
+      {% else %}
+        <p>No Tournaments Won Yet</p>
+      {% endif %}
     </li>
     <!-- Add more fields here-->
   </ul>
