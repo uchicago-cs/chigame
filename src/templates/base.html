@@ -197,7 +197,6 @@
             } else if (query_type.value === "forums") {
               search_bar.action = "{% url 'forum_search:search' %}";
             }
-
             advancedSearchButton.classList.toggle('d-none', query_type.value !== "forums");
           }
 
