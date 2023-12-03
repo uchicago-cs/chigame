@@ -12,8 +12,8 @@ from django.urls import reverse_lazy
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
-from django_tables2 import SingleTableView
 
+from .filters import LobbyFilter
 from .forms import GameForm, LobbyForm
 from .models import Game, Lobby, Match, Player, Tournament
 from .tables import LobbyTable
@@ -26,10 +26,12 @@ class GameListView(ListView):
     paginate_by = 20
 
 
-class LobbyListView(SingleTableView):
-    model = Lobby
-    table_class = LobbyTable
-    template_name = "games/lobby_list.html"
+def lobby_list(request):
+    queryset = Lobby.objects.all()
+    filter = LobbyFilter(request.GET, queryset=queryset)
+    table = LobbyTable(filter.qs)
+
+    return render(request, "games/lobby_list.html", {"table": table, "filter": filter})
 
 
 @login_required
@@ -137,7 +139,7 @@ class GameEditView(UserPassesTestMixin, UpdateView):
 
 
 def search_results(request):
-    query = request.GET.get("query")
+    query_input = request.GET.get("query-input")
 
     """
     The Q object is an object used to encapsulate a collection of keyword
@@ -146,10 +148,10 @@ def search_results(request):
     https://docs.djangoproject.com/en/4.2/topics/db/queries/#complex-lookups-with-q-objects
     """
     object_list = Game.objects.filter(
-        Q(name__icontains=query)
-        | Q(categories__name__icontains=query)
-        | Q(people__name__icontains=query)
-        | Q(publishers__name__icontains=query)
+        Q(name__icontains=query_input)
+        | Q(categories__name__icontains=query_input)
+        | Q(people__name__icontains=query_input)
+        | Q(publishers__name__icontains=query_input)
     ).distinct()  # only show unique game objects (no duplicates)
     context = {"query_type": "Games", "object_list": object_list}
 
@@ -268,14 +270,16 @@ class TournamentCreateView(CreateView):
     fields = [
         "name",
         "game",
-        "start_date",
-        "end_date",
+        "registration_start_date",
+        "registration_end_date",
+        "tournament_start_date",
+        "tournament_end_date",
         "max_players",
         "description",
         "rules",
         "draw_rules",
         "num_winner",
-        "players",
+        "players",  # This field should be removed in the production version. For testing only.
     ]
     # Note: "winner" is not included in the fields because it is not
     # supposed to be set by the user. It will be set automatically
@@ -312,8 +316,6 @@ class TournamentUpdateView(UpdateView):
     fields = [
         "name",
         "game",
-        "start_date",
-        "end_date",
         "max_players",
         "description",
         "rules",
@@ -322,6 +324,10 @@ class TournamentUpdateView(UpdateView):
         "matches",
         "players",
     ]
+    # Note: the "registration_start_date" and "registration_end_date",
+    # "tournament_start_date" and "tournament_end_date" fields are not
+    # included because they are not supposed to be updated once the tournament is created.
+
     # Note: "winner" is not included in the fields because it is not
     # supposed to be set by the user. It will be set automatically
     # when the tournament is over.

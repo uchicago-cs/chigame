@@ -8,6 +8,11 @@
 {% endblock title %}
 {% block content %}
   <h1>List of Lobbies</h1>
+  <form method="get">
+    {{ filter.form.as_p }}
+    <button type="submit">Filter</button>
+    <a href="?">Clear all Filters</a>
+  </form>
   {% render_table table %}
   {% if user.is_authenticated %}
     <a href="{% url 'lobby-create' %}">Create Lobby</a>
