@@ -1,34 +1,50 @@
 from functools import wraps
+from random import choice
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
+from django.core.paginator import Paginator
 from django.db.models import Q
+from django.db.models.functions import Lower
 from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render, reverse
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
-from django_tables2 import SingleTableView
 
+from .filters import LobbyFilter
 from .forms import GameForm, LobbyForm
-from .models import Game, Lobby, Tournament
+from .models import Game, Lobby, Match, Player, Tournament
 from .tables import LobbyTable
 
 
 class GameListView(ListView):
     model = Game
-    queryset = Game.objects.all()
     template_name = "games/game_grid.html"
     paginate_by = 20
 
+    def get_queryset(self):
+        """
+        Returns a queryset of Game objects sorted and filtered based on the URL parameters.
+        https://docs.djangoproject.com/en/4.2/ref/models/querysets/
+        """
+        queryset = super().get_queryset()
+        sort = self.request.GET.get("sort_by", "name-asc")
+        players = self.request.GET.get("players", "")
+        queryset = apply_sorting_and_filtering(queryset, sort, players)
 
-class LobbyListView(SingleTableView):
-    model = Lobby
-    table_class = LobbyTable
-    template_name = "games/lobby_list.html"
+        return queryset
+
+
+def lobby_list(request):
+    queryset = Lobby.objects.all()
+    filter = LobbyFilter(request.GET, queryset=queryset)
+    table = LobbyTable(filter.qs)
+
+    return render(request, "games/lobby_list.html", {"table": table, "filter": filter})
 
 
 @login_required
@@ -135,8 +151,36 @@ class GameEditView(UserPassesTestMixin, UpdateView):
         return self.request.user.is_staff
 
 
+def apply_sorting_and_filtering(queryset, sort_param, players_param):
+    # Example value of sort_param: "name-asc" or "year_published-desc".
+    if sort_param:
+        sort_field, sort_direction = sort_param.rsplit("-", 1)
+        sort_order = "-" if sort_direction == "desc" else ""
+
+        if sort_field == "name":
+            if sort_direction == "desc":
+                queryset = queryset.order_by(Lower("name").desc())
+            else:
+                queryset = queryset.order_by(Lower("name"))
+        else:
+            queryset = queryset.order_by(f"{sort_order}{sort_field}")
+
+    # Filter by number of players. Handles numeric values and '10+' case.
+    if players_param:
+        if players_param.isdigit():
+            players = int(players_param)
+            queryset = queryset.filter(min_players__lte=players, max_players__gte=players)
+        elif players_param == "10+":
+            queryset = queryset.filter(max_players__gte=10)
+
+    return queryset
+
+
 def search_results(request):
-    query = request.GET.get("query")
+    query_input = request.GET.get("q")
+    sort = request.GET.get("sort_by", "name-asc")
+    players = request.GET.get("players", "")
+    page_number = request.GET.get("page")
 
     """
     The Q object is an object used to encapsulate a collection of keyword
@@ -145,12 +189,25 @@ def search_results(request):
     https://docs.djangoproject.com/en/4.2/topics/db/queries/#complex-lookups-with-q-objects
     """
     object_list = Game.objects.filter(
-        Q(name__icontains=query)
-        | Q(categories__name__icontains=query)
-        | Q(people__name__icontains=query)
-        | Q(publishers__name__icontains=query)
+        Q(name__icontains=query_input)
+        | Q(categories__name__icontains=query_input)
+        | Q(people__name__icontains=query_input)
+        | Q(publishers__name__icontains=query_input)
     ).distinct()  # only show unique game objects (no duplicates)
-    context = {"query_type": "Games", "object_list": object_list}
+
+    object_list = apply_sorting_and_filtering(object_list, sort, players)
+
+    paginator = Paginator(object_list, 20)
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        "query_type": "Games",
+        "object_list": object_list,
+        "page_obj": page_obj,
+        "current_sort": sort,
+        "current_players": players,
+        "query-input": query_input,
+    }
 
     return render(request, "games/game_grid.html", context)
 
@@ -267,14 +324,16 @@ class TournamentCreateView(CreateView):
     fields = [
         "name",
         "game",
-        "start_date",
-        "end_date",
+        "registration_start_date",
+        "registration_end_date",
+        "tournament_start_date",
+        "tournament_end_date",
         "max_players",
         "description",
         "rules",
         "draw_rules",
         "num_winner",
-        "players",
+        "players",  # This field should be removed in the production version. For testing only.
     ]
     # Note: "winner" is not included in the fields because it is not
     # supposed to be set by the user. It will be set automatically
@@ -311,8 +370,6 @@ class TournamentUpdateView(UpdateView):
     fields = [
         "name",
         "game",
-        "start_date",
-        "end_date",
         "max_players",
         "description",
         "rules",
@@ -321,6 +378,10 @@ class TournamentUpdateView(UpdateView):
         "matches",
         "players",
     ]
+    # Note: the "registration_start_date" and "registration_end_date",
+    # "tournament_start_date" and "tournament_end_date" fields are not
+    # included because they are not supposed to be updated once the tournament is created.
+
     # Note: "winner" is not included in the fields because it is not
     # supposed to be set by the user. It will be set automatically
     # when the tournament is over.
@@ -359,6 +420,52 @@ class TournamentDeleteView(DeleteView):
     template_name = "tournaments/tournament_delete.html"
     context_object_name = "tournament"
     success_url = reverse_lazy("tournament-list")
+
+
+# Placeholder Game
+@login_required
+def coin_flip_game(request, pk):
+    # check if user has already played game
+    if Player.objects.filter(user=request.user, match_id__lobby__id=pk).exists():
+        return render(request, "games/game_already_played.html")
+    return render(request, "games/game_coinflip.html", {"lobby_id": pk})
+
+
+@login_required
+def check_guess(request, pk):
+    user_guess = request.POST.get("user_guess")
+    coin_result = choice(["heads", "tails"])
+    correct_guess = user_guess == coin_result
+
+    lobby = get_object_or_404(Lobby, id=pk)
+
+    # allows two users to play the game
+    if Match.objects.filter(lobby__id=pk).exists():
+        match = get_object_or_404(Match, lobby__id=pk)
+    else:
+        # Create Match instance linked to the fetched Lobby
+        match = Match.objects.create(
+            game_id=1,  # Replace with the actual Game ID
+            lobby=lobby,
+            date_played=timezone.now()
+            # Add other fields as needed
+        )
+
+    player = Player.objects.create(
+        user=request.user,
+        match=match,
+    )
+    if correct_guess:
+        player.outcome = Player.WIN
+    else:
+        player.outcome = Player.LOSE
+    player.save()
+
+    return render(
+        request,
+        "games/game_coinresult.html",
+        {"user_guess": user_guess, "coin_result": coin_result, "correct_guess": correct_guess},
+    )
 
 
 def TournamentChatDetailView(request, pk):

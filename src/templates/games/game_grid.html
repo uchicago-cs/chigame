@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% load url_tags %}
+
 {% block title %}
   Games
 {% endblock title %}
@@ -40,9 +42,65 @@
       filter: blur(10px);
     }
   </style>
-  <h1 class="display-1 mt-3 mb-3">Games</h1>
+  <!-- Sorting and Filtering Bar -->
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <h1 class="display-1 mt-3 mb-3">Games</h1>
+    <form id="filter-form" class="d-flex gap-2" method="get">
+      <!-- Include the search query as a hidden field -->
+      {% if query %}<input type="hidden" name="query" value="{{ query }}" />{% endif %}
+      <!-- Players Filtering Dropdown -->
+      <div class="form-group">
+        <label for="filter-players" class="form-label">PLAYERS:</label>
+        <select id="filter-players"
+                name="players"
+                class="form-select"
+                onchange="updateFilterAndSorting()">
+          <option value="" {% if not request.GET.players %}selected{% endif %}>Any</option>
+          <option value="1" {% if request.GET.players == '1' %}selected{% endif %}>1 Player</option>
+          <option value="2" {% if request.GET.players == '2' %}selected{% endif %}>2 Players</option>
+          <option value="4" {% if request.GET.players == '4' %}selected{% endif %}>4 Players</option>
+          <option value="6" {% if request.GET.players == '6' %}selected{% endif %}>6 Players</option>
+          <option value="8" {% if request.GET.players == '8' %}selected{% endif %}>8 Players</option>
+          <option value="10+" {% if request.GET.players == '10+' %}selected{% endif %}>10+ Players</option>
+        </select>
+      </div>
+      <!-- Sorting Dropdown -->
+      <div class="form-group">
+        <label for="sort-by" class="form-label">SORT BY:</label>
+        <select id="sort-by"
+                name="sort_by"
+                class="form-select"
+                onchange="updateFilterAndSorting()">
+          <option value="name-asc"
+                  {% if request.GET.sort_by == 'name-asc' %}selected{% endif %}>Game Name - Ascending</option>
+          <option value="name-desc"
+                  {% if request.GET.sort_by == 'name-desc' %}selected{% endif %}>Game Name - Descending</option>
+          <option value="year_published-asc"
+                  {% if request.GET.sort_by == 'year_published-asc' %}selected{% endif %}>
+            Year
+            Published - Ascending
+          </option>
+          <option value="year_published-desc"
+                  {% if request.GET.sort_by == 'year_published-desc' %}selected{% endif %}>
+            Year
+            Published - Descending
+          </option>
+          <option value="max_playtime-asc"
+                  {% if request.GET.sort_by == 'max_playtime-asc' %}selected{% endif %}>
+            Playtime -
+            Shortest First
+          </option>
+          <option value="max_playtime-desc"
+                  {% if request.GET.sort_by == 'max_playtime-desc' %}selected{% endif %}>
+            Playtime
+            - Longest First
+          </option>
+        </select>
+      </div>
+    </form>
+  </div>
   <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
-    {% for game in object_list %}
+    {% for game in page_obj %}
       <div class="col">
         <a href="{% url 'game-detail' game.id %}"
            class="text-decoration-none text-dark">
@@ -54,7 +112,7 @@
             </div>
             <div class="card-body d-flex flex-column">
               <h4 class="card-title">{{ game.name }}</h4>
-              <p class="card-text flex-grow-1">{{ game.description|linebreaksbr|truncatewords_html:20 }}</p>
+              <p class="card-text flex-grow-1">{{ game.description|linebreaksbr|truncatewords:20 }}</p>
               <div>
                 {% for category in game.category.all %}<span class="badge text-bg-primary">{{ category }}</span>{% endfor %}
               </div>
@@ -74,10 +132,11 @@
       <ul class="pagination pagination-lg justify-content-center">
         {% if page_obj.has_previous %}
           <li class="page-item">
-            <a class="page-link" href="?page=1">« First</a>
+            <a class="page-link" href="?{% updated_params page=1 %}">« First</a>
           </li>
           <li class="page-item">
-            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">{{ page_obj.previous_page_number }}</a>
+            <a class="page-link"
+               href="?{% updated_params page=page_obj.previous_page_number %}">{{ page_obj.previous_page_number }}</a>
           </li>
         {% else %}
           <li class="page-item disabled">
@@ -89,10 +148,12 @@
         </li>
         {% if page_obj.has_next %}
           <li class="page-item">
-            <a class="page-link" href="?page={{ page_obj.next_page_number }}">{{ page_obj.next_page_number }}</a>
+            <a class="page-link"
+               href="?{% updated_params page=page_obj.next_page_number %}">{{ page_obj.next_page_number }}</a>
           </li>
           <li class="page-item">
-            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last »</a>
+            <a class="page-link"
+               href="?{% updated_params page=page_obj.paginator.num_pages %}">Last »</a>
           </li>
         {% else %}
           <li class="page-item disabled">
@@ -102,4 +163,10 @@
       </ul>
     </nav>
   </div>
+  <script>
+    // Update the filter and sorting when the user changes the dropdown
+    document.getElementById('filter-form').onchange = function() {
+      this.submit();
+    };
+  </script>
 {% endblock content %}
