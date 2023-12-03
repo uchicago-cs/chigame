@@ -9,6 +9,8 @@ from django.utils.translation import gettext_lazy as _
 
 from chigame.users.managers import UserManager
 
+# from chigame.games.models import Match, Tournament
+
 
 class User(AbstractUser):
     """
@@ -106,6 +108,32 @@ class GroupInvitation(models.Model):
     friend_group = models.ForeignKey(Group, on_delete=models.CASCADE)
     sender = models.ForeignKey(User, related_name="sent_group_invitations", on_delete=models.CASCADE)
     receiver = models.ForeignKey(User, related_name="received_group_invitations", on_delete=models.CASCADE)
+    accepted = models.BooleanField(default=False)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+
+class GameInvitation(models.Model):
+    """
+    An invitation to join a match of a game
+    """
+
+    sender = models.ForeignKey("users.User", on_delete=models.CASCADE, related_name="game_invitations_sent")
+    receiver = models.ForeignKey("users.User", on_delete=models.CASCADE, related_name="game_invitations_received")
+    match = models.ForeignKey("games.Match", on_delete=models.CASCADE)
+    accepted = models.BooleanField(default=False)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+
+class TournamentInvitation(models.Model):
+    """
+    An invitation to join a tournament
+    """
+
+    sender = models.ForeignKey("users.User", on_delete=models.CASCADE, related_name="tournament_invitations_sent")
+    receiver = models.ForeignKey(
+        "users.User", on_delete=models.CASCADE, related_name="tournament_invitations_received"
+    )
+    tournament = models.ForeignKey("games.Tournament", on_delete=models.CASCADE)
     accepted = models.BooleanField(default=False)
     timestamp = models.DateTimeField(auto_now_add=True)
 
