@@ -235,6 +235,7 @@ def notification_detail(request, pk):
         if notification.receiver.pk != request.user.pk:
             messages.error(request, "You can not redirect from this notification")
             return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
+        notification.mark_as_read()
         if notification.type == Notification.FRIEND_REQUEST:
             return redirect(reverse("users:user-profile", kwargs={"pk": notification.actor.sender.pk}))
     except Notification.DoesNotExist:
