@@ -206,7 +206,6 @@
           });
 
           // if the query type changes, update the landing page and autocomplete options
-	      
           query_type.addEventListener("change", function() {
             if (query_type.value === "games") {
               search_bar.action = "{% url 'game-search-results' %}";
@@ -244,7 +243,7 @@
               search_bar.action = "{% url 'users:user-search-results' %}";
               $("#query").autocomplete({
                 source: []  // placeholder; replace with list of usernames
-              });           
+              });
             } else if (query_type.value === "forums") {
               search_bar.action = "{% url 'forum_search:search' %}";
               $("#query").autocomplete({
@@ -252,7 +251,7 @@
               });
             }
           });
-  
+
           // do nothing if search bar is empty
           search_bar.addEventListener("submit", function(event) {
             if (!query_input.value.trim()) {
