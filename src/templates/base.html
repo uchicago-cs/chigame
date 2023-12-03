@@ -1,4 +1,5 @@
 {% load static i18n %}
+{% load tags %}
 
 <!DOCTYPE html>
 {% get_current_language as LANGUAGE_CODE %}
@@ -28,6 +29,9 @@
       <!-- Your stuff: Third-party CSS libraries go here -->
       <!-- This file stores project-specific CSS -->
       <link href="{% static 'css/project.css' %}" rel="stylesheet" />
+      <link href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/themes/ui-lightness/jquery-ui.css"
+            rel="stylesheet"
+            type="text/css" />
     {% endblock css %}
     <!-- Le javascript
     ================================================== -->
@@ -44,6 +48,8 @@
       <!-- Your stuff: Third-party javascript libraries go here -->
       <!-- place project specific Javascript in this file -->
       <script defer src="{% static 'js/project.js' %}"></script>
+      <script src= "https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.js"></script>
+      <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.js"></script>
     {% endblock javascript %}
   </head>
   <body>
@@ -108,20 +114,17 @@
                 </li>
               {% endif %}
               <li>
-                {% block search_bar %}
-                  <!-- Dynamically update search bar landing page depending on query_type-->
-                  <form id="search-bar" action="{% url 'game-search-results' %}" method="get">
-                    <select id="query-type" name="query_type">
-                      <option value="games">Games</option>
-                      <option value="users">Users</option>
-                      <!-- Add more options here -->
-                    </select>
-                    <input id="query-input"
-                           name="query-input"
-                           type="text"
-                           placeholder="Search..." />
-                  </form>
-                {% endblock search_bar %}
+                <!-- Dynamically update search bar landing page depending on query_type-->
+                <form id="search-bar" action="{% url 'game-search-results' %}" method="get">
+                  <select id="query-type" name="query_type">
+                    <option value="games">Games</option>
+                    <option value="users">Users</option>
+                    <option value="forums">Forums</option>
+                    <!-- Add more options here -->
+                  </select>
+                  <!-- Name must remain as "q" as django-machina expects that name -->
+                  <input id="query-input" name="q" type="text" placeholder="Search..." />
+                </form>
               </li>
             </ul>
           </div>
@@ -160,25 +163,104 @@
     </script>
       {% endcomment %}
       {% comment %}
-    Dynammically change where the search bar sends a GET request to based on
-    the selected value of the query type dropdown menu.
+      Dynammically change the autocomplete options and where the search bar sends a GET
+      request to based on the selected value of the query type dropdown menu.
       {% endcomment %}
-      <script>
+      {# disable djlint for this section because the linter breaks the template tags #}
+      <!-- djlint:off --><script>   // "djlint:off" turns the linter off for this section of code
         document.addEventListener('DOMContentLoaded', function() {
           const search_bar = document.getElementById('search-bar');
           const query_type = document.getElementById('query-type');
+          const query_input = document.getElementById('query-input');
+          const AUTOCOMPLETION_RESULTS_LIMIT = 10;
 
+          // by default, query autocompletes game names
+          {% get_games as games %} // fetch game names for autocomplete
+          var game_names = [
+            {% for game in games %}
+              {
+                url: "{% url 'game-detail' pk=game.pk %}",
+                label: "{{game.name}}"
+              },
+            {% endfor %}
+          ];
+          $("#query-input").autocomplete({
+              source: function(request, response) {
+                /*
+                new regular expression object (RegExp) to search for pattern
+                request.term is the string entered into the search bar
+                "i" means that the matching is case insensitive
+                */
+                var matcher = new RegExp($.ui.autocomplete.escapeRegex(request.term), "i");
+                // results is all of the game names that match the term in the search bar
+                var results = $.grep(game_names, function(tag){
+                  return matcher.test(tag.label)
+                })
+                // only display the first 10 results
+                response(results.slice(0, AUTOCOMPLETION_RESULTS_LIMIT));
+              },
+              // clicking on the autocomplete tag takes you to the game detail page
+              select: function(event, ui) {
+                window.location.href = ui.item.url;
+              }
+          });
+
+          // if the query type changes, update the landing page and autocomplete options
           query_type.addEventListener("change", function() {
-            if (query_type.value == "games") {
+            if (query_type.value === "games") {
               search_bar.action = "{% url 'game-search-results' %}";
+
+	            {% get_games as games %}  // fetch game names for autocomplete
+              var game_names = [
+                {% for game in games %}
+                  {
+                    url: "{% url 'game-detail' pk=game.pk %}",
+                    label: "{{game.name}}"
+                  },
+                {% endfor %}
+              ];
+              $("#query-input").autocomplete({
+                source: function(request, response) {
+                  /*
+                  new regular expression object (RegExp) to search for pattern
+                  request.term is the string entered into the search bar
+                  "i" means that the matching is case insensitive
+                  */
+                  var matcher = new RegExp($.ui.autocomplete.escapeRegex(request.term), "i");
+                  // results is all of the game names that match the term in the search bar
+                  var results = $.grep(game_names, function(tag){
+                    return matcher.test(tag.label)
+                  })
+                  // only display the first 10 results
+                  response(results.slice(0, AUTOCOMPLETION_RESULTS_LIMIT));
+                },
+                // clicking on the autocomplete tag takes you to the game detail page
+                select: function(event, ui) {
+                  window.location.href = ui.item.url;
+                }
+              });
             } else if (query_type.value == "users") {
               search_bar.action = "{% url 'users:user-search-results' %}";
-            } else if (query_type.value == "forums") {
-              search_bar.action = "{% url 'home' %}"; // placeholder
+              $("#query-input").autocomplete({
+                source: []  // placeholder; replace with list of usernames
+              });
+            } else if (query_type.value === "forums") {
+              search_bar.action = "{% url 'forum_search:search' %}";
+              $("#query-input").autocomplete({
+                source: []  // placeholder; replace with list of forums
+              });
+            }
+          });
+
+          // do nothing if search bar is empty
+          search_bar.addEventListener("submit", function(event) {
+            if (!query_input.value.trim()) {
+              event.preventDefault();
             }
           });
         });
-      </script>
-    {% endblock inline_javascript %}
-  </body>
+</script><!-- djlint:on -->
+{# turn djlint back on so that the rest of the code is checked for format/stylistic errors#}
+{% endblock inline_javascript %}
+</body>
 </html>
