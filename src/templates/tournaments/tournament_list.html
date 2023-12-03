@@ -8,7 +8,7 @@
         href="{% static 'tournament_styles.css' %}" />
 {% endblock extrahead %}
 {% block content %}
-  <h1>Tournaments</h1>
+  <h1>All Tournaments</h1>
   <form method="post">
     {% csrf_token %}
     <input type="hidden" name="tournament_id" value="{{ tournament.id }}" />
