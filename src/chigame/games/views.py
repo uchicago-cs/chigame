@@ -6,7 +6,7 @@ import requests
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.db.models.functions import Lower
@@ -588,7 +588,15 @@ def check_guess(request, pk):
     )
 
 
+@login_required
 def TournamentChatDetailView(request, pk):
-    tournament = Tournament.objects.get(pk=pk)
-    context = {"tournament": tournament}
-    return render(request, "tournaments/tournament_chat.html", context)
+    try:
+        tournament = Tournament.objects.get(pk=pk)
+        context = {"tournament": tournament}
+        if not tournament.chat:
+            messages.error(request, "This tournament does not have a chat yet.")
+            return redirect(reverse_lazy("tournament-detail", kwargs={"pk": pk}))
+        return render(request, "tournaments/tournament_chat.html", context)
+    except ObjectDoesNotExist:
+        messages.error(request, "This tournament does not have a chat yet.")
+        return redirect(reverse_lazy("tournament-detail", kwargs={"pk": pk}))
