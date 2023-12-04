@@ -22,6 +22,11 @@ class UserDetailView(LoginRequiredMixin, DetailView):
     slug_field = "id"
     slug_url_kwarg = "id"
 
+    # In parameters, use UserPassesTestMixin and uncomment the following code to
+    # give error message if an outside user tries to access your detail view.
+    # def test_func(self):
+    # return self.request.user == self.get_object()
+
 
 user_detail_view = UserDetailView.as_view()
 

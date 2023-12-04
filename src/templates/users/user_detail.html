@@ -3,45 +3,51 @@
 {% load static %}
 
 {% block title %}
-  User:
-  {{ object.name }}
+  My Details:
 {% endblock title %}
 {% block content %}
   <div class="container">
     <div class="row">
       <div class="col-sm-12">
-        <h2>{{ object.name }}</h2>
+        <h2>My Account:</h2>
       </div>
     </div>
     {% if object == request.user %}
       <!-- Action buttons -->
+      <style>
+        .list-item {
+          margin-bottom: 25px;
+          list-style-type: none;
+        }
+      </style>
       <div class="row">
         <div class="col-sm-12">
-          <a class="btn btn-primary" href="{% url 'users:update' %}" role="button">My Info</a>
-          <a class="btn btn-primary"
-             href="{% url 'account_email' %}"
-             role="button">E-Mail</a>
-          <!-- Your Stuff: Custom user template urls -->
-        </div>
-      </div>
-      <!-- End Action buttons -->
-    {% endif %}
-    {% if request.user.is_staff %}
-      <!-- Additional content for admin -->
-      <div class="row">
-        <div class="col-sm-12">
-          <!-- Admin-specific content goes here -->
           <ul>
-            {% for user in users %}
-              <li>
-                {{ user.username }}
-                {{ user.email }}
+            {% if object.is_staff %}
+              <li class="list-item">
+                <strong>Admin of Chigame</strong>
               </li>
-            {% endfor %}
+            {% endif %}
+            <li class="list-item">
+              Name: {{ object.name }}
+              <a class="btn btn-primary" href="{% url 'users:update' %}" role="button">Update Name</a>
+            </li>
+            <li class="list-item">
+              Email: {{ object.email }}
+              <a class="btn btn-primary"
+                 href="{% url 'account_email' %}"
+                 role="button">Update E-Mail</a>
+            </li>
+            <li class="list-item">Bio: {{ object.userprofile.bio }}</li>
+            <li class="list-item">Date Joined: {{ object.date_joined }}</li>
+            <!-- Your Stuff: Custom user template URLs -->
           </ul>
         </div>
       </div>
-      <!-- End Additional content for admin -->
+    {% else %}
+      <!-- Display a message or take a different action -->
+      <p>This account does not belong to you. Access is forbidden.</p>
     {% endif %}
+    <!-- End Action buttons -->
   </div>
 {% endblock content %}
