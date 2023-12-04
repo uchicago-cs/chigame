@@ -84,6 +84,9 @@
             <input type="hidden" name="action" value="withdraw" />
             <button type="submit" id="Withdraw">Withdraw</button>
           </form>
+          <a href="{% url 'tournament-chat' tournament.id %}">
+            <button>{{ tournament.name }} Chat</button>
+          </a>
         {% endif %}
         <!-- You can add more fields as needed -->
       </li>
