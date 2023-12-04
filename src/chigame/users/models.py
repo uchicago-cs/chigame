@@ -3,6 +3,7 @@ from django.contrib.auth.models import AbstractUser
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core.validators import MaxValueValidator
+from django.db.models import Q
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -66,6 +67,13 @@ class UserProfile(models.Model):
         return profile
 
 
+class FriendInvitationManager(models.Manager):
+    def get_by_users(self, user1, user2, **kwargs):
+        """Gets a friend invitation given two user, each of which can be a sender
+        or a receiver"""
+        return self.get(Q(sender=user1, receiver=user2) | Q(sender=user2, receiver=user1), **kwargs)
+
+
 class FriendInvitation(models.Model):
     """
     An invitation from a User to another User, requesting that they become friends.
@@ -75,6 +83,7 @@ class FriendInvitation(models.Model):
     receiver = models.ForeignKey(User, related_name="received_friend_invitations", on_delete=models.CASCADE)
     accepted = models.BooleanField(default=False)
     timestamp = models.DateTimeField(auto_now_add=True)
+    objects = FriendInvitationManager()
 
     def accept_invitation(self):
         sender = self.sender
@@ -135,10 +144,12 @@ class NotificationQuerySet(models.QuerySet):
         except ContentType.DoesNotExist:
             raise ValueError(f"The model {actor.label} is not registered in content type")
 
-    def filter_by_receiver(self, receiver, include_deleted=False):
+    def filter_by_receiver(self, receiver, deleted=False):
         queryset = self.filter(receiver=receiver)
-        if not include_deleted:
+        if not deleted:
             queryset = queryset.is_not_deleted()
+        else:
+            queryset = queryset.is_deleted()
         return queryset
 
     def filter_by_type(self, type, include_deleted=False):
@@ -193,6 +204,8 @@ class Notification(models.Model):
         (GROUP_INVITATION, "GROUP_INVITATION"),
     )
 
+    DEFAULT_MESSAGES = {FRIEND_REQUEST: "You have a friend invitation"}
+
     receiver = models.ForeignKey(User, on_delete=models.CASCADE)
     first_sent = models.DateTimeField(auto_now_add=True)
     last_sent = models.DateTimeField(auto_now_add=True)
@@ -213,7 +226,9 @@ class Notification(models.Model):
     def mark_as_unread(self):
         if self.read:
             self.read = False
-            self.save()
+        if not self.visible:
+            self.visible = True
+        self.save()
 
     def mark_as_deleted(self):
         if self.visible:
