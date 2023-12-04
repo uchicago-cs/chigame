@@ -211,6 +211,9 @@ def lobby_join(request, pk):
         messages.error(request, "Already joined.")
         return redirect(reverse("lobby-details", kwargs={"pk": lobby.id}))
     lobby.members.add(request.user)
+    if lobby.members.all().count() == lobby.max_players:
+        lobby.match_status = 2
+    lobby.save()
     return redirect(reverse("lobby-details", kwargs={"pk": lobby.id}))
 
 
@@ -242,6 +245,19 @@ class ViewLobbyDetails(DetailView):
     model = Lobby
     template_name = "games/lobby_details.html"
     context_object_name = "lobby_detail"
+
+
+def update_match_status(request, pk):
+    # A bit weird: sends Ajax request to change match status when timer runs out.
+    lobby = get_object_or_404(Lobby, id=pk)
+
+    if lobby.members.all().count() >= lobby.min_players:
+        lobby.match_status = 2
+    else:
+        lobby.match_status = 3
+    lobby.save()
+
+    return JsonResponse({"message": "Match status updated successfully"})
 
 
 class LobbyUpdateView(UpdateView):
@@ -566,7 +582,7 @@ def check_guess(request, pk):
     else:
         # Create Match instance linked to the fetched Lobby
         match = Match.objects.create(
-            game_id=1,  # Replace with the actual Game ID
+            game_id=lobby.game.id,
             lobby=lobby,
             date_played=timezone.now()
             # Add other fields as needed
@@ -582,10 +598,15 @@ def check_guess(request, pk):
         player.outcome = Player.LOSE
     player.save()
 
+    # Checks if everyone has played
+    if match.players.all().count() == lobby.members.all().count():
+        lobby.match_status = 3
+    match.save()
+    lobby.save()
     return render(
         request,
         "games/game_coinresult.html",
-        {"user_guess": user_guess, "coin_result": coin_result, "correct_guess": correct_guess},
+        {"user_guess": user_guess, "coin_result": coin_result, "correct_guess": correct_guess, "lobby_id": pk},
     )
 
 
