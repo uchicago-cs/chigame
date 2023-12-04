@@ -1,14 +1,86 @@
 {% extends "base.html" %}
 
 {% load crispy_forms_tags %}
+{% load static i18n %}
 
 {% block title %}
   {{ object.name }}
 {% endblock title %}
+
+{% block css %}
+  {{ block.super }}
+  <link href="{% static 'css/forums/forum_form.css' %}" rel="stylesheet" />
+{% endblock css %}
+
+{% block js %}
+  <script>
+    document.addEventListener("DOMContentLoaded", function(event) {
+      imageLabel = document.getElementById("image-label")
+      imageField = document.getElementById("id_image");
+      imageField.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+
+        if (file) {
+          const trashButton = document.createElement('button');
+          const trashImg = document.createElement('i');
+          trashButton.classList.add("btn", "btn-danger");
+          trashButton.setAttribute("id", "trash-button");
+          trashImg.classList.add("fa-solid", "fa-trash-can")
+          trashButton.appendChild(trashImg);
+
+          // Change the text and styling when an image is uploaded...
+          imageLabel.classList.remove('btn-secondary');
+          imageLabel.classList.add('btn-warning');
+          imageLabel.innerText = "Change forum image";
+
+          // and add a trash can to remove the image
+          imageField.parentElement.appendChild(trashButton);
+          trashButton.addEventListener('click', removeSelectedImage);
+          trashButton.imageField = imageField;
+        }
+      });
+
+      // Removes the selected forum image
+      function removeSelectedImage(event) {
+        event.preventDefault();
+
+        // Clear the images
+        if (imageField && imageField.files[0]) {
+          imageField.value = "";
+          event.currentTarget.removeEventListener('click', removeSelectedImage);
+          event.currentTarget.remove();
+
+          // Remove the styles from the upload button
+          imageLabel.classList.remove('btn-warning');
+          imageLabel.classList.add('btn-secondary');
+          imageLabel.innerText = "Upload forum image";
+        } 
+      }
+    });
+  </script>
+{% endblock js %}
+
 {% block content %}
-  <form method="post">
+  <h1 class="fs-1 mb-4">Create forum</h1>
+  <form method="post" class="p-3 rounded">
     {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Save</button>
+    {% for field in form %}
+    <p>
+      {% if field.field.widget.input_type == 'file' %}
+      <label for="{{ field.id_for_label }}"
+             class="btn btn-secondary"
+             id="image-label">
+             {{ field.label }}
+      </label>
+      {% else %}
+      <label for="{{ field.id_for_label }}"
+             class="mb-1">
+             {{ field.label }}
+      </label>
+      {% endif %}
+      {{ field }}
+    </p>
+    {% endfor %}
+    <button class="btn btn-primary" type="submit">Create</button>
   </form>
 {% endblock content %}
