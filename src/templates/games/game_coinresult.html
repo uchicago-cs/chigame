@@ -14,6 +14,6 @@
     <p>Sorry, your guess was incorrect.</p>
   {% endif %}
   <p>
-    <a href="{% url 'lobby-list' %}">Back to Lobbies</a>
+    <a href="{% url 'lobby-details' lobby_id %}">Back to Lobby</a>
   </p>
 {% endblock content %}

@@ -18,7 +18,11 @@
       <strong>Lobby is now closed. Match is in-progress.</strong>
     </p>
   {% else %}
-    <p>Match is finished, or was cancelled due to insufficient players.</p>
+    {% if lobby_detail.min_players > lobby_detail.members.all.count %}
+      <p>Match was cancelled due to insufficient players.</p>
+    {% else %}
+      <p>Match is finished.</p>
+    {% endif %}
   {% endif %}
   <!-- Match Status Display END -->
   <!-- Lobby Members Display -->
