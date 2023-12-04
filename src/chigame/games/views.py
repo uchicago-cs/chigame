@@ -414,6 +414,7 @@ def check_guess(request, pk):
     )
 
 
+@login_required
 def TournamentChatDetailView(request, pk):
     tournament = Tournament.objects.get(pk=pk)
     context = {"tournament": tournament}

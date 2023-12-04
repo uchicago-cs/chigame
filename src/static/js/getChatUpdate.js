@@ -82,7 +82,7 @@ function getMessageText(message) {
   if (message.content !== null) {
     return message.sender + ": " + message.content;
   } else {
-    return message.sender + ": " + `Message ${message.token_id} deleted`;
+    return message.sender + ": Message Deleted";
   }
 }
 
