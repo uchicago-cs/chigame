@@ -6,12 +6,10 @@
 {% block title %}
   {{ object.name }}
 {% endblock title %}
-
 {% block css %}
   {{ block.super }}
   <link href="{% static 'css/forums/forum_form.css' %}" rel="stylesheet" />
 {% endblock css %}
-
 {% block js %}
   <script>
     document.addEventListener("DOMContentLoaded", function(event) {
@@ -54,32 +52,26 @@
           imageLabel.classList.remove('btn-warning');
           imageLabel.classList.add('btn-secondary');
           imageLabel.innerText = "Upload forum image";
-        } 
+        }
       }
     });
   </script>
 {% endblock js %}
-
 {% block content %}
   <h1 class="fs-1 mb-4">Create forum</h1>
   <form method="post" class="p-3 rounded">
     {% csrf_token %}
     {% for field in form %}
-    <p>
-      {% if field.field.widget.input_type == 'file' %}
-      <label for="{{ field.id_for_label }}"
-             class="btn btn-secondary"
-             id="image-label">
-             {{ field.label }}
-      </label>
-      {% else %}
-      <label for="{{ field.id_for_label }}"
-             class="mb-1">
-             {{ field.label }}
-      </label>
-      {% endif %}
-      {{ field }}
-    </p>
+      <p>
+        {% if field.field.widget.input_type == 'file' %}
+          <label for="{{ field.id_for_label }}"
+                 class="btn btn-secondary"
+                 id="image-label">{{ field.label }}</label>
+        {% else %}
+          <label for="{{ field.id_for_label }}" class="mb-1">{{ field.label }}</label>
+        {% endif %}
+        {{ field }}
+      </p>
     {% endfor %}
     <button class="btn btn-primary" type="submit">Create</button>
   </form>
