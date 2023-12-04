@@ -1,6 +1,8 @@
+import xml.etree.ElementTree as ET
 from functools import wraps
 from random import choice
 
+import requests
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
@@ -8,7 +10,7 @@ from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.db.models.functions import Lower
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render, reverse
 from django.urls import reverse_lazy
 from django.utils import timezone
@@ -21,6 +23,7 @@ from .models import Game, Lobby, Match, Player, Tournament
 from .tables import LobbyTable
 
 
+# =============== Games CRUD and Search Views ===============
 class GameListView(ListView):
     model = Game
     template_name = "games/game_grid.html"
@@ -37,6 +40,158 @@ class GameListView(ListView):
         queryset = apply_sorting_and_filtering(queryset, sort, players)
 
         return queryset
+
+
+class GameDetailView(DetailView):
+    model = Game
+    template_name = "games/game_detail.html"
+    context_object_name = "game"
+
+
+class GameCreateView(UserPassesTestMixin, CreateView):
+    model = Game
+    form_class = GameForm
+    template_name = "games/game_form.html"
+    success_url = reverse_lazy("game-list")  # URL to redirect after successful creation
+    raise_exception = True  # if user is not staff member, raise exception
+
+    # check if user is staff member
+    def test_func(self):
+        return self.request.user.is_staff
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        # Game create and edit views share the same template, so this variable lets us know which is which
+        # Currently, this is being so that BGG autofilling is only available when creating a game
+        context["is_create"] = True
+
+        return context
+
+
+class GameEditView(UserPassesTestMixin, UpdateView):
+    model = Game
+    form_class = GameForm
+    template_name = "games/game_form.html"
+    raise_exception = True  # if user is not staff member, raise exception
+
+    # if edit is successful, redirect to that game's detail page
+    def get_success_url(self):
+        return reverse_lazy("game-detail", kwargs={"pk": self.kwargs["pk"]})
+
+    # check if user is staff member
+    def test_func(self):
+        return self.request.user.is_staff
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        # Game create and edit views share the same template, so this variable lets us know which is which
+        # Currently, this is being so that BGG autofilling is only available when creating a game
+        context["is_create"] = False
+
+        return context
+
+
+# =============== BGG Searching =================
+# The following functions involve using the BoardGameGeek API to search for games.
+# API documentation: https://boardgamegeek.com/wiki/page/BGG_XML_API2
+# ChiGame's documentation: https://github.com/uchicago-cs/chigame/wiki/Games-~-BoardGameGeek-(BGG)-API
+
+
+def bgg_search_by_name(request):
+    """
+    Handles a GET request to search for board games by their exact name using the BoardGameGeek (BGG) API.
+    Returns a JsonResponse of games with their details.
+    """
+
+    if request.method == "GET":
+        search_term = request.GET.get("search_term")
+        BGG_BASE_URL = "https://www.boardgamegeek.com/xmlapi2/"
+        url = f"{BGG_BASE_URL}search?type=boardgame&query={search_term}&exact=1"
+        response = requests.get(url)
+        # Parse the XML response
+        root = ET.fromstring(response.text)
+
+        # Initialize a list to store game data
+        games_list = []
+
+        # Iterates over all 'item' elements in the XML tree and retrieves the game details
+        # An example XML response can be found here:
+        # https://boardgamegeek.com/xmlapi2/search/search?type=boardgame&query=13&exact=1%22
+        for game in root.findall(".//item"):
+            bgg_id = game.get("id")
+            game_data = bgg_get_game_details(bgg_id)
+            games_list.append(game_data)
+
+        return JsonResponse({"games_list": games_list})
+
+
+def bgg_search_by_id(request):
+    """
+    Handles a GET request to search for a board game by its BoardGameGeek (BGG) ID.
+    Returns a JsonResponse of games with their details.
+    """
+    if request.method == "GET":
+        game_id = request.GET.get("game_id")
+        game_data = bgg_get_game_details(game_id)
+        return JsonResponse({"game_details": game_data})
+
+
+def bgg_get_game_details(bgg_id):
+    """
+    Retrieves detailed information about a game from the BoardGameGeek (BGG) API using a given BGG ID.
+    The information includes the game's name, image, description, year of publication, player range,
+    playtime, suggested age, and complexity rating.
+
+    Args:
+    bgg_id (str): The BoardGameGeek ID of the game.
+
+    Returns:
+    dict: A dictionary containing various details about the game.
+    """
+    BGG_BASE_URL = "https://www.boardgamegeek.com/xmlapi2/"
+
+    # Construct the URL to get details of the game with the specified BGG ID
+    details_url = f"{BGG_BASE_URL}thing?id={bgg_id}&stats=1"
+    details_response = requests.get(details_url)
+    # Parse the XML response
+    details_root = ET.fromstring(details_response.text)
+
+    # Retrieve the complexity value from the API response, convert it to a float,
+    # and round it to two decimal places. If the value is not found, default to None.
+    complexity_value = details_root.find(".//averageweight").get("value")
+    rounded_complexity = round(float(complexity_value), 2) if complexity_value else None
+
+    # Function to safely get the value from the XML tree
+    def get_value(xml_root, tag, attribute="value", default=None):
+        element = xml_root.find(f".//{tag}")
+        if element is not None:
+            return element.get(attribute) if attribute else element.text
+        return default
+
+    # Refactored game data structure
+    game_data = {
+        "BGG_id": bgg_id,
+        "name": get_value(details_root, "name"),
+        "image": get_value(details_root, "image", attribute=None, default="/static/images/no_picture_available.png"),
+        "description": get_value(details_root, "description", attribute=None),
+        "year_published": int(get_value(details_root, "yearpublished", default=0)) or None,
+        "min_players": get_value(details_root, "minplayers"),
+        "max_players": get_value(details_root, "maxplayers"),
+        "expected_playtime": get_value(details_root, "playingtime"),
+        "min_playtime": get_value(details_root, "minplaytime"),
+        "max_playtime": get_value(details_root, "maxplaytime"),
+        "suggested_age": get_value(details_root, "minage"),
+        "complexity": rounded_complexity,  # The rounded complexity rating of the game
+        # Missing fields: category, mechanics
+        # No rules field in BGG API
+    }
+
+    return game_data
+
+
+# =============== Lobby Views ===============
 
 
 def lobby_list(request):
@@ -56,6 +211,9 @@ def lobby_join(request, pk):
         messages.error(request, "Already joined.")
         return redirect(reverse("lobby-details", kwargs={"pk": lobby.id}))
     lobby.members.add(request.user)
+    if lobby.members.all().count() == lobby.max_players:
+        lobby.match_status = 2
+    lobby.save()
     return redirect(reverse("lobby-details", kwargs={"pk": lobby.id}))
 
 
@@ -89,6 +247,19 @@ class ViewLobbyDetails(DetailView):
     context_object_name = "lobby_detail"
 
 
+def update_match_status(request, pk):
+    # A bit weird: sends Ajax request to change match status when timer runs out.
+    lobby = get_object_or_404(Lobby, id=pk)
+
+    if lobby.members.all().count() >= lobby.min_players:
+        lobby.match_status = 2
+    else:
+        lobby.match_status = 3
+    lobby.save()
+
+    return JsonResponse({"message": "Match status updated successfully"})
+
+
 class LobbyUpdateView(UpdateView):
     model = Lobby
     form_class = LobbyForm
@@ -116,39 +287,6 @@ class LobbyDeleteView(DeleteView):
         if request.user != self.object.created_by and not request.user.is_staff:
             return HttpResponseForbidden("You don't have permission to delete this lobby.")
         return super().dispatch(request, *args, **kwargs)
-
-
-class GameDetailView(DetailView):
-    model = Game
-    template_name = "games/game_detail.html"
-    context_object_name = "game"
-
-
-class GameCreateView(UserPassesTestMixin, CreateView):
-    model = Game
-    form_class = GameForm
-    template_name = "games/game_form.html"
-    success_url = reverse_lazy("game-list")
-    raise_exception = True  # if user is not staff member, raise exception
-
-    # check if user is staff member
-    def test_func(self):
-        return self.request.user.is_staff
-
-
-class GameEditView(UserPassesTestMixin, UpdateView):
-    model = Game
-    form_class = GameForm
-    template_name = "games/game_form.html"
-    raise_exception = True  # if user is not staff member, raise exception
-
-    # if edit is successful, redirect to that game's detail page
-    def get_success_url(self):
-        return reverse_lazy("game-detail", kwargs={"pk": self.kwargs["pk"]})
-
-    # check if user is staff member
-    def test_func(self):
-        return self.request.user.is_staff
 
 
 def apply_sorting_and_filtering(queryset, sort_param, players_param):
@@ -201,12 +339,13 @@ def search_results(request):
     page_obj = paginator.get_page(page_number)
 
     context = {
-        "query_type": "Games",
+        "query_type": "games",
         "object_list": object_list,
         "page_obj": page_obj,
         "current_sort": sort,
         "current_players": players,
-        "query-input": query_input,
+        # Any changes to these variables must be reflected in the games_grid.html template
+        "query_input": query_input,
     }
 
     return render(request, "games/game_grid.html", context)
@@ -221,8 +360,6 @@ def search_results(request):
 
 
 # Permission Checkers
-
-
 def staff_required(view_func):
     @wraps(view_func)
     def wrapper(request, *args, **kwargs):
@@ -492,7 +629,7 @@ def check_guess(request, pk):
     else:
         # Create Match instance linked to the fetched Lobby
         match = Match.objects.create(
-            game_id=1,  # Replace with the actual Game ID
+            game_id=lobby.game.id,
             lobby=lobby,
             date_played=timezone.now()
             # Add other fields as needed
@@ -508,10 +645,15 @@ def check_guess(request, pk):
         player.outcome = Player.LOSE
     player.save()
 
+    # Checks if everyone has played
+    if match.players.all().count() == lobby.members.all().count():
+        lobby.match_status = 3
+    match.save()
+    lobby.save()
     return render(
         request,
         "games/game_coinresult.html",
-        {"user_guess": user_guess, "coin_result": coin_result, "correct_guess": correct_guess},
+        {"user_guess": user_guess, "coin_result": coin_result, "correct_guess": correct_guess, "lobby_id": pk},
     )
 
 
