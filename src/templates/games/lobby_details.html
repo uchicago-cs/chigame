@@ -117,7 +117,6 @@
         fetch(`/games/lobby/${lobbyId}/update_match_status/`)
           .then(response => response.json())
           .then(data => {
-            console.log(data);
             const updatedMatchStatus = data.match_status;
             const matchStatusElement = document.getElementById("match-status");
             if (matchStatusElement) {
