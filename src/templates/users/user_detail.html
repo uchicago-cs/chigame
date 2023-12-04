@@ -16,15 +16,20 @@
       <!-- Action buttons -->
       <style>
         .list-item {
-          margin-bottom: 20px;
+          margin-bottom: 25px;
           list-style-type: none;
         }
       </style>
       <div class="row">
         <div class="col-sm-12">
           <ul>
+            {% if object.is_staff %}
+              <li class="list-item">
+                <strong>Admin of Chigame</strong>
+              </li>
+            {% endif %}
             <li class="list-item">
-              User Display Name: {{ object.name }}
+              Name: {{ object.name }}
               <a class="btn btn-primary" href="{% url 'users:update' %}" role="button">Update Name</a>
             </li>
             <li class="list-item">
@@ -35,16 +40,6 @@
             </li>
             <li class="list-item">Bio: {{ object.userprofile.bio }}</li>
             <li class="list-item">Date Joined: {{ object.date_joined }}</li>
-            <li class="list-item">
-              Friends:
-              {% if object.userprofile.friends.all %}
-                <ul>
-                  {% for friend in object.userprofile.friends.all %}<li>{{ friend.name }}</li>{% endfor %}
-                </ul>
-              {% else %}
-                <p>No friends yet.</p>
-              {% endif %}
-            </li>
             <!-- Your Stuff: Custom user template URLs -->
           </ul>
         </div>
