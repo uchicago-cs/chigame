@@ -1,8 +1,7 @@
 <!--  This file was derived from the following django-machina template.
 https://github.com/ellmetha/django-machina/blob/main/machina/templates/machina/board_base.html-->
-{% extends MACHINA_BASE_TEMPLATE_NAME %}
+{% extends 'machina/board_base.html' %}
 
-{% load static %}
 {% load i18n %}
 {% load forum_permission_tags %}
 
@@ -52,22 +51,3 @@ https://github.com/ellmetha/django-machina/blob/main/machina/templates/machina/b
     </div>
   </div>
 {% endblock body %}
-{% block content %}
-{% endblock content %}
-{% block js %}
-  {{ block.super }}
-  <script src="{% static 'js/machina.packages.min.js' %}"
-          type="text/javascript"
-          charset="utf-8"></script>
-  <script src="{% static 'js/machina.min.js' %}"
-          type="text/javascript"
-          charset="utf-8"></script>
-  <div id="onbodyload-data"
-       data-onbodyload="{% block onbodyload %}{% endblock onbodyload %}"></div>
-  <script type="text/javascript">
-    $(function() {
-      machina.init();
-      var onbodyloadData = document.getElementById('onbodyload-data').dataset.onbodyload;
-    });
-  </script>
-{% endblock js %}
