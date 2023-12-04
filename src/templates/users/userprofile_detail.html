@@ -29,21 +29,9 @@
               <div class="media-body">
                 <p>Bio: {{ object.bio }}</p>
                 {% if object.user == request.user %}
-                  <<<<<<< HEAD
                   <a href="{% url 'users:update' %}" class="btn btn-primary">Edit Profile</a>
                   <a href="{% url 'users:friend-list' object.user.id %}"
                      class="btn btn-primary">Friend List</a>
-                  =======
-                  <ul class="custom-list">
-                    <li class="inline-block">
-                      <a href="{% url 'users:update' %}" class="btn btn-primary">Edit Profile</a>
-                    </li>
-                    <li class="inline-block">
-                      <a href="{% url 'users:detail' request.user.pk %}"
-                         class="btn btn-primary">Account</a>
-                    </li>
-                  </ul>
-                  >>>>>>> dev
                 {% elif is_friend %}
                   <a href="{% url 'users:remove-friend' object.user.pk %}"
                      class="btn btn-primary">Remove Friend</a>
