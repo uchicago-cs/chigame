@@ -1,29 +1,47 @@
 {% extends "base.html" %}
 
 {% block content %}
-  <h2>
-    User Historical Information
-    <style>
-      .tournament-item {
-        margin-left: 20px;
-      }
-    </style>
-  </h2>
-  <ul>
-    <li>Name: {{ user.name }}</li>
-    <!-- Add additional information here -->
-    <li>
-      Games Played:
-      <!-- {{ user.games_played }}  TO BE IMPLEMENTED-->
-    </li>
-    <li>
-      Tournaments Won:
-      {% if tournaments is not None %}
-        {% for tourney in tournaments %}<li class="tournament-item">{{ tourney.name }}</li>{% endfor %}
-      {% else %}
-        <p>No Tournaments Won Yet</p>
-      {% endif %}
-    </li>
-    <!-- Add more fields here-->
-  </ul>
+  <div class="user-stats">
+    <h2>User Match and Tournament Stats</h2>
+    <ul class="user-info">
+      <li>Name: {{ user.name }}</li>
+      <!-- Add additional information here -->
+      <li>
+        Matches Played:
+        {{ match_count }}
+      </li>
+      <li>
+        Matches Won:
+        {{ match_wins }}
+      </li>
+      <li>
+        Tournaments Played:
+        {{ tournament_count }}
+      </li>
+      <li>
+        Tournaments Won:
+        {{ tournament_wins }}
+      </li>
+    </ul>
+  </div>
+  <style>
+    .user-stats {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f8f8f8;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .user-info {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    .user-info li {
+      margin-bottom: 15px;
+    }
+  </style>
 {% endblock content %}
