@@ -54,3 +54,14 @@ class MessageSerializer(serializers.ModelSerializer):
 
         message = Message.objects.create(**validated_data)
         return message
+
+
+class MessageFeedSerializer(serializers.ModelSerializer):
+    sender = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Message
+        fields = ["token_id", "update_on", "content", "sender"]
+
+    def get_sender(self, obj):
+        return obj.sender.name
