@@ -14,6 +14,7 @@ from chigame.users.views import (
     user_redirect_view,
     user_search_results,
     user_update_view,
+    notification_search_results
 )
 
 from . import views
@@ -32,6 +33,7 @@ urlpatterns = [
     path("decline_friend_invitation/<int:pk>", view=decline_friend_invitation, name="decline-friend-invitation"),
     path("user_history/<int:pk>", views.user_history, name="user-history"),
     path("search-results", view=user_search_results, name="user-search-results"),
+    path("notifications/search-results", view=notification_search_results, name="notification-search-results"),
     path("inbox/<int:pk>", view=user_inbox_view, name="user-inbox"),
     path("inbox/<int:pk>/deleted_notifications", views.deleted_notifications_view, name="deleted-notifications"),
     path("notification_detail/<int:pk>", view=notification_detail, name="notification-detail"),

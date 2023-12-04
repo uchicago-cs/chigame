@@ -20,6 +20,12 @@
           <a href="{% url 'game-detail' game.id %}">{{ game.name }}</a>
         </li>
       {% endfor %}
+    {% elif query_type == "Notifications" %}
+      {% for notification in object_list %}
+        <li>
+          <a href="{% url 'users:notification-detail' notification.id %}">{{ notification.message }}</a>
+        </li>
+      {% endfor %}
     {% endif %}
   </ul>
 {% endblock content %}
