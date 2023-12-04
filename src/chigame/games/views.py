@@ -4,7 +4,7 @@ from random import choice
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.db.models.functions import Lower
@@ -177,7 +177,7 @@ def apply_sorting_and_filtering(queryset, sort_param, players_param):
 
 
 def search_results(request):
-    query_input = request.GET.get("query-input")
+    query_input = request.GET.get("q")
     sort = request.GET.get("sort_by", "name-asc")
     players = request.GET.get("players", "")
     page_number = request.GET.get("page")
@@ -473,7 +473,15 @@ def check_guess(request, pk):
     )
 
 
+@login_required
 def TournamentChatDetailView(request, pk):
-    tournament = Tournament.objects.get(pk=pk)
-    context = {"tournament": tournament}
-    return render(request, "tournaments/tournament_chat.html", context)
+    try:
+        tournament = Tournament.objects.get(pk=pk)
+        context = {"tournament": tournament}
+        if not tournament.chat:
+            messages.error(request, "This tournament does not have a chat yet.")
+            return redirect(reverse_lazy("tournament-detail", kwargs={"pk": pk}))
+        return render(request, "tournaments/tournament_chat.html", context)
+    except ObjectDoesNotExist:
+        messages.error(request, "This tournament does not have a chat yet.")
+        return redirect(reverse_lazy("tournament-detail", kwargs={"pk": pk}))
