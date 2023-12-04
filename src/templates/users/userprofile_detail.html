@@ -49,6 +49,8 @@
                   <a href="{% url 'users:add-friend' object.user.pk %}"
                      class="btn btn-primary">Add Friend</a>
                 {% endif %}
+                <a href="{% url 'users:user-history' object.user.pk %}"
+                   class="btn btn-primary">Stats</a>
               </div>
             </div>
           </div>
