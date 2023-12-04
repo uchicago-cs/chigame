@@ -68,6 +68,7 @@
          value="{{ request.user.email }}" />
   <input type="hidden" id="tID" name="variable" value="{{ tournament.pk }}" />
   <div id="messageContainer">
+    {% csrf_token %}
     <!-- Messages will be displayed here -->
   </div>
   <script src = {% static 'js/getChatUpdate.js' %}></script>
