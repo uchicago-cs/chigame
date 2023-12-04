@@ -12,7 +12,7 @@ from rest_framework import status
 from rest_framework.response import Response
 
 from .models import FriendInvitation, Notification, UserProfile
-from .tables import UserTable
+from .tables import FriendsTable, UserTable
 
 User = get_user_model()
 
@@ -215,7 +215,8 @@ def friend_list_view(request, pk):
     user = request.user
     profile = get_object_or_404(UserProfile, user__pk=pk)
     friends = profile.friends.all()
-    context = {"pk": pk, "user": user, "friends": friends, "profile": profile}
+    table = FriendsTable(friends)
+    context = {"table": table}
     if pk == user.id:
         return render(request, "users/user_friend_list.html", context)
     else:
