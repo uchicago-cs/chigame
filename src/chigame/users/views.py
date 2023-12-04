@@ -209,7 +209,7 @@ def notification_search_results(request):
             message__icontains=query_input
         )
         if notifications_list.count() > 0:
-            context.pop("nothing_found")
+            context["nothing_found"] = False
             context["object_list"] = notifications_list
     return render(request, "pages/search_results.html", context)
 
