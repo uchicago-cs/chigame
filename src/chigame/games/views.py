@@ -473,9 +473,10 @@ def TournamentChatDetailView(request, pk):
     try:
         tournament = Tournament.objects.get(pk=pk)
         context = {"tournament": tournament}
-        tournament.chat
+        if not tournament.chat:
+            messages.error(request, "This tournament does not have a chat yet.")
+            return redirect(reverse_lazy("tournament-detail", kwargs={"pk": pk}))
         return render(request, "tournaments/tournament_chat.html", context)
-
     except ObjectDoesNotExist:
         messages.error(request, "This tournament does not have a chat yet.")
         return redirect(reverse_lazy("tournament-detail", kwargs={"pk": pk}))
