@@ -293,11 +293,7 @@ class Tournament(models.Model):
             raise ValidationError("The number of winners should be greater than 0.")
 
         # the number of players should be less than or equal to the maximum number of players
-        if self.pk is not None:  # the tournament is being updated
-            if self.players.count() > self.max_players:
-                raise ValidationError(
-                    "The number of players should be less than or equal to the maximum number of players."
-                )
+        # Note: this is checked when the tournament is created and updated
 
         # the winners should also be players
         if self.pk is not None:  # the tournament is being updated

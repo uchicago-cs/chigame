@@ -384,6 +384,9 @@ class TournamentCreateView(CreateView):
     # overrides the default behavior of the CreateView class.
     def form_valid(self, form):
         response = super().form_valid(form)
+        if form.cleaned_data["players"].count() > form.cleaned_data["max_players"]:
+            messages.error(self.request, "The number of players cannot exceed the maximum number of players")
+            return redirect(reverse_lazy("tournament-create"))
 
         # Do something with brackets if needed
         return response
@@ -429,12 +432,16 @@ class TournamentUpdateView(UpdateView):
         # Check if the 'players' field has been modified
         form_players = set(form.cleaned_data["players"])
         current_players = set(current_tournament.players.all())
-        if (
-            len(form_players - current_players) > 0 and current_tournament.status != "registration open"
-        ):  # if the players have been added
-            raise PermissionDenied(
-                "You cannot add new players to the tournament when it is not in the registration period."
-            )
+
+        if form.cleaned_data["players"].count() > form.cleaned_data["max_players"]:
+            messages.error(self.request, "The number of players cannot exceed the maximum number of players")
+            return redirect(reverse_lazy("tournament-update", kwargs={"pk": self.kwargs["pk"]}))
+
+        if len(form_players - current_players) > 0:  # if the players have been added
+            if current_tournament.status != "registration open":
+                raise PermissionDenied(
+                    "You cannot add new players to the tournament when it is not in the registration period."
+                )
         elif (
             len(current_players - form_players) > 0 and current_tournament.status == "tournament in progress"
         ):  # if the players have been removed
