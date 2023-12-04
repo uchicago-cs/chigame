@@ -20,6 +20,8 @@ class GameFilter(django_filters.FilterSet):
     complexity__gte = django_filters.NumberFilter(field_name="complexity", lookup_expr="gte")
     complexity__lte = django_filters.NumberFilter(field_name="complexity", lookup_expr="lte")
 
+    BGG_id = django_filters.NumberFilter(lookup_expr="exact")
+
     class Meta:
         model = Game
         fields = [
@@ -32,4 +34,5 @@ class GameFilter(django_filters.FilterSet):
             "complexity",
             "min_players",
             "max_players",
+            "BGG_id",
         ]
