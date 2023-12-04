@@ -18,6 +18,7 @@ urlpatterns = [
     # urls to handle api requests
     path("api/", include("chigame.api.urls")),
     path("games/", include("chigame.games.urls")),
+    path("account/", include("django.contrib.auth.urls")),
     # Django-machina forum
     # https://django-machina.readthedocs.io/en/latest/getting_started.html#urls-configuration
     path("forum/", include(machina_urls)),
