@@ -56,6 +56,7 @@ class UserListView(generics.ListCreateAPIView):
     pagination_class = PageNumberPagination
 
 
+# Bug with PATCH'ing emails -- refer to Issue #394
 class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
