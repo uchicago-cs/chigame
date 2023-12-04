@@ -19,7 +19,8 @@
                 {% if object.user == request.user %}
                   <a href="{% url 'users:update' %}" class="btn btn-primary">Edit Profile</a>
                 {% elif is_friend %}
-                  <a class="btn btn-primary">Remove Friend</a>
+                  <a href="{% url 'users:remove-friend' object.user.pk %}"
+                     class="btn btn-primary">Remove Friend</a>
                 {% elif friendship_request %}
                   {% if friendship_request.sender_id == request.user.pk %}
                     <a href="{% url 'users:cancel-friend-invitation' object.user.id %}"
