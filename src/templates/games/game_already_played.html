@@ -7,5 +7,5 @@
 {% block content %}
   <h1>Already Played</h1>
   <p>Looks like you have already played this game. How'd you get here?</p>
-  <a href="{% url 'lobby-list' %}">Back to Lobbies</a>
+  <a href="{% url 'lobby-details' pk = lobby_id %}">Back to Lobbies</a>
 {% endblock content %}

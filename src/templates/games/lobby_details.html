@@ -86,8 +86,6 @@
 
 
       function updateTime() {
-        //console.log("lobby_created:", "{{ lobby_detail.lobby_created }}");
-        //console.log("time_constraint:", "{{ lobby_detail.time_constraint }}");
         const currentTime = new Date();
         const elapsedTime = Math.floor((currentTime - lobbyCreated) / 1000);
         const remainingSeconds = Math.max(0, timeConstraint - elapsedTime);

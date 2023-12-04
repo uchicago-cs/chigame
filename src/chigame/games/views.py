@@ -431,7 +431,7 @@ def check_guess(request, pk):
     return render(
         request,
         "games/game_coinresult.html",
-        {"user_guess": user_guess, "coin_result": coin_result, "correct_guess": correct_guess},
+        {"user_guess": user_guess, "coin_result": coin_result, "correct_guess": correct_guess, "lobby_id": pk},
     )
 
 
