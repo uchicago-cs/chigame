@@ -429,17 +429,23 @@ class TournamentUpdateView(UpdateView):
         # Check if the 'players' field has been modified
         form_players = set(form.cleaned_data["players"])
         current_players = set(current_tournament.players.all())
-        if len(form_players - current_players) > 0:  # if the players have been added
-            raise PermissionDenied("You cannot add new players to the tournament after it has started.")
-        elif len(current_players - form_players) > 0:  # if the players have been removed
+        if (
+            len(form_players - current_players) > 0 and current_tournament.status != "registration open"
+        ):  # if the players have been added
+            raise PermissionDenied(
+                "You cannot add new players to the tournament when it is not in the registration period."
+            )
+        elif (
+            len(current_players - form_players) > 0 and current_tournament.status == "tournament in progress"
+        ):  # if the players have been removed
             removed_players = current_players - form_players  # get the players that have been removed
             for player in removed_players:
                 related_match = current_tournament.matches.get(
                     players__in=[player]
                 )  # get the match that the player is in
+                assert isinstance(related_match, Match)
                 related_match.players.remove(player)
-                if related_match.players.count() == 0:  # if the match is empty, delete it
-                    related_match.delete()
+                # if the match is empty, the match will be displayed as forfeited
 
         # The super class's form_valid method will save the form data to the database
         return super().form_valid(form)
