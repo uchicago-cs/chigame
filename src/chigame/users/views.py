@@ -22,6 +22,11 @@ class UserDetailView(LoginRequiredMixin, DetailView):
     slug_field = "id"
     slug_url_kwarg = "id"
 
+    # In parameters, use UserPassesTestMixin and uncomment the following code to
+    # give error message if an outside user tries to access your detail view.
+    # def test_func(self):
+    # return self.request.user == self.get_object()
+
 
 user_detail_view = UserDetailView.as_view()
 
@@ -61,16 +66,6 @@ def user_list(request):
     # Add information about top ranking users, total points collected, etc.
 
     return render(request, "users/user_list.html", context)
-
-
-@login_required
-def user_detail(request):
-    users = User.objects.all()
-
-    # Shows a user detail page if logged in as a user
-    # Shows a list of all users if logged in as admin
-
-    return render(request, "users/user_detail.html", {"users": users})
 
 
 def user_history(request, pk):
@@ -190,7 +185,7 @@ def decline_friend_invitation(request, pk):
 
 
 def user_search_results(request):
-    query_input = request.GET.get("query-input")
+    query_input = request.GET.get("q")
     context = {"nothing_found": True, "query_type": "Users"}
     if query_input:
         users_list = UserProfile.objects.filter(
@@ -215,6 +210,55 @@ def user_inbox_view(request, pk):
     }
     if pk == user.id:
         return render(request, "users/user_inbox.html", context)
+    else:
+        messages.error(request, "Not your inbox")
+        return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
+
+
+def unfriend_users(user1, user2):
+    profile1 = UserProfile.objects.get(user__pk=user1.pk)
+    profile2 = UserProfile.objects.get(user__pk=user2.pk)
+    profile1.friends.remove(user2)
+    profile2.friends.remove(user1)
+    friend_invite = FriendInvitation.objects.get_by_users(user1, user2)
+    if friend_invite.accepted:
+        friend_invite.delete()
+    else:
+        raise ValueError("Friend invitation between these users was not accepted")
+
+
+@login_required
+def remove_friend(request, pk):
+    if request.user.pk != pk:
+        try:
+            curr_user = User.objects.get(pk=request.user.pk)
+            other_user = User.objects.get(pk=pk)
+            unfriend_users(curr_user, other_user)
+            messages.success(request, "Friend removed successfully")
+            return redirect(reverse("users:user-profile", kwargs={"pk": pk}))
+        except User.DoesNotExist:
+            messages.error(request, "This user does not exist")
+        except (FriendInvitation.DoesNotExist, ValueError):
+            messages.info(request, "Something went wrong")
+    else:
+        messages.error(request, "You are not friends with yourself!")
+    return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
+
+
+@login_required
+def deleted_notifications_view(request, pk):
+    user = request.user
+    notifications = Notification.objects.filter_by_receiver(user, deleted=True)
+    print(str(Notification.objects.filter_by_receiver(user).query))
+    default_notification_messages = Notification.DEFAULT_MESSAGES
+    context = {
+        "pk": pk,
+        "user": user,
+        "notifications": notifications,
+        "default_notification_messages": default_notification_messages,
+    }
+    if pk == user.id:
+        return render(request, "users/deleted_notifications.html", context)
     else:
         messages.error(request, "Not your inbox")
         return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
@@ -247,6 +291,8 @@ def act_on_inbox_notification(request, pk, action):
             notification.mark_as_unread()
         elif action == "delete":
             notification.mark_as_deleted()
+        elif action == "move_to_inbox":
+            notification.mark_as_unread()
     except Notification.DoesNotExist:
         messages.error(request, "Something went wrong. This notification does not exist")
     return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
