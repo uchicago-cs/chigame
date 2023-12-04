@@ -351,16 +351,15 @@ class TournamentCreateView(CreateView):
         # is created. Instead, the brackets should be created when the registration
         # deadline is reached. But for now, we keep it this way for testing.
 
+        # Auto-create a chat for this respective tournament
+        chat = Chat(tournament=self.object)
+        chat.save()
+
         # Do something with brackets if needed
         return response
 
     def get_success_url(self):
         return reverse_lazy("tournament-detail", kwargs={"pk": self.object.pk})
-
-    def create_chat(self):
-        # Auto-create a chat for this respective tournament
-        chat = Chat(tournament=self)
-        chat.save()
 
 
 @method_decorator(staff_required, name="dispatch")
