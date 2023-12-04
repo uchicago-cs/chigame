@@ -15,28 +15,45 @@
     document.addEventListener("DOMContentLoaded", function(event) {
       imageLabel = document.getElementById("image-label")
       imageField = document.getElementById("id_image");
-      imageField.addEventListener('change', (e) => {
-        const file = e.target.files[0];
+      imageField.addEventListener('change', imageAddedHandler);
+
+      // Adds styling and a remove button to the upload button
+      function imageAddedHandler(e) {
+        const files = e.target.files;
+        const [file] = files;
+        var trashButton = document.getElementById("trash-button");
+
+        // Remove the previous image if one is already loaded
+        if (trashButton) {
+          trashButton.click();
+        }
 
         if (file) {
-          const trashButton = document.createElement('button');
+          trashButton = document.createElement('button');
           const trashImg = document.createElement('i');
+          const imgPreview = document.createElement('img');
           trashButton.classList.add("btn", "btn-danger");
           trashButton.setAttribute("id", "trash-button");
           trashImg.classList.add("fa-solid", "fa-trash-can")
           trashButton.appendChild(trashImg);
+          imgPreview.classList.add('mt-2', 'd-block');
+          imgPreview.style.width = '120px';
+          imgPreview.setAttribute("id", "img-preview");
 
           // Change the text and styling when an image is uploaded...
           imageLabel.classList.remove('btn-secondary');
           imageLabel.classList.add('btn-warning');
           imageLabel.innerText = "Change forum image";
 
-          // and add a trash can to remove the image
+          // and add an image preview and trash can to remove the image
           imageField.parentElement.appendChild(trashButton);
           trashButton.addEventListener('click', removeSelectedImage);
-          trashButton.imageField = imageField;
+          trashButton.imgPreview = imgPreview;
+
+          imgPreview.src = URL.createObjectURL(file);
+          imageField.parentElement.appendChild(imgPreview);
         }
-      });
+      }
 
       // Removes the selected forum image
       function removeSelectedImage(event) {
@@ -47,6 +64,7 @@
           imageField.value = "";
           event.currentTarget.removeEventListener('click', removeSelectedImage);
           event.currentTarget.remove();
+          event.currentTarget.imgPreview.remove();
 
           // Remove the styles from the upload button
           imageLabel.classList.remove('btn-warning');
