@@ -47,7 +47,8 @@
     <h1 class="display-1 mt-3 mb-3">Games</h1>
     <form id="filter-form" class="d-flex gap-2" method="get">
       <!-- Include the search query as a hidden field -->
-      {% if query %}<input type="hidden" name="query" value="{{ query }}" />{% endif %}
+      {% if query_type %}<input type="hidden" name="query_type" value="{{ query_type }}" />{% endif %}
+      {% if query_input %}<input type="hidden" name="q" value="{{ query_input }}" />{% endif %}
       <!-- Players Filtering Dropdown -->
       <div class="form-group">
         <label for="filter-players" class="form-label">PLAYERS:</label>
@@ -136,7 +137,8 @@
           </li>
           <li class="page-item">
             <a class="page-link"
-               href="?{% updated_params page=page_obj.previous_page_number %}">{{ page_obj.previous_page_number }}</a>
+               href="?{% updated_params page=page_obj.previous_page_number %}">{{
+            page_obj.previous_page_number }}</a>
           </li>
         {% else %}
           <li class="page-item disabled">
@@ -149,7 +151,8 @@
         {% if page_obj.has_next %}
           <li class="page-item">
             <a class="page-link"
-               href="?{% updated_params page=page_obj.next_page_number %}">{{ page_obj.next_page_number }}</a>
+               href="?{% updated_params page=page_obj.next_page_number %}">{{ page_obj.next_page_number
+            }}</a>
           </li>
           <li class="page-item">
             <a class="page-link"
@@ -164,9 +167,8 @@
     </nav>
   </div>
   <script>
-    // Update the filter and sorting when the user changes the dropdown
-    document.getElementById('filter-form').onchange = function() {
-      this.submit();
-    };
+    function updateFilterAndSorting() {
+      document.getElementById('filter-form').submit();
+    }
   </script>
 {% endblock content %}

@@ -323,12 +323,13 @@ def search_results(request):
     page_obj = paginator.get_page(page_number)
 
     context = {
-        "query_type": "Games",
+        "query_type": "games",
         "object_list": object_list,
         "page_obj": page_obj,
         "current_sort": sort,
         "current_players": players,
-        "query-input": query_input,
+        # Any changes to these variables must be reflected in the games_grid.html template
+        "query_input": query_input,
     }
 
     return render(request, "games/game_grid.html", context)
