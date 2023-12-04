@@ -357,3 +357,4 @@ HAYSTACK_SIGNAL_PROCESSOR = "haystack.signals.RealtimeSignalProcessor"
 # https://django-machina.readthedocs.io/en/stable/settings.html
 MACHINA_FORUM_NAME = "ChiGame Forums"
 MACHINA_BASE_TEMPLATE_NAME = "base.html"
+MACHINA_FORUM_IMAGE_UPLOAD_TO = "forums/"
