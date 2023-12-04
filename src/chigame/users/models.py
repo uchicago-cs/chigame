@@ -2,6 +2,7 @@ import django.db.models as models
 from django.contrib.auth.models import AbstractUser
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator
 from django.db.models import Q
 from django.urls import reverse
@@ -9,6 +10,14 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from chigame.users.managers import UserManager
+
+
+def validate_username(value):
+    """
+    Validate that the username is not all numeric.
+    """
+    if value.isdigit():
+        raise ValidationError(_("Username cannot be all numbers."), code="invalid_username")
 
 
 class User(AbstractUser):
@@ -23,7 +32,9 @@ class User(AbstractUser):
     first_name = None  # type: ignore
     last_name = None  # type: ignore
     email = models.EmailField(_("email address"), unique=True)
-    username = None  # type: ignore
+    username = models.CharField(
+        _("username"), max_length=255, unique=True, blank=True, null=True, validators=[validate_username]
+    )
     tokens = models.PositiveSmallIntegerField(validators=[MaxValueValidator(3)], default=1)
 
     USERNAME_FIELD = "email"
