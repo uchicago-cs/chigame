@@ -68,16 +68,6 @@ def user_list(request):
     return render(request, "users/user_list.html", context)
 
 
-@login_required
-def user_detail(request):
-    users = User.objects.all()
-
-    # Shows a user detail page if logged in as a user
-    # Shows a list of all users if logged in as admin
-
-    return render(request, "users/user_detail.html", {"users": users})
-
-
 def user_history(request, pk):
     try:
         user = User.objects.get(pk=pk)
@@ -195,7 +185,7 @@ def decline_friend_invitation(request, pk):
 
 
 def user_search_results(request):
-    query_input = request.GET.get("query-input")
+    query_input = request.GET.get("q")
     context = {"nothing_found": True, "query_type": "Users"}
     if query_input:
         users_list = UserProfile.objects.filter(
