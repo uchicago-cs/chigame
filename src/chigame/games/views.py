@@ -181,6 +181,7 @@ def search_results(request):
     sort = request.GET.get("sort_by", "name-asc")
     players = request.GET.get("players", "")
     page_number = request.GET.get("page")
+
     """
     The Q object is an object used to encapsulate a collection of keyword
     arguments that can be combined with logical operators (&, |, ~) which
