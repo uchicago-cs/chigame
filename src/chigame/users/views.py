@@ -12,7 +12,7 @@ from rest_framework import status
 from rest_framework.response import Response
 
 from .models import FriendInvitation, Notification, UserProfile
-from .tables import UserTable
+from .tables import FriendsTable, UserTable
 
 User = get_user_model()
 
@@ -246,6 +246,19 @@ def remove_friend(request, pk):
 
 
 @login_required
+def friend_list_view(request, pk):
+    user = request.user
+    profile = get_object_or_404(UserProfile, user__pk=pk)
+    friends = profile.friends.all()
+    table = FriendsTable(friends)
+    context = {"table": table}
+    if pk == user.id:
+        return render(request, "users/user_friend_list.html", context)
+    else:
+        messages.error(request, "Not your friend list!")
+        return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
+
+
 def deleted_notifications_view(request, pk):
     user = request.user
     notifications = Notification.objects.filter_by_receiver(user, deleted=True)
