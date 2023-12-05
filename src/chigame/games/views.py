@@ -19,7 +19,7 @@ from django.views.generic import CreateView, DeleteView, DetailView, ListView, U
 
 from .filters import LobbyFilter
 from .forms import GameForm, LobbyForm
-from .models import Game, Lobby, Match, Player, Tournament
+from .models import Chat, Game, Lobby, Match, Player, Tournament
 from .tables import LobbyTable
 
 
@@ -319,7 +319,6 @@ def search_results(request):
     sort = request.GET.get("sort_by", "name-asc")
     players = request.GET.get("players", "")
     page_number = request.GET.get("page")
-
     """
     The Q object is an object used to encapsulate a collection of keyword
     arguments that can be combined with logical operators (&, |, ~) which
@@ -524,6 +523,10 @@ class TournamentCreateView(CreateView):
         if form.cleaned_data["players"].count() > form.cleaned_data["max_players"]:
             messages.error(self.request, "The number of players cannot exceed the maximum number of players")
             return redirect(reverse_lazy("tournament-create"))
+
+        # Auto-create a chat for this respective tournament
+        chat = Chat(tournament=self.object)
+        chat.save()
 
         # Do something with brackets if needed
         return response
