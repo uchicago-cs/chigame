@@ -7,12 +7,13 @@ from django.db.models import Q
 from django.http import HttpResponseNotFound
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import DetailView, RedirectView, UpdateView
 from rest_framework import status
 from rest_framework.response import Response
 
-from chigame.games.models import Match, Player, Tournament
+from chigame.games.models import Lobby, Player, Tournament
 
 from .models import FriendInvitation, Notification, UserProfile
 from .tables import FriendsTable, UserTable
@@ -78,10 +79,12 @@ def user_history(request, pk):
     try:
         user = User.objects.get(pk=pk)
 
-        match_count = Match.objects.filter(players__in=[user]).count()
+        match_count = Lobby.objects.filter(match_status=3, members__in=[user]).count()
         match_wins = Player.objects.filter(Q(user=user, outcome=Player.WIN) | Q(team=user, outcome=Player.WIN)).count()
 
-        tournament_count = Tournament.objects.filter(players__in=[user]).count()
+        tournament_count = Tournament.objects.filter(
+            tournament_end_date__lt=timezone.now(), players__in=[user]
+        ).count()
         tournament_wins = Tournament.objects.filter(winners__in=[user]).count()
 
         return render(
