@@ -30,7 +30,7 @@ urlpatterns = [
     path("add_friend/<int:pk>", view=send_friend_invitation, name="add-friend"),
     path("remove_friend/<int:pk>", view=remove_friend, name="remove-friend"),
     path("cancel_friend_invitation/<int:pk>", view=cancel_friend_invitation, name="cancel-friend-invitation"),
-    path("user-detail/", views.user_detail, name="user-detail"),
+    path("user-detail/", views.user_detail_view, name="user-detail"),
     path("user-list/", view=user_list, name="user-list"),
     path("accept_friend_invitation/<int:pk>", view=accept_friend_invitation, name="accept-friend-invitation"),
     path("decline_friend_invitation/<int:pk>", view=decline_friend_invitation, name="decline-friend-invitation"),
