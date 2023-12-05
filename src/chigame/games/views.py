@@ -10,7 +10,7 @@ from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.db.models.functions import Lower
-from django.http import HttpResponseForbidden, JsonResponse
+from django.http import HttpResponseForbidden, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render, reverse
 from django.urls import reverse_lazy
 from django.utils import timezone
@@ -24,7 +24,6 @@ from .models import Game, Lobby, Match, Player, Review, Tournament
 from .tables import LobbyTable
 
 
-# from django_tables2 import SingleTableView
 # =============== Games CRUD and Search Views ===============
 class GameListView(ListView):
     model = Game
@@ -61,12 +60,17 @@ class GameDetailView(LoginRequiredMixin, FormMixin, DetailView):
 
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
-        return super().post(request, *args, **kwargs)
+        form = self.get_form()
+        if form.is_valid():
+            return self.form_valid(form)
+        else:
+            return self.form_invalid(form)
 
     def form_valid(self, form):
         form.instance.user = self.request.user
         form.instance.game = self.object
-        return super().form_valid(form)
+        form.save()
+        return HttpResponseRedirect(self.get_success_url())
 
 
 class GameCreateView(UserPassesTestMixin, CreateView):
@@ -653,4 +657,4 @@ class ReviewListView(ListView):
     def get_queryset(self):
         game_pk = self.kwargs["pk"]
         game = get_object_or_404(Game, pk=game_pk)
-        return Review.objects.filter(game=game)
+        return Review.objects.filter(game=game, is_public=True)
