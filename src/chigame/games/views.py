@@ -625,7 +625,8 @@ class TournamentUpdateView(UpdateView):
 
         # the tournament cannot be updated if it has ended
         if current_tournament.status == "tournament ended":
-            raise PermissionDenied("You cannot update a tournament that has ended.")
+            messages.error(self.request, "You cannot update a tournament that has ended.")
+            return redirect(reverse_lazy("tournament-detail", kwargs={"pk": self.kwargs["pk"]}))
 
         # Check if the 'players' field has been modified
         form_players = set(form.cleaned_data["players"])
