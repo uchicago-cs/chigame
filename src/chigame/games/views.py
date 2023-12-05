@@ -551,7 +551,6 @@ class TournamentCreateView(CreateView):
         self.object = tournament
         return HttpResponseRedirect(self.get_success_url())
 
-
     def get_success_url(self):
         return reverse("tournament-detail", kwargs={"pk": self.object.pk})
 
