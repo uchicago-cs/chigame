@@ -15,7 +15,7 @@ from rest_framework.response import Response
 from chigame.games.models import Match, Tournament
 
 from .models import FriendInvitation, GameInvitation, Notification, TournamentInvitation, UserProfile
-from .tables import UserTable
+from .tables import FriendsTable, UserTable
 
 User = get_user_model()
 

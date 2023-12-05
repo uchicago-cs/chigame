@@ -6,18 +6,14 @@ from chigame.users.views import (
     bulk_inbox,
     cancel_friend_invitation,
     decline_friend_invitation,
-<<<<<<< HEAD
+    friend_list_view,
     invite_to_game,
     invite_to_tournament,
-=======
-    friend_list_view,
->>>>>>> dev
     notification_detail,
     remove_friend,
     send_friend_invitation,
     user_detail_view,
     user_inbox_view,
-    user_list,
     user_profile_detail_view,
     user_redirect_view,
     user_search_results,
