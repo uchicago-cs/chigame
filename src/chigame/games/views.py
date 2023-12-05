@@ -658,3 +658,9 @@ class ReviewListView(ListView):
         game_pk = self.kwargs["pk"]
         game = get_object_or_404(Game, pk=game_pk)
         return Review.objects.filter(game=game, is_public=True)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        game_pk = self.kwargs["pk"]
+        context["game"] = get_object_or_404(Game, pk=game_pk)
+        return context
