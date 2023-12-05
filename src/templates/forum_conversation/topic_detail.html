@@ -81,18 +81,20 @@
                      data-post-id="{{ post.id }}"
                      data-user-rating="{{ post.user_rating }}"
                      data-rating="{{ post.rating }}">
-                  <button class="like-button btn btn-primary btn-sm"
+                  <button class="like-button btn btn-sm"
                           type="submit"
                           name="rate"
-                          value="like">
-                    <i class="fas fa-thumbs-up"></i> Like
+                          value="like"
+                          onclick="toggleLike()">
+                    <i class="fas fa-thumbs-up"></i>
                   </button>
-                  <span class="like-count fas">{{ post.rating }}</span>
-                  <button class="dislike-button btn btn-danger btn-sm"
+                  <span class="like-count fas" id="like-count">{{ post.rating }}</span>
+                  <button class="dislike-button btn btn-sm"
                           type="submit"
                           name="rate"
-                          value="dislike">
-                    <i class="fas fa-thumbs-down"></i> Dislike
+                          value="dislike"
+                          onclick="toggleDislike()">
+                    <i class="fas fa-thumbs-down"></i>
                   </button>
                 </div>
                 {% if post.updates_count %}
@@ -152,6 +154,66 @@
     </div>
   </div>
   <script>
+    let liked = false;
+    let disliked = false;
+
+    function toggleLike() {
+      const likeButton = document.querySelector('.like-button');
+      const dislikeButton = document.querySelector('.dislike-button');
+
+      if (!liked) {
+        liked = true;
+        likeButton.classList.add('active_two');
+        dislikeButton.classList.remove('active');
+
+      } else {
+        liked = false;
+        likeButton.classList.remove('active_two');
+      }
+    }
+
+    function toggleDislike() {
+      const dislikeButton = document.querySelector('.dislike-button');
+      const likeButton = document.querySelector('.like-button');
+
+      if (!disliked) {
+        disliked = true;
+        dislikeButton.classList.add('active');
+        likeButton.classList.remove('active_two');
+
+      } else {
+        disliked = false;
+        dislikeButton.classList.remove('active');
+      }
+    }
+
+
+    function toggleDislike() {
+      const dislikeButton = document.querySelector('.dislike-button');
+      const likeButton = document.querySelector('.like-button');
+      const likeCount = document.querySelector('#like-count');
+
+      if (!disliked) {
+        disliked = true;
+        dislikeButton.classList.add('active');
+        likeButton.classList.remove('active_two');
+
+        // Handle the case when the like button was previously selected
+        if (liked) {
+          liked = false;
+          // Update the like button styles if needed
+        }
+
+        // Handle other actions when disliking
+      } else {
+        disliked = false;
+        dislikeButton.classList.remove('active');
+        // Handle the case when the dislike button is deselected
+        // You can also handle other actions here if needed
+      }
+    }
+
+
     $('.like-button, .dislike-button').click(function() {
       var vote = $(this).val();
       var voteContainer = $(this).closest('.vote-container');
@@ -201,4 +263,15 @@
       })
     });
   </script>
+  <style>
+    .like-button.active .fas.fa-thumbs-up,
+    .dislike-button.active .fas.fa-thumbs-down {
+      color: red;
+    }
+
+    .like-button.active_two .fas.fa-thumbs-up,
+    .dislike-button.active_two .fas.fa-thumbs-down {
+      color: #00aeff;
+    }
+  </style>
 {% endblock content %}
