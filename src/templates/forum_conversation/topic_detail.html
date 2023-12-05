@@ -77,13 +77,23 @@
                   <div class="post-signature">{{ post.poster.forum_profile.signature.rendered }}</div>
                 {% endif %}
                 {# Vote buttons #}
-                <div class="vote-container d-flex p-2 flex-column w-25"
+                <div class="vote-container d-flex p-2 gap-3 align-items-center"
                      data-post-id="{{ post.id }}"
                      data-user-rating="{{ post.user_rating }}"
                      data-rating="{{ post.rating }}">
-                  <button class="like-button" type="submit" name="rate" value="like">Like</button>
-                  <span class="like-count">{{ post.rating }}</span>
-                  <button class="dislike-button" type="submit" name="rate" value="dislike">Dislike</button>
+                  <button class="like-button btn btn-primary btn-sm"
+                          type="submit"
+                          name="rate"
+                          value="like">
+                    <i class="fas fa-thumbs-up"></i> Like
+                  </button>
+                  <span class="like-coun fas">{{ post.rating }}</span>
+                  <button class="dislike-button btn btn-danger btn-sm"
+                          type="submit"
+                          name="rate"
+                          value="dislike">
+                    <i class="fas fa-thumbs-down"></i> Dislike
+                  </button>
                 </div>
                 {% if post.updates_count %}
                   <div class="mt-4 edit-info">
