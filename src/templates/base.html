@@ -274,7 +274,6 @@
                 }
               });
             } else if (query_type.value == "users") {
-                printf("I'm here");
               search_bar.action = "{% url 'users:user-search-results' %}";
               $("#query-input").autocomplete({
                 source: []  // placeholder; replace with list of usernames
