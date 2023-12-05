@@ -28,9 +28,21 @@ class LobbySerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
+
     class Meta:
         model = User
-        fields = ("id", "name", "email")
+        fields = ("id", "name", "username", "email", "password")
+
+    def create(self, validated_data):
+        user = User.objects.create_user(
+            validated_data["email"],
+            validated_data["password"],
+            name=validated_data["name"],
+            username=validated_data["username"],
+        )
+
+        return user
 
 
 class MessageSerializer(serializers.ModelSerializer):
@@ -61,3 +73,14 @@ class GroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = Group
         fields = "__all__"
+        
+        
+class MessageFeedSerializer(serializers.ModelSerializer):
+    sender = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Message
+        fields = ["token_id", "update_on", "content", "sender"]
+
+    def get_sender(self, obj):
+        return obj.sender.name
