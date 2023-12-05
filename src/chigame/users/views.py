@@ -12,9 +12,10 @@ from rest_framework import status
 from rest_framework.response import Response
 
 from chigame.games.models import Match, Tournament
-
 from .models import FriendInvitation, GameInvitation, Notification, TournamentInvitation, UserProfile
 from .tables import UserTable
+from .views import join_lobby
+
 
 User = get_user_model()
 
@@ -165,7 +166,13 @@ def invite_to_game(request, pk, match_id):
     sender = User.objects.get(pk=request.user.id)
     receiver = User.objects.get(pk=pk)
     match = Match.objects.get(pk=match_id)
-    GameInvitation.objects.create(sender=sender, receiver=receiver, match=match)
+    game_invitation = GameInvitation.objects.create(sender=sender, receiver=receiver, match=match)
+    
+    notification = Notification.objects.create(
+        actor=game_invitation,
+        receiver=receiver,
+        type=Notification.MATCH_INVITATION,
+    )
     messages.success(request, "Invitation to game sent successfully.")
     return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
 
@@ -175,10 +182,23 @@ def invite_to_tournament(request, pk, tournament_id):
     sender = User.objects.get(pk=request.user.id)
     receiver = User.objects.get(pk=pk)
     tournament = Tournament.objects.get(pk=tournament_id)
-    TournamentInvitation.objects.create(sender=sender, receiver=receiver, tournament=tournament)
+    tournament_invitation = TournamentInvitation.objects.create(sender=sender, receiver=receiver, tournament=tournament)
+    
+    notification = Notification.objects.create(
+        actor=tournament_invitation,
+        receiver=receiver,
+        type=Notification.TOURNAMENT_INVITATION,
+    )
+
     messages.success(request, "Invitation to tournament sent successfully.")
     return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
 
+@login_required
+def accept_game_invitation(request, pk, match_id):
+    match_invite = GameInvitation.objects.get(pk=pk)
+    match_invite.accept_invitation()
+    lobby_join(request, pk=match_invite.lobby.pk)
+    return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
 
 def accept_friend_invitation(request, pk):
     try:
@@ -202,23 +222,6 @@ def decline_friend_invitation(request, pk):
             friendship.delete()
     except FriendInvitation.DoesNotExist:
         messages.error(request, "This friend invitation does not exist")
-    return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
-@login_required
-def invite_to_game(request, pk, match_id):
-    sender = User.objects.get(pk=request.user.id)
-    receiver = User.objects.get(pk=pk)
-    match = Match.objects.get(pk=match_id)  
-    GameInvitation.objects.create(sender=sender, receiver=receiver, match=match)
-    messages.success(request, "Invitation to game sent successfully.")
-    return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
-
-@login_required
-def invite_to_tournament(request, pk, tournament_id):
-    sender = User.objects.get(pk=request.user.id)
-    receiver = User.objects.get(pk=pk)
-    tournament = Tournament.objects.get(pk=tournament_id) 
-    TournamentInvitation.objects.create(sender=sender, receiver=receiver, tournament=tournament)
-    messages.success(request, "Invitation to tournament sent successfully.")
     return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
 
 def user_search_results(request):
