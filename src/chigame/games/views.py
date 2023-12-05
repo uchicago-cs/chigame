@@ -19,8 +19,10 @@ from django.views.generic import CreateView, DeleteView, DetailView, ListView, U
 from django.views.generic.edit import FormMixin
 
 from .filters import LobbyFilter
+
 from .forms import GameForm, LobbyForm, ReviewForm
-from .models import Game, Lobby, Match, Player, Review, Tournament
+from .models import Chat, Game, Lobby, Match, Player, Tournament
+
 from .tables import LobbyTable
 
 
@@ -549,6 +551,10 @@ class TournamentCreateView(CreateView):
         if form.cleaned_data["players"].count() > form.cleaned_data["max_players"]:
             messages.error(self.request, "The number of players cannot exceed the maximum number of players")
             return redirect(reverse_lazy("tournament-create"))
+
+        # Auto-create a chat for this respective tournament
+        chat = Chat(tournament=self.object)
+        chat.save()
 
         # Do something with brackets if needed
         return response
