@@ -1,8 +1,8 @@
 .tournament-header {
-    display: flex;
-    align-items: center;
-  }
+  display: flex;
+  align-items: center;
+}
 
-  .tournament-name {
-    margin-right: 10px;
-  }
+.tournament-name {
+  margin-right: 10px;
+}
