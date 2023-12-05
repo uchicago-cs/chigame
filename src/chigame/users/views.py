@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models import Q
+from django.http import HttpResponseNotFound
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
@@ -61,13 +62,16 @@ user_redirect_view = UserRedirectView.as_view()
 
 @login_required
 def user_list(request):
-    users = User.objects.all()
-    table = UserTable(users)
-    context = {"users": users, "table": table}
+    if request.user.is_staff:
+        users = User.objects.all()
+        table = UserTable(users)
+        context = {"users": users, "table": table}
 
-    # Add information about top ranking users, total points collected, etc.
+        # Add information about top ranking users, total points collected, etc.
 
-    return render(request, "users/user_list.html", context)
+        return render(request, "users/user_list.html", context)
+    else:
+        return HttpResponseNotFound("Access to link is restricted to admins")
 
 
 def user_history(request, pk):
@@ -242,6 +246,8 @@ def unfriend_users(user1, user2):
     profile1.friends.remove(user2)
     profile2.friends.remove(user1)
     friend_invite = FriendInvitation.objects.get_by_users(user1, user2)
+    notification = Notification.objects.get_by_actor(friend_invite)
+    notification.mark_as_deleted()
     if friend_invite.accepted:
         friend_invite.delete()
     else:
@@ -267,10 +273,22 @@ def remove_friend(request, pk):
 
 
 @login_required
+def friend_list_view(request, pk):
+    user = request.user
+    profile = get_object_or_404(UserProfile, user__pk=pk)
+    friends = profile.friends.all()
+    table = FriendsTable(friends)
+    context = {"table": table}
+    if pk == user.id:
+        return render(request, "users/user_friend_list.html", context)
+    else:
+        messages.error(request, "Not your friend list!")
+        return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
+
+
 def deleted_notifications_view(request, pk):
     user = request.user
     notifications = Notification.objects.filter_by_receiver(user, deleted=True)
-    print(str(Notification.objects.filter_by_receiver(user).query))
     default_notification_messages = Notification.DEFAULT_MESSAGES
     context = {
         "pk": pk,
@@ -292,6 +310,10 @@ def notification_detail(request, pk):
         if notification.receiver.pk != request.user.pk:
             messages.error(request, "You can not redirect from this notification")
             return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
+        notification.mark_as_read()
+        if not notification.actor:  # when friends are removed, invitation(actor) is deleted
+            messages.error(request, "Something went wrong. This notification is invalid")
+            return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
         if notification.type == Notification.FRIEND_REQUEST:
             return redirect(reverse("users:user-profile", kwargs={"pk": notification.actor.sender.pk}))
     except Notification.DoesNotExist:
@@ -316,4 +338,19 @@ def act_on_inbox_notification(request, pk, action):
             notification.mark_as_unread()
     except Notification.DoesNotExist:
         messages.error(request, "Something went wrong. This notification does not exist")
+    return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
+
+
+@login_required
+def bulk_inbox(request):
+    if request.method == "POST":
+        selected_notifications = request.POST.getlist("notification[]")
+        if "delete_all" in request.POST:
+            for pk in selected_notifications:
+                notification = Notification.objects.get(pk=pk)
+                notification.mark_as_deleted()
+        if "mark_all" in request.POST:
+            for pk in selected_notifications:
+                notification = Notification.objects.get(pk=pk)
+                notification.mark_as_read()
     return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
