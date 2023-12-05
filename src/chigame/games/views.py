@@ -11,6 +11,7 @@ from django.shortcuts import get_object_or_404, redirect, render, reverse
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.utils.decorators import method_decorator
+from django.utils.timezone import now
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 from django_tables2 import SingleTableView
 
@@ -167,8 +168,6 @@ def search_results(request):
 
 
 # Permission Checkers
-
-
 def staff_required(view_func):
     @wraps(view_func)
     def wrapper(request, *args, **kwargs):
@@ -286,8 +285,8 @@ class TournamentCreateView(CreateView):
 
         # Check if the user is not a staff member and has less than one token
         if not user.is_staff and user.tokens < 1:
-            # Raise a PermissionDenied exception to show the forbidden page
-            raise PermissionDenied("You do not have enough tokens to create a tournament.")
+            messages.error(self.request, "You do not have enough tokens to create a tournament.")
+            return redirect("tournament-list")
 
         # If the user is not staff, deduct a token
         if not user.is_staff:
@@ -337,31 +336,37 @@ class TournamentUpdateView(UpdateView):
 
         # Check if the current user is the creator of the tournament
         if tournament.created_by != request.user and not request.user.is_staff:
-            raise PermissionDenied("You do not have permission to edit this tournament.")
+            messages.error(self.request, "You do not have permission to edit this tournament.")
+            return redirect("tournament-list", pk=self.kwargs["pk"])
 
         # Continue with the normal flow
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
-        # Get the current tournament from the database
         current_tournament = get_object_or_404(Tournament, pk=self.kwargs["pk"])
 
-        # Check if the 'players' field has been modified
-        form_players = set(form.cleaned_data["players"])
-        current_players = set(current_tournament.players.all())
-        if len(form_players - current_players) > 0:  # if the players have been added
-            raise PermissionDenied("You cannot add new players to the tournament after it has started.")
-        elif len(current_players - form_players) > 0:  # if the players have been removed
-            removed_players = current_players - form_players  # get the players that have been removed
-            for player in removed_players:
-                related_match = current_tournament.matches.get(
-                    players__in=[player]
-                )  # get the match that the player is in
-                related_match.players.remove(player)
-                if related_match.players.count() == 0:  # if the match is empty, delete it
-                    related_match.delete()
+        # Check if the tournament has already started
+        if now() >= current_tournament.start_date:
+            form_players = set(form.cleaned_data["players"])
+            current_players = set(current_tournament.players.all())
+            if len(form_players - current_players) > 0:  # New players being added
+                messages.error(self.request, "You cannot add new players to the tournament after it has started.")
+                return redirect("tournament-detail", pk=self.kwargs["pk"])
 
-        # The super class's form_valid method will save the form data to the database
+        # Handle player removal
+        current_players = set(current_tournament.players.all())
+        form_players = set(form.cleaned_data["players"])
+        if len(current_players - form_players) > 0:  # Players have been removed
+            removed_players = current_players - form_players
+            for player in removed_players:
+                # Handle multiple matches for a player
+                related_matches = current_tournament.matches.filter(players__in=[player])
+                for match in related_matches:
+                    match.players.remove(player)
+                    if match.players.count() == 0:  # if the match is empty, delete it
+                        match.delete()
+
+        # Save the form data to the database using the superclass's method
         return super().form_valid(form)
 
     def get_success_url(self):
