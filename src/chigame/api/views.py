@@ -97,7 +97,7 @@ class UserGroupsView(generics.ListAPIView):
         groups = Group.objects.filter(members__pk=user_id)
         return groups
 
-  
+
 class MessageFeedView(APIView):
     def post(self, request, *args, **kwargs):
         # Get data from the frontend
