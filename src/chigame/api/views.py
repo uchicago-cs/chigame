@@ -12,8 +12,8 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from chigame.api.filters import GameFilter
 from chigame.api.serializers import (
-    FriendInvitationSerializer,
     CategorySerializer,
+    FriendInvitationSerializer,
     GameSerializer,
     GroupSerializer,
     LobbySerializer,
@@ -82,7 +82,7 @@ class TournamentListView(generics.ListAPIView):
     queryset = Tournament.objects.all()
     serializer_class = TournamentSerializer
 
-    
+
 class GameCategoriesAPIView(generics.ListAPIView):
     serializer_class = CategorySerializer
     pagination_class = PageNumberPagination
@@ -225,7 +225,7 @@ class UserProfileUpdateView(APIView):
             return Response(UserProfileSerializer(updated_profile).data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-      
+
 class GroupListView(generics.ListCreateAPIView):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
