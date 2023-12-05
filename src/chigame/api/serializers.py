@@ -68,10 +68,8 @@ class UserSerializer(serializers.ModelSerializer):
         return user
 
 
-
 class MessageSerializer(serializers.ModelSerializer):
     sender = serializers.EmailField(write_only=True)
-
     tournament = serializers.IntegerField(write_only=True)
 
     class Meta:
@@ -97,6 +95,7 @@ class FriendInvitationSerializer(serializers.ModelSerializer):
     class Meta:
         model = FriendInvitation
         fields = "__all__"
+
 
 class MessageFeedSerializer(serializers.ModelSerializer):
     sender = serializers.SerializerMethodField()

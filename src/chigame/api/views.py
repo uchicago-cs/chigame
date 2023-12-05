@@ -15,15 +15,14 @@ from chigame.api.serializers import (
     FriendInvitationSerializer,
     GameSerializer,
     LobbySerializer,
+    MessageFeedSerializer,
     MessageSerializer,
     TournamentSerializer,
     UserProfileSerializer,
-    MessageFeedSerializer,
     UserSerializer,
 )
 from chigame.games.models import Game, Lobby, Message, Tournament
 from chigame.users.models import FriendInvitation, User, UserProfile
-
 
 
 class GameListView(generics.ListCreateAPIView):
@@ -92,12 +91,6 @@ class LobbyDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = LobbySerializer
 
 
-class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    pagination_class = PageNumberPagination
-
-
 class CustomTokenObtainPairView(TokenObtainPairView):
     # Add any custom behavior if needed
     pass
@@ -134,23 +127,19 @@ class MessageView(generics.CreateAPIView):
     queryset = Message.objects.all()
     serializer_class = MessageSerializer
 
-    
+
 class SendFriendInvitationView(APIView):
     def post(self, request, *args, **kwargs):
         sender_pk = self.kwargs["sender_pk"]
         receiver_pk = self.kwargs["receiver_pk"]
-
         sender = get_object_or_404(User, pk=sender_pk)
         receiver = get_object_or_404(User, pk=receiver_pk)
-
         if sender == receiver:
             return Response(
                 {"detail": "You cannot send an invitation to yourself."}, status=status.HTTP_400_BAD_REQUEST
             )
-
         invitation = FriendInvitation(sender=sender, receiver=receiver)
         invitation.save()
-
         serializer = FriendInvitationSerializer(invitation)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -159,7 +148,6 @@ class AcceptFriendInvitationView(APIView):
     def post(self, request, *args, **kwargs):
         invitation_pk = self.kwargs["invitation_pk"]
         invitation = get_object_or_404(FriendInvitation, pk=invitation_pk)
-
         if invitation.accepted:
             return Response(
                 {"detail": "This invitation has already been accepted."}, status=status.HTTP_400_BAD_REQUEST
@@ -231,4 +219,3 @@ class MessageFeedView(APIView):
 
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
