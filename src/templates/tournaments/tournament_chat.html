@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block content %}
+  <h1>Chat for Match {{ tournament.pk }}</h1>
+  <style>
+    #messageContainer {
+      border: 1px solid #ccc;
+      padding: 10px;
+      border-radius: 5px;
+      max-width: 70%;
+      height: 50vh;
+      margin: 0 auto;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #sendContainer {
+      width: 50%;
+      left: 50%;
+      top: 85%;
+      transform: translate(-50%, 0);
+      position: absolute;
+      height: 8%;
+      display: flex;
+      justify-content: space-between;
+      font-family: sans-serif;
+    }
+
+    #sendContainer input {
+      width: 80%;
+      height: 100%;
+      padding-left: 10px;
+      border-top-left-radius: 5px;
+      border-bottom-left-radius: 5px;
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+      border: 0.5px solid black;
+      font-family: sans-serif;
+      color: black;
+    }
+
+    #sendContainer button {
+      width: 20%;
+      height: 100%;
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+      border-top-right-radius: 5px;
+      border-bottom-right-radius: 5px;
+      border: 0.5px solid black;
+      padding: 0;
+      font-family: sans-serif;
+    }
+
+    h1 {
+      text-align: center;
+    }
+  </style>
+  <input type="hidden"
+         id="name"
+         name="variable"
+         value="{{ request.user.name }}" />
+  <input type="hidden"
+         id="email"
+         name="variable"
+         value="{{ request.user.email }}" />
+  <input type="hidden" id="tID" name="variable" value="{{ tournament.pk }}" />
+  <div id="messageContainer">
+    {% csrf_token %}
+    <!-- Messages will be displayed here -->
+  </div>
+  <script src = {% static 'js/getChatUpdate.js' %}></script>
+  <div id="sendContainer">
+    {% csrf_token %}
+    <! -- Input field for message -->
+    <input type="text"
+           name="message"
+           id="message"
+           placeholder="Type your message here..." />
+    <! -- Button to send message -->
+    <button onclick="sendMessage()">Send</button>
+  </div>
+  <script src = {% static 'js/sendMessage.js' %}></script>
+{% endblock content %}

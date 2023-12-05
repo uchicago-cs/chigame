@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import Game, Review
+from .models import Game, Lobby, Review
 
 
 class GameForm(forms.ModelForm):
@@ -18,6 +18,13 @@ class GameForm(forms.ModelForm):
             "name": forms.TextInput,
             "image": forms.Textarea(attrs={"cols": 80, "rows": 1}),
         }
+
+
+class LobbyForm(forms.ModelForm):
+    class Meta:
+        model = Lobby
+        fields = ["name", "game", "game_mod_status", "min_players", "max_players", "time_constraint"]
+        widgets = {"name": forms.TextInput}
 
 
 class ReviewForm(forms.ModelForm):

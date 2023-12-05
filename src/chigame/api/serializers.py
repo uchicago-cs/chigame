@@ -1,12 +1,12 @@
 from rest_framework import serializers
 
-from chigame.games.models import Game, Lobby, User
+from chigame.games.models import Chat, Game, Lobby, Message, Tournament, User
 
 
 class GameSerializer(serializers.ModelSerializer):
     class Meta:
         model = Game
-        fields = ("id", "name", "description", "min_players", "max_players")
+        fields = "__all__"
 
 
 class LobbySerializer(serializers.ModelSerializer):
@@ -26,13 +26,54 @@ class LobbySerializer(serializers.ModelSerializer):
         )
 
 
-class UserListSerializer(serializers.ModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
+
     class Meta:
         model = User
-        fields = ("id", "name", "email")
+        fields = ("id", "name", "username", "email", "password")
+
+    def create(self, validated_data):
+        user = User.objects.create_user(
+            validated_data["email"],
+            validated_data["password"],
+            name=validated_data["name"],
+            username=validated_data["username"],
+        )
+
+        return user
 
 
-class UserDetailSerializer(serializers.ModelSerializer):
+class MessageSerializer(serializers.ModelSerializer):
+    sender = serializers.EmailField(write_only=True)
+
+    tournament = serializers.IntegerField(write_only=True)
+
     class Meta:
-        model = User
-        fields = ("id", "name", "email")
+        model = Message
+        fields = ("update_on", "content", "sender", "tournament")
+
+    def create(self, validated_data):
+        sender_email = validated_data.pop("sender")
+        tournament_id = validated_data.pop("tournament")
+
+        tournament = Tournament.objects.get(pk=tournament_id)
+        chat = Chat.objects.get(tournament=tournament)
+
+        user = User.objects.get(email=sender_email)
+        validated_data["sender"] = user
+        validated_data["chat"] = chat
+
+        message = Message.objects.create(**validated_data)
+        return message
+
+
+class MessageFeedSerializer(serializers.ModelSerializer):
+    sender = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Message
+        fields = ["token_id", "update_on", "content", "sender"]
+
+    def get_sender(self, obj):
+        return obj.sender.name
