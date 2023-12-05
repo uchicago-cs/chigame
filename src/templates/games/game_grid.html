@@ -137,8 +137,7 @@
           </li>
           <li class="page-item">
             <a class="page-link"
-               href="?{% updated_params page=page_obj.previous_page_number %}">{{
-            page_obj.previous_page_number }}</a>
+               href="?{% updated_params page=page_obj.previous_page_number %}">{{ page_obj.previous_page_number }}</a>
           </li>
         {% else %}
           <li class="page-item disabled">
@@ -151,8 +150,7 @@
         {% if page_obj.has_next %}
           <li class="page-item">
             <a class="page-link"
-               href="?{% updated_params page=page_obj.next_page_number %}">{{ page_obj.next_page_number
-            }}</a>
+               href="?{% updated_params page=page_obj.next_page_number %}">{{ page_obj.next_page_number }}</a>
           </li>
           <li class="page-item">
             <a class="page-link"
