@@ -27,13 +27,6 @@ class TournamentSerializer(serializers.ModelSerializer):
         )
 
 
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ("id", "email", "password", "name", "is_staff")
-        extra_kwargs = {"password": {"write_only": True}, "id": {"read_only": True}}
-
-
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
@@ -55,6 +48,25 @@ class LobbySerializer(serializers.ModelSerializer):
             "time_constraint",
             "lobby_created",
         )
+
+
+class UserSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
+
+    class Meta:
+        model = User
+        fields = ("id", "name", "username", "email", "password")
+
+    def create(self, validated_data):
+        user = User.objects.create_user(
+            validated_data["email"],
+            validated_data["password"],
+            name=validated_data["name"],
+            username=validated_data["username"],
+        )
+
+        return user
+
 
 
 class MessageSerializer(serializers.ModelSerializer):
@@ -85,3 +97,13 @@ class FriendInvitationSerializer(serializers.ModelSerializer):
     class Meta:
         model = FriendInvitation
         fields = "__all__"
+
+class MessageFeedSerializer(serializers.ModelSerializer):
+    sender = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Message
+        fields = ["token_id", "update_on", "content", "sender"]
+
+    def get_sender(self, obj):
+        return obj.sender.name

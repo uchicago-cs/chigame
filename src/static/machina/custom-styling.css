@@ -1,0 +1,7 @@
+/* Fixes forums nav-bar offset */
+.navbar {
+  padding: 0.5rem 0rem
+}
+.container-fluid {
+  padding-left: 0.75rem;
+}
