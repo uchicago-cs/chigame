@@ -93,7 +93,6 @@ THIRD_PARTY_APPS = [
     # https://django-machina.readthedocs.io/en/latest/getting_started.html#django-settings
     "machina",
     "machina.apps.forum",
-    "machina.apps.forum_conversation",
     "machina.apps.forum_conversation.forum_attachments",
     "machina.apps.forum_conversation.forum_polls",
     "machina.apps.forum_feeds",
@@ -109,6 +108,9 @@ LOCAL_APPS = [
     "chigame.games",
     # Additional apps go here
     "chigame.api",
+    "chigame.forums.base",
+    # Overridden django-machina apps
+    "chigame.forums.forum_conversation",
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
