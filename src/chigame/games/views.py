@@ -10,16 +10,17 @@ from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.db.models.functions import Lower
-from django.http import HttpResponseForbidden, JsonResponse
+from django.http import HttpResponseForbidden, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render, reverse
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
+from django.views.generic.edit import FormMixin
 
 from .filters import LobbyFilter
-from .forms import GameForm, LobbyForm
-from .models import Chat, Game, Lobby, Match, Player, Tournament
+from .forms import GameForm, LobbyForm, ReviewForm
+from .models import Chat, Game, Lobby, Match, Player, Review, Tournament
 from .tables import LobbyTable
 
 
@@ -42,10 +43,34 @@ class GameListView(ListView):
         return queryset
 
 
-class GameDetailView(DetailView):
+class GameDetailView(LoginRequiredMixin, FormMixin, DetailView):
     model = Game
     template_name = "games/game_detail.html"
     context_object_name = "game"
+    form_class = ReviewForm
+
+    def get_success_url(self):
+        return reverse("game-detail", kwargs={"pk": self.object.pk})
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["form"] = self.get_form()
+        context["reviews"] = Review.objects.filter(game=self.object)
+        return context
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        form = self.get_form()
+        if form.is_valid():
+            return self.form_valid(form)
+        else:
+            return self.form_invalid(form)
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        form.instance.game = self.object
+        form.save()
+        return HttpResponseRedirect(self.get_success_url())
 
 
 class GameCreateView(UserPassesTestMixin, CreateView):
@@ -673,3 +698,20 @@ def TournamentChatDetailView(request, pk):
     except ObjectDoesNotExist:
         messages.error(request, "This tournament does not have a chat yet.")
         return redirect(reverse_lazy("tournament-detail", kwargs={"pk": pk}))
+
+
+class ReviewListView(ListView):
+    model = Review
+    template_name = "games/game_reviews.html"
+    context_object_name = "reviews"
+
+    def get_queryset(self):
+        game_pk = self.kwargs["pk"]
+        game = get_object_or_404(Game, pk=game_pk)
+        return Review.objects.filter(game=game, is_public=True)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        game_pk = self.kwargs["pk"]
+        context["game"] = get_object_or_404(Game, pk=game_pk)
+        return context
