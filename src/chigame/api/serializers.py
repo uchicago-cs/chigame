@@ -74,6 +74,7 @@ class GroupSerializer(serializers.ModelSerializer):
         model = Group
         fields = "__all__"
 
+
 class MessageFeedSerializer(serializers.ModelSerializer):
     sender = serializers.SerializerMethodField()
 
