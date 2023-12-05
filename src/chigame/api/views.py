@@ -50,7 +50,6 @@ class GameDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = GameSerializer
 
 
-
 class UserListView(generics.ListAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
@@ -73,7 +72,7 @@ class UserRegistrationView(APIView):
             return Response({"access_token": access_token}, status=status.HTTP_201_CREATED)
         return Response(serializer_instance.errors, status=status.HTTP_400_BAD_REQUEST)
 
- 
+
 class GameCategoriesAPIView(generics.ListAPIView):
     serializer_class = CategorySerializer
     pagination_class = PageNumberPagination
@@ -92,7 +91,6 @@ class GameMechanicsAPIView(generics.ListAPIView):
         game_id = self.kwargs["pk"]
         game = Game.objects.get(id=game_id)
         return game.mechanics.all()
-
 
 
 class UserFriendsAPIView(generics.RetrieveAPIView):
