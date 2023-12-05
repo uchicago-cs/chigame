@@ -40,7 +40,8 @@
                   <a href="{% url 'users:user-history' object.user.pk %}"
                      class="btn btn-primary">Stats</a>
                 {% elif is_friend %}
-                  <a class="btn btn-primary">Remove Friend</a>
+                  <a href="{% url 'users:remove-friend' object.user.pk %}"
+                     class="btn btn-primary">Remove Friend</a>
                   <a href="{% url 'users:user-history' object.user.pk %}"
                      class="btn btn-primary">Stats</a>
                 {% elif friendship_request %}
