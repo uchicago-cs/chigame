@@ -235,6 +235,7 @@
           function updateFormAction() {
             if (query_type.value === "games") {
               search_bar.action = "{% url 'game-search-results' %}";
+
               {% get_games as games %}  // fetch game names for autocomplete
               var game_names = [
                 {% for game in games %}
@@ -276,7 +277,7 @@
                 source: []  // placeholder; replace with list of forums
               });
             }
-            advancedSearchButton.classList.toggle('d-none', query_type.value !== "forums");
+            advancedSearchButton.classList.toggle('d-none', query_type.value !== "forums"); // hide advanced search button if not searching forums
           }
 
           updateFormAction();
@@ -285,8 +286,8 @@
           query_type.addEventListener("change", updateFormAction);
 
           advancedSearchButton.addEventListener("click", function(event) {
-            query_input.value = '';
-            search_bar.submit();
+            query_input.value = ''; // Clear the input field
+            search_bar.submit();// Manually submit the form if needed
           });
 
           // do nothing if search bar is empty
