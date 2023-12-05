@@ -41,6 +41,14 @@
             <li class="list-item">Bio: {{ object.userprofile.bio }}</li>
             <li class="list-item">Date Joined: {{ object.date_joined }}</li>
             <!-- Your Stuff: Custom user template URLs -->
+            {% if object.is_staff %}
+              <li class="list-item">
+                Users:
+                <a class="btn btn-primary"
+                   href="{% url 'users:user-list' %}"
+                   role="button">List of Users</a>
+              </li>
+            {% endif %}
           </ul>
         </div>
       </div>
