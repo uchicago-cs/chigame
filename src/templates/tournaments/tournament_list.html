@@ -71,7 +71,7 @@
         {% else %}
           <p>No player yet.</p>
         {% endif %}
-        {% if user.is_authenticated %}
+        {% if user.is_authenticated and tournament.status == "registration open" %}
           <form method="post">
             {% csrf_token %}
             <input type="hidden" name="tournament_id" value="{{ tournament.id }}" />
