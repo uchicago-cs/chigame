@@ -13,4 +13,7 @@
   {% else %}
     <p>Sorry, your guess was incorrect.</p>
   {% endif %}
+  <p>
+    <a href="{% url 'lobby-details' lobby_id %}">Back to Lobby</a>
+  </p>
 {% endblock content %}
