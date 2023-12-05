@@ -307,11 +307,12 @@ class UserTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(User.objects.count(), 0)
 
-    """def test_user_post(self):
+    def test_user_post(self):
         user = {
             "email": "user@example.com",
             "name": "John Doe",
             "username": "john_doe",
+            "password": "password",
             "tokens": 2,
         }
 
@@ -321,7 +322,7 @@ class UserTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(User.objects.count(), 1)
         self.assertEqual(response.data["email"], user["email"])
-        self.assertEqual(response.data["name"], user["name"])"""
+        self.assertEqual(response.data["name"], user["name"])
 
     def test_user_patch(self):
         user = UserFactory()
