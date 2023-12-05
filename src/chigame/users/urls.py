@@ -3,11 +3,14 @@ from django.urls import path
 from chigame.users.views import (
     accept_friend_invitation,
     act_on_inbox_notification,
+    bulk_inbox,
     cancel_friend_invitation,
     decline_friend_invitation,
     invite_to_game,
     invite_to_tournament,
     friend_list_view,
+    invite_to_game,
+    invite_to_tournament,
     notification_detail,
     remove_friend,
     send_friend_invitation,
@@ -47,4 +50,5 @@ urlpatterns = [
         view=act_on_inbox_notification,
         name="act-on-inbox-notification",
     ),
+    path("bulk-action/", view=bulk_inbox, name="bulk-inbox"),
 ]

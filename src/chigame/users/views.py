@@ -12,6 +12,8 @@ from rest_framework import status
 from rest_framework.response import Response
 
 from chigame.games.models import Match, Tournament
+from chigame.games.views import lobby_join
+
 from .models import FriendInvitation, GameInvitation, Notification, TournamentInvitation, UserProfile
 from .tables import FriendsTable, UserTable
 from chigame.games.views import lobby_join
@@ -166,13 +168,15 @@ def invite_to_game(request, pk, match_id):
     receiver = User.objects.get(pk=pk)
     match = Match.objects.get(pk=match_id)
     game_invitation = GameInvitation.objects.create(sender=sender, receiver=receiver, match=match)
-    
     notification = Notification.objects.create(
         actor=game_invitation,
         receiver=receiver,
         type=Notification.MATCH_INVITATION,
     )
-    messages.success(request, "Invitation to game sent successfully.")
+    if notification:
+        messages.success(request, "Invitation to game sent successfully.")
+    else:
+        messages.error(request, "Something went wrong please try again later!")
     return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
 
 
@@ -181,16 +185,21 @@ def invite_to_tournament(request, pk, tournament_id):
     sender = User.objects.get(pk=request.user.id)
     receiver = User.objects.get(pk=pk)
     tournament = Tournament.objects.get(pk=tournament_id)
-    tournament_invitation = TournamentInvitation.objects.create(sender=sender, receiver=receiver, tournament=tournament)
-    
+    tournament_invitation = TournamentInvitation.objects.create(
+        sender=sender, receiver=receiver, tournament=tournament
+    )
+
     notification = Notification.objects.create(
         actor=tournament_invitation,
         receiver=receiver,
         type=Notification.TOURNAMENT_INVITATION,
     )
-
-    messages.success(request, "Invitation to tournament sent successfully.")
+    if notification:
+        messages.success(request, "Invitation to tournament sent successfully.")
+    else:
+        messages.error(request, "Something went wrong please try again later!")
     return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
+
 
 @login_required
 def accept_game_invitation(request, pk, match_id):
@@ -199,6 +208,8 @@ def accept_game_invitation(request, pk, match_id):
     lobby_join(request, pk=match_invite.lobby.pk)
     return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
 
+
+@login_required
 def accept_friend_invitation(request, pk):
     try:
         friendship = FriendInvitation.objects.get(pk=pk)
@@ -260,6 +271,8 @@ def unfriend_users(user1, user2):
     profile1.friends.remove(user2)
     profile2.friends.remove(user1)
     friend_invite = FriendInvitation.objects.get_by_users(user1, user2)
+    notification = Notification.objects.get_by_actor(friend_invite)
+    notification.mark_as_deleted()
     if friend_invite.accepted:
         friend_invite.delete()
     else:
@@ -301,7 +314,6 @@ def friend_list_view(request, pk):
 def deleted_notifications_view(request, pk):
     user = request.user
     notifications = Notification.objects.filter_by_receiver(user, deleted=True)
-    print(str(Notification.objects.filter_by_receiver(user).query))
     default_notification_messages = Notification.DEFAULT_MESSAGES
     context = {
         "pk": pk,
@@ -323,6 +335,10 @@ def notification_detail(request, pk):
         if notification.receiver.pk != request.user.pk:
             messages.error(request, "You can not redirect from this notification")
             return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
+        notification.mark_as_read()
+        if not notification.actor:  # when friends are removed, invitation(actor) is deleted
+            messages.error(request, "Something went wrong. This notification is invalid")
+            return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
         if notification.type == Notification.FRIEND_REQUEST:
             return redirect(reverse("users:user-profile", kwargs={"pk": notification.actor.sender.pk}))
     except Notification.DoesNotExist:
@@ -347,4 +363,19 @@ def act_on_inbox_notification(request, pk, action):
             notification.mark_as_unread()
     except Notification.DoesNotExist:
         messages.error(request, "Something went wrong. This notification does not exist")
+    return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
+
+
+@login_required
+def bulk_inbox(request):
+    if request.method == "POST":
+        selected_notifications = request.POST.getlist("notification[]")
+        if "delete_all" in request.POST:
+            for pk in selected_notifications:
+                notification = Notification.objects.get(pk=pk)
+                notification.mark_as_deleted()
+        if "mark_all" in request.POST:
+            for pk in selected_notifications:
+                notification = Notification.objects.get(pk=pk)
+                notification.mark_as_read()
     return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))

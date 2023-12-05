@@ -144,7 +144,6 @@ class GameInvitation(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
 
     def accept_invitation(self):
-        receiver_profile = UserProfile.objects.get(user=user)
         self.accepted = True
         self.save()
 
@@ -163,7 +162,6 @@ class TournamentInvitation(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
 
     def accept_invitation(self):
-        receiver_profile = UserProfile.objects.get(user=user)
         self.accepted = True
         self.save()
 
@@ -253,8 +251,8 @@ class Notification(models.Model):
         (UPCOMING_MATCH, "UPCOMING_MATCH"),
         (MATCH_PROPOSAL, "MATCH_PROPOSAL"),
         (GROUP_INVITATION, "GROUP_INVITATION"),
-        (MATCH_INVITATION, "MATCH_INVITATION"), 
-        (TOURNAMENT_INVITATION, "TOURNAMENT_INVITATION")
+        (MATCH_INVITATION, "MATCH_INVITATION"),
+        (TOURNAMENT_INVITATION, "TOURNAMENT_INVITATION"),
     )
 
     DEFAULT_MESSAGES = {FRIEND_REQUEST: "You have a friend invitation"}
