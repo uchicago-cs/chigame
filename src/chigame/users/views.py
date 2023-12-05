@@ -201,6 +201,19 @@ def user_search_results(request):
     return render(request, "pages/search_results.html", context)
 
 
+def notification_search_results(request):
+    query_input = request.GET.get("q")
+    context = {"nothing_found": True, "query_type": "Notifications"}
+    if query_input:
+        notifications_list = Notification.objects.filter_by_receiver(request.user).filter(
+            message__icontains=query_input
+        )
+        if notifications_list.count() > 0:
+            context.pop("nothing_found")
+            context["object_list"] = notifications_list
+    return render(request, "pages/search_results.html", context)
+
+
 @login_required
 def user_inbox_view(request, pk):
     user = request.user
