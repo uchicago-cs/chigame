@@ -1,0 +1,201 @@
+[
+{
+    "model": "users.user",
+    "pk": 1,
+    "fields": {
+        "password": "argon2$argon2id$v=19$m=102400,t=2,p=8$eHJNN1Z0QVg5SXBySjN3dE1GT2c0ZQ$lDIoV86wWI5Yi/JzvyvNbHyeGRvA3zkhLa/2/HSfweU",
+        "last_login": "2023-12-05T18:57:32.433Z",
+        "is_superuser": true,
+        "is_staff": true,
+        "is_active": true,
+        "date_joined": "2023-12-05T18:38:16.290Z",
+        "name": "",
+        "email": "admin@example.com",
+        "username": null,
+        "tokens": 1,
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "users.user",
+    "pk": 2,
+    "fields": {
+        "password": "argon2$argon2id$v=19$m=102400,t=2,p=8$NjdaZVNEQzRpYjlNbDJNTUUxaEpFRA$QUcgyJCfl0nGObA9bY1ktSPaCtKibMiDAThYNSLBDIk",
+        "last_login": "2023-12-05T18:39:52.604Z",
+        "is_superuser": false,
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2023-12-05T18:39:00.050Z",
+        "name": "squirrel_lover15",
+        "email": "squirrel_lover15@example.com",
+        "username": null,
+        "tokens": 1,
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "forum.forum",
+    "pk": 1,
+    "fields": {
+        "created": "2023-12-05T18:43:55.220Z",
+        "updated": "2023-12-05T18:49:40.742Z",
+        "parent": null,
+        "name": "General",
+        "slug": "general",
+        "description": "A forum about all things Chigame",
+        "image": "",
+        "link": null,
+        "link_redirects": false,
+        "type": 0,
+        "direct_posts_count": 2,
+        "direct_topics_count": 2,
+        "link_redirects_count": 0,
+        "last_post": 2,
+        "last_post_on": "2023-12-05T18:49:40.689Z",
+        "display_sub_forum_list": true,
+        "_description_rendered": "<p>A forum about all things Chigame</p>",
+        "lft": 1,
+        "rght": 2,
+        "tree_id": 1,
+        "level": 0
+    }
+},
+{
+    "model": "forum.forum",
+    "pk": 2,
+    "fields": {
+        "created": "2023-12-05T18:44:22.879Z",
+        "updated": "2023-12-05T18:44:22.879Z",
+        "parent": null,
+        "name": "Games",
+        "slug": "games",
+        "description": "Discussion about the Chigame games",
+        "image": "",
+        "link": null,
+        "link_redirects": false,
+        "type": 1,
+        "direct_posts_count": 0,
+        "direct_topics_count": 0,
+        "link_redirects_count": 0,
+        "last_post": null,
+        "last_post_on": null,
+        "display_sub_forum_list": true,
+        "_description_rendered": "<p>Discussion about the Chigame games</p>",
+        "lft": 1,
+        "rght": 2,
+        "tree_id": 2,
+        "level": 0
+    }
+},
+{
+    "model": "forum.forum",
+    "pk": 3,
+    "fields": {
+        "created": "2023-12-05T18:45:50.537Z",
+        "updated": "2023-12-05T18:45:50.537Z",
+        "parent": null,
+        "name": "Tic-Tac-Toe",
+        "slug": "tic-tac-toe",
+        "description": "This is a high-octane, beat-em-up that's sure to keep you engaged for hours",
+        "image": "",
+        "link": null,
+        "link_redirects": false,
+        "type": 0,
+        "direct_posts_count": 0,
+        "direct_topics_count": 0,
+        "link_redirects_count": 0,
+        "last_post": null,
+        "last_post_on": null,
+        "display_sub_forum_list": true,
+        "_description_rendered": "<p>This is a high-octane, beat-em-up that's sure to keep you engaged for hours</p>",
+        "lft": 1,
+        "rght": 2,
+        "tree_id": 3,
+        "level": 0
+    }
+},
+{
+    "model": "forum_conversation.topic",
+    "pk": 1,
+    "fields": {
+        "forum": 1,
+        "poster": 1,
+        "subject": "FAQ",
+        "slug": "faq",
+        "type": 1,
+        "status": 0,
+        "approved": true,
+        "posts_count": 1,
+        "views_count": 1,
+        "last_post_on": "2023-12-05T18:47:49.486Z",
+        "first_post": 1,
+        "last_post": 1,
+        "created": "2023-12-05T18:47:49.475Z",
+        "updated": "2023-12-05T18:47:49.530Z",
+        "subscribers": []
+    }
+},
+{
+    "model": "forum_conversation.topic",
+    "pk": 2,
+    "fields": {
+        "forum": 1,
+        "poster": 1,
+        "subject": "Welcome!",
+        "slug": "welcome",
+        "type": 1,
+        "status": 0,
+        "approved": true,
+        "posts_count": 1,
+        "views_count": 4,
+        "last_post_on": "2023-12-05T18:49:40.689Z",
+        "first_post": 2,
+        "last_post": 2,
+        "created": "2023-12-05T18:49:40.683Z",
+        "updated": "2023-12-05T18:49:40.731Z",
+        "subscribers": []
+    }
+},
+{
+    "model": "forum_conversation.post",
+    "pk": 1,
+    "fields": {
+        "created": "2023-12-05T18:47:49.486Z",
+        "updated": "2023-12-05T18:47:49.486Z",
+        "topic": 1,
+        "poster": 1,
+        "anonymous_key": null,
+        "subject": "FAQ",
+        "content": "Q: What is Chigame\r\nA: Chigame is a platform allows users to play online games together",
+        "username": null,
+        "approved": true,
+        "enable_signature": true,
+        "update_reason": null,
+        "updated_by": null,
+        "updates_count": 0,
+        "_content_rendered": "<p>Q: What is Chigame<br />\nA: Chigame is a platform allows users to play online games together</p>"
+    }
+},
+{
+    "model": "forum_conversation.post",
+    "pk": 2,
+    "fields": {
+        "created": "2023-12-05T18:49:40.689Z",
+        "updated": "2023-12-05T18:49:40.689Z",
+        "topic": 2,
+        "poster": 1,
+        "anonymous_key": null,
+        "subject": "Welcome!",
+        "content": "Hi! We're glad you came here, and we hope you enjoy your stay :)",
+        "username": null,
+        "approved": true,
+        "enable_signature": true,
+        "update_reason": null,
+        "updated_by": null,
+        "updates_count": 0,
+        "_content_rendered": "<p>Hi! We're glad you came here, and we hope you enjoy your stay :)</p>"
+    }
+}
+]
