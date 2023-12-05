@@ -2,6 +2,7 @@
 
 
 from dj_rest_auth.models import TokenModel
+from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, status
 from rest_framework.pagination import PageNumberPagination
@@ -11,28 +12,17 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
 
-from django.shortcuts import get_object_or_404
-
-
-
-
-
 from chigame.api.filters import GameFilter
 from chigame.api.serializers import (
     GameSerializer,
     LobbySerializer,
-
+    MessageFeedSerializer,
     MessageSerializer,
     TournamentSerializer,
     UserSerializer,
-   MessageFeedSerializer
 )
 from chigame.games.models import Game, Lobby, Message, Tournament
 from chigame.users.models import User, UserProfile
-
-
-
-
 
 
 class GameListView(generics.ListCreateAPIView):
@@ -101,12 +91,6 @@ class LobbyDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = LobbySerializer
 
 
-class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    pagination_class = PageNumberPagination
-
-
 class CustomTokenObtainPairView(TokenObtainPairView):
     # Add any custom behavior if needed
     pass
@@ -120,6 +104,7 @@ class CustomTokenRefreshView(TokenRefreshView):
 class CustomTokenVerifyView(TokenVerifyView):
     # Add any custom behavior if needed
     pass
+
 
 # Bug with PATCH'ing emails -- refer to Issue #394
 class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -136,7 +121,6 @@ class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
         else:
             # Otherwise, use the slug field
             return get_object_or_404(User, username=lookup_value)
-
 
 
 class MessageView(generics.CreateAPIView):
