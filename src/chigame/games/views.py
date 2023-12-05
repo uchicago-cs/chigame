@@ -9,10 +9,9 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.core.paginator import Paginator
 from django.db.models import Q
-from django.http import HttpResponseForbidden
-from django.http.response import HttpResponseRedirect
 from django.db.models.functions import Lower
 from django.http import HttpResponseForbidden, JsonResponse
+from django.http.response import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render, reverse
 from django.urls import reverse_lazy
 from django.utils import timezone
@@ -21,6 +20,7 @@ from django.utils.timezone import now
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
 from chigame.users.models import User
+
 from .filters import LobbyFilter
 from .forms import GameForm, LobbyForm
 from .models import Game, Lobby, Match, Player, Tournament
@@ -519,11 +519,9 @@ class TournamentCreateView(CreateView):
     def form_valid(self, form):
         user = self.request.user
 
-        response = super().form_valid(form)
         if form.cleaned_data["players"].count() > form.cleaned_data["max_players"]:
             messages.error(self.request, "The number of players cannot exceed the maximum number of players")
             return redirect(reverse_lazy("tournament-create"))
-
 
         # Check if the user is not a staff member and has less than one token
         if not user.is_staff and user.tokens < 1:
@@ -570,7 +568,6 @@ class TournamentUpdateView(UpdateView):
         "players",
     ]
 
-
     def dispatch(self, request, *args, **kwargs):
         # Get the tournament object
         tournament = self.get_object()
@@ -593,12 +590,11 @@ class TournamentUpdateView(UpdateView):
     # Note: we may remove the "matches" field later for the same reason,
     # but we keep it for now because it is convenient for testing.
 
-
     def form_valid(self, form):
         current_tournament = get_object_or_404(Tournament, pk=self.kwargs["pk"])
 
         # Check if the tournament has already started
-        if now() >= current_tournament.start_date:
+        if now() >= current_tournament.tournament_start_date:
             form_players = set(form.cleaned_data["players"])
             current_players = set(current_tournament.players.all())
             if len(form_players - current_players) > 0:  # New players being added
@@ -626,9 +622,11 @@ class TournamentUpdateView(UpdateView):
 
         if len(form_players - current_players) > 0:  # if the players have been added
             if current_tournament.status != "registration open":
-                raise PermissionDenied(
-                    "You cannot add new players to the tournament when it is not in the registration period."
+                messages.error(
+                    self.request,
+                    "You cannot add new players to the tournament when it is not in the registration period.",
                 )
+                return redirect(reverse_lazy("tournament-update", kwargs={"pk": self.kwargs["pk"]}))
         elif (
             len(current_players - form_players) > 0 and current_tournament.status == "tournament in progress"
         ):  # if the players have been removed
