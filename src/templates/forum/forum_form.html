@@ -22,13 +22,13 @@
         const files = e.target.files;
         const [file] = files;
         var trashButton = document.getElementById("trash-button");
+        var imgPreview = document.getElementById("img-preview");
 
-        // Remove the previous image if one is already loaded
-        if (trashButton) {
-          trashButton.click();
-        }
-
-        if (file) {
+        // Replace the previous image if one is already loaded
+        if (trashButton && imgPreview) {
+          imgPreview.src = URL.createObjectURL(file);
+          return;
+        } else if (file) {
           trashButton = document.createElement('button');
           const trashImg = document.createElement('i');
           const imgPreview = document.createElement('img');
