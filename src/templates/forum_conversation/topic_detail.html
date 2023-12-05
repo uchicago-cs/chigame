@@ -1,3 +1,5 @@
+<!--  This file was derived from the following django-machina template.
+https://github.com/ellmetha/django-machina/blob/main/machina/templates/machina/forum_conversation/topic_detail.html-->
 {% extends 'board_base.html' %}
 
 {% load i18n %}
@@ -163,7 +165,13 @@
         likeCountElement.text(`${likeCountInt + voteDelta}`);
 
         // Change the user rating
-        voteContainer.data('user-rating', userRating === 1 ? 0 : 1)
+        if (userRating === 1) {
+          likeCountElement.css('color', '');
+          voteContainer.data('user-rating', 0)
+        } else {
+          likeCountElement.css('color', 'rgb(53, 121, 246)');
+          voteContainer.data('user-rating', 1)
+        }
 
       } else if (vote === "dislike") {
         voteDelta = -1;
@@ -171,6 +179,13 @@
         likeCountElement.text(`${likeCountInt + voteDelta}`);
 
         // Change the user rating
+        if (userRating === -1) {
+          likeCountElement.css('color', '');
+          voteContainer.data('user-rating', 0)
+        } else {
+          likeCountElement.css('color', 'rgb(203, 68, 74)');
+          voteContainer.data('user-rating', -1)
+        }
         voteContainer.data('user-rating', userRating === -1 ? 0 : -1)
       } else {
         return;
@@ -189,6 +204,23 @@
           console.log(`${vote}d!`);
         }
       })
+    });
+
+    $(document).ready(function() {
+      // Get all .vote-container divs
+      var voteContainers = $('.vote-container');
+
+      // Iterate through the selected elements
+      voteContainers.each(function() {
+        // Get the 'data-user-rating' field value
+        var userRating = $(this).data('user-rating');
+
+        // Add styling to the vote counter based on userRating
+        $(this).find('.like-count').css('color',
+          userRating === 1 ? 'rgb(53, 121, 246)' :
+          userRating === -1 ? 'rgb(203, 68, 74)' :
+          '');
+      });
     });
   </script>
 {% endblock content %}
