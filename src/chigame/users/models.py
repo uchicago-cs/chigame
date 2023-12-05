@@ -147,10 +147,10 @@ class NotificationQuerySet(models.QuerySet):
         try:
             actor_content_type = ContentType.objects.get(model=actor._meta.model_name)
             actor_object_id = actor.pk
-            queryset = self.get(actor_content_type=actor_content_type, actor_object_id=actor_object_id, **kwargs)
-            if not include_deleted:
-                queryset = queryset.is_not_deleted()
-            return queryset
+            notification = self.get(actor_content_type=actor_content_type, actor_object_id=actor_object_id, **kwargs)
+            if not include_deleted and not notification.visible:
+                raise Notification.DoesNotExist
+            return notification
 
         except ContentType.DoesNotExist:
             raise ValueError(f"The model {actor.label} is not registered in content type")

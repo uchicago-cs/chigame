@@ -108,6 +108,8 @@
                 <a href="{% url 'users:detail' player.id %}">{{ player.email }}</a>
               {% endif %}
               {% if not forloop.last %}vs.{% endif %}
+            {% empty %}
+              Forfeited
             {% endfor %}
             )
           </p>
