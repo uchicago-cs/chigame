@@ -406,6 +406,12 @@ class TournamentListView(ListView):
         # Additional context can be added if needed
         return context
 
+    def get(self, request, *args, **kwargs):
+        super().get(request, *args, **kwargs)
+        for tournament in self.object_list:
+            tournament.check_and_end_tournament()  # check if the tournament has ended
+        return self.render_to_response(self.get_context_data())
+
     def post(self, request, *args, **kwargs):
         # This method is called when the user clicks the "Join Tournament" or
         # "Withdraw" button
@@ -421,6 +427,9 @@ class TournamentListView(ListView):
             elif success == 2:
                 messages.error(request, "This tournament is full")
                 return redirect(reverse_lazy("tournament-list"))
+            elif success == 3:
+                messages.error(request, "The registration period for this tournament has ended")
+                return redirect(reverse_lazy("tournament-list"))
             else:
                 raise Exception("Invalid return value")
 
@@ -431,6 +440,9 @@ class TournamentListView(ListView):
                 return redirect(reverse_lazy("tournament-list"))
             elif success == 1:
                 messages.error(request, "You have not joined this tournament")
+                return redirect(reverse_lazy("tournament-list"))
+            elif success == 3:
+                messages.error(request, "The registration period for this tournament has ended")
                 return redirect(reverse_lazy("tournament-list"))
             else:
                 raise Exception("Invalid return value")
@@ -447,6 +459,17 @@ class TournamentDetailView(DetailView):
     template_name = "tournaments/tournament_detail.html"
     context_object_name = "tournament"
 
+    def get(self, request, *args, **kwargs):
+        super().get(request, *args, **kwargs)
+        tournament = Tournament.objects.get(id=self.kwargs["pk"])
+        if tournament.matches.count() == 0 and (
+            tournament.status == "registration closed" or tournament.status == "tournament in progress"
+        ):
+            # if the tournament matches have not been created
+            tournament.create_tournaments_brackets()
+        tournament.check_and_end_tournament()  # check if the tournament has ended
+        return self.render_to_response(self.get_context_data())
+
     def post(self, request, *args, **kwargs):
         # This method is called when the user clicks the "Join Tournament" or
         # "Withdraw" button
@@ -462,6 +485,9 @@ class TournamentDetailView(DetailView):
             elif success == 2:
                 messages.error(request, "This tournament is full")
                 return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
+            elif success == 3:
+                messages.error(request, "The registration period for this tournament has ended")
+                return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
             else:
                 raise Exception("Invalid return value")
 
@@ -473,8 +499,20 @@ class TournamentDetailView(DetailView):
             elif success == 1:
                 messages.error(request, "You have not joined this tournament")
                 return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
+            elif success == 3:
+                messages.error(request, "The registration period for this tournament has ended")
+                return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
             else:
                 raise Exception("Invalid return value")
+
+        elif request.POST.get("action") == "join_match":
+            pass  # allow players to join their own matches
+            return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
+
+        elif request.POST.get("action") == "spectate":
+            pass  # allow anyone to spectate
+            return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
+
         else:
             raise ValueError("Invalid action")
 
@@ -508,10 +546,9 @@ class TournamentCreateView(CreateView):
     # overrides the default behavior of the CreateView class.
     def form_valid(self, form):
         response = super().form_valid(form)
-        self.object.create_tournaments_brackets()  # This should be changed later
-        # because the brackets should not be created right after the tournament
-        # is created. Instead, the brackets should be created when the registration
-        # deadline is reached. But for now, we keep it this way for testing.
+        if form.cleaned_data["players"].count() > form.cleaned_data["max_players"]:
+            messages.error(self.request, "The number of players cannot exceed the maximum number of players")
+            return redirect(reverse_lazy("tournament-create"))
 
         # Do something with brackets if needed
         return response
@@ -557,17 +594,27 @@ class TournamentUpdateView(UpdateView):
         # Check if the 'players' field has been modified
         form_players = set(form.cleaned_data["players"])
         current_players = set(current_tournament.players.all())
+
+        if form.cleaned_data["players"].count() > form.cleaned_data["max_players"]:
+            messages.error(self.request, "The number of players cannot exceed the maximum number of players")
+            return redirect(reverse_lazy("tournament-update", kwargs={"pk": self.kwargs["pk"]}))
+
         if len(form_players - current_players) > 0:  # if the players have been added
-            raise PermissionDenied("You cannot add new players to the tournament after it has started.")
-        elif len(current_players - form_players) > 0:  # if the players have been removed
+            if current_tournament.status != "registration open":
+                raise PermissionDenied(
+                    "You cannot add new players to the tournament when it is not in the registration period."
+                )
+        elif (
+            len(current_players - form_players) > 0 and current_tournament.status == "tournament in progress"
+        ):  # if the players have been removed
             removed_players = current_players - form_players  # get the players that have been removed
             for player in removed_players:
                 related_match = current_tournament.matches.get(
                     players__in=[player]
                 )  # get the match that the player is in
+                assert isinstance(related_match, Match)
                 related_match.players.remove(player)
-                if related_match.players.count() == 0:  # if the match is empty, delete it
-                    related_match.delete()
+                # if the match is empty, the match will be displayed as forfeited
 
         # The super class's form_valid method will save the form data to the database
         return super().form_valid(form)
