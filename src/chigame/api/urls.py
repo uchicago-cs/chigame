@@ -16,13 +16,18 @@ lobby_patterns = [
 
 user_patterns = [
     path("", views.UserListView.as_view(), name="api-user-list"),
-    path("<int:pk>/", views.UserDetailView.as_view(), name="api-user-detail"),
+    path("<slug:slug>/", views.UserDetailView.as_view(), name="api-user-detail"),
     path("<int:pk>/friends/", views.UserFriendsAPIView.as_view(), name="api-user-friends"),
+]
+
+tournament_patterns = [
+    path("chat/", views.MessageView.as_view(), name="api-chat-list"),
+    path("chat/feed/", views.MessageFeedView.as_view(), name="api-chat-detail"),
 ]
 
 urlpatterns = [
     path("games/", include(game_patterns)),
     path("lobbies/", include(lobby_patterns)),
     path("users/", include(user_patterns)),
-    path("tournaments/chat/", views.MessageView.as_view(), name="api-chat-list"),
+    path("tournaments/", include(tournament_patterns)) 
 ]

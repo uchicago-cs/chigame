@@ -12,12 +12,16 @@ urlpatterns = [
     path("lobby/<int:pk>/leave", views.lobby_leave, name="lobby-leave"),
     path("lobby/<int:pk>/edit/", views.LobbyUpdateView.as_view(), name="lobby-edit"),
     path("lobby/<int:pk>/delete/", views.LobbyDeleteView.as_view(), name="lobby-delete"),
+    # For AJAX req. See lobby_details.html for invocation.
+    path("lobby/<int:pk>/update_match_status/", views.update_match_status, name="update_match_status"),
     # games
     path("", views.GameListView.as_view(), name="game-list"),
     path("create/", views.GameCreateView.as_view(), name="game-create"),
     path("<int:pk>/edit", views.GameEditView.as_view(), name="game-edit"),
     path("<int:pk>/", views.GameDetailView.as_view(), name="game-detail"),
+    path("bgg_search_by_name/", views.bgg_search_by_name, name="bgg_search_by_name"),
     path("search/", views.search_results, name="game-search-results"),
+    path("<int:pk>/reviews/", views.ReviewListView.as_view(), name="game-review-list"),
     # tournaments
     path("tournaments/", views.TournamentListView.as_view(), name="tournament-list"),
     path("tournaments/<int:pk>/", views.TournamentDetailView.as_view(), name="tournament-detail"),
