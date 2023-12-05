@@ -623,6 +623,10 @@ class TournamentUpdateView(UpdateView):
         # Get the current tournament from the database
         current_tournament = get_object_or_404(Tournament, pk=self.kwargs["pk"])
 
+        # the tournament cannot be updated if it has ended
+        if current_tournament.status == "tournament ended":
+            raise PermissionDenied("You cannot update a tournament that has ended.")
+
         # Check if the 'players' field has been modified
         form_players = set(form.cleaned_data["players"])
         current_players = set(current_tournament.players.all())
