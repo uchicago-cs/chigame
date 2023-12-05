@@ -18,6 +18,7 @@ from chigame.api.serializers import (
 from chigame.games.models import Game, Lobby, Message, User
 from chigame.users.models import Group, UserProfile
 
+
 # Helper function to get user from slug
 def get_user(lookup_value):
     # If the lookup_value is an integer, use the id field
@@ -77,7 +78,7 @@ class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
         lookup_value = self.kwargs.get(self.lookup_field)
         return get_user(lookup_value)
 
-        
+
 class MessageView(generics.CreateAPIView):
     queryset = Message.objects.all()
     serializer_class = MessageSerializer
