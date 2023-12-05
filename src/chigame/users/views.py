@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models import Q
+from django.http import HttpResponseNotFound
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
@@ -54,13 +55,16 @@ user_redirect_view = UserRedirectView.as_view()
 
 @login_required
 def user_list(request):
-    users = User.objects.all()
-    table = UserTable(users)
-    context = {"users": users, "table": table}
+    if request.user.is_staff:
+        users = User.objects.all()
+        table = UserTable(users)
+        context = {"users": users, "table": table}
 
-    # Add information about top ranking users, total points collected, etc.
+        # Add information about top ranking users, total points collected, etc.
 
-    return render(request, "users/user_list.html", context)
+        return render(request, "users/user_list.html", context)
+    else:
+        return HttpResponseNotFound("Access to link is restricted to admins")
 
 
 @login_required

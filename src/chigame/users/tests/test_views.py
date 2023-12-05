@@ -11,8 +11,8 @@ from django.utils.translation import gettext_lazy as _
 
 from chigame.users.forms import UserAdminChangeForm
 from chigame.users.models import User
-from chigame.users.tests.factories import GameFactory, TournamentFactory, UserFactory
-from chigame.users.views import UserRedirectView, UserUpdateView, user_detail_view
+from chigame.users.tests.factories import UserFactory
+from chigame.users.views import UserRedirectView, UserUpdateView, user_detail_view, user_list
 
 pytestmark = pytest.mark.django_db
 
@@ -96,35 +96,25 @@ class TestUserDetailView:
         assert response.url == f"{login_url}?next=/fake-url/"
 
 
-class TestAdminUserDetailView:
-    def setUp(self):
-        self.staff_user = User.objects.create_user(
-            username="staffuser", password="password", email="staffuser@example.com", is_staff=True
-        )
-        games = GameFactory.create_batch(1)
-        tournaments = TournamentFactory.create_batch(1)
-        assert games != tournaments
+@pytest.mark.django_db
+def test_admin_user_list_view(client, rf: RequestFactory):
+    request = rf.get("user-list")
 
-    # def test_create_tournament_link_accessible_by_staff(self, client):
-    #     # Log in as the staff user
-    #     client.login(username='staffuser', password='password', email='staffuser@example.com')
+    request.user = User.objects.create_user(is_staff=True, name="testuser", password="testpass", email="test@pass.com")
+    client.login(email="test@pass.com", password="testpass")
 
-    #     # Get the tournaments page
-    #     response = client.get(reverse('tournament-list'))
+    response = user_list(request)
 
-    #     # Check if the "Create a new tournament" link is present in the response
-    #     assert '<a href="{}">Create a new tournament</a>'.format(reverse('tournament-create')) in response
+    assert response.status_code == 200
 
-    #     # Check if the status code is 200 (OK)
-    #     assert response.status_code == 200
 
-    # def test_admin_user_list_view(self, user: User, rf:RequestFactory, client):
-    #     request = rf.get("games/tournaments")
-    #     request.user = UserFactory()
-    #     user.is_staff = True
-    #     response = client.get(reverse("tournament-list"))
+@pytest.mark.django_db
+def test_nonadmin_user_list_view(client, rf: RequestFactory):
+    request = rf.get("user-list")
 
-    #     self.assertContains(response,
-    #     '<a href="{}">Create a new tournament</a>'.format(reverse('tournament-create')))
-    #     print(response.content)
-    #     assert "tournaments" in response.context
+    request.user = User.objects.create_user(name="testuser", password="testpass", email="test@pass.com")
+    client.login(email="test@pass.com", password="testpass")
+
+    response = user_list(request)
+
+    assert response.status_code == 404

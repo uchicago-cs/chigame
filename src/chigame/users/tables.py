@@ -9,6 +9,6 @@ class UserTable(tables.Table):
     class Meta:
         model = User
         template_name = "django_tables2/bootstrap.html"
-        fields = ["name", "first_name", "last_name"]
+        fields = ["name", "first_name", "last_name", "email"]
 
         # Add information about top ranking users, total points collected, etc.
