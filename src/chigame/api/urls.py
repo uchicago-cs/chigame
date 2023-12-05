@@ -60,5 +60,4 @@ urlpatterns = [
     path("users/", include(user_patterns)),
     path("tournaments/", include(tournament_patterns)),
     path("groups/", include(group_patterns)),
-
 ]
