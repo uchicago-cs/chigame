@@ -109,7 +109,7 @@ LOCAL_APPS = [
     # Additional apps go here
     "chigame.api",
     "chigame.forums.base",
-    # Overridden django machina apps
+    # Overridden django-machina apps
     "chigame.forums.forum_conversation",
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
