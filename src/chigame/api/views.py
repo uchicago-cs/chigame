@@ -22,7 +22,6 @@ from chigame.api.serializers import (
     TournamentSerializer,
     UserSerializer,
 )
-
 from chigame.games.models import Game, Lobby, Message, Tournament
 from chigame.users.models import Group, User, UserProfile
 
