@@ -23,7 +23,7 @@ from chigame.users.models import User
 
 from .filters import LobbyFilter
 from .forms import GameForm, LobbyForm
-from .models import Game, Lobby, Match, Player, Tournament
+from .models import Chat, Game, Lobby, Match, Player, Tournament
 from .tables import LobbyTable
 
 
@@ -541,9 +541,16 @@ class TournamentCreateView(CreateView):
         players = form.cleaned_data["players"]
         tournament.players.add(*players)
 
-        # Redirect to the tournament's detail page
+        # Auto-create a chat for this respective tournament
+        chat = Chat(tournament=tournament)
+        chat.save()
+
+        # (Optional) Insert bracket-related logic here if needed
+
+        # Redirect to the tournament's detail page or another appropriate response
         self.object = tournament
         return HttpResponseRedirect(self.get_success_url())
+
 
     def get_success_url(self):
         return reverse("tournament-detail", kwargs={"pk": self.object.pk})
