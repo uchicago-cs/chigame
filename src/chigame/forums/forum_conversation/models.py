@@ -29,4 +29,7 @@ class Vote(models.Model):
         constraints = [models.UniqueConstraint(fields=["poster", "post"], name="unique_rating")]
 
 
+# This import must be at the bottom:
+# https://django-machina.readthedocs.io/en/latest/customization/recipes/overriding_models.html#defining-a-new-custom-model
+# `noqa` means "no quality assurance." It tells the linter to not worry about this line
 from machina.apps.forum_conversation.models import *  # noqa
