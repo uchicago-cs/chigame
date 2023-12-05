@@ -14,7 +14,7 @@ from chigame.users.views import (
     send_friend_invitation,
     user_detail_view,
     user_inbox_view,
-    user_list,
+    #user_list,
     user_profile_detail_view,
     user_redirect_view,
     user_search_results,
