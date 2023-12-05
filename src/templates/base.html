@@ -266,7 +266,6 @@
                   window.location.href = ui.item.url;
                 }
               });
-
             } else if (query_type.value == "users") {
               search_bar.action = "{% url 'users:user-search-results' %}";
               $("#query-input").autocomplete({
@@ -282,8 +281,6 @@
           }
 
           updateFormAction();
-
-
           query_type.addEventListener("change", updateFormAction);
 
           advancedSearchButton.addEventListener("click", function(event) {
