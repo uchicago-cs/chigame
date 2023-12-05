@@ -22,9 +22,8 @@ from chigame.api.serializers import (
     UserProfileSerializer,
     UserSerializer,
 )
-
 from chigame.games.models import Game, Lobby, Message, Tournament
-from chigame.users.models import FriendInvitation, User, UserProfile, Group
+from chigame.users.models import FriendInvitation, Group, User, UserProfile
 
 
 def get_user(lookup_value):
@@ -34,7 +33,6 @@ def get_user(lookup_value):
     else:
         # Otherwise, use the slug field
         return get_object_or_404(User, username=lookup_value)
-
 
 
 class GameListView(generics.ListCreateAPIView):
@@ -133,7 +131,7 @@ class MessageView(generics.CreateAPIView):
     queryset = Message.objects.all()
     serializer_class = MessageSerializer
 
-    
+
 class SendFriendInvitationView(APIView):
     def post(self, request, *args, **kwargs):
         sender_pk = self.kwargs["sender_pk"]
@@ -205,6 +203,7 @@ class UserProfileUpdateView(APIView):
             return Response(UserProfileSerializer(updated_profile).data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 class GroupMembersView(generics.ListAPIView):
     serializer_class = UserSerializer
 
@@ -223,7 +222,6 @@ class UserGroupsView(generics.ListAPIView):
         user_id = get_user(lookup_value).id
         groups = Group.objects.filter(members__pk=user_id)
         return groups
-
 
 
 class MessageFeedView(APIView):

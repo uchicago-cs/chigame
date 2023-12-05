@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from chigame.games.models import Chat, Game, Lobby, Message, Tournament, User
-from chigame.users.models import FriendInvitation, UserProfile, Group
+from chigame.users.models import FriendInvitation, Group, UserProfile
 
 
 class GameSerializer(serializers.ModelSerializer):
