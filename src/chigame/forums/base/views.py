@@ -1,5 +1,6 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
+from django.urls import reverse
 from django.views.generic import CreateView
 from machina.apps.forum.models import Forum
 
@@ -12,4 +13,4 @@ class ForumCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     fields = ["name", "description", "image", "type"]
 
     def get_success_url(self):
-        return "/forums"
+        return reverse("forum:index")

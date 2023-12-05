@@ -18,9 +18,12 @@ urlpatterns = [
     # urls to handle api requests
     path("api/", include("chigame.api.urls")),
     path("games/", include("chigame.games.urls")),
+    path("account/", include("django.contrib.auth.urls")),
     # Django-machina forum
     # https://django-machina.readthedocs.io/en/latest/getting_started.html#urls-configuration
     path("forums/", include(machina_urls)),
+    # This is necessary in order to add our own pages under `/forums`
+    # i.e. CRUD pages for django machina models
     path("forums/", include("chigame.forums.base.urls")),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

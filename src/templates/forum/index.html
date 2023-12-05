@@ -1,9 +1,9 @@
 {% extends 'machina/forum/index.html' %}
 
 {% block content %}
-  <div class="d-flex justify-content-end">
+  {% if user.is_superuser %}
     <a class="btn btn-primary right-0"
        href="{% url 'forums:forum-create' %}">Create new forum</a>
-  </div>
+  {% endif %}
   {{ block.super }}
 {% endblock content %}
