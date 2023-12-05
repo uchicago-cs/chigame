@@ -107,9 +107,6 @@
       <input type="hidden" name="action" value="withdraw" />
       <button type="submit" id="Withdraw">Withdraw</button>
     </form>
-    <a href="{% url 'tournament-chat' tournament.id %}">
-      <button>{{ tournament.name }} Chat</button>
-    </a>
   {% endif %}
   {% if tournament.status == "tournament in progress" %}
     {% if user.is_authenticated and user in tournament.get_all_players %}
@@ -126,6 +123,11 @@
       <input type="hidden" name="action" value="spectate" />
       <button type="submit" id="Spectate">Spectate</button>
     </form>
+  {% endif %}
+  {% if user.is_authenticated %}
+    <a href="{% url 'tournament-chat' tournament.id %}">
+      <button>{{ tournament.name }} Chat</button>
+    </a>
   {% endif %}
   <!-- You can add more fields as needed -->
   {% if user.is_staff %}
