@@ -7,6 +7,7 @@ from chigame.users.views import (
     decline_friend_invitation,
     invite_to_game,
     invite_to_tournament,
+    friend_list_view,
     notification_detail,
     remove_friend,
     send_friend_invitation,
@@ -38,6 +39,7 @@ urlpatterns = [
     path("user_history/<int:pk>", views.user_history, name="user-history"),
     path("search-results", view=user_search_results, name="user-search-results"),
     path("inbox/<int:pk>", view=user_inbox_view, name="user-inbox"),
+    path("profile/<int:pk>/friends", view=friend_list_view, name="friend-list"),
     path("inbox/<int:pk>/deleted_notifications", views.deleted_notifications_view, name="deleted-notifications"),
     path("notification_detail/<int:pk>", view=notification_detail, name="notification-detail"),
     path(
