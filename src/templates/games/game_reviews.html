@@ -9,7 +9,12 @@
     <ul>
       {% for review in reviews %}
         <li>
-          <p>{{ review.user }} rated it {{ review.rating }}/5:</p>
+          {% if review.title %}<h3>{{ review.title }}</h3>{% endif %}
+          <p>
+            {{ review.user }}
+            {% if review.rating is not None %}rated it {{ review.rating }}/5.00{% endif %}
+            :
+          </p>
           <p>{{ review.review }}</p>
           <hr />
         </li>
