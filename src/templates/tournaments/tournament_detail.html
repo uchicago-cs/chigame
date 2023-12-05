@@ -124,6 +124,11 @@
       <button type="submit" id="Spectate">Spectate</button>
     </form>
   {% endif %}
+  {% if user.is_authenticated %}
+    <a href="{% url 'tournament-chat' tournament.id %}">
+      <button>{{ tournament.name }} Chat</button>
+    </a>
+  {% endif %}
   <!-- You can add more fields as needed -->
   {% if user.is_staff %}
     <p>
