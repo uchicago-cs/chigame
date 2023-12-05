@@ -29,5 +29,5 @@ urlpatterns = [
     path("games/", include(game_patterns)),
     path("lobbies/", include(lobby_patterns)),
     path("users/", include(user_patterns)),
-    path("tournaments/", include(tournament_patterns)) 
+    path("tournaments/", include(tournament_patterns)),
 ]
