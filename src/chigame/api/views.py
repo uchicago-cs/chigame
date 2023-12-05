@@ -6,7 +6,7 @@ from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, status
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -19,10 +19,9 @@ from chigame.api.serializers import (
     LobbySerializer,
     MessageFeedSerializer,
     MessageSerializer,
-    TournamentSerializer,
     UserSerializer,
 )
-from chigame.games.models import Game, Lobby, Message, Tournament
+from chigame.games.models import Game, Lobby, Message
 from chigame.users.models import Group, User, UserProfile
 
 
@@ -58,28 +57,18 @@ class UserListView(generics.ListAPIView):
 
 class UserRegistrationView(APIView):
     permission_classes = [AllowAny]
+    serializer_class = UserSerializer
 
     def post(self, request, *args, **kwargs):
-        serializer_class = UserSerializer(data=request.data)
-        if serializer_class.is_valid():
-            user = serializer_class.save()
+        serializer_instance = self.serializer_class(data=request.data)
+        if serializer_instance.is_valid():
+            user = serializer_instance.save()
             UserProfile.objects.create(user=user, display_name=user.name)
             refresh = TokenModel.objects.create(user=user)
             access_token = str(refresh.key)
 
             return Response({"access_token": access_token}, status=status.HTTP_201_CREATED)
-        return Response(serializer_class.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class TournamentCreateView(generics.CreateAPIView):
-    queryset = Tournament.objects.all()
-    serializer_class = TournamentSerializer
-    permission_classes = [IsAdminUser]
-
-
-class TournamentListView(generics.ListAPIView):
-    queryset = Tournament.objects.all()
-    serializer_class = TournamentSerializer
+        return Response(serializer_instance.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserFriendsAPIView(generics.RetrieveAPIView):

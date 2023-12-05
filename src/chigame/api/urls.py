@@ -5,8 +5,6 @@ from . import views
 urlpatterns = [
     path("games/", views.GameListView.as_view(), name="api-game-list"),
     path("games/<int:pk>/", views.GameDetailView.as_view(), name="api-game-detail"),
-    path("tournaments/create/", views.TournamentCreateView.as_view(), name="create-tournament"),
-    path("tournaments/", views.TournamentListView.as_view(), name="tournament-list"),
     path("register/", views.UserRegistrationView.as_view(), name="user-registration"),
     path("lobbies/", views.LobbyListView.as_view(), name="api-lobby-list"),
     path("lobbies/<int:pk>/", views.LobbyDetailView.as_view(), name="api-lobby-detail"),
