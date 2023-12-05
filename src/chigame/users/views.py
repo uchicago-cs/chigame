@@ -221,6 +221,8 @@ def unfriend_users(user1, user2):
     profile1.friends.remove(user2)
     profile2.friends.remove(user1)
     friend_invite = FriendInvitation.objects.get_by_users(user1, user2)
+    notification = Notification.objects.get_by_actor(friend_invite)
+    notification.mark_as_deleted()
     if friend_invite.accepted:
         friend_invite.delete()
     else:
@@ -284,6 +286,9 @@ def notification_detail(request, pk):
             messages.error(request, "You can not redirect from this notification")
             return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
         notification.mark_as_read()
+        if not notification.actor:  # when friends are removed, invitation(actor) is deleted
+            messages.error(request, "Something went wrong. This notification is invalid")
+            return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
         if notification.type == Notification.FRIEND_REQUEST:
             return redirect(reverse("users:user-profile", kwargs={"pk": notification.actor.sender.pk}))
     except Notification.DoesNotExist:
