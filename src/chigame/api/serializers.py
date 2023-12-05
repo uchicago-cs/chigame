@@ -43,7 +43,6 @@ class LobbySerializer(serializers.ModelSerializer):
         )
 
 
-
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
 
@@ -60,7 +59,6 @@ class UserSerializer(serializers.ModelSerializer):
         )
 
         return user
-
 
 
 class MessageSerializer(serializers.ModelSerializer):
