@@ -1,15 +1,19 @@
 import django_tables2 as tables
 
-from .models import User, UserProfile
+from .models import User
 
 
 class FriendsTable(tables.Table):
-    name = tables.Column(verbose_name="Friend's Name")
+    email = tables.Column(
+        verbose_name="Email",
+        accessor="email",  # Access display_name through the User relationship
+        linkify=("users:user-profile", {"pk": tables.A("pk")}),
+    )
 
     class Meta:
-        model = UserProfile  # Referencing the UserProfile model
+        model = User  # Referencing the UserProfile model
         template_name = "django_tables2/bootstrap.html"
-        fields = [""]  # Adjust fields to show relevant information from the UserProfile model
+        fields = ["email"]  # Adjust fields to show relevant information from the UserProfile model
 
 
 class UserTable(tables.Table):
@@ -18,6 +22,6 @@ class UserTable(tables.Table):
     class Meta:
         model = User
         template_name = "django_tables2/bootstrap.html"
-        fields = ["name", "email"]
+        fields = ["name", "first_name", "last_name", "email"]
 
         # Add information about top ranking users, total points collected, etc.
