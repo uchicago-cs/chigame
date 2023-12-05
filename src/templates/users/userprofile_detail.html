@@ -30,6 +30,8 @@
                 <p>Bio: {{ object.bio }}</p>
                 {% if object.user == request.user %}
                   <a href="{% url 'users:update' %}" class="btn btn-primary">Edit Profile</a>
+                  <a href="{% url 'users:detail' request.user.pk %}"
+                     class="btn btn-primary">Account</a>
                   <a href="{% url 'users:friend-list' object.user.id %}"
                      class="btn btn-primary">Friend List</a>
                 {% elif is_friend %}
