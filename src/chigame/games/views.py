@@ -19,10 +19,8 @@ from django.views.generic import CreateView, DeleteView, DetailView, ListView, U
 from django.views.generic.edit import FormMixin
 
 from .filters import LobbyFilter
-
 from .forms import GameForm, LobbyForm, ReviewForm
-from .models import Chat, Game, Lobby, Match, Player, Tournament
-
+from .models import Chat, Game, Lobby, Match, Player, Review, Tournament
 from .tables import LobbyTable
 
 
