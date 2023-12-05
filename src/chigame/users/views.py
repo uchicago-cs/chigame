@@ -16,7 +16,6 @@ from chigame.games.views import lobby_join
 
 from .models import FriendInvitation, GameInvitation, Notification, TournamentInvitation, UserProfile
 from .tables import FriendsTable, UserTable
-from chigame.games.views import lobby_join
 
 User = get_user_model()
 
@@ -233,6 +232,7 @@ def decline_friend_invitation(request, pk):
     except FriendInvitation.DoesNotExist:
         messages.error(request, "This friend invitation does not exist")
     return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
+
 
 def user_search_results(request):
     query_input = request.GET.get("q")
