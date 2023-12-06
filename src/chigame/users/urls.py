@@ -33,7 +33,7 @@ urlpatterns = [
     path("remove_friend/<int:pk>", view=remove_friend, name="remove-friend"),
     path("cancel_friend_invitation/<int:pk>", view=cancel_friend_invitation, name="cancel-friend-invitation"),
     path("invite_to_game/<int:pk>/<int:match_pk>/", view=invite_to_game, name="invite-to-game"),
-    path("invite_to_tournament/<int:pk>/<int:match_pk>/", view=invite_to_tournament, name="invite-to-tournament"),
+    path("invite_to_tournament/<int:pk>/<int:tournament_pk>/", view=invite_to_tournament, name="invite-to-tournament"),
     path("user-detail/", views.user_detail_view, name="user-detail"),
     path("user-list/", views.user_list, name="user-list"),
     path("accept_friend_invitation/<int:pk>", view=accept_friend_invitation, name="accept-friend-invitation"),

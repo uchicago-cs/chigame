@@ -185,11 +185,11 @@ def cancel_friend_invitation(request, pk):
 
 
 @login_required
-def invite_to_game(request, pk, match_id):
+def invite_to_game(request, pk, match_pk):
     try:
         sender = get_object_or_404(User, pk=request.user.id)
         receiver = get_object_or_404(User, pk=pk)
-        match = get_object_or_404(Match, pk=match_id)
+        match = get_object_or_404(Match, pk=match_pk)
         GameInvitation.objects.create(sender=sender, receiver=receiver, match=match)
         messages.success(request, "Invitation to game sent successfully.")
     except Exception as e:
@@ -198,11 +198,11 @@ def invite_to_game(request, pk, match_id):
 
 
 @login_required
-def invite_to_tournament(request, pk, tournament_id):
+def invite_to_tournament(request, pk, tournament_pk):
     try:
         sender = get_object_or_404(User, pk=request.user.id)
         receiver = get_object_or_404(User, pk=pk)
-        tournament = get_object_or_404(Tournament, pk=tournament_id)
+        tournament = get_object_or_404(Tournament, pk=tournament_pk)
         TournamentInvitation.objects.create(sender=sender, receiver=receiver, tournament=tournament)
         messages.success(request, "Invitation to tournament sent successfully.")
     except Exception as e:
