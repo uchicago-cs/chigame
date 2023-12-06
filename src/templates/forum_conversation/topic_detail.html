@@ -7,6 +7,15 @@ https://github.com/ellmetha/django-machina/blob/main/machina/templates/machina/f
 {% load forum_member_tags %}
 {% load forum_permission_tags %}
 
+{% block css %}
+  {{ block.super }}
+  <style>
+    .vote-container span {
+      min-width: 60px;
+      text-align: center;
+    }
+  </style>
+{% endblock css %}
 {% block sub_title %}
   {{ topic.subject }}
 {% endblock sub_title %}
@@ -86,7 +95,7 @@ https://github.com/ellmetha/django-machina/blob/main/machina/templates/machina/f
                   <button class="like-button btn btn-lg" type="submit" name="rate" value="like">
                     <i class="far fa-thumbs-up"></i>
                   </button>
-                  <span class="like-count fas" id="like-count">{{ post.rating }}</span>
+                  <span class="like-count h5 mb-0" id="like-count">{{ post.rating }}</span>
                   <button class="dislike-button btn btn-lg"
                           type="submit"
                           name="rate"
