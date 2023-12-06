@@ -15,8 +15,11 @@ from django.shortcuts import get_object_or_404, redirect, render, reverse
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.utils.decorators import method_decorator
+from django.utils.timezone import now
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 from django.views.generic.edit import FormMixin
+
+from chigame.users.models import User
 
 from .filters import LobbyFilter
 from .forms import GameForm, LobbyForm, ReviewForm
@@ -397,14 +400,16 @@ def staff_required(view_func):
 
 class TournamentListView(ListView):
     model = Tournament
-    queryset = Tournament.objects.prefetch_related("matches").all()
     template_name = "tournaments/tournament_list.html"
     context_object_name = "tournament_list"
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        # Additional context can be added if needed
-        return context
+    def get_queryset(self):
+        # If the user is staff, show all tournaments
+        if self.request.user.is_staff:
+            return Tournament.objects.prefetch_related("matches").all()
+
+        # For non-staff users, show only tournaments they are part of
+        return Tournament.objects.prefetch_related("matches").filter(players=self.request.user)
 
     def get(self, request, *args, **kwargs):
         super().get(request, *args, **kwargs)
@@ -480,6 +485,12 @@ class TournamentDetailView(DetailView):
     def get(self, request, *args, **kwargs):
         super().get(request, *args, **kwargs)
         tournament = Tournament.objects.get(id=self.kwargs["pk"])
+        self.object = self.get_object()
+
+        if not request.user.is_staff and request.user not in tournament.players.all():
+            messages.error(request, "You are not authorized to view this tournament.")
+            return redirect("tournament-list")
+
         if tournament.matches.count() == 0 and (
             tournament.status == "registration closed" or tournament.status == "tournament in progress"
         ):
@@ -545,7 +556,6 @@ class TournamentDetailView(DetailView):
             raise ValueError("Invalid action")
 
 
-@method_decorator(staff_required, name="dispatch")
 class TournamentCreateView(CreateView):
     model = Tournament
     template_name = "tournaments/tournament_create.html"
@@ -563,33 +573,46 @@ class TournamentCreateView(CreateView):
         "num_winner",
         "players",  # This field should be removed in the production version. For testing only.
     ]
-    # Note: "winner" is not included in the fields because it is not
-    # supposed to be set by the user. It will be set automatically
-    # when the tournament is over.
-    # Note: the "matches" field is not included in the fields because
-    # it is not supposed to be set by the user. It will be set automatically
-    # by the create tournament brackets mechanism.
 
-    # This method is called when valid form data has been POSTed. It
-    # overrides the default behavior of the CreateView class.
     def form_valid(self, form):
-        response = super().form_valid(form)
+        user = self.request.user
+
         if form.cleaned_data["players"].count() > form.cleaned_data["max_players"]:
             messages.error(self.request, "The number of players cannot exceed the maximum number of players")
             return redirect(reverse_lazy("tournament-create"))
 
+        # Check if the user is not a staff member and has less than one token
+        if not user.is_staff and user.tokens < 1:
+            messages.error(self.request, "You do not have enough tokens to create a tournament.")
+            return redirect("tournament-list")
+
+        # If the user is not staff, deduct a token
+        if not user.is_staff:
+            user.tokens -= 1
+            user.save()
+
+        # Save the form instance but don't commit to the database yet
+        tournament = form.save(commit=False)
+        tournament.created_by = user
+        tournament.save()
+
+        players = form.cleaned_data["players"]
+        tournament.players.add(*players)
+
         # Auto-create a chat for this respective tournament
-        chat = Chat(tournament=self.object)
+        chat = Chat(tournament=tournament)
         chat.save()
 
-        # Do something with brackets if needed
-        return response
+        # (Optional) Insert bracket-related logic here if needed
+
+        # Redirect to the tournament's detail page or another appropriate response
+        self.object = tournament
+        return HttpResponseRedirect(self.get_success_url())
 
     def get_success_url(self):
-        return reverse_lazy("tournament-detail", kwargs={"pk": self.object.pk})
+        return reverse("tournament-detail", kwargs={"pk": self.object.pk})
 
 
-@method_decorator(staff_required, name="dispatch")
 class TournamentUpdateView(UpdateView):
     # Note: players should not be allowed to join a tournament after
     # it has started, so it is discouraged (but still allowed) to add
@@ -606,9 +629,21 @@ class TournamentUpdateView(UpdateView):
         "rules",
         "draw_rules",
         "num_winner",
-        "matches",
         "players",
     ]
+
+    def dispatch(self, request, *args, **kwargs):
+        # Get the tournament object
+        tournament = self.get_object()
+
+        # Check if the current user is the creator of the tournament
+        if tournament.created_by != request.user and not request.user.is_staff:
+            messages.error(self.request, "You do not have permission to edit this tournament.")
+            return redirect("tournament-list", pk=self.kwargs["pk"])
+
+        # Continue with the normal flow
+        return super().dispatch(request, *args, **kwargs)
+
     # Note: the "registration_start_date" and "registration_end_date",
     # "tournament_start_date" and "tournament_end_date" fields are not
     # included because they are not supposed to be updated once the tournament is created.
@@ -620,44 +655,68 @@ class TournamentUpdateView(UpdateView):
     # but we keep it for now because it is convenient for testing.
 
     def form_valid(self, form):
-        # Get the current tournament from the database
         current_tournament = get_object_or_404(Tournament, pk=self.kwargs["pk"])
-
-        # the tournament cannot be updated if it has ended
-        if current_tournament.status == "tournament ended":
-            messages.error(self.request, "You cannot update a tournament that has ended.")
-            return redirect(reverse_lazy("tournament-detail", kwargs={"pk": self.kwargs["pk"]}))
+        # Determine if the user is staff or the creator of the tournament
+        is_staff = self.request.user.is_staff
 
         # Check if the 'players' field has been modified
         form_players = set(form.cleaned_data["players"])
         current_players = set(current_tournament.players.all())
 
+        # Prevent non-staff from modifying 'players' if there are changes
+        if form_players != current_players and not is_staff:
+            messages.error(self.request, "You do not have permission to modify players.")
+            return redirect("tournament-detail", pk=self.kwargs["pk"])
+
+        # Get the set of players before and after the form submission
+        # the tournament cannot be updated if it has ended
+        if current_tournament.status == "tournament ended":
+            messages.error(self.request, "You cannot update a tournament that has ended.")
+            return redirect(reverse_lazy("tournament-detail", kwargs={"pk": self.kwargs["pk"]}))
+
+        # Check if new players are being added
+        new_players = form_players - current_players
+        if new_players:
+            # Allow only staff to add new players if the tournament has started
+            if now() >= current_tournament.tournament_start_date and not is_staff:
+                messages.error(self.request, "You cannot add new players to the tournament after it has started.")
+                return redirect("tournament-detail", pk=self.kwargs["pk"])
+
+        # Handle player removal
+        if len(current_players - form_players) > 0:  # Players have been removed
+            removed_players = current_players - form_players
+            for player in removed_players:
+                # Handle multiple matches for a player
+                related_matches = current_tournament.matches.filter(players__in=[player])
+                for match in related_matches:
+                    match.players.remove(player)
+                    if match.players.count() == 0:  # if the match is empty, delete it
+                        match.delete()
+
+        # Check for exceeding maximum number of players
         if form.cleaned_data["players"].count() > form.cleaned_data["max_players"]:
             messages.error(self.request, "The number of players cannot exceed the maximum number of players")
             return redirect(reverse_lazy("tournament-update", kwargs={"pk": self.kwargs["pk"]}))
 
-        if len(form_players - current_players) > 0:  # if the players have been added
-            if current_tournament.status != "registration open":
-                raise PermissionDenied(
-                    "You cannot add new players to the tournament when it is not in the registration period."
-                )
-        elif (
-            len(current_players - form_players) > 0 and current_tournament.status == "tournament in progress"
-        ):  # if the players have been removed
-            removed_players = current_players - form_players  # get the players that have been removed
-            for player in removed_players:
-                related_match = current_tournament.matches.get(
-                    players__in=[player]
-                )  # get the match that the player is in
-                assert isinstance(related_match, Match)
-                related_match.players.remove(player)
-                # if the match is empty, the match will be displayed as forfeited
-
-        # The super class's form_valid method will save the form data to the database
+        # Save the form data to the database using the superclass's method
+        # This allows updating of other fields by the creator or staff, regardless of the tournament's status
         return super().form_valid(form)
 
     def get_success_url(self):
-        return reverse_lazy("tournament-detail", kwargs={"pk": self.object.pk})
+        return reverse("tournament-detail", kwargs={"pk": self.object.pk})
+
+
+def distribute_tokens():
+    # Placeholder for future date check
+    # thirty_days_ago = datetime.now() - timedelta(days=30)
+    # users = User.objects.filter(tokens__lt=3, last_token_distribution__lt=thirty_days_ago)
+
+    users = User.objects.filter(tokens__lt=3)
+    for user in users:
+        # Add future logic for updating last_token_distribution
+        # user.last_token_distribution = datetime.now()
+        user.tokens += 1
+        user.save()
 
 
 @method_decorator(staff_required, name="dispatch")

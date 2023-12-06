@@ -122,6 +122,17 @@ class MessageView(generics.CreateAPIView):
     serializer_class = MessageSerializer
 
 
+class GroupListView(generics.ListCreateAPIView):
+    queryset = Group.objects.all()
+    serializer_class = GroupSerializer
+    pagination_class = PageNumberPagination
+
+
+class GroupDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Group.objects.all()
+    serializer_class = GroupSerializer
+
+
 class GroupMembersView(generics.ListAPIView):
     serializer_class = UserSerializer
 
