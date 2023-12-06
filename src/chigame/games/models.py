@@ -355,7 +355,7 @@ class Tournament(models.Model):
     def get_all_players(self):
         return self.players.all()
 
-    def set_archive(self, archive):
+    def set_archive(self, archive: bool):
         """
         Sets the archive field of the tournament. The tournament can only be archived if it has ended.
         """

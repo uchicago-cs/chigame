@@ -9,13 +9,24 @@ from rest_framework.views import APIView
 from chigame.api.filters import GameFilter
 from chigame.api.serializers import (
     GameSerializer,
+    GroupSerializer,
     LobbySerializer,
     MessageFeedSerializer,
     MessageSerializer,
     UserSerializer,
 )
 from chigame.games.models import Game, Lobby, Message, User
-from chigame.users.models import UserProfile
+from chigame.users.models import Group, UserProfile
+
+
+# Helper function to get user from slug
+def get_user(lookup_value):
+    # If the lookup_value is an integer, use the id field
+    if lookup_value.isdigit():
+        return get_object_or_404(User, pk=lookup_value)
+    else:
+        # Otherwise, use the slug field
+        return get_object_or_404(User, username=lookup_value)
 
 
 class GameListView(generics.ListCreateAPIView):
@@ -65,18 +76,32 @@ class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     def get_object(self):
         lookup_value = self.kwargs.get(self.lookup_field)
-
-        # If the lookup_value is an integer, use the id field
-        if lookup_value.isdigit():
-            return get_object_or_404(User, pk=lookup_value)
-        else:
-            # Otherwise, use the slug field
-            return get_object_or_404(User, username=lookup_value)
+        return get_user(lookup_value)
 
 
 class MessageView(generics.CreateAPIView):
     queryset = Message.objects.all()
     serializer_class = MessageSerializer
+
+
+class GroupMembersView(generics.ListAPIView):
+    serializer_class = UserSerializer
+
+    def get_queryset(self):
+        group_id = self.kwargs["pk"]
+        group = Group.objects.get(pk=group_id)
+        return group.members.all()
+
+
+class UserGroupsView(generics.ListAPIView):
+    serializer_class = GroupSerializer
+    lookup_field = "slug"
+
+    def get_queryset(self):
+        lookup_value = self.kwargs.get(self.lookup_field)
+        user_id = get_user(lookup_value).id
+        groups = Group.objects.filter(members__pk=user_id)
+        return groups
 
 
 class MessageFeedView(APIView):

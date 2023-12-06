@@ -8,15 +8,15 @@
         href="{% static 'tournament_styles.css' %}" />
 {% endblock extrahead %}
 {% block content %}
-  <h1>All Tournaments</h1>
+  <h1>Archived Tournaments</h1>
   <form method="post">
     {% csrf_token %}
     <input type="hidden" name="tournament_id" value="{{ tournament.id }}" />
-    <input type="hidden" name="action" value="switch_archive" />
-    <button type="submit">Switch to Archived Tournament List</button>
+    <input type="hidden" name="action" value="switch_all" />
+    <button type="submit">Switch to All Tournament List</button>
   </form>
   <ul>
-    {% for tournament in tournament_list %}
+    {% for tournament in archived_tournament_list %}
       <li>
         <div class="tournament-header">
           <h2 class="tournament-name">
@@ -117,20 +117,10 @@
             <button type="submit" id="Withdraw">Withdraw</button>
           </form>
         {% endif %}
-        {% if user.is_authenticated %}
-          <a href="{% url 'tournament-chat' tournament.id %}">
-            <button>{{ tournament.name }} Chat</button>
-          </a>
-        {% endif %}
         <!-- You can add more fields as needed -->
       </li>
     {% empty %}
       <li>No tournaments available.</li>
     {% endfor %}
   </ul>
-  {% if request.user.is_authenticated %}
-    <p>
-      <a href="{% url 'tournament-create' %}">Create a new tournament</a>
-    </p>
-  {% endif %}
 {% endblock content %}
