@@ -659,15 +659,20 @@ class TournamentUpdateView(UpdateView):
         # Determine if the user is staff or the creator of the tournament
         is_staff = self.request.user.is_staff
 
+        # Check if the 'players' field has been modified
+        form_players = set(form.cleaned_data["players"])
+        current_players = set(current_tournament.players.all())
+
+        # Prevent non-staff from modifying 'players' if there are changes
+        if form_players != current_players and not is_staff:
+            messages.error(self.request, "You do not have permission to modify players.")
+            return redirect("tournament-detail", pk=self.kwargs["pk"])
+
         # Get the set of players before and after the form submission
         # the tournament cannot be updated if it has ended
         if current_tournament.status == "tournament ended":
             messages.error(self.request, "You cannot update a tournament that has ended.")
             return redirect(reverse_lazy("tournament-detail", kwargs={"pk": self.kwargs["pk"]}))
-
-        # Check if the 'players' field has been modified
-        form_players = set(form.cleaned_data["players"])
-        current_players = set(current_tournament.players.all())
 
         # Check if new players are being added
         new_players = form_players - current_players
