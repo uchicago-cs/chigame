@@ -44,8 +44,9 @@ class GameDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = GameSerializer
 
 
-class GameCategoriesAPIView(generics.RetrieveAPIView):
+class GameCategoriesAPIView(generics.ListAPIView):
     serializer_class = CategorySerializer
+    pagination_class = PageNumberPagination
 
     def get_queryset(self):
         game_id = self.kwargs["pk"]
@@ -53,8 +54,9 @@ class GameCategoriesAPIView(generics.RetrieveAPIView):
         return game.categories.all()
 
 
-class GameMechanicsAPIView(generics.RetrieveAPIView):
+class GameMechanicsAPIView(generics.ListAPIView):
     serializer_class = MechanicSerializer
+    pagination_class = PageNumberPagination
 
     def get_queryset(self):
         game_id = self.kwargs["pk"]
