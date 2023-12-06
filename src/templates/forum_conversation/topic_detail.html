@@ -7,6 +7,15 @@ https://github.com/ellmetha/django-machina/blob/main/machina/templates/machina/f
 {% load forum_member_tags %}
 {% load forum_permission_tags %}
 
+{% block css %}
+  {{ block.super }}
+  <style>
+    .vote-container span {
+      min-width: 60px;
+      text-align: center;
+    }
+  </style>
+{% endblock css %}
 {% block sub_title %}
   {{ topic.subject }}
 {% endblock sub_title %}
@@ -79,13 +88,20 @@ https://github.com/ellmetha/django-machina/blob/main/machina/templates/machina/f
                   <div class="post-signature">{{ post.poster.forum_profile.signature.rendered }}</div>
                 {% endif %}
                 {# Vote buttons #}
-                <div class="vote-container d-flex p-2 flex-column w-25"
+                <div class="vote-container d-flex p-2 gap-3 align-items-center"
                      data-post-id="{{ post.id }}"
                      data-user-rating="{{ post.user_rating }}"
                      data-rating="{{ post.rating }}">
-                  <button class="like-button" type="submit" name="rate" value="like">Like</button>
-                  <span class="like-count">{{ post.rating }}</span>
-                  <button class="dislike-button" type="submit" name="rate" value="dislike">Dislike</button>
+                  <button class="like-button btn btn-lg" type="submit" name="rate" value="like">
+                    <i class="far fa-thumbs-up"></i>
+                  </button>
+                  <span class="like-count h5 mb-0" id="like-count">{{ post.rating }}</span>
+                  <button class="dislike-button btn btn-lg"
+                          type="submit"
+                          name="rate"
+                          value="dislike">
+                    <i class="far fa-thumbs-down"></i>
+                  </button>
                 </div>
                 {% if post.updates_count %}
                   <div class="mt-4 edit-info">
@@ -144,51 +160,61 @@ https://github.com/ellmetha/django-machina/blob/main/machina/templates/machina/f
     </div>
   </div>
   <script>
+    function likeButtonToggle(voteContainer, likeCountElement, likeIcon, dislikeIcon, userRating) {
+      var voteDelta = 1;
+      voteDelta += userRating === 1 ? -2 : userRating === -1 ? 1 : 0;
+
+      likeCountElement.text(`${parseInt(likeCountElement.text()) + voteDelta}`);
+      resetVoteIconStyles(dislikeIcon);
+
+      if (userRating === 1) {
+        updateUI(voteContainer, likeIcon, 'far', '', 0);
+      } else {
+        updateUI(voteContainer, likeIcon, 'fas', 'rgb(53, 121, 246)', 1);
+      }
+    }
+
+    function dislikeButtonToggle(voteContainer, likeCountElement, likeIcon, dislikeIcon, userRating) {
+      var voteDelta = -1;
+      voteDelta += userRating === -1 ? 2 : userRating === 1 ? -1 : 0;
+
+      likeCountElement.text(`${parseInt(likeCountElement.text()) + voteDelta}`);
+      resetVoteIconStyles(likeIcon);
+
+      if (userRating === -1) {
+        updateUI(voteContainer, dislikeIcon, 'far', '', 0);
+      } else {
+        updateUI(voteContainer, dislikeIcon, 'fas', 'rgb(203, 68, 74)', -1);
+      }
+    }
+
+    function resetVoteIconStyles(button) {
+      button.removeClass('fas').addClass('far').css('color', '');
+    }
+
+    function updateUI(voteContainer, button, iconClass, color, rating) {
+
+      button.removeClass('fas far').addClass(iconClass).css('color', color);
+      voteContainer.data('user-rating', rating);
+    }
+
     $('.like-button, .dislike-button').click(function() {
       var vote = $(this).val();
       var voteContainer = $(this).closest('.vote-container');
       var postId = voteContainer.data('post-id');
-      var userRating = voteContainer.data('user-rating');
       var likeCountElement = voteContainer.find('.like-count');
-      var likeCountInt = parseInt(likeCountElement.text());
-      var voteDelta = 0;
+      var likeIcon = voteContainer.find('.like-button').find('i');
+      var dislikeIcon = voteContainer.find('.dislike-button').find('i');
+      var userRating = voteContainer.data('user-rating');
 
-      if (isNaN(likeCountInt)) {
+      if (isNaN(parseInt(likeCountElement.text()))) {
         alert('Failed to add like to non-number');
-        return;
-      }
-
-      // Increase or decrease the HTML value depending on the button clicked
-      if (vote === "like") {
-        voteDelta = 1;
-        voteDelta += userRating === 1 ? -2 : userRating === -1 ? 1 : 0;
-        likeCountElement.text(`${likeCountInt + voteDelta}`);
-
-        // Change the user rating
-        if (userRating === 1) {
-          likeCountElement.css('color', '');
-          voteContainer.data('user-rating', 0)
-        } else {
-          likeCountElement.css('color', 'rgb(53, 121, 246)');
-          voteContainer.data('user-rating', 1)
-        }
-
-      } else if (vote === "dislike") {
-        voteDelta = -1;
-        voteDelta += userRating === -1 ? 2 : userRating === 1 ? -1 : 0;
-        likeCountElement.text(`${likeCountInt + voteDelta}`);
-
-        // Change the user rating
-        if (userRating === -1) {
-          likeCountElement.css('color', '');
-          voteContainer.data('user-rating', 0)
-        } else {
-          likeCountElement.css('color', 'rgb(203, 68, 74)');
-          voteContainer.data('user-rating', -1)
-        }
-        voteContainer.data('user-rating', userRating === -1 ? 0 : -1)
       } else {
-        return;
+        if (vote === "like") {
+          likeButtonToggle(voteContainer, likeCountElement, likeIcon, dislikeIcon, userRating);
+        } else if (vote === "dislike") {
+          dislikeButtonToggle(voteContainer, likeCountElement, likeIcon, dislikeIcon, userRating);
+        }
       }
 
       // Send the vote to the backend
@@ -201,7 +227,7 @@ https://github.com/ellmetha/django-machina/blob/main/machina/templates/machina/f
           csrfmiddlewaretoken: "{{ csrf_token }}"
         },
         success: function() {
-          console.log(`${vote}d!`);
+          console.debug(`${vote}d!`);
         }
       })
     });
@@ -212,15 +238,29 @@ https://github.com/ellmetha/django-machina/blob/main/machina/templates/machina/f
 
       // Iterate through the selected elements
       voteContainers.each(function() {
+        container = $(this);
         // Get the 'data-user-rating' field value
         var userRating = $(this).data('user-rating');
 
         // Add styling to the vote counter based on userRating
-        $(this).find('.like-count').css('color',
-          userRating === 1 ? 'rgb(53, 121, 246)' :
-          userRating === -1 ? 'rgb(203, 68, 74)' :
-          '');
-      });
+        if (userRating === 1) {
+          updateUI(container,
+            $(this).find('.like-button').find('i'),
+            'fas',
+            'rgb(53, 121, 246)',
+            1);
+        } else if (userRating === -1) {
+          updateUI(container,
+            $(this).find('.dislike-button').find('i'),
+            'fas',
+            'rgb(203, 68, 74)',
+            -1);
+        } else {
+          container.find('.like-button, .dislike-button').each(function() {
+            resetVoteIconStyles($(this).find('i'));
+          });
+        }
+      })
     });
   </script>
 {% endblock content %}
