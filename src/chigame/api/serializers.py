@@ -1,7 +1,6 @@
 from rest_framework import serializers
 
 from chigame.games.models import Category, Chat, Game, Lobby, Mechanic, Message, Tournament, User
-
 from chigame.users.models import Group
 
 
