@@ -129,13 +129,10 @@
   <!-- You can add more fields as needed -->
   {% if user.is_staff %}
     <p>
-      <a href="{% url 'tournament-update' tournament.id %}">Update</a>
-    </p>
-    <p>
       <a href="{% url 'tournament-delete' tournament.id %}">Delete</a>
     </p>
   {% endif %}
-  {% if request.user == tournament.created_by %}
+  {% if user.is_staff or request.user == tournament.created_by %}
     <p>
       <a href="{% url 'tournament-update' tournament.id %}">Update</a>
     </p>

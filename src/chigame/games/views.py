@@ -443,6 +443,12 @@ class TournamentDetailView(DetailView):
     def get(self, request, *args, **kwargs):
         super().get(request, *args, **kwargs)
         tournament = Tournament.objects.get(id=self.kwargs["pk"])
+        self.object = self.get_object()
+
+        if not request.user.is_staff and request.user not in tournament.players.all():
+            messages.error(request, "You are not authorized to view this tournament.")
+            return redirect("tournament-list")
+
         if tournament.matches.count() == 0 and (
             tournament.status == "registration closed" or tournament.status == "tournament in progress"
         ):
@@ -599,17 +605,22 @@ class TournamentUpdateView(UpdateView):
     def form_valid(self, form):
         current_tournament = get_object_or_404(Tournament, pk=self.kwargs["pk"])
 
-        # Check if the tournament has already started
-        if now() >= current_tournament.tournament_start_date:
-            form_players = set(form.cleaned_data["players"])
-            current_players = set(current_tournament.players.all())
-            if len(form_players - current_players) > 0:  # New players being added
+        # Determine if the user is staff or the creator of the tournament
+        is_staff = self.request.user.is_staff
+
+        # Get the set of players before and after the form submission
+        form_players = set(form.cleaned_data["players"])
+        current_players = set(current_tournament.players.all())
+
+        # Check if new players are being added
+        new_players = form_players - current_players
+        if new_players:
+            # Allow only staff to add new players if the tournament has started
+            if now() >= current_tournament.tournament_start_date and not is_staff:
                 messages.error(self.request, "You cannot add new players to the tournament after it has started.")
                 return redirect("tournament-detail", pk=self.kwargs["pk"])
 
         # Handle player removal
-        current_players = set(current_tournament.players.all())
-        form_players = set(form.cleaned_data["players"])
         if len(current_players - form_players) > 0:  # Players have been removed
             removed_players = current_players - form_players
             for player in removed_players:
@@ -620,33 +631,13 @@ class TournamentUpdateView(UpdateView):
                     if match.players.count() == 0:  # if the match is empty, delete it
                         match.delete()
 
-        # Save the form data to the database using the superclass's method
-
+        # Check for exceeding maximum number of players
         if form.cleaned_data["players"].count() > form.cleaned_data["max_players"]:
             messages.error(self.request, "The number of players cannot exceed the maximum number of players")
             return redirect(reverse_lazy("tournament-update", kwargs={"pk": self.kwargs["pk"]}))
 
-        if len(form_players - current_players) > 0:  # if the players have been added
-            if current_tournament.status != "registration open":
-                messages.error(
-                    self.request,
-                    "You cannot add new players to the tournament when it is not in the registration period.",
-                )
-                return redirect(reverse_lazy("tournament-update", kwargs={"pk": self.kwargs["pk"]}))
-        elif (
-            len(current_players - form_players) > 0 and current_tournament.status == "tournament in progress"
-        ):  # if the players have been removed
-            removed_players = current_players - form_players  # get the players that have been removed
-            for player in removed_players:
-                related_match = current_tournament.matches.get(
-                    players__in=[player]
-                )  # get the match that the player is in
-                assert isinstance(related_match, Match)
-                related_match.players.remove(player)
-                # if the match is empty, the match will be displayed as forfeited
-
-        # The super class's form_valid method will save the form data to the database
-
+        # Save the form data to the database using the superclass's method
+        # This allows updating of other fields by the creator or staff, regardless of the tournament's status
         return super().form_valid(form)
 
     def get_success_url(self):
