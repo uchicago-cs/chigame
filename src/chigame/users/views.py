@@ -13,9 +13,9 @@ from django.views.generic import DetailView, RedirectView, UpdateView
 from rest_framework import status
 from rest_framework.response import Response
 
-from chigame.games.models import Lobby, Match, Player, Tournament
+from chigame.games.models import Lobby, Player, Tournament
 
-from .models import FriendInvitation, GameInvitation, Notification, TournamentInvitation, UserProfile
+from .models import FriendInvitation, Notification, TournamentInvitation, UserProfile
 from .tables import FriendsTable, UserTable
 
 User = get_user_model()
@@ -181,19 +181,6 @@ def cancel_friend_invitation(request, pk):
         messages.success(request, "Friendship invitation cancelled successfully.")
     else:
         messages.error(request, "Something went wrong please try again later!")
-    return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
-
-
-@login_required
-def invite_to_game(request, pk, match_pk):
-    try:
-        sender = get_object_or_404(User, pk=request.user.id)
-        receiver = get_object_or_404(User, pk=pk)
-        match = get_object_or_404(Match, pk=match_pk)
-        GameInvitation.objects.create(sender=sender, receiver=receiver, match=match)
-        messages.success(request, "Invitation to game sent successfully.")
-    except Exception as e:
-        messages.error(request, f"Error: {str(e)}")
     return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
 
 

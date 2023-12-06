@@ -132,18 +132,6 @@ class GroupInvitation(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
 
 
-class GameInvitation(models.Model):
-    """
-    An invitation to join a match of a game
-    """
-
-    sender = models.ForeignKey("users.User", on_delete=models.CASCADE, related_name="game_invitations_sent")
-    receiver = models.ForeignKey("users.User", on_delete=models.CASCADE, related_name="game_invitations_received")
-    match = models.ForeignKey("games.Match", on_delete=models.CASCADE)
-    accepted = models.BooleanField(default=False)
-    timestamp = models.DateTimeField(auto_now_add=True)
-
-
 class TournamentInvitation(models.Model):
     """
     An invitation to join a tournament
