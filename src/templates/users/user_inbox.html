@@ -19,7 +19,7 @@
                   <input type="checkbox" name="notification[]" value="{{ notification.id }}" />
                 </label>
                 {% if notification.message %}
-                  <a>{{ notification.message }}</a>
+                  <a href="{% url 'users:notification-detail' notification.pk %}">{{ notification.message }}</a>
                 {% else %}
                   <a href="{% url 'users:notification-detail' notification.pk %}">{{ default_notification_messages | get_dict_val:notification_type }}</a>
                 {% endif %}
