@@ -17,6 +17,7 @@ lobby_patterns = [
 user_patterns = [
     path("", views.UserListView.as_view(), name="api-user-list"),
     path("<slug:slug>/", views.UserDetailView.as_view(), name="api-user-detail"),
+    path("<slug:slug>/groups/", views.UserGroupsView.as_view(), name="api-user-groups"),
     path("<int:pk>/friends/", views.UserFriendsAPIView.as_view(), name="api-user-friends"),
 ]
 
@@ -25,9 +26,16 @@ tournament_patterns = [
     path("chat/feed/", views.MessageFeedView.as_view(), name="api-chat-detail"),
 ]
 
+group_patterns = [
+    path("", views.GroupListView.as_view(), name="api-group-list"),
+    path("<int:pk>/", views.GroupDetailView.as_view(), name="api-group-detail"),
+    path("<int:pk>/members/", views.GroupMembersView.as_view(), name="api-group-members"),
+]
+
 urlpatterns = [
     path("games/", include(game_patterns)),
     path("lobbies/", include(lobby_patterns)),
     path("users/", include(user_patterns)),
     path("tournaments/", include(tournament_patterns)),
+    path("groups/", include(group_patterns)),
 ]

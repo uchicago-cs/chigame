@@ -1,6 +1,17 @@
 from rest_framework import serializers
 
-from chigame.games.models import Category, Chat, Game, Lobby, Mechanic, Message, Tournament, User
+from chigame.games.models import (
+  Category, 
+  Chat, 
+  Game, 
+  Lobby, 
+  Mechanic, 
+  Message, 
+  Tournament, 
+  User,
+)
+
+from chigame.users.models import Group
 
 
 class GameSerializer(serializers.ModelSerializer):
@@ -78,6 +89,12 @@ class MessageSerializer(serializers.ModelSerializer):
 
         message = Message.objects.create(**validated_data)
         return message
+
+
+class GroupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Group
+        fields = "__all__"
 
 
 class MessageFeedSerializer(serializers.ModelSerializer):
