@@ -4,12 +4,16 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models import Q
+from django.http import HttpResponseNotFound
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import DetailView, RedirectView, UpdateView
 from rest_framework import status
 from rest_framework.response import Response
+
+from chigame.games.models import Lobby, Player, Tournament
 
 from .models import FriendInvitation, Notification, UserProfile
 from .tables import FriendsTable, UserTable
@@ -59,20 +63,41 @@ user_redirect_view = UserRedirectView.as_view()
 
 @login_required
 def user_list(request):
-    users = User.objects.all()
-    table = UserTable(users)
-    context = {"users": users, "table": table}
+    if request.user.is_staff:
+        users = User.objects.all()
+        table = UserTable(users)
+        context = {"users": users, "table": table}
 
-    # Add information about top ranking users, total points collected, etc.
+        # Add information about top ranking users, total points collected, etc.
 
-    return render(request, "users/user_list.html", context)
+        return render(request, "users/user_list.html", context)
+    else:
+        return HttpResponseNotFound("Access to link is restricted to admins")
 
 
 def user_history(request, pk):
     try:
         user = User.objects.get(pk=pk)
 
-        return render(request, "users/user_history.html", {"user": user})
+        match_count = Lobby.objects.filter(match_status=3, members__in=[user]).count()
+        match_wins = Player.objects.filter(Q(user=user, outcome=Player.WIN) | Q(team=user, outcome=Player.WIN)).count()
+
+        tournament_count = Tournament.objects.filter(
+            tournament_end_date__lt=timezone.now(), players__in=[user]
+        ).count()
+        tournament_wins = Tournament.objects.filter(winners__in=[user]).count()
+
+        return render(
+            request,
+            "users/user_history.html",
+            {
+                "user": user,
+                "match_count": match_count,
+                "match_wins": match_wins,
+                "tournament_count": tournament_count,
+                "tournament_wins": tournament_wins,
+            },
+        )
     except User.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
@@ -116,6 +141,7 @@ def send_friend_invitation(request, pk):
             actor=invitation,
             receiver=other_user,
             type=Notification.FRIEND_REQUEST,
+            message=Notification.DEFAULT_MESSAGES[Notification.FRIEND_REQUEST],
         )
     elif invitation.sender.pk == other_user.pk:
         messages.info(request, "You already have a pending friend invitation from this profile.")
@@ -194,6 +220,19 @@ def user_search_results(request):
         if users_list.count() > 0:
             context.pop("nothing_found")
             context["object_list"] = users_list
+    return render(request, "pages/search_results.html", context)
+
+
+def notification_search_results(request):
+    query_input = request.GET.get("q")
+    context = {"nothing_found": True, "query_type": "Notifications"}
+    if query_input:
+        notifications_list = Notification.objects.filter_by_receiver(request.user).filter(
+            message__icontains=query_input
+        )
+        if notifications_list.count() > 0:
+            context["nothing_found"] = False
+            context["object_list"] = notifications_list
     return render(request, "pages/search_results.html", context)
 
 
