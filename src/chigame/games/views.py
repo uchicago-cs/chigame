@@ -10,8 +10,7 @@ from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.db.models.functions import Lower
-from django.http import HttpResponseForbidden, JsonResponse, HttpResponseRedirect
-from django.http.response import HttpResponseRedirect
+from django.http import HttpResponseForbidden, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render, reverse
 from django.urls import reverse_lazy
 from django.utils import timezone
