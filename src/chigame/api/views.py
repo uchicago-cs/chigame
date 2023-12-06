@@ -27,7 +27,8 @@ def get_user(lookup_value):
     else:
         # Otherwise, use the slug field
         return get_object_or_404(User, username=lookup_value)
-      
+
+
 
 class GameListView(generics.ListCreateAPIView):
     queryset = Game.objects.all()
@@ -94,7 +95,8 @@ class GroupDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
 
-    
+
+
 class GroupMembersView(generics.ListAPIView):
     serializer_class = UserSerializer
 
