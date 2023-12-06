@@ -186,21 +186,27 @@ def cancel_friend_invitation(request, pk):
 
 @login_required
 def invite_to_game(request, pk, match_id):
-    sender = User.objects.get(pk=request.user.id)
-    receiver = User.objects.get(pk=pk)
-    match = Match.objects.get(pk=match_id)
-    GameInvitation.objects.create(sender=sender, receiver=receiver, match=match)
-    messages.success(request, "Invitation to game sent successfully.")
+    try:
+        sender = get_object_or_404(User, pk=request.user.id)
+        receiver = get_object_or_404(User, pk=pk)
+        match = get_object_or_404(Match, pk=match_id)
+        GameInvitation.objects.create(sender=sender, receiver=receiver, match=match)
+        messages.success(request, "Invitation to game sent successfully.")
+    except Exception as e:
+        messages.error(request, f"Error: {str(e)}")
     return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
 
 
 @login_required
 def invite_to_tournament(request, pk, tournament_id):
-    sender = User.objects.get(pk=request.user.id)
-    receiver = User.objects.get(pk=pk)
-    tournament = Tournament.objects.get(pk=tournament_id)
-    TournamentInvitation.objects.create(sender=sender, receiver=receiver, tournament=tournament)
-    messages.success(request, "Invitation to tournament sent successfully.")
+    try:
+        sender = get_object_or_404(User, pk=request.user.id)
+        receiver = get_object_or_404(User, pk=pk)
+        tournament = get_object_or_404(Tournament, pk=tournament_id)
+        TournamentInvitation.objects.create(sender=sender, receiver=receiver, tournament=tournament)
+        messages.success(request, "Invitation to tournament sent successfully.")
+    except Exception as e:
+        messages.error(request, f"Error: {str(e)}")
     return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
 
 
