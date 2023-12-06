@@ -30,11 +30,22 @@
                 <p>Bio: {{ object.bio }}</p>
                 {% if object.user == request.user %}
                   <a href="{% url 'users:update' %}" class="btn btn-primary">Edit Profile</a>
+                  <a href="{% url 'users:detail' request.user.pk %}"
+                     class="btn btn-primary">Account</a>
                   <a href="{% url 'users:friend-list' object.user.id %}"
                      class="btn btn-primary">Friend List</a>
+                  <a href="{% url 'users:user-history' object.user.pk %}"
+                     class="btn btn-primary">Stats</a>
                 {% elif is_friend %}
                   <a href="{% url 'users:remove-friend' object.user.pk %}"
                      class="btn btn-primary">Remove Friend</a>
+                  <a href="{% url 'users:user-history' object.user.pk %}"
+                     class="btn btn-primary">Stats</a>
+                {% elif is_friend %}
+                  <a href="{% url 'users:remove-friend' object.user.pk %}"
+                     class="btn btn-primary">Remove Friend</a>
+                  <a href="{% url 'users:user-history' object.user.pk %}"
+                     class="btn btn-primary">Stats</a>
                 {% elif friendship_request %}
                   {% if friendship_request.sender_id == request.user.pk %}
                     <a href="{% url 'users:cancel-friend-invitation' object.user.id %}"
@@ -45,6 +56,8 @@
                     <a href="{% url 'users:decline-friend-invitation' friendship_request.id %}"
                        class="btn btn-primary">Decline Friendship Request</a>
                   {% endif %}
+                  <a href="{% url 'users:user-history' object.user.pk %}"
+                     class="btn btn-primary">Stats</a>
                 {% else %}
                   <a href="{% url 'users:add-friend' object.user.pk %}"
                      class="btn btn-primary">Add Friend</a>
