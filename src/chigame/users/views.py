@@ -13,7 +13,7 @@ from django.views.generic import DetailView, RedirectView, UpdateView
 from rest_framework import status
 from rest_framework.response import Response
 
-from chigame.games.models import Match, Tournament, Lobby, Player
+from chigame.games.models import Lobby, Match, Player, Tournament
 
 from .models import FriendInvitation, GameInvitation, Notification, TournamentInvitation, UserProfile
 from .tables import FriendsTable, UserTable
