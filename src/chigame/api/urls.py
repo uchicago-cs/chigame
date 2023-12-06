@@ -13,7 +13,12 @@ urlpatterns = [
     path("users/", views.UserListView.as_view(), name="api-user-list"),
     path("users/<slug:slug>/", views.UserDetailView.as_view(), name="api-user-detail"),
     path("users/<int:pk>/friends/", views.UserFriendsAPIView.as_view(), name="api-user-friends"),
+    path("users/<slug:slug>/groups/", views.UserGroupsView.as_view(), name="api-user-groups"),
     # CHAT API URLS
     path("tournaments/chat/", views.MessageView.as_view(), name="api-chat-list"),
     path("tournaments/chat/feed/", views.MessageFeedView.as_view(), name="api-chat-detail"),
+    # GROUP API URLS
+    path("groups/", views.GroupListView.as_view(), name="api-group-list"),
+    path("groups/<int:pk>/", views.GroupDetailView.as_view(), name="api-group-detail"),
+    path("groups/<int:pk>/members/", views.GroupMembersView.as_view(), name="api-group-members"),
 ]

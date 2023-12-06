@@ -125,6 +125,7 @@
                     {% url 'games:index' as games_url %}
                     {% url 'game-search-results' as game_search_url %}
                     {% url 'users:user-search-results' as users_search_url %}
+                    {% url 'users:notification-search-results' as notifications_search_url %}
                     <select id="query-type" name="query_type" class="form-select">
                       <option value="games"
                               {% if request.path == games_url or request.path == games_search_url %}selected{% endif %}>
@@ -135,6 +136,10 @@
                       <option value="forums"
                               {% if request.path == forum_url or request.path == forum_search_url %}selected{% endif %}>
                         Forums
+                      </option>
+                      <option value="notifications"
+                              {% if request.path == notifications_search_url %}selected{% endif %}>
+                        Notifications
                       </option>
                       <!-- Add more options here -->
                     </select>
@@ -277,6 +282,11 @@
               search_bar.action = "{% url 'forum_search:search' %}";
               $("#query-input").autocomplete({
                 source: []  // placeholder; replace with list of forums
+              });
+            } else if (query_type.value == "notifications") {
+              search_bar.action = "{% url 'users:notification-search-results' %}";
+              $("#query-input").autocomplete({
+                source: []  // placeholder; replace with list of notifications
               });
             }
             advancedSearchButton.classList.toggle('d-none', query_type.value !== "forums"); // hide advanced search button if not searching forums
