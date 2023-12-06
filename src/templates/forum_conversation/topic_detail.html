@@ -84,14 +84,14 @@ https://github.com/ellmetha/django-machina/blob/main/machina/templates/machina/f
                      data-user-rating="{{ post.user_rating }}"
                      data-rating="{{ post.rating }}">
                   <button class="like-button btn btn-lg" type="submit" name="rate" value="like">
-                    <i class="fa-regular fa-thumbs-up"></i>
+                    <i class="far fa-thumbs-up"></i>
                   </button>
                   <span class="like-count fas" id="like-count">{{ post.rating }}</span>
                   <button class="dislike-button btn btn-lg"
                           type="submit"
                           name="rate"
                           value="dislike">
-                    <i class="fa-regular fa-thumbs-down"></i>
+                    <i class="far fa-thumbs-down"></i>
                   </button>
                 </div>
                 {% if post.updates_count %}
@@ -159,9 +159,9 @@ https://github.com/ellmetha/django-machina/blob/main/machina/templates/machina/f
       resetVoteIconStyles(dislikeIcon);
 
       if (userRating === 1) {
-        updateUI(voteContainer, likeIcon, 'fa-regular', '', 0);
+        updateUI(voteContainer, likeIcon, 'far', '', 0);
       } else {
-        updateUI(voteContainer, likeIcon, 'fa-solid', 'rgb(53, 121, 246)', 1);
+        updateUI(voteContainer, likeIcon, 'fas', 'rgb(53, 121, 246)', 1);
       }
     }
 
@@ -173,19 +173,19 @@ https://github.com/ellmetha/django-machina/blob/main/machina/templates/machina/f
       resetVoteIconStyles(likeIcon);
 
       if (userRating === -1) {
-        updateUI(voteContainer, dislikeIcon, 'fa-regular', '', 0);
+        updateUI(voteContainer, dislikeIcon, 'far', '', 0);
       } else {
-        updateUI(voteContainer, dislikeIcon, 'fa-solid', 'rgb(203, 68, 74)', -1);
+        updateUI(voteContainer, dislikeIcon, 'fas', 'rgb(203, 68, 74)', -1);
       }
     }
 
     function resetVoteIconStyles(button) {
-      button.removeClass('fa-solid').addClass('fa-regular').css('color', '');
+      button.removeClass('fas').addClass('far').css('color', '');
     }
 
     function updateUI(voteContainer, button, iconClass, color, rating) {
 
-      button.removeClass('fa-solid fa-regular').addClass(iconClass).css('color', color);
+      button.removeClass('fas far').addClass(iconClass).css('color', color);
       voteContainer.data('user-rating', rating);
     }
 
@@ -237,13 +237,13 @@ https://github.com/ellmetha/django-machina/blob/main/machina/templates/machina/f
         if (userRating === 1) {
           updateUI(container,
             $(this).find('.like-button').find('i'),
-            'fa-solid',
+            'fas',
             'rgb(53, 121, 246)',
             1);
         } else if (userRating === -1) {
           updateUI(container,
             $(this).find('.dislike-button').find('i'),
-            'fa-solid',
+            'fas',
             'rgb(203, 68, 74)',
             -1);
         } else {
