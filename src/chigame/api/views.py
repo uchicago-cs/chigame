@@ -14,6 +14,7 @@ from chigame.api.filters import GameFilter
 from chigame.api.serializers import (
     FriendInvitationSerializer,
     GameSerializer,
+    GroupSerializer,
     LobbySerializer,
     MessageFeedSerializer,
     MessageSerializer,
@@ -21,8 +22,19 @@ from chigame.api.serializers import (
     UserProfileSerializer,
     UserSerializer,
 )
+
 from chigame.games.models import Game, Lobby, Message, Tournament
-from chigame.users.models import FriendInvitation, User, UserProfile
+from chigame.users.models import FriendInvitation, User, UserProfile, Group
+
+
+def get_user(lookup_value):
+    # If the lookup_value is an integer, use the id field
+    if lookup_value.isdigit():
+        return get_object_or_404(User, pk=lookup_value)
+    else:
+        # Otherwise, use the slug field
+        return get_object_or_404(User, username=lookup_value)
+
 
 
 class GameListView(generics.ListCreateAPIView):
@@ -114,20 +126,14 @@ class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     def get_object(self):
         lookup_value = self.kwargs.get(self.lookup_field)
-
-        # If the lookup_value is an integer, use the id field
-        if lookup_value.isdigit():
-            return get_object_or_404(User, pk=lookup_value)
-        else:
-            # Otherwise, use the slug field
-            return get_object_or_404(User, username=lookup_value)
+        return get_user(lookup_value)
 
 
 class MessageView(generics.CreateAPIView):
     queryset = Message.objects.all()
     serializer_class = MessageSerializer
 
-
+    
 class SendFriendInvitationView(APIView):
     def post(self, request, *args, **kwargs):
         sender_pk = self.kwargs["sender_pk"]
@@ -198,6 +204,26 @@ class UserProfileUpdateView(APIView):
             updated_profile = serializer.save()
             return Response(UserProfileSerializer(updated_profile).data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class GroupMembersView(generics.ListAPIView):
+    serializer_class = UserSerializer
+
+    def get_queryset(self):
+        group_id = self.kwargs["pk"]
+        group = Group.objects.get(pk=group_id)
+        return group.members.all()
+
+
+class UserGroupsView(generics.ListAPIView):
+    serializer_class = GroupSerializer
+    lookup_field = "slug"
+
+    def get_queryset(self):
+        lookup_value = self.kwargs.get(self.lookup_field)
+        user_id = get_user(lookup_value).id
+        groups = Group.objects.filter(members__pk=user_id)
+        return groups
+
 
 
 class MessageFeedView(APIView):

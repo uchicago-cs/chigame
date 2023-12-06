@@ -24,7 +24,7 @@ urlpatterns = [
     path("forums/", include(machina_urls)),
     # This is necessary in order to add our own pages under `/forums`
     # i.e. CRUD pages for django machina models
-    path("forums/", include("chigame.forums.urls")),
+    path("forums/", include("chigame.forums.base.urls")),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 

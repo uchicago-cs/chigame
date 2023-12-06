@@ -10,16 +10,17 @@ from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.db.models.functions import Lower
-from django.http import HttpResponseForbidden, JsonResponse
+from django.http import HttpResponseForbidden, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render, reverse
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
+from django.views.generic.edit import FormMixin
 
 from .filters import LobbyFilter
-from .forms import GameForm, LobbyForm
-from .models import Chat, Game, Lobby, Match, Player, Tournament
+from .forms import GameForm, LobbyForm, ReviewForm
+from .models import Chat, Game, Lobby, Match, Player, Review, Tournament
 from .tables import LobbyTable
 
 
@@ -42,10 +43,34 @@ class GameListView(ListView):
         return queryset
 
 
-class GameDetailView(DetailView):
+class GameDetailView(LoginRequiredMixin, FormMixin, DetailView):
     model = Game
     template_name = "games/game_detail.html"
     context_object_name = "game"
+    form_class = ReviewForm
+
+    def get_success_url(self):
+        return reverse("game-detail", kwargs={"pk": self.object.pk})
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["form"] = self.get_form()
+        context["reviews"] = Review.objects.filter(game=self.object)
+        return context
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        form = self.get_form()
+        if form.is_valid():
+            return self.form_valid(form)
+        else:
+            return self.form_invalid(form)
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        form.instance.game = self.object
+        form.save()
+        return HttpResponseRedirect(self.get_success_url())
 
 
 class GameCreateView(UserPassesTestMixin, CreateView):
@@ -390,7 +415,11 @@ class TournamentListView(ListView):
     def post(self, request, *args, **kwargs):
         # This method is called when the user clicks the "Join Tournament" or
         # "Withdraw" button
-        tournament = Tournament.objects.get(id=request.POST.get("tournament_id"))
+        if request.POST.get("tournament_id") == "":  # switch view
+            pass
+        else:
+            tournament = Tournament.objects.get(id=request.POST.get("tournament_id"))
+
         if request.POST.get("action") == "join":
             success = tournament.tournament_sign_up(request.user)
             if success == 0:
@@ -421,6 +450,20 @@ class TournamentListView(ListView):
                 return redirect(reverse_lazy("tournament-list"))
             else:
                 raise Exception("Invalid return value")
+
+        elif request.POST.get("action") == "archive":
+            tournament.set_archive(True)
+            messages.success(request, "You have successfully archived this tournament")
+            return redirect(reverse_lazy("tournament-list"))
+
+        elif request.POST.get("action") == "unarchive":
+            tournament.set_archive(False)
+            messages.success(request, "You have successfully unarchived this tournament")
+            return redirect(reverse_lazy("tournament-list"))
+
+        elif request.POST.get("action") == "switch_archive":
+            return redirect(reverse_lazy("tournament-archived"))
+
         else:
             raise ValueError("Invalid action")
 
@@ -486,6 +529,16 @@ class TournamentDetailView(DetailView):
 
         elif request.POST.get("action") == "spectate":
             pass  # allow anyone to spectate
+            return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
+
+        elif request.POST.get("action") == "archive":
+            tournament.set_archive(True)
+            messages.success(request, "You have successfully archived this tournament")
+            return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
+
+        elif request.POST.get("action") == "unarchive":
+            tournament.set_archive(False)
+            messages.success(request, "You have successfully unarchived this tournament")
             return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
 
         else:
@@ -570,6 +623,11 @@ class TournamentUpdateView(UpdateView):
         # Get the current tournament from the database
         current_tournament = get_object_or_404(Tournament, pk=self.kwargs["pk"])
 
+        # the tournament cannot be updated if it has ended
+        if current_tournament.status == "tournament ended":
+            messages.error(self.request, "You cannot update a tournament that has ended.")
+            return redirect(reverse_lazy("tournament-detail", kwargs={"pk": self.kwargs["pk"]}))
+
         # Check if the 'players' field has been modified
         form_players = set(form.cleaned_data["players"])
         current_players = set(current_tournament.players.all())
@@ -608,6 +666,50 @@ class TournamentDeleteView(DeleteView):
     template_name = "tournaments/tournament_delete.html"
     context_object_name = "tournament"
     success_url = reverse_lazy("tournament-list")
+
+
+class TournamentArchivedListView(ListView):
+    model = Tournament
+    queryset = Tournament.objects.prefetch_related("matches").all()
+    template_name = "tournaments/tournament_archived_list.html"
+    context_object_name = "tournament_list"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["archived_tournament_list"] = self.get_all_archived()
+        # Additional context can be added if needed
+        return context
+
+    def get_all_archived(self):
+        return self.get_queryset().filter(archived=True)
+
+    def post(self, request, *args, **kwargs):
+        # This method is called when the user clicks the "Join Tournament" or
+        # "Withdraw" button
+        if request.POST.get("tournament_id") == "":  # switch view
+            pass
+        else:
+            tournament = Tournament.objects.get(id=request.POST.get("tournament_id"))
+
+        if request.POST.get("action") == "archive":
+            tournament.set_archive(True)
+            messages.success(request, "You have successfully archived this tournament")
+            return redirect(reverse_lazy("tournament-archived"))
+
+        elif request.POST.get("action") == "unarchive":
+            tournament.set_archive(False)
+            messages.success(request, "You have successfully unarchived this tournament")
+            return redirect(reverse_lazy("tournament-archived"))
+
+        elif request.POST.get("action") == "switch_all":
+            return redirect(reverse_lazy("tournament-list"))
+
+        else:
+            raise ValueError("Invalid action")
+
+    # check if user is staff member
+    def test_func(self):
+        return self.request.user.is_staff
 
 
 # Placeholder Game
@@ -673,3 +775,20 @@ def TournamentChatDetailView(request, pk):
     except ObjectDoesNotExist:
         messages.error(request, "This tournament does not have a chat yet.")
         return redirect(reverse_lazy("tournament-detail", kwargs={"pk": pk}))
+
+
+class ReviewListView(ListView):
+    model = Review
+    template_name = "games/game_reviews.html"
+    context_object_name = "reviews"
+
+    def get_queryset(self):
+        game_pk = self.kwargs["pk"]
+        game = get_object_or_404(Game, pk=game_pk)
+        return Review.objects.filter(game=game, is_public=True)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        game_pk = self.kwargs["pk"]
+        context["game"] = get_object_or_404(Game, pk=game_pk)
+        return context
