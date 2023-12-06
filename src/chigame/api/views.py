@@ -13,9 +13,11 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from chigame.api.filters import GameFilter
 from chigame.api.serializers import (
     FriendInvitationSerializer,
+    CategorySerializer,
     GameSerializer,
     GroupSerializer,
     LobbySerializer,
+    MechanicSerializer,
     MessageFeedSerializer,
     MessageSerializer,
     TournamentSerializer,
@@ -79,6 +81,26 @@ class TournamentCreateView(generics.CreateAPIView):
 class TournamentListView(generics.ListAPIView):
     queryset = Tournament.objects.all()
     serializer_class = TournamentSerializer
+
+    
+class GameCategoriesAPIView(generics.ListAPIView):
+    serializer_class = CategorySerializer
+    pagination_class = PageNumberPagination
+
+    def get_queryset(self):
+        game_id = self.kwargs["pk"]
+        game = Game.objects.get(id=game_id)
+        return game.categories.all()
+
+
+class GameMechanicsAPIView(generics.ListAPIView):
+    serializer_class = MechanicSerializer
+    pagination_class = PageNumberPagination
+
+    def get_queryset(self):
+        game_id = self.kwargs["pk"]
+        game = Game.objects.get(id=game_id)
+        return game.mechanics.all()
 
 
 class UserFriendsAPIView(generics.RetrieveAPIView):
@@ -202,6 +224,17 @@ class UserProfileUpdateView(APIView):
             updated_profile = serializer.save()
             return Response(UserProfileSerializer(updated_profile).data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+      
+class GroupListView(generics.ListCreateAPIView):
+    queryset = Group.objects.all()
+    serializer_class = GroupSerializer
+    pagination_class = PageNumberPagination
+
+
+class GroupDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Group.objects.all()
+    serializer_class = GroupSerializer
 
 
 class GroupMembersView(generics.ListAPIView):

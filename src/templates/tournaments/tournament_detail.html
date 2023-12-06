@@ -60,23 +60,20 @@
   <p>Rules: {{ tournament.rules }}</p>
   <p>Draw rules: {{ tournament.draw_rules }}</p>
   <p>Players:</p>
-  {% if tournament.get_all_players %}
-    <ul>
-      {% for player in tournament.get_all_players %}
-        <li>
-          <p>
-            {% if player.name %}
-              <a href="{% url 'users:detail' player.id %}">{{ player.name }}</a>
-            {% else %}
-              <a href="{% url 'users:detail' player.id %}">{{ player.email }}</a>
-            {% endif %}
-          </p>
-        </li>
-      {% endfor %}
-    </ul>
-  {% else %}
-    <p>No player yet.</p>
-  {% endif %}
+  <ul>
+    {% for player in tournament.get_all_players %}
+      <li>
+        <p>
+          {% if player.name %}
+            <a href="{% url 'users:detail' player.id %}">{{ player.name }}</a>
+          {% else %}
+            <a href="{% url 'users:detail' player.id %}">{{ player.email }}</a>
+          {% endif %}
+        </p>
+      </li>
+    {% endfor %}
+  </ul>
+  <p>Winners:</p>
   {% if tournament.get_all_winners %}
     <p>Winners:</p>
     <ul>
@@ -158,10 +155,12 @@
   <!-- You can add more fields as needed -->
   {% if user.is_staff %}
     <p>
-      <a href="{% url 'tournament-update' tournament.id %}">Update</a>
-    </p>
-    <p>
       <a href="{% url 'tournament-delete' tournament.id %}">Delete</a>
+    </p>
+  {% endif %}
+  {% if user.is_staff or request.user == tournament.created_by %}
+    <p>
+      <a href="{% url 'tournament-update' tournament.id %}">Update</a>
     </p>
   {% endif %}
 {% endblock content %}
