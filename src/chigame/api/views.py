@@ -29,7 +29,6 @@ def get_user(lookup_value):
         return get_object_or_404(User, username=lookup_value)
 
 
-
 class GameListView(generics.ListCreateAPIView):
     queryset = Game.objects.all()
     serializer_class = GameSerializer
@@ -94,7 +93,6 @@ class GroupListView(generics.ListCreateAPIView):
 class GroupDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
-
 
 
 class GroupMembersView(generics.ListAPIView):
