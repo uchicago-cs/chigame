@@ -14,9 +14,11 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from chigame.api.filters import GameFilter
 from chigame.api.serializers import (
+    CategorySerializer,
     GameSerializer,
     GroupSerializer,
     LobbySerializer,
+    MechanicSerializer,
     MessageFeedSerializer,
     MessageSerializer,
     UserSerializer,
@@ -48,6 +50,7 @@ class GameDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = GameSerializer
 
 
+
 class UserListView(generics.ListAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
@@ -69,6 +72,27 @@ class UserRegistrationView(APIView):
 
             return Response({"access_token": access_token}, status=status.HTTP_201_CREATED)
         return Response(serializer_instance.errors, status=status.HTTP_400_BAD_REQUEST)
+
+ 
+class GameCategoriesAPIView(generics.ListAPIView):
+    serializer_class = CategorySerializer
+    pagination_class = PageNumberPagination
+
+    def get_queryset(self):
+        game_id = self.kwargs["pk"]
+        game = Game.objects.get(id=game_id)
+        return game.categories.all()
+
+
+class GameMechanicsAPIView(generics.ListAPIView):
+    serializer_class = MechanicSerializer
+    pagination_class = PageNumberPagination
+
+    def get_queryset(self):
+        game_id = self.kwargs["pk"]
+        game = Game.objects.get(id=game_id)
+        return game.mechanics.all()
+
 
 
 class UserFriendsAPIView(generics.RetrieveAPIView):
