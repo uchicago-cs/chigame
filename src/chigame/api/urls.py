@@ -4,7 +4,6 @@ from . import views
 
 game_patterns = [
     path("", views.GameListView.as_view(), name="api-game-list"),
-    path("register/", views.UserRegistrationView.as_view(), name="user-registration"),
     path("<int:pk>/", views.GameDetailView.as_view(), name="api-game-detail"),
     path("<int:pk>/categories/", views.GameCategoriesAPIView.as_view(), name="api-game-categories"),
     path("<int:pk>/mechanics/", views.GameMechanicsAPIView.as_view(), name="api-game-mechanics"),
@@ -34,9 +33,6 @@ group_patterns = [
 ]
 
 urlpatterns = [
-    path("token/", views.CustomTokenObtainPairView.as_view(), name="token_obtain_pair"),
-    path("token/refresh/", views.CustomTokenRefreshView.as_view(), name="token_refresh"),
-    path("token/verify/", views.CustomTokenVerifyView.as_view(), name="token_verify"),
     path(
         "friend-invitations/send/<int:sender_pk>/<int:receiver_pk>/",
         views.SendFriendInvitationView.as_view(),

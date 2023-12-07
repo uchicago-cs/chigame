@@ -10,23 +10,6 @@ class GameSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class TournamentSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Tournament
-        fields = (
-            "game",
-            "start_date",
-            "end_date",
-            "max_players",
-            "description",
-            "rules",
-            "draw_rules",
-            "matches",
-            "winners",
-            "players",
-        )
-
-
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
