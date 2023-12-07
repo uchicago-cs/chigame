@@ -16,7 +16,7 @@ lobby_patterns = [
 
 user_patterns = [
     path("", views.UserListView.as_view(), name="api-user-list"),
-    path("register/", views.UserRegistrationView.as_view(), name="user-registration"),
+    path("add/", views.UserRegistrationView.as_view(), name="user-registration"),
     path("<slug:slug>/", views.UserDetailView.as_view(), name="api-user-detail"),
     path("<slug:slug>/groups/", views.UserGroupsView.as_view(), name="api-user-groups"),
     path("<int:pk>/friends/", views.UserFriendsAPIView.as_view(), name="api-user-friends"),
