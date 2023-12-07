@@ -6,7 +6,6 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from chigame.api.filters import GameFilter
 from chigame.api.serializers import (
@@ -157,12 +156,10 @@ class UserProfileListView(generics.ListAPIView):
     queryset = UserProfile.objects.all()
     serializer_class = UserProfileSerializer
     permission_classes = [IsAuthenticated]
-    authentication_classes = [JWTAuthentication]
 
 
 class UserProfileUpdateView(APIView):
     permission_classes = [IsAuthenticated]
-    authentication_classes = [JWTAuthentication]
 
     def patch(self, request, *args, **kwargs):
         user_profile_pk = self.kwargs["user_profile_pk"]
