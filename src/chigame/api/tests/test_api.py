@@ -21,11 +21,18 @@ class GameTests(APITestCase):
         Helper function to check that the object data matches the expected data.
         """
         for key in expected:
+            # Issue:  Serialized data often converts numbers to strings for transport
+            # leading to a type mismatch when compared with their original Python types.
+
+            # Solution: The check on lines 35-36 converts the serialized data to
+            # the original Python type before comparing it with the expected data.
+            # This ensures that the comparison is done on the same type of data.
+
+            # For example, without this check, you might encounter issues
+            # when comparing Decimal('5') and '5.00',
+            # which would fail due to type mismatch despite representing the same value.
+
             if isinstance(obj, (ReturnDict, dict)):
-                # If so, use key indexing to retrieve the value corresponding to 'key'
-                # This is suitable for dictionary-like objects where data is accessed by keys
-                # This ensures that despite the types (either serialized or unserialized),
-                # we can still compare the data correctly (e.g. id, name, etc.)
                 obj_value = obj[key]
             else:
                 # Use getattr for object instances
