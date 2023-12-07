@@ -89,6 +89,7 @@ class MessageSerializer(serializers.ModelSerializer):
 class FriendInvitationSerializer(serializers.ModelSerializer):
     class Meta:
         model = FriendInvitation
+        fields = "__all__"
 
 
 class GroupSerializer(serializers.ModelSerializer):

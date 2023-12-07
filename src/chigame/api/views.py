@@ -3,7 +3,6 @@ from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, status
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -86,6 +85,12 @@ class LobbyDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = LobbySerializer
 
 
+class UserListView(generics.ListCreateAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    pagination_class = PageNumberPagination
+
+
 # Bug with PATCH'ing emails -- refer to Issue #394
 class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = User.objects.all()
@@ -155,12 +160,9 @@ class UserProfileCreateView(APIView):
 class UserProfileListView(generics.ListAPIView):
     queryset = UserProfile.objects.all()
     serializer_class = UserProfileSerializer
-    permission_classes = [IsAuthenticated]
 
 
 class UserProfileUpdateView(APIView):
-    permission_classes = [IsAuthenticated]
-
     def patch(self, request, *args, **kwargs):
         user_profile_pk = self.kwargs["user_profile_pk"]
         user_profile = get_object_or_404(UserProfile, pk=user_profile_pk)
