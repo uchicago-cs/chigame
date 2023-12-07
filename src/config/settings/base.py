@@ -93,7 +93,6 @@ THIRD_PARTY_APPS = [
     # https://django-machina.readthedocs.io/en/latest/getting_started.html#django-settings
     "machina",
     "machina.apps.forum",
-    "machina.apps.forum_conversation",
     "machina.apps.forum_conversation.forum_attachments",
     "machina.apps.forum_conversation.forum_polls",
     "machina.apps.forum_feeds",
@@ -109,6 +108,9 @@ LOCAL_APPS = [
     "chigame.games",
     # Additional apps go here
     "chigame.api",
+    "chigame.forums.base",
+    # Overridden django-machina apps
+    "chigame.forums.forum_conversation",
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -357,3 +359,26 @@ HAYSTACK_SIGNAL_PROCESSOR = "haystack.signals.RealtimeSignalProcessor"
 # https://django-machina.readthedocs.io/en/stable/settings.html
 MACHINA_FORUM_NAME = "ChiGame Forums"
 MACHINA_BASE_TEMPLATE_NAME = "base.html"
+MACHINA_FORUM_IMAGE_UPLOAD_TO = "forums/"
+
+# This setting define which permissions should be granted to all authenticated
+# users. Note that the permissions specified in this list are granted only if a
+# given forum does not have any permissions set for a given authenticated user.
+#
+# In the future, it may become desirable to take a more fine-grain approach to
+# user permissions on the chigame forum, more information on how to implement
+# such an approach and a full list of permissions can be found at this link.
+# https://django-machina.readthedocs.io/en/latest/forum_permissions.html
+#
+# https://django-machina.readthedocs.io/en/latest/settings.html#machina-default-authenticated-user-forum-permissions
+MACHINA_DEFAULT_AUTHENTICATED_USER_FORUM_PERMISSIONS = [
+    "can_see_forum",
+    "can_read_forum",
+    "can_start_new_topics",
+    "can_reply_to_topics",
+    "can_edit_own_posts",
+    "can_post_without_approval",
+    "can_create_polls",
+    "can_vote_in_polls",
+    "can_download_file",
+]
