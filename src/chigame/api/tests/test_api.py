@@ -22,7 +22,10 @@ class GameTests(APITestCase):
         """
         for key in expected:
             if isinstance(obj, (ReturnDict, dict)):
-                # Use key indexing for dictionaries and ReturnDict
+                # If so, use key indexing to retrieve the value corresponding to 'key'
+                # This is suitable for dictionary-like objects where data is accessed by keys
+                # This ensures that despite the types (either serialized or unserialized),
+                # we can still compare the data correctly (e.g. id, name, etc.)
                 obj_value = obj[key]
             else:
                 # Use getattr for object instances
