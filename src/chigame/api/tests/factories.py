@@ -82,7 +82,9 @@ class UserFactory(DjangoModelFactory):
 
     name = Faker("name")
     email = Faker("email")
+    username = Faker("user_name")
     password = Faker("password")
+    tokens = Faker("random_int", min=1, max=3)
 
 
 class TournamentFactory(DjangoModelFactory):

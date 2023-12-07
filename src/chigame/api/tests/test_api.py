@@ -289,7 +289,7 @@ class UserTests(APITestCase):
         user = UserFactory()
 
         list_url = reverse("api-user-list")
-        detail_url = reverse("api-user-detail", kwargs={"pk": user.id})
+        detail_url = reverse("api-user-detail", kwargs={"slug": user.username})
 
         list_response = self.client.get(list_url)
         assert list_response.status_code == 200
@@ -306,7 +306,7 @@ class UserTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(User.objects.count(), 0)
-        
+
     def test_feed_message(self):
         self.user1 = UserFactory()
         self.user2 = UserFactory()
