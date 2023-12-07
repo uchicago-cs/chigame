@@ -75,7 +75,12 @@ def test_notificationqueryset_get_by_actor():
         Notification.objects.get_by_actor(friendinvitation1)
         Notification.objects.get_by_actor(friendinvitation3)
 
-    assert len(Notification.objects.filter_by_actor(friendinvitation2)) == 1
+    notification = Notification.objects.get_by_actor(friendinvitation2)
+    assert notification.actor == friendinvitation2
+
+    notification.delete()
+    with pytest.raises(Notification.DoesNotExist):
+        Notification.objects.get_by_actor(friendinvitation2)
 
 
 @pytest.mark.django_db

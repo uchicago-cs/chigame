@@ -13,14 +13,40 @@
       <a href="{% url 'tournament-detail' tournament.id %}">{{ tournament.name }}</a> ({{ tournament.status }})
     </h1>
     {% if tournament.status == "tournament ended" %}
-      {% if tournament.archived == True %}
-        <img src="{% static 'images/tournaments_icons/Archived_icon.png' %}"
-             alt="Archived"
-             width="30" />
-      {% elif tournament.archived == False %}
-        <img src="{% static 'images/tournaments_icons/Unarchived_icon.png' %}"
-             alt="Not archived"
-             width="30" />
+      {% if tournament.archived %}
+        {% if user.is_staff %}
+          <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="tournament_id" value="{{ tournament.id }}" />
+            <input type="hidden" name="action" value="unarchive" />
+            <button type="submit">
+              <img src="{% static 'images/tournaments_icons/Archived_icon.png' %}"
+                   alt="Archived"
+                   width="30" />
+            </button>
+          </form>
+        {% else %}
+          <img src="{% static 'images/tournaments_icons/Archived_icon.png' %}"
+               alt="Archived"
+               width="30" />
+        {% endif %}
+      {% else %}
+        {% if user.is_staff %}
+          <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="tournament_id" value="{{ tournament.id }}" />
+            <input type="hidden" name="action" value="archive" />
+            <button type="submit">
+              <img src="{% static 'images/tournaments_icons/Unarchived_icon.png' %}"
+                   alt="Not archived"
+                   width="30" />
+            </button>
+          </form>
+        {% else %}
+          <img src="{% static 'images/tournaments_icons/Unarchived_icon.png' %}"
+               alt="Not archived"
+               width="30" />
+        {% endif %}
       {% endif %}
     {% endif %}
   </div>
@@ -34,23 +60,20 @@
   <p>Rules: {{ tournament.rules }}</p>
   <p>Draw rules: {{ tournament.draw_rules }}</p>
   <p>Players:</p>
-  {% if tournament.get_all_players %}
-    <ul>
-      {% for player in tournament.get_all_players %}
-        <li>
-          <p>
-            {% if player.name %}
-              <a href="{% url 'users:detail' player.id %}">{{ player.name }}</a>
-            {% else %}
-              <a href="{% url 'users:detail' player.id %}">{{ player.email }}</a>
-            {% endif %}
-          </p>
-        </li>
-      {% endfor %}
-    </ul>
-  {% else %}
-    <p>No player yet.</p>
-  {% endif %}
+  <ul>
+    {% for player in tournament.get_all_players %}
+      <li>
+        <p>
+          {% if player.name %}
+            <a href="{% url 'users:detail' player.id %}">{{ player.name }}</a>
+          {% else %}
+            <a href="{% url 'users:detail' player.id %}">{{ player.email }}</a>
+          {% endif %}
+        </p>
+      </li>
+    {% endfor %}
+  </ul>
+  <p>Winners:</p>
   {% if tournament.get_all_winners %}
     <p>Winners:</p>
     <ul>
@@ -82,6 +105,8 @@
                 <a href="{% url 'users:detail' player.id %}">{{ player.email }}</a>
               {% endif %}
               {% if not forloop.last %}vs.{% endif %}
+            {% empty %}
+              Forfeited
             {% endfor %}
             )
           </p>
@@ -92,7 +117,7 @@
   {% else %}
     <p>No matches yet.</p>
   {% endif %}
-  {% if user.is_authenticated %}
+  {% if user.is_authenticated and tournament.status == "registration open" %}
     <form method="post">
       {% csrf_token %}
       <input type="hidden" name="tournament_id" value="{{ tournament.id }}" />
@@ -106,13 +131,36 @@
       <button type="submit" id="Withdraw">Withdraw</button>
     </form>
   {% endif %}
+  {% if tournament.status == "tournament in progress" %}
+    {% if user.is_authenticated and user in tournament.get_all_players %}
+      <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="tournament_id" value="{{ tournament.id }}" />
+        <input type="hidden" name="action" value="join_match" />
+        <button type="submit" id="Join_match">Join the match</button>
+      </form>
+    {% endif %}
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="tournament_id" value="{{ tournament.id }}" />
+      <input type="hidden" name="action" value="spectate" />
+      <button type="submit" id="Spectate">Spectate</button>
+    </form>
+  {% endif %}
+  {% if user.is_authenticated %}
+    <a href="{% url 'tournament-chat' tournament.id %}">
+      <button>{{ tournament.name }} Chat</button>
+    </a>
+  {% endif %}
   <!-- You can add more fields as needed -->
   {% if user.is_staff %}
     <p>
-      <a href="{% url 'tournament-update' tournament.id %}">Update</a>
-    </p>
-    <p>
       <a href="{% url 'tournament-delete' tournament.id %}">Delete</a>
+    </p>
+  {% endif %}
+  {% if user.is_staff or request.user == tournament.created_by %}
+    <p>
+      <a href="{% url 'tournament-update' tournament.id %}">Update</a>
     </p>
   {% endif %}
 {% endblock content %}
