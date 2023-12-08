@@ -15,7 +15,7 @@ from rest_framework.response import Response
 
 from chigame.games.models import Lobby, Player, Tournament
 
-from .models import FriendInvitation, Notification, UserProfile
+from .models import FriendInvitation, Notification, TournamentInvitation, UserProfile
 from .tables import FriendsTable, UserTable
 
 User = get_user_model()
@@ -185,6 +185,18 @@ def cancel_friend_invitation(request, pk):
 
 
 @login_required
+def invite_to_tournament(request, pk, tournament_pk):
+    try:
+        sender = get_object_or_404(User, pk=request.user.id)
+        receiver = get_object_or_404(User, pk=pk)
+        tournament = get_object_or_404(Tournament, pk=tournament_pk)
+        TournamentInvitation.objects.create(sender=sender, receiver=receiver, tournament=tournament)
+        messages.success(request, "Invitation to tournament sent successfully.")
+    except Exception as e:
+        messages.error(request, f"Error: {str(e)}")
+    return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
+
+
 def accept_friend_invitation(request, pk):
     try:
         friendship = FriendInvitation.objects.get(pk=pk)
