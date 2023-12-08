@@ -13,9 +13,10 @@ from django.views.generic import DetailView, RedirectView, UpdateView
 from rest_framework import status
 from rest_framework.response import Response
 
-from chigame.games.models import Lobby, Player, Tournament
+from chigame.games.models import Lobby, Match, Player, Tournament
+from chigame.games.views import lobby_join
 
-from .models import FriendInvitation, Notification, UserProfile
+from .models import FriendInvitation, GameInvitation, Notification, TournamentInvitation, UserProfile
 from .tables import FriendsTable, UserTable
 
 User = get_user_model()
@@ -181,6 +182,53 @@ def cancel_friend_invitation(request, pk):
         messages.success(request, "Friendship invitation cancelled successfully.")
     else:
         messages.error(request, "Something went wrong please try again later!")
+    return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
+
+
+@login_required
+def invite_to_game(request, pk, match_id):
+    sender = User.objects.get(pk=request.user.id)
+    receiver = User.objects.get(pk=pk)
+    match = Match.objects.get(pk=match_id)
+    game_invitation = GameInvitation.objects.create(sender=sender, receiver=receiver, match=match)
+    notification = Notification.objects.create(
+        actor=game_invitation,
+        receiver=receiver,
+        type=Notification.MATCH_INVITATION,
+    )
+    if notification:
+        messages.success(request, "Invitation to game sent successfully.")
+    else:
+        messages.error(request, "Something went wrong please try again later!")
+    return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
+
+
+@login_required
+def invite_to_tournament(request, pk, tournament_id):
+    sender = User.objects.get(pk=request.user.id)
+    receiver = User.objects.get(pk=pk)
+    tournament = Tournament.objects.get(pk=tournament_id)
+    tournament_invitation = TournamentInvitation.objects.create(
+        sender=sender, receiver=receiver, tournament=tournament
+    )
+
+    notification = Notification.objects.create(
+        actor=tournament_invitation,
+        receiver=receiver,
+        type=Notification.TOURNAMENT_INVITATION,
+    )
+    if notification:
+        messages.success(request, "Invitation to tournament sent successfully.")
+    else:
+        messages.error(request, "Something went wrong please try again later!")
+    return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
+
+
+@login_required
+def accept_game_invitation(request, pk, match_id):
+    match_invite = GameInvitation.objects.get(pk=pk)
+    match_invite.accept_invitation()
+    lobby_join(request, pk=match_invite.lobby.pk)
     return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
 
 
