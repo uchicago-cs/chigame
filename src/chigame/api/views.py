@@ -1,10 +1,16 @@
 # from django.shortcuts import render
+
+
+from dj_rest_auth.models import TokenModel
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, status
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
 
 from chigame.api.filters import GameFilter
 from chigame.api.serializers import (
@@ -17,8 +23,8 @@ from chigame.api.serializers import (
     MessageSerializer,
     UserSerializer,
 )
-from chigame.games.models import Game, Lobby, Message, User
-from chigame.users.models import Group, UserProfile
+from chigame.games.models import Game, Lobby, Message
+from chigame.users.models import Group, User, UserProfile
 
 
 # Helper function to get user from slug
@@ -42,6 +48,29 @@ class GameListView(generics.ListCreateAPIView):
 class GameDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Game.objects.all()
     serializer_class = GameSerializer
+
+
+class UserListView(generics.ListAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+
+
+class UserRegistrationView(APIView):
+    permission_classes = [AllowAny]
+    serializer_class = UserSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer_instance = self.serializer_class(data=request.data)
+        if serializer_instance.is_valid():
+            user = serializer_instance.save()
+            UserProfile.objects.create(user=user, display_name=user.name)
+            refresh = TokenModel.objects.create(user=user)
+            access_token = str(refresh.key)
+
+            return Response({"access_token": access_token}, status=status.HTTP_201_CREATED)
+        return Response(serializer_instance.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class GameCategoriesAPIView(generics.ListAPIView):
@@ -84,10 +113,19 @@ class LobbyDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = LobbySerializer
 
 
-class UserListView(generics.ListCreateAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    pagination_class = PageNumberPagination
+class CustomTokenObtainPairView(TokenObtainPairView):
+    # Add any custom behavior if needed
+    pass
+
+
+class CustomTokenRefreshView(TokenRefreshView):
+    # Add any custom behavior if needed
+    pass
+
+
+class CustomTokenVerifyView(TokenVerifyView):
+    # Add any custom behavior if needed
+    pass
 
 
 # Bug with PATCH'ing emails -- refer to Issue #394

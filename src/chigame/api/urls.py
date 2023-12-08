@@ -16,6 +16,7 @@ lobby_patterns = [
 
 user_patterns = [
     path("", views.UserListView.as_view(), name="api-user-list"),
+    path("add/", views.UserRegistrationView.as_view(), name="user-registration"),
     path("<slug:slug>/", views.UserDetailView.as_view(), name="api-user-detail"),
     path("<slug:slug>/groups/", views.UserGroupsView.as_view(), name="api-user-groups"),
     path("<int:pk>/friends/", views.UserFriendsAPIView.as_view(), name="api-user-friends"),
@@ -33,6 +34,9 @@ group_patterns = [
 ]
 
 urlpatterns = [
+    path("token/", views.CustomTokenObtainPairView.as_view(), name="token_obtain_pair"),
+    path("token/refresh/", views.CustomTokenRefreshView.as_view(), name="token_refresh"),
+    path("token/verify/", views.CustomTokenVerifyView.as_view(), name="token_verify"),
     path("games/", include(game_patterns)),
     path("lobbies/", include(lobby_patterns)),
     path("users/", include(user_patterns)),
