@@ -1,12 +1,18 @@
 from rest_framework import serializers
 
 from chigame.games.models import Category, Chat, Game, Lobby, Mechanic, Message, Tournament, User
-from chigame.users.models import Group
+from chigame.users.models import FriendInvitation, Group, UserProfile
 
 
 class GameSerializer(serializers.ModelSerializer):
     class Meta:
         model = Game
+        fields = "__all__"
+
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserProfile
         fields = "__all__"
 
 
@@ -59,7 +65,6 @@ class MechanicSerializer(serializers.ModelSerializer):
 
 class MessageSerializer(serializers.ModelSerializer):
     sender = serializers.EmailField(write_only=True)
-
     tournament = serializers.IntegerField(write_only=True)
 
     class Meta:
@@ -81,9 +86,16 @@ class MessageSerializer(serializers.ModelSerializer):
         return message
 
 
+class FriendInvitationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FriendInvitation
+        fields = "__all__"
+
+
 class GroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = Group
+
         fields = "__all__"
 
 

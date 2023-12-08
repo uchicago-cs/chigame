@@ -33,6 +33,24 @@ group_patterns = [
 ]
 
 urlpatterns = [
+    path(
+        "friend-invitations/send/<int:sender_pk>/<int:receiver_pk>/",
+        views.SendFriendInvitationView.as_view(),
+        name="send-friend-invitation",
+    ),
+    path(
+        "friend-invitations/accept/<int:invitation_pk>/",
+        views.AcceptFriendInvitationView.as_view(),
+        name="accept-friend-invitation",
+    ),
+    path("friend-invitations/", views.FriendInvitationList.as_view(), name="friend-invitation-list"),
+    path("user-profiles/create/<int:user_pk>/", views.UserProfileCreateView.as_view(), name="create-user-profile"),
+    path("user-profiles/", views.UserProfileListView.as_view(), name="user-profile-list"),
+    path(
+        "user-profiles/update/<int:user_profile_pk>/",
+        views.UserProfileUpdateView.as_view(),
+        name="update-user-profile",
+    ),
     path("games/", include(game_patterns)),
     path("lobbies/", include(lobby_patterns)),
     path("users/", include(user_patterns)),

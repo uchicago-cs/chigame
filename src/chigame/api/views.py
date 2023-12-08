@@ -9,19 +9,20 @@ from rest_framework.views import APIView
 from chigame.api.filters import GameFilter
 from chigame.api.serializers import (
     CategorySerializer,
+    FriendInvitationSerializer,
     GameSerializer,
     GroupSerializer,
     LobbySerializer,
     MechanicSerializer,
     MessageFeedSerializer,
     MessageSerializer,
+    UserProfileSerializer,
     UserSerializer,
 )
-from chigame.games.models import Game, Lobby, Message, User
-from chigame.users.models import Group, UserProfile
+from chigame.games.models import Game, Lobby, Message
+from chigame.users.models import FriendInvitation, Group, User, UserProfile
 
 
-# Helper function to get user from slug
 def get_user(lookup_value):
     # If the lookup_value is an integer, use the id field
     if lookup_value.isdigit():
@@ -104,6 +105,73 @@ class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
 class MessageView(generics.CreateAPIView):
     queryset = Message.objects.all()
     serializer_class = MessageSerializer
+
+
+class SendFriendInvitationView(APIView):
+    def post(self, request, *args, **kwargs):
+        sender_pk = self.kwargs["sender_pk"]
+        receiver_pk = self.kwargs["receiver_pk"]
+        sender = get_object_or_404(User, pk=sender_pk)
+        receiver = get_object_or_404(User, pk=receiver_pk)
+        if sender == receiver:
+            return Response(
+                {"detail": "You cannot send an invitation to yourself."}, status=status.HTTP_400_BAD_REQUEST
+            )
+        invitation = FriendInvitation(sender=sender, receiver=receiver)
+        invitation.save()
+        serializer = FriendInvitationSerializer(invitation)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class AcceptFriendInvitationView(APIView):
+    def post(self, request, *args, **kwargs):
+        invitation_pk = self.kwargs["invitation_pk"]
+        invitation = get_object_or_404(FriendInvitation, pk=invitation_pk)
+        if invitation.accepted:
+            return Response(
+                {"detail": "This invitation has already been accepted."}, status=status.HTTP_400_BAD_REQUEST
+            )
+        invitation.accept_invitation()  # Error with this method in the users.models
+        serializer = FriendInvitationSerializer(invitation)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class FriendInvitationList(generics.ListAPIView):
+    queryset = FriendInvitation.objects.all()
+    serializer_class = FriendInvitationSerializer
+
+
+class UserProfileCreateView(APIView):
+    def post(self, request, *args, **kwargs):
+        user_pk = self.kwargs["user_pk"]
+        user = get_object_or_404(User, pk=user_pk)
+        existing_profile = UserProfile.objects.filter(user=user).first()
+        if existing_profile:
+            serializer = UserProfileSerializer(existing_profile)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        serializer = UserProfileSerializer(data=request.data)
+        if serializer.is_valid():
+            profile = serializer.save(user=user)
+            return Response(UserProfileSerializer(profile).data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserProfileListView(generics.ListAPIView):
+    queryset = UserProfile.objects.all()
+    serializer_class = UserProfileSerializer
+
+
+class UserProfileUpdateView(APIView):
+    def patch(self, request, *args, **kwargs):
+        user_profile_pk = self.kwargs["user_profile_pk"]
+        user_profile = get_object_or_404(UserProfile, pk=user_profile_pk)
+
+        serializer = UserProfileSerializer(user_profile, data=request.data, partial=True)
+        if serializer.is_valid():
+            updated_profile = serializer.save()
+            return Response(UserProfileSerializer(updated_profile).data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class GroupListView(generics.ListCreateAPIView):
