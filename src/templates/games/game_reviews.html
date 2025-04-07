@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}
+  Reviews for {{ game.name }}
+{% endblock title %}
+{% block content %}
+  <h1>Reviews for {{ game.name }}</h1>
+  {% if reviews %}
+    <ul>
+      {% for review in reviews %}
+        <li>
+          {% if review.title %}<h3>{{ review.title }}</h3>{% endif %}
+          <p>
+            {{ review.user }}
+            {% if review.rating is not None %}rated it {{ review.rating }}/5.00{% endif %}
+            :
+          </p>
+          <p>{{ review.review }}</p>
+          <hr />
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No reviews available for {{ game.name }}.</p>
+  {% endif %}
+  <a href="{% url 'game-list' %}">Back to Games List</a>
+{% endblock content %}

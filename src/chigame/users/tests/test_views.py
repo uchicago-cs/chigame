@@ -12,7 +12,7 @@ from django.utils.translation import gettext_lazy as _
 from chigame.users.forms import UserAdminChangeForm
 from chigame.users.models import User
 from chigame.users.tests.factories import UserFactory
-from chigame.users.views import UserRedirectView, UserUpdateView, user_detail_view
+from chigame.users.views import UserRedirectView, UserUpdateView, user_detail_view, user_list
 
 pytestmark = pytest.mark.django_db
 
@@ -94,3 +94,27 @@ class TestUserDetailView:
         assert isinstance(response, HttpResponseRedirect)
         assert response.status_code == 302
         assert response.url == f"{login_url}?next=/fake-url/"
+
+
+@pytest.mark.django_db
+def test_admin_user_list_view(client, rf: RequestFactory):
+    request = rf.get("user-list")
+
+    request.user = User.objects.create_user(is_staff=True, name="testuser", password="testpass", email="test@pass.com")
+    client.login(email="test@pass.com", password="testpass")
+
+    response = user_list(request)
+
+    assert response.status_code == 200
+
+
+@pytest.mark.django_db
+def test_nonadmin_user_list_view(client, rf: RequestFactory):
+    request = rf.get("user-list")
+
+    request.user = User.objects.create_user(name="testuser", password="testpass", email="test@pass.com")
+    client.login(email="test@pass.com", password="testpass")
+
+    response = user_list(request)
+
+    assert response.status_code == 404

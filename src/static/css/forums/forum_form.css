@@ -1,0 +1,30 @@
+body {
+    background: rgb(248, 249, 250);
+}
+
+label {
+    display: block;
+    font-weight: 600;
+}
+
+.container form {
+    display: inline-block;
+    width: 40%;
+    box-sizing: border-box;
+    background: #eaeaea;
+}
+
+.container input,
+textarea {
+    border: 2px solid #ccc;
+    border-radius: 5px;
+    width: 100%;
+}
+
+.container input[type='file'] {
+    display: none;
+}
+
+.container textarea {
+    resize: none;
+}
