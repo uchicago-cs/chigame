@@ -1,0 +1,3032 @@
+[
+{
+    "model": "auth.permission",
+    "pk": 1,
+    "fields": {
+        "name": "Can add permission",
+        "content_type": 1,
+        "codename": "add_permission"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 2,
+    "fields": {
+        "name": "Can change permission",
+        "content_type": 1,
+        "codename": "change_permission"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 3,
+    "fields": {
+        "name": "Can delete permission",
+        "content_type": 1,
+        "codename": "delete_permission"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 4,
+    "fields": {
+        "name": "Can view permission",
+        "content_type": 1,
+        "codename": "view_permission"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 5,
+    "fields": {
+        "name": "Can add group",
+        "content_type": 2,
+        "codename": "add_group"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 6,
+    "fields": {
+        "name": "Can change group",
+        "content_type": 2,
+        "codename": "change_group"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 7,
+    "fields": {
+        "name": "Can delete group",
+        "content_type": 2,
+        "codename": "delete_group"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 8,
+    "fields": {
+        "name": "Can view group",
+        "content_type": 2,
+        "codename": "view_group"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 9,
+    "fields": {
+        "name": "Can add content type",
+        "content_type": 3,
+        "codename": "add_contenttype"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 10,
+    "fields": {
+        "name": "Can change content type",
+        "content_type": 3,
+        "codename": "change_contenttype"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 11,
+    "fields": {
+        "name": "Can delete content type",
+        "content_type": 3,
+        "codename": "delete_contenttype"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 12,
+    "fields": {
+        "name": "Can view content type",
+        "content_type": 3,
+        "codename": "view_contenttype"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 13,
+    "fields": {
+        "name": "Can add session",
+        "content_type": 4,
+        "codename": "add_session"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 14,
+    "fields": {
+        "name": "Can change session",
+        "content_type": 4,
+        "codename": "change_session"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 15,
+    "fields": {
+        "name": "Can delete session",
+        "content_type": 4,
+        "codename": "delete_session"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 16,
+    "fields": {
+        "name": "Can view session",
+        "content_type": 4,
+        "codename": "view_session"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 17,
+    "fields": {
+        "name": "Can add site",
+        "content_type": 5,
+        "codename": "add_site"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 18,
+    "fields": {
+        "name": "Can change site",
+        "content_type": 5,
+        "codename": "change_site"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 19,
+    "fields": {
+        "name": "Can delete site",
+        "content_type": 5,
+        "codename": "delete_site"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 20,
+    "fields": {
+        "name": "Can view site",
+        "content_type": 5,
+        "codename": "view_site"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 21,
+    "fields": {
+        "name": "Can add log entry",
+        "content_type": 6,
+        "codename": "add_logentry"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 22,
+    "fields": {
+        "name": "Can change log entry",
+        "content_type": 6,
+        "codename": "change_logentry"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 23,
+    "fields": {
+        "name": "Can delete log entry",
+        "content_type": 6,
+        "codename": "delete_logentry"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 24,
+    "fields": {
+        "name": "Can view log entry",
+        "content_type": 6,
+        "codename": "view_logentry"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 25,
+    "fields": {
+        "name": "Can add email address",
+        "content_type": 7,
+        "codename": "add_emailaddress"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 26,
+    "fields": {
+        "name": "Can change email address",
+        "content_type": 7,
+        "codename": "change_emailaddress"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 27,
+    "fields": {
+        "name": "Can delete email address",
+        "content_type": 7,
+        "codename": "delete_emailaddress"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 28,
+    "fields": {
+        "name": "Can view email address",
+        "content_type": 7,
+        "codename": "view_emailaddress"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 29,
+    "fields": {
+        "name": "Can add email confirmation",
+        "content_type": 8,
+        "codename": "add_emailconfirmation"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 30,
+    "fields": {
+        "name": "Can change email confirmation",
+        "content_type": 8,
+        "codename": "change_emailconfirmation"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 31,
+    "fields": {
+        "name": "Can delete email confirmation",
+        "content_type": 8,
+        "codename": "delete_emailconfirmation"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 32,
+    "fields": {
+        "name": "Can view email confirmation",
+        "content_type": 8,
+        "codename": "view_emailconfirmation"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 33,
+    "fields": {
+        "name": "Can add social account",
+        "content_type": 9,
+        "codename": "add_socialaccount"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 34,
+    "fields": {
+        "name": "Can change social account",
+        "content_type": 9,
+        "codename": "change_socialaccount"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 35,
+    "fields": {
+        "name": "Can delete social account",
+        "content_type": 9,
+        "codename": "delete_socialaccount"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 36,
+    "fields": {
+        "name": "Can view social account",
+        "content_type": 9,
+        "codename": "view_socialaccount"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 37,
+    "fields": {
+        "name": "Can add social application",
+        "content_type": 10,
+        "codename": "add_socialapp"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 38,
+    "fields": {
+        "name": "Can change social application",
+        "content_type": 10,
+        "codename": "change_socialapp"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 39,
+    "fields": {
+        "name": "Can delete social application",
+        "content_type": 10,
+        "codename": "delete_socialapp"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 40,
+    "fields": {
+        "name": "Can view social application",
+        "content_type": 10,
+        "codename": "view_socialapp"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 41,
+    "fields": {
+        "name": "Can add social application token",
+        "content_type": 11,
+        "codename": "add_socialtoken"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 42,
+    "fields": {
+        "name": "Can change social application token",
+        "content_type": 11,
+        "codename": "change_socialtoken"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 43,
+    "fields": {
+        "name": "Can delete social application token",
+        "content_type": 11,
+        "codename": "delete_socialtoken"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 44,
+    "fields": {
+        "name": "Can view social application token",
+        "content_type": 11,
+        "codename": "view_socialtoken"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 45,
+    "fields": {
+        "name": "Can add Forum",
+        "content_type": 12,
+        "codename": "add_forum"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 46,
+    "fields": {
+        "name": "Can change Forum",
+        "content_type": 12,
+        "codename": "change_forum"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 47,
+    "fields": {
+        "name": "Can delete Forum",
+        "content_type": 12,
+        "codename": "delete_forum"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 48,
+    "fields": {
+        "name": "Can view Forum",
+        "content_type": 12,
+        "codename": "view_forum"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 49,
+    "fields": {
+        "name": "Can add Post",
+        "content_type": 13,
+        "codename": "add_post"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 50,
+    "fields": {
+        "name": "Can change Post",
+        "content_type": 13,
+        "codename": "change_post"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 51,
+    "fields": {
+        "name": "Can delete Post",
+        "content_type": 13,
+        "codename": "delete_post"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 52,
+    "fields": {
+        "name": "Can view Post",
+        "content_type": 13,
+        "codename": "view_post"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 53,
+    "fields": {
+        "name": "Can add Topic",
+        "content_type": 14,
+        "codename": "add_topic"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 54,
+    "fields": {
+        "name": "Can change Topic",
+        "content_type": 14,
+        "codename": "change_topic"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 55,
+    "fields": {
+        "name": "Can delete Topic",
+        "content_type": 14,
+        "codename": "delete_topic"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 56,
+    "fields": {
+        "name": "Can view Topic",
+        "content_type": 14,
+        "codename": "view_topic"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 57,
+    "fields": {
+        "name": "Can add Attachment",
+        "content_type": 15,
+        "codename": "add_attachment"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 58,
+    "fields": {
+        "name": "Can change Attachment",
+        "content_type": 15,
+        "codename": "change_attachment"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 59,
+    "fields": {
+        "name": "Can delete Attachment",
+        "content_type": 15,
+        "codename": "delete_attachment"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 60,
+    "fields": {
+        "name": "Can view Attachment",
+        "content_type": 15,
+        "codename": "view_attachment"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 61,
+    "fields": {
+        "name": "Can add Topic poll",
+        "content_type": 16,
+        "codename": "add_topicpoll"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 62,
+    "fields": {
+        "name": "Can change Topic poll",
+        "content_type": 16,
+        "codename": "change_topicpoll"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 63,
+    "fields": {
+        "name": "Can delete Topic poll",
+        "content_type": 16,
+        "codename": "delete_topicpoll"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 64,
+    "fields": {
+        "name": "Can view Topic poll",
+        "content_type": 16,
+        "codename": "view_topicpoll"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 65,
+    "fields": {
+        "name": "Can add Topic poll option",
+        "content_type": 17,
+        "codename": "add_topicpolloption"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 66,
+    "fields": {
+        "name": "Can change Topic poll option",
+        "content_type": 17,
+        "codename": "change_topicpolloption"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 67,
+    "fields": {
+        "name": "Can delete Topic poll option",
+        "content_type": 17,
+        "codename": "delete_topicpolloption"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 68,
+    "fields": {
+        "name": "Can view Topic poll option",
+        "content_type": 17,
+        "codename": "view_topicpolloption"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 69,
+    "fields": {
+        "name": "Can add Topic poll vote",
+        "content_type": 18,
+        "codename": "add_topicpollvote"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 70,
+    "fields": {
+        "name": "Can change Topic poll vote",
+        "content_type": 18,
+        "codename": "change_topicpollvote"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 71,
+    "fields": {
+        "name": "Can delete Topic poll vote",
+        "content_type": 18,
+        "codename": "delete_topicpollvote"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 72,
+    "fields": {
+        "name": "Can view Topic poll vote",
+        "content_type": 18,
+        "codename": "view_topicpollvote"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 73,
+    "fields": {
+        "name": "Can add Forum track",
+        "content_type": 19,
+        "codename": "add_forumreadtrack"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 74,
+    "fields": {
+        "name": "Can change Forum track",
+        "content_type": 19,
+        "codename": "change_forumreadtrack"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 75,
+    "fields": {
+        "name": "Can delete Forum track",
+        "content_type": 19,
+        "codename": "delete_forumreadtrack"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 76,
+    "fields": {
+        "name": "Can view Forum track",
+        "content_type": 19,
+        "codename": "view_forumreadtrack"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 77,
+    "fields": {
+        "name": "Can add Topic track",
+        "content_type": 20,
+        "codename": "add_topicreadtrack"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 78,
+    "fields": {
+        "name": "Can change Topic track",
+        "content_type": 20,
+        "codename": "change_topicreadtrack"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 79,
+    "fields": {
+        "name": "Can delete Topic track",
+        "content_type": 20,
+        "codename": "delete_topicreadtrack"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 80,
+    "fields": {
+        "name": "Can view Topic track",
+        "content_type": 20,
+        "codename": "view_topicreadtrack"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 81,
+    "fields": {
+        "name": "Can add Forum profile",
+        "content_type": 21,
+        "codename": "add_forumprofile"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 82,
+    "fields": {
+        "name": "Can change Forum profile",
+        "content_type": 21,
+        "codename": "change_forumprofile"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 83,
+    "fields": {
+        "name": "Can delete Forum profile",
+        "content_type": 21,
+        "codename": "delete_forumprofile"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 84,
+    "fields": {
+        "name": "Can view Forum profile",
+        "content_type": 21,
+        "codename": "view_forumprofile"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 85,
+    "fields": {
+        "name": "Can add Forum permission",
+        "content_type": 22,
+        "codename": "add_forumpermission"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 86,
+    "fields": {
+        "name": "Can change Forum permission",
+        "content_type": 22,
+        "codename": "change_forumpermission"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 87,
+    "fields": {
+        "name": "Can delete Forum permission",
+        "content_type": 22,
+        "codename": "delete_forumpermission"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 88,
+    "fields": {
+        "name": "Can view Forum permission",
+        "content_type": 22,
+        "codename": "view_forumpermission"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 89,
+    "fields": {
+        "name": "Can add Group forum permission",
+        "content_type": 23,
+        "codename": "add_groupforumpermission"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 90,
+    "fields": {
+        "name": "Can change Group forum permission",
+        "content_type": 23,
+        "codename": "change_groupforumpermission"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 91,
+    "fields": {
+        "name": "Can delete Group forum permission",
+        "content_type": 23,
+        "codename": "delete_groupforumpermission"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 92,
+    "fields": {
+        "name": "Can view Group forum permission",
+        "content_type": 23,
+        "codename": "view_groupforumpermission"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 93,
+    "fields": {
+        "name": "Can add User forum permission",
+        "content_type": 24,
+        "codename": "add_userforumpermission"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 94,
+    "fields": {
+        "name": "Can change User forum permission",
+        "content_type": 24,
+        "codename": "change_userforumpermission"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 95,
+    "fields": {
+        "name": "Can delete User forum permission",
+        "content_type": 24,
+        "codename": "delete_userforumpermission"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 96,
+    "fields": {
+        "name": "Can view User forum permission",
+        "content_type": 24,
+        "codename": "view_userforumpermission"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 97,
+    "fields": {
+        "name": "Can add user",
+        "content_type": 25,
+        "codename": "add_user"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 98,
+    "fields": {
+        "name": "Can change user",
+        "content_type": 25,
+        "codename": "change_user"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 99,
+    "fields": {
+        "name": "Can delete user",
+        "content_type": 25,
+        "codename": "delete_user"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 100,
+    "fields": {
+        "name": "Can view user",
+        "content_type": 25,
+        "codename": "view_user"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 101,
+    "fields": {
+        "name": "Can add group",
+        "content_type": 26,
+        "codename": "add_group"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 102,
+    "fields": {
+        "name": "Can change group",
+        "content_type": 26,
+        "codename": "change_group"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 103,
+    "fields": {
+        "name": "Can delete group",
+        "content_type": 26,
+        "codename": "delete_group"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 104,
+    "fields": {
+        "name": "Can view group",
+        "content_type": 26,
+        "codename": "view_group"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 105,
+    "fields": {
+        "name": "Can add user profile",
+        "content_type": 27,
+        "codename": "add_userprofile"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 106,
+    "fields": {
+        "name": "Can change user profile",
+        "content_type": 27,
+        "codename": "change_userprofile"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 107,
+    "fields": {
+        "name": "Can delete user profile",
+        "content_type": 27,
+        "codename": "delete_userprofile"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 108,
+    "fields": {
+        "name": "Can view user profile",
+        "content_type": 27,
+        "codename": "view_userprofile"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 109,
+    "fields": {
+        "name": "Can add notification",
+        "content_type": 28,
+        "codename": "add_notification"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 110,
+    "fields": {
+        "name": "Can change notification",
+        "content_type": 28,
+        "codename": "change_notification"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 111,
+    "fields": {
+        "name": "Can delete notification",
+        "content_type": 28,
+        "codename": "delete_notification"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 112,
+    "fields": {
+        "name": "Can view notification",
+        "content_type": 28,
+        "codename": "view_notification"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 113,
+    "fields": {
+        "name": "Can add group invitation",
+        "content_type": 29,
+        "codename": "add_groupinvitation"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 114,
+    "fields": {
+        "name": "Can change group invitation",
+        "content_type": 29,
+        "codename": "change_groupinvitation"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 115,
+    "fields": {
+        "name": "Can delete group invitation",
+        "content_type": 29,
+        "codename": "delete_groupinvitation"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 116,
+    "fields": {
+        "name": "Can view group invitation",
+        "content_type": 29,
+        "codename": "view_groupinvitation"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 117,
+    "fields": {
+        "name": "Can add friend invitation",
+        "content_type": 30,
+        "codename": "add_friendinvitation"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 118,
+    "fields": {
+        "name": "Can change friend invitation",
+        "content_type": 30,
+        "codename": "change_friendinvitation"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 119,
+    "fields": {
+        "name": "Can delete friend invitation",
+        "content_type": 30,
+        "codename": "delete_friendinvitation"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 120,
+    "fields": {
+        "name": "Can view friend invitation",
+        "content_type": 30,
+        "codename": "view_friendinvitation"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 121,
+    "fields": {
+        "name": "Can add game",
+        "content_type": 31,
+        "codename": "add_game"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 122,
+    "fields": {
+        "name": "Can change game",
+        "content_type": 31,
+        "codename": "change_game"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 123,
+    "fields": {
+        "name": "Can delete game",
+        "content_type": 31,
+        "codename": "delete_game"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 124,
+    "fields": {
+        "name": "Can view game",
+        "content_type": 31,
+        "codename": "view_game"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 125,
+    "fields": {
+        "name": "Can add lobby",
+        "content_type": 32,
+        "codename": "add_lobby"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 126,
+    "fields": {
+        "name": "Can change lobby",
+        "content_type": 32,
+        "codename": "change_lobby"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 127,
+    "fields": {
+        "name": "Can delete lobby",
+        "content_type": 32,
+        "codename": "delete_lobby"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 128,
+    "fields": {
+        "name": "Can view lobby",
+        "content_type": 32,
+        "codename": "view_lobby"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 129,
+    "fields": {
+        "name": "Can add match",
+        "content_type": 33,
+        "codename": "add_match"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 130,
+    "fields": {
+        "name": "Can change match",
+        "content_type": 33,
+        "codename": "change_match"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 131,
+    "fields": {
+        "name": "Can delete match",
+        "content_type": 33,
+        "codename": "delete_match"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 132,
+    "fields": {
+        "name": "Can view match",
+        "content_type": 33,
+        "codename": "view_match"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 133,
+    "fields": {
+        "name": "Can add match proposal",
+        "content_type": 34,
+        "codename": "add_matchproposal"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 134,
+    "fields": {
+        "name": "Can change match proposal",
+        "content_type": 34,
+        "codename": "change_matchproposal"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 135,
+    "fields": {
+        "name": "Can delete match proposal",
+        "content_type": 34,
+        "codename": "delete_matchproposal"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 136,
+    "fields": {
+        "name": "Can view match proposal",
+        "content_type": 34,
+        "codename": "view_matchproposal"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 137,
+    "fields": {
+        "name": "Can add player",
+        "content_type": 35,
+        "codename": "add_player"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 138,
+    "fields": {
+        "name": "Can change player",
+        "content_type": 35,
+        "codename": "change_player"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 139,
+    "fields": {
+        "name": "Can delete player",
+        "content_type": 35,
+        "codename": "delete_player"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 140,
+    "fields": {
+        "name": "Can view player",
+        "content_type": 35,
+        "codename": "view_player"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 141,
+    "fields": {
+        "name": "Can add chat",
+        "content_type": 36,
+        "codename": "add_chat"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 142,
+    "fields": {
+        "name": "Can change chat",
+        "content_type": 36,
+        "codename": "change_chat"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 143,
+    "fields": {
+        "name": "Can delete chat",
+        "content_type": 36,
+        "codename": "delete_chat"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 144,
+    "fields": {
+        "name": "Can view chat",
+        "content_type": 36,
+        "codename": "view_chat"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 145,
+    "fields": {
+        "name": "Can add tournament",
+        "content_type": 37,
+        "codename": "add_tournament"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 146,
+    "fields": {
+        "name": "Can change tournament",
+        "content_type": 37,
+        "codename": "change_tournament"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 147,
+    "fields": {
+        "name": "Can delete tournament",
+        "content_type": 37,
+        "codename": "delete_tournament"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 148,
+    "fields": {
+        "name": "Can view tournament",
+        "content_type": 37,
+        "codename": "view_tournament"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 149,
+    "fields": {
+        "name": "Can add message",
+        "content_type": 38,
+        "codename": "add_message"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 150,
+    "fields": {
+        "name": "Can change message",
+        "content_type": 38,
+        "codename": "change_message"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 151,
+    "fields": {
+        "name": "Can delete message",
+        "content_type": 38,
+        "codename": "delete_message"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 152,
+    "fields": {
+        "name": "Can view message",
+        "content_type": 38,
+        "codename": "view_message"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 153,
+    "fields": {
+        "name": "Can add category",
+        "content_type": 39,
+        "codename": "add_category"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 154,
+    "fields": {
+        "name": "Can change category",
+        "content_type": 39,
+        "codename": "change_category"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 155,
+    "fields": {
+        "name": "Can delete category",
+        "content_type": 39,
+        "codename": "delete_category"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 156,
+    "fields": {
+        "name": "Can view category",
+        "content_type": 39,
+        "codename": "view_category"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 157,
+    "fields": {
+        "name": "Can add mechanic",
+        "content_type": 40,
+        "codename": "add_mechanic"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 158,
+    "fields": {
+        "name": "Can change mechanic",
+        "content_type": 40,
+        "codename": "change_mechanic"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 159,
+    "fields": {
+        "name": "Can delete mechanic",
+        "content_type": 40,
+        "codename": "delete_mechanic"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 160,
+    "fields": {
+        "name": "Can view mechanic",
+        "content_type": 40,
+        "codename": "view_mechanic"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 161,
+    "fields": {
+        "name": "Can add publisher",
+        "content_type": 41,
+        "codename": "add_publisher"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 162,
+    "fields": {
+        "name": "Can change publisher",
+        "content_type": 41,
+        "codename": "change_publisher"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 163,
+    "fields": {
+        "name": "Can delete publisher",
+        "content_type": 41,
+        "codename": "delete_publisher"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 164,
+    "fields": {
+        "name": "Can view publisher",
+        "content_type": 41,
+        "codename": "view_publisher"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 165,
+    "fields": {
+        "name": "Can add person",
+        "content_type": 42,
+        "codename": "add_person"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 166,
+    "fields": {
+        "name": "Can change person",
+        "content_type": 42,
+        "codename": "change_person"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 167,
+    "fields": {
+        "name": "Can delete person",
+        "content_type": 42,
+        "codename": "delete_person"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 168,
+    "fields": {
+        "name": "Can view person",
+        "content_type": 42,
+        "codename": "view_person"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 169,
+    "fields": {
+        "name": "Can add announcement",
+        "content_type": 43,
+        "codename": "add_announcement"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 170,
+    "fields": {
+        "name": "Can change announcement",
+        "content_type": 43,
+        "codename": "change_announcement"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 171,
+    "fields": {
+        "name": "Can delete announcement",
+        "content_type": 43,
+        "codename": "delete_announcement"
+    }
+},
+{
+    "model": "auth.permission",
+    "pk": 172,
+    "fields": {
+        "name": "Can view announcement",
+        "content_type": 43,
+        "codename": "view_announcement"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 1,
+    "fields": {
+        "app_label": "auth",
+        "model": "permission"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 2,
+    "fields": {
+        "app_label": "auth",
+        "model": "group"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 3,
+    "fields": {
+        "app_label": "contenttypes",
+        "model": "contenttype"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 4,
+    "fields": {
+        "app_label": "sessions",
+        "model": "session"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 5,
+    "fields": {
+        "app_label": "sites",
+        "model": "site"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 6,
+    "fields": {
+        "app_label": "admin",
+        "model": "logentry"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 7,
+    "fields": {
+        "app_label": "account",
+        "model": "emailaddress"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 8,
+    "fields": {
+        "app_label": "account",
+        "model": "emailconfirmation"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 9,
+    "fields": {
+        "app_label": "socialaccount",
+        "model": "socialaccount"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 10,
+    "fields": {
+        "app_label": "socialaccount",
+        "model": "socialapp"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 11,
+    "fields": {
+        "app_label": "socialaccount",
+        "model": "socialtoken"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 12,
+    "fields": {
+        "app_label": "forum",
+        "model": "forum"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 13,
+    "fields": {
+        "app_label": "forum_conversation",
+        "model": "post"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 14,
+    "fields": {
+        "app_label": "forum_conversation",
+        "model": "topic"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 15,
+    "fields": {
+        "app_label": "forum_attachments",
+        "model": "attachment"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 16,
+    "fields": {
+        "app_label": "forum_polls",
+        "model": "topicpoll"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 17,
+    "fields": {
+        "app_label": "forum_polls",
+        "model": "topicpolloption"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 18,
+    "fields": {
+        "app_label": "forum_polls",
+        "model": "topicpollvote"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 19,
+    "fields": {
+        "app_label": "forum_tracking",
+        "model": "forumreadtrack"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 20,
+    "fields": {
+        "app_label": "forum_tracking",
+        "model": "topicreadtrack"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 21,
+    "fields": {
+        "app_label": "forum_member",
+        "model": "forumprofile"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 22,
+    "fields": {
+        "app_label": "forum_permission",
+        "model": "forumpermission"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 23,
+    "fields": {
+        "app_label": "forum_permission",
+        "model": "groupforumpermission"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 24,
+    "fields": {
+        "app_label": "forum_permission",
+        "model": "userforumpermission"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 25,
+    "fields": {
+        "app_label": "users",
+        "model": "user"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 26,
+    "fields": {
+        "app_label": "users",
+        "model": "group"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 27,
+    "fields": {
+        "app_label": "users",
+        "model": "userprofile"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 28,
+    "fields": {
+        "app_label": "users",
+        "model": "notification"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 29,
+    "fields": {
+        "app_label": "users",
+        "model": "groupinvitation"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 30,
+    "fields": {
+        "app_label": "users",
+        "model": "friendinvitation"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 31,
+    "fields": {
+        "app_label": "games",
+        "model": "game"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 32,
+    "fields": {
+        "app_label": "games",
+        "model": "lobby"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 33,
+    "fields": {
+        "app_label": "games",
+        "model": "match"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 34,
+    "fields": {
+        "app_label": "games",
+        "model": "matchproposal"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 35,
+    "fields": {
+        "app_label": "games",
+        "model": "player"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 36,
+    "fields": {
+        "app_label": "games",
+        "model": "chat"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 37,
+    "fields": {
+        "app_label": "games",
+        "model": "tournament"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 38,
+    "fields": {
+        "app_label": "games",
+        "model": "message"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 39,
+    "fields": {
+        "app_label": "games",
+        "model": "category"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 40,
+    "fields": {
+        "app_label": "games",
+        "model": "mechanic"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 41,
+    "fields": {
+        "app_label": "games",
+        "model": "publisher"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 42,
+    "fields": {
+        "app_label": "games",
+        "model": "person"
+    }
+},
+{
+    "model": "contenttypes.contenttype",
+    "pk": 43,
+    "fields": {
+        "app_label": "games",
+        "model": "announcement"
+    }
+},
+{
+    "model": "sessions.session",
+    "pk": "09x12kb6fkwq3uz06m6p9m5pc6xnd0p3",
+    "fields": {
+        "session_data": ".eJxVjDsOgzAQBe_iOkLGH2xSps8ZrN31OhCCLfEpUJS7ByQa2jcz7ysC5JK3saxzSGVaxzDwJu4CkZ1MGJU2ypiUQBoFRjttpXHeo7jt5bp0YZ15Cn3ck_q6IdDA-QDxDflVKip5mXqsDqU66Vw9S-TP43QvBx3M3V6bFoBiUipaTZYcIDa6rltviaW13CSGxrc-JgcyNRq0lO0uIJEjo1n8_lN1SkY:1r5WiS:6ZAArKfkZoRuOA5WiYeXtpEc2uogBcF4puSKTNvhWu0",
+        "expire_date": "2023-12-05T19:47:24.934Z"
+    }
+},
+{
+    "model": "sites.site",
+    "pk": 1,
+    "fields": {
+        "domain": "example.com",
+        "name": "example.com"
+    }
+},
+{
+    "model": "admin.logentry",
+    "pk": 1,
+    "fields": {
+        "action_time": "2023-11-21T19:48:08.575Z",
+        "user": 1,
+        "content_type": 32,
+        "object_id": "1",
+        "object_repr": "Lobby object (1)",
+        "action_flag": 1,
+        "change_message": "[{\"added\": {}}]"
+    }
+},
+{
+    "model": "admin.logentry",
+    "pk": 2,
+    "fields": {
+        "action_time": "2023-11-21T19:50:41.270Z",
+        "user": 1,
+        "content_type": 32,
+        "object_id": "2",
+        "object_repr": "Lobby object (2)",
+        "action_flag": 1,
+        "change_message": "[{\"added\": {}}]"
+    }
+},
+{
+    "model": "admin.logentry",
+    "pk": 3,
+    "fields": {
+        "action_time": "2023-11-21T19:51:21.439Z",
+        "user": 1,
+        "content_type": 32,
+        "object_id": "3",
+        "object_repr": "Lobby object (3)",
+        "action_flag": 1,
+        "change_message": "[{\"added\": {}}]"
+    }
+},
+{
+    "model": "admin.logentry",
+    "pk": 4,
+    "fields": {
+        "action_time": "2023-11-21T19:51:59.929Z",
+        "user": 1,
+        "content_type": 32,
+        "object_id": "4",
+        "object_repr": "Lobby object (4)",
+        "action_flag": 1,
+        "change_message": "[{\"added\": {}}]"
+    }
+},
+{
+    "model": "admin.logentry",
+    "pk": 5,
+    "fields": {
+        "action_time": "2023-11-21T19:52:36.493Z",
+        "user": 1,
+        "content_type": 32,
+        "object_id": "5",
+        "object_repr": "Lobby object (5)",
+        "action_flag": 1,
+        "change_message": "[{\"added\": {}}]"
+    }
+},
+{
+    "model": "admin.logentry",
+    "pk": 6,
+    "fields": {
+        "action_time": "2023-11-21T19:53:10.704Z",
+        "user": 1,
+        "content_type": 32,
+        "object_id": "6",
+        "object_repr": "Lobby object (6)",
+        "action_flag": 1,
+        "change_message": "[{\"added\": {}}]"
+    }
+},
+{
+    "model": "admin.logentry",
+    "pk": 7,
+    "fields": {
+        "action_time": "2023-11-21T19:53:39.637Z",
+        "user": 1,
+        "content_type": 32,
+        "object_id": "7",
+        "object_repr": "Lobby object (7)",
+        "action_flag": 1,
+        "change_message": "[{\"added\": {}}]"
+    }
+},
+{
+    "model": "admin.logentry",
+    "pk": 8,
+    "fields": {
+        "action_time": "2023-11-21T19:54:11.190Z",
+        "user": 1,
+        "content_type": 32,
+        "object_id": "8",
+        "object_repr": "Lobby object (8)",
+        "action_flag": 1,
+        "change_message": "[{\"added\": {}}]"
+    }
+},
+{
+    "model": "admin.logentry",
+    "pk": 9,
+    "fields": {
+        "action_time": "2023-11-21T19:54:38.625Z",
+        "user": 1,
+        "content_type": 32,
+        "object_id": "9",
+        "object_repr": "Lobby object (9)",
+        "action_flag": 1,
+        "change_message": "[{\"added\": {}}]"
+    }
+},
+{
+    "model": "admin.logentry",
+    "pk": 10,
+    "fields": {
+        "action_time": "2023-11-21T19:55:07.242Z",
+        "user": 1,
+        "content_type": 32,
+        "object_id": "10",
+        "object_repr": "Lobby object (10)",
+        "action_flag": 1,
+        "change_message": "[{\"added\": {}}]"
+    }
+},
+{
+    "model": "admin.logentry",
+    "pk": 11,
+    "fields": {
+        "action_time": "2023-11-21T19:55:29.721Z",
+        "user": 1,
+        "content_type": 32,
+        "object_id": "11",
+        "object_repr": "Lobby object (11)",
+        "action_flag": 1,
+        "change_message": "[{\"added\": {}}]"
+    }
+},
+{
+    "model": "admin.logentry",
+    "pk": 12,
+    "fields": {
+        "action_time": "2023-11-21T19:55:49.618Z",
+        "user": 1,
+        "content_type": 32,
+        "object_id": "12",
+        "object_repr": "Lobby object (12)",
+        "action_flag": 1,
+        "change_message": "[{\"added\": {}}]"
+    }
+},
+{
+    "model": "admin.logentry",
+    "pk": 13,
+    "fields": {
+        "action_time": "2023-11-21T19:56:11.556Z",
+        "user": 1,
+        "content_type": 32,
+        "object_id": "13",
+        "object_repr": "Lobby object (13)",
+        "action_flag": 1,
+        "change_message": "[{\"added\": {}}]"
+    }
+},
+{
+    "model": "admin.logentry",
+    "pk": 14,
+    "fields": {
+        "action_time": "2023-11-21T19:56:44.881Z",
+        "user": 1,
+        "content_type": 32,
+        "object_id": "14",
+        "object_repr": "Lobby object (14)",
+        "action_flag": 1,
+        "change_message": "[{\"added\": {}}]"
+    }
+},
+{
+    "model": "admin.logentry",
+    "pk": 15,
+    "fields": {
+        "action_time": "2023-11-21T19:57:07.383Z",
+        "user": 1,
+        "content_type": 32,
+        "object_id": "15",
+        "object_repr": "Lobby object (15)",
+        "action_flag": 1,
+        "change_message": "[{\"added\": {}}]"
+    }
+},
+{
+    "model": "forum_permission.forumpermission",
+    "pk": 1,
+    "fields": {
+        "codename": "can_see_forum"
+    }
+},
+{
+    "model": "forum_permission.forumpermission",
+    "pk": 2,
+    "fields": {
+        "codename": "can_read_forum"
+    }
+},
+{
+    "model": "forum_permission.forumpermission",
+    "pk": 3,
+    "fields": {
+        "codename": "can_start_new_topics"
+    }
+},
+{
+    "model": "forum_permission.forumpermission",
+    "pk": 4,
+    "fields": {
+        "codename": "can_reply_to_topics"
+    }
+},
+{
+    "model": "forum_permission.forumpermission",
+    "pk": 5,
+    "fields": {
+        "codename": "can_post_announcements"
+    }
+},
+{
+    "model": "forum_permission.forumpermission",
+    "pk": 6,
+    "fields": {
+        "codename": "can_post_stickies"
+    }
+},
+{
+    "model": "forum_permission.forumpermission",
+    "pk": 7,
+    "fields": {
+        "codename": "can_delete_own_posts"
+    }
+},
+{
+    "model": "forum_permission.forumpermission",
+    "pk": 8,
+    "fields": {
+        "codename": "can_edit_own_posts"
+    }
+},
+{
+    "model": "forum_permission.forumpermission",
+    "pk": 9,
+    "fields": {
+        "codename": "can_post_without_approval"
+    }
+},
+{
+    "model": "forum_permission.forumpermission",
+    "pk": 10,
+    "fields": {
+        "codename": "can_create_polls"
+    }
+},
+{
+    "model": "forum_permission.forumpermission",
+    "pk": 11,
+    "fields": {
+        "codename": "can_vote_in_polls"
+    }
+},
+{
+    "model": "forum_permission.forumpermission",
+    "pk": 12,
+    "fields": {
+        "codename": "can_attach_file"
+    }
+},
+{
+    "model": "forum_permission.forumpermission",
+    "pk": 13,
+    "fields": {
+        "codename": "can_download_file"
+    }
+},
+{
+    "model": "forum_permission.forumpermission",
+    "pk": 14,
+    "fields": {
+        "codename": "can_lock_topics"
+    }
+},
+{
+    "model": "forum_permission.forumpermission",
+    "pk": 15,
+    "fields": {
+        "codename": "can_move_topics"
+    }
+},
+{
+    "model": "forum_permission.forumpermission",
+    "pk": 16,
+    "fields": {
+        "codename": "can_edit_posts"
+    }
+},
+{
+    "model": "forum_permission.forumpermission",
+    "pk": 17,
+    "fields": {
+        "codename": "can_delete_posts"
+    }
+},
+{
+    "model": "forum_permission.forumpermission",
+    "pk": 18,
+    "fields": {
+        "codename": "can_approve_posts"
+    }
+},
+{
+    "model": "forum_permission.forumpermission",
+    "pk": 19,
+    "fields": {
+        "codename": "can_reply_to_locked_topics"
+    }
+},
+{
+    "model": "users.user",
+    "pk": 1,
+    "fields": {
+        "password": "argon2$argon2id$v=19$m=102400,t=2,p=8$Zzk2ZjFCTXl4RlJmOW1VU1JHa3QxZA$tiaFDXObRmwzYoVytjyCGFVfJnoqp1uYUOvCVUsUHpY",
+        "last_login": "2023-11-21T19:47:24.792Z",
+        "is_superuser": true,
+        "is_staff": true,
+        "is_active": true,
+        "date_joined": "2023-10-30T03:15:43.052Z",
+        "name": "",
+        "email": "admin@example.com",
+        "tokens": 1,
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "users.user",
+    "pk": 2,
+    "fields": {
+        "password": "argon2$argon2id$v=19$m=102400,t=2,p=8$Zzk2ZjFCTXl4RlJmOW1VU1JHa3QxZA$tiaFDXObRmwzYoVytjyCGFVfJnoqp1uYUOvCVUsUHpY",
+        "last_login": null,
+        "is_superuser": false,
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2023-10-30T03:21:40.210Z",
+        "name": "user1",
+        "email": "user1@example.com",
+        "tokens": 1,
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "users.user",
+    "pk": 3,
+    "fields": {
+        "password": "argon2$argon2id$v=19$m=102400,t=2,p=8$Zzk2ZjFCTXl4RlJmOW1VU1JHa3QxZA$tiaFDXObRmwzYoVytjyCGFVfJnoqp1uYUOvCVUsUHpY",
+        "last_login": null,
+        "is_superuser": false,
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2023-10-30T03:22:35.172Z",
+        "name": "user2",
+        "email": "user2@example.com",
+        "tokens": 1,
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "users.user",
+    "pk": 4,
+    "fields": {
+        "password": "argon2$argon2id$v=19$m=102400,t=2,p=8$Zzk2ZjFCTXl4RlJmOW1VU1JHa3QxZA$tiaFDXObRmwzYoVytjyCGFVfJnoqp1uYUOvCVUsUHpY",
+        "last_login": null,
+        "is_superuser": false,
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2023-10-30T03:23:55.014Z",
+        "name": "user3",
+        "email": "user3@example.com",
+        "tokens": 1,
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "users.user",
+    "pk": 5,
+    "fields": {
+        "password": "argon2$argon2id$v=19$m=102400,t=2,p=8$Zzk2ZjFCTXl4RlJmOW1VU1JHa3QxZA$tiaFDXObRmwzYoVytjyCGFVfJnoqp1uYUOvCVUsUHpY",
+        "last_login": null,
+        "is_superuser": false,
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2023-10-30T03:24:56.552Z",
+        "name": "user4",
+        "email": "user4@example.com",
+        "tokens": 1,
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "users.user",
+    "pk": 6,
+    "fields": {
+        "password": "argon2$argon2id$v=19$m=102400,t=2,p=8$Zzk2ZjFCTXl4RlJmOW1VU1JHa3QxZA$tiaFDXObRmwzYoVytjyCGFVfJnoqp1uYUOvCVUsUHpY",
+        "last_login": null,
+        "is_superuser": false,
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2023-10-30T03:25:12.627Z",
+        "name": "user5",
+        "email": "user5@example.com",
+        "tokens": 1,
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "users.user",
+    "pk": 7,
+    "fields": {
+        "password": "foo",
+        "last_login": null,
+        "is_superuser": false,
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2023-10-26T13:42:31.123Z",
+        "name": "user7",
+        "email": "user7@example.com",
+        "tokens": 1,
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "users.user",
+    "pk": 8,
+    "fields": {
+        "password": "foo",
+        "last_login": null,
+        "is_superuser": false,
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2023-10-26T13:53:08.045Z",
+        "name": "user8",
+        "email": "user8@example.com",
+        "tokens": 1,
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "users.userprofile",
+    "pk": 1,
+    "fields": {
+        "user": 1,
+        "display_name": "Default Display Name",
+        "bio": "A brief bio for the superuser",
+        "date_joined": "2023-10-30T03:31:56.761Z",
+        "friends": []
+    }
+},
+{
+    "model": "users.userprofile",
+    "pk": 2,
+    "fields": {
+        "user": 2,
+        "display_name": "user1",
+        "bio": "A brief bio about User One",
+        "date_joined": "2023-10-30T03:21:40.213Z",
+        "friends": []
+    }
+},
+{
+    "model": "users.userprofile",
+    "pk": 3,
+    "fields": {
+        "user": 3,
+        "display_name": "user2",
+        "bio": "A brief bio about User Two",
+        "date_joined": "2023-10-30T03:22:35.174Z",
+        "friends": []
+    }
+},
+{
+    "model": "users.userprofile",
+    "pk": 4,
+    "fields": {
+        "user": 4,
+        "display_name": "user3",
+        "bio": "A brief bio about User Three",
+        "date_joined": "2023-10-30T03:24:37.723Z",
+        "friends": []
+    }
+},
+{
+    "model": "users.userprofile",
+    "pk": 5,
+    "fields": {
+        "user": 5,
+        "display_name": "user4",
+        "bio": "A brief bio about User Four",
+        "date_joined": "2023-10-30T03:24:56.555Z",
+        "friends": []
+    }
+},
+{
+    "model": "users.userprofile",
+    "pk": 6,
+    "fields": {
+        "user": 6,
+        "display_name": "user5",
+        "bio": "A brief bio about User Five",
+        "date_joined": "2023-10-30T03:25:12.630Z",
+        "friends": []
+    }
+},
+{
+    "model": "users.userprofile",
+    "pk": 7,
+    "fields": {
+        "user": 7,
+        "display_name": "Default Display Name",
+        "bio": "A brief bio about User Seven",
+        "date_joined": "2023-10-26T13:42:31.123Z",
+        "friends": []
+    }
+},
+{
+    "model": "users.userprofile",
+    "pk": 8,
+    "fields": {
+        "user": 8,
+        "display_name": "Default Display Name",
+        "bio": "A brief bio about User Eight",
+        "date_joined": "2023-10-26T13:53:08.045Z",
+        "friends": []
+    }
+},
+{
+    "model": "games.game",
+    "pk": 1,
+    "fields": {
+        "name": "Settlers of Catan",
+        "description": "Build settlements, roads, and cities to dominate the island.",
+        "year_published": 1995,
+        "image": "https://cf.geekdo-images.com/W3Bsga_uLP9kO91gZ7H8yw__original/img/xV7oisd3RQ8R-k18cdWAYthHXsA=/0x0/filters:format(jpeg)/pic2419375.jpg",
+        "rules": "Collect resources like wood, brick, and sheep, trade with other players, and strategically expand your settlements and cities to be the first to reach the victory conditions.",
+        "min_players": 3,
+        "max_players": 4,
+        "suggested_age": 10,
+        "expected_playtime": 60,
+        "min_playtime": 45,
+        "max_playtime": 90,
+        "complexity": "2.00",
+        "BGG_id": 13,
+        "categories": [
+            1
+        ],
+        "mechanics": [
+            1,
+            2
+        ]
+    }
+},
+{
+    "model": "games.game",
+    "pk": 2,
+    "fields": {
+        "name": "Ticket to Ride",
+        "description": "Embark on a train adventure across the country.",
+        "year_published": 2004,
+        "image": "https://cf.geekdo-images.com/ZWJg0dCdrWHxVnc0eFXK8w__original/img/LgzEsQlF3xkSEQLoorc8ntiYiIY=/0x0/filters:format(jpeg)/pic38668.jpg",
+        "rules": "Collect train cards, claim routes, and complete destination tickets to build your train network across the country in this family-friendly board game.",
+        "min_players": 2,
+        "max_players": 5,
+        "suggested_age": 8,
+        "expected_playtime": 45,
+        "min_playtime": 30,
+        "max_playtime": 60,
+        "complexity": "1.00",
+        "BGG_id": 9209,
+        "categories": [
+            1
+        ],
+        "mechanics": [
+            2
+        ]
+    }
+},
+{
+    "model": "games.game",
+    "pk": 3,
+    "fields": {
+        "name": "Pandemic",
+        "description": "Cooperate to save the world from deadly diseases.",
+        "year_published": 2008,
+        "image": "https://cf.geekdo-images.com/S3ybV1LAp-8SnHIXLLjVqA__original/img/IsrvRLpUV1TEyZsO5rC-btXaPz0=/0x0/filters:format(jpeg)/pic1534148.jpg",
+        "rules": "Work together as a team of specialists to prevent the outbreak of diseases and find cures before it's too late. Manage resources, research, and strategic planning are key to success.",
+        "min_players": 2,
+        "max_players": 4,
+        "suggested_age": 13,
+        "expected_playtime": 45,
+        "min_playtime": 30,
+        "max_playtime": 60,
+        "complexity": "2.00",
+        "BGG_id": 30549,
+        "categories": [
+            1
+        ],
+        "mechanics": [
+            1
+        ]
+    }
+},
+{
+    "model": "games.game",
+    "pk": 4,
+    "fields": {
+        "name": "Codenames",
+        "description": "Give clever clues to uncover your team's agents.",
+        "year_published": 2015,
+        "image": "https://cf.geekdo-images.com/F_KDEu0GjdClml8N7c8Imw__original/img/gcX_EfjsRpB5fI4Ug4XV73G4jGI=/0x0/filters:format(jpeg)/pic2582929.jpg",
+        "rules": "Provide one-word clues to guide your teammates in uncovering the identities of the agents while avoiding the opposing team's agents. Be strategic, but be careful not to lead your team astray!",
+        "min_players": 4,
+        "max_players": 8,
+        "suggested_age": 14,
+        "expected_playtime": 30,
+        "min_playtime": 15,
+        "max_playtime": 45,
+        "complexity": "2.00",
+        "BGG_id": 178900,
+        "categories": [
+            2
+        ],
+        "mechanics": [
+            2
+        ]
+    }
+},
+{
+    "model": "games.game",
+    "pk": 5,
+    "fields": {
+        "name": "Scythe",
+        "description": "Lead your faction to victory in an alternate history 1920s Europe.",
+        "year_published": 2016,
+        "image": "https://cf.geekdo-images.com/7k_nOxpO9OGIjhLq2BUZdA__original/img/HlDb9F365w0tSP8uD1vf1pfniQE=/0x0/filters:format(jpeg)/pic3163924.jpg",
+        "rules": "Take on the role of a leader in a steampunk-inspired alternate history and compete for resources, conquer territories, and achieve objectives to lead your faction to victory.",
+        "min_players": 1,
+        "max_players": 5,
+        "suggested_age": 14,
+        "expected_playtime": 115,
+        "min_playtime": 80,
+        "max_playtime": 150,
+        "complexity": "3.00",
+        "BGG_id": 169786,
+        "categories": [
+            1
+        ],
+        "mechanics": [
+            1,
+            2
+        ]
+    }
+},
+{
+    "model": "games.person",
+    "pk": 1,
+    "fields": {
+        "name": "Klaus Teuber",
+        "person_role": 1,
+        "games": [
+            1
+        ]
+    }
+},
+{
+    "model": "games.person",
+    "pk": 2,
+    "fields": {
+        "name": "Alan R. Moon",
+        "person_role": 1,
+        "games": [
+            2
+        ]
+    }
+},
+{
+    "model": "games.person",
+    "pk": 3,
+    "fields": {
+        "name": "Matt Leacock",
+        "person_role": 1,
+        "games": [
+            3
+        ]
+    }
+},
+{
+    "model": "games.person",
+    "pk": 4,
+    "fields": {
+        "name": "Vlaada Chvátil",
+        "person_role": 1,
+        "games": [
+            4
+        ]
+    }
+},
+{
+    "model": "games.person",
+    "pk": 5,
+    "fields": {
+        "name": "Jamey Stegmaier",
+        "person_role": 1,
+        "games": [
+            5
+        ]
+    }
+},
+{
+    "model": "games.publisher",
+    "pk": 1,
+    "fields": {
+        "name": "KOSMOS",
+        "website": "https://www.kosmos.de",
+        "year_established": 1822,
+        "games": [
+            1
+        ]
+    }
+},
+{
+    "model": "games.publisher",
+    "pk": 2,
+    "fields": {
+        "name": "Days of Wonder",
+        "website": "https://www.daysofwonder.com",
+        "year_established": 2002,
+        "games": [
+            2
+        ]
+    }
+},
+{
+    "model": "games.publisher",
+    "pk": 3,
+    "fields": {
+        "name": "Z-Man Games",
+        "website": "https://www.zmangames.com",
+        "year_established": 1999,
+        "games": [
+            3
+        ]
+    }
+},
+{
+    "model": "games.publisher",
+    "pk": 4,
+    "fields": {
+        "name": "Czech Games Edition",
+        "website": "https://czechgames.com",
+        "year_established": 2006,
+        "games": [
+            4
+        ]
+    }
+},
+{
+    "model": "games.publisher",
+    "pk": 5,
+    "fields": {
+        "name": "Stonemaier Games",
+        "website": "https://stonemaiergames.com",
+        "year_established": 2012,
+        "games": [
+            5
+        ]
+    }
+},
+{
+    "model": "games.category",
+    "pk": 1,
+    "fields": {
+        "name": "Strategy",
+        "description": "Games that require strategic thinking.",
+        "image": "/static/images/no_picture_available.png"
+    }
+},
+{
+    "model": "games.category",
+    "pk": 2,
+    "fields": {
+        "name": "Adventure",
+        "description": "Games that involve exploration and storytelling.",
+        "image": "/static/images/no_picture_available.png"
+    }
+},
+{
+    "model": "games.mechanic",
+    "pk": 1,
+    "fields": {
+        "name": "Dice Rolling",
+        "description": "Games that involve rolling dice.",
+        "image": "/static/images/no_picture_available.png"
+    }
+},
+{
+    "model": "games.mechanic",
+    "pk": 2,
+    "fields": {
+        "name": "Card Drafting",
+        "description": "Games that involve selecting cards from a common pool.",
+        "image": "/static/images/no_picture_available.png"
+    }
+},
+{
+    "model": "games.lobby",
+    "pk": 1,
+    "fields": {
+        "match_status": 1,
+        "name": "Epic Quest Lobby",
+        "game": 1,
+        "game_mod_status": 1,
+        "created_by": 1,
+        "min_players": 2,
+        "max_players": 5,
+        "time_constraint": 300,
+        "lobby_created": "2023-11-21T19:47:31Z",
+        "members": [
+            1,
+            2
+        ]
+    }
+},
+{
+    "model": "games.lobby",
+    "pk": 2,
+    "fields": {
+        "match_status": 1,
+        "name": "Galactic Gateway",
+        "game": 1,
+        "game_mod_status": 2,
+        "created_by": 2,
+        "min_players": 2,
+        "max_players": 5,
+        "time_constraint": 300,
+        "lobby_created": "2023-11-21T19:50:07Z",
+        "members": [
+            2,
+            3,
+            4,
+            5
+        ]
+    }
+},
+{
+    "model": "games.lobby",
+    "pk": 3,
+    "fields": {
+        "match_status": 1,
+        "name": "Dragon's Lair Lobby",
+        "game": 1,
+        "game_mod_status": 1,
+        "created_by": 4,
+        "min_players": 2,
+        "max_players": 8,
+        "time_constraint": 500,
+        "lobby_created": "2023-11-21T19:50:41Z",
+        "members": [
+            4
+        ]
+    }
+},
+{
+    "model": "games.lobby",
+    "pk": 4,
+    "fields": {
+        "match_status": 1,
+        "name": "Nebula Nexus",
+        "game": 2,
+        "game_mod_status": 1,
+        "created_by": 7,
+        "min_players": 1,
+        "max_players": 4,
+        "time_constraint": 350,
+        "lobby_created": "2023-11-21T19:51:22Z",
+        "members": [
+            7
+        ]
+    }
+},
+{
+    "model": "games.lobby",
+    "pk": 5,
+    "fields": {
+        "match_status": 1,
+        "name": "Mystic Forge Foyer",
+        "game": 2,
+        "game_mod_status": 2,
+        "created_by": 5,
+        "min_players": 2,
+        "max_players": 8,
+        "time_constraint": 800,
+        "lobby_created": "2023-11-21T19:52:00Z",
+        "members": [
+            5,
+            6,
+            7,
+            8
+        ]
+    }
+},
+{
+    "model": "games.lobby",
+    "pk": 6,
+    "fields": {
+        "match_status": 1,
+        "name": "Pixel Prowess Plaza",
+        "game": 2,
+        "game_mod_status": 1,
+        "created_by": 5,
+        "min_players": 2,
+        "max_players": 7,
+        "time_constraint": 300,
+        "lobby_created": "2023-11-21T19:52:37Z",
+        "members": [
+            5,
+            6
+        ]
+    }
+},
+{
+    "model": "games.lobby",
+    "pk": 7,
+    "fields": {
+        "match_status": 1,
+        "name": "Cosmic Clash Chamber",
+        "game": 3,
+        "game_mod_status": 1,
+        "created_by": 3,
+        "min_players": 3,
+        "max_players": 5,
+        "time_constraint": 300,
+        "lobby_created": "2023-11-21T19:53:11Z",
+        "members": [
+            3,
+            4,
+            5,
+            6,
+            7
+        ]
+    }
+},
+{
+    "model": "games.lobby",
+    "pk": 8,
+    "fields": {
+        "match_status": 1,
+        "name": "Inferno Arena Atrium",
+        "game": 3,
+        "game_mod_status": 2,
+        "created_by": 6,
+        "min_players": 3,
+        "max_players": 6,
+        "time_constraint": 700,
+        "lobby_created": "2023-11-21T19:53:40Z",
+        "members": [
+            6,
+            7
+        ]
+    }
+},
+{
+    "model": "games.lobby",
+    "pk": 9,
+    "fields": {
+        "match_status": 1,
+        "name": "Virtual Vanguard Vestibule",
+        "game": 3,
+        "game_mod_status": 1,
+        "created_by": 4,
+        "min_players": 3,
+        "max_players": 6,
+        "time_constraint": 300,
+        "lobby_created": "2023-11-21T19:54:11Z",
+        "members": [
+            3,
+            4,
+            5
+        ]
+    }
+},
+{
+    "model": "games.lobby",
+    "pk": 10,
+    "fields": {
+        "match_status": 1,
+        "name": "Dungeon Domain Lobby",
+        "game": 4,
+        "game_mod_status": 2,
+        "created_by": 4,
+        "min_players": 2,
+        "max_players": 7,
+        "time_constraint": 300,
+        "lobby_created": "2023-11-21T19:54:39Z",
+        "members": [
+            4,
+            5,
+            6
+        ]
+    }
+},
+{
+    "model": "games.lobby",
+    "pk": 11,
+    "fields": {
+        "match_status": 1,
+        "name": "Starship Station",
+        "game": 4,
+        "game_mod_status": 1,
+        "created_by": 1,
+        "min_players": 3,
+        "max_players": 6,
+        "time_constraint": 300,
+        "lobby_created": "2023-11-21T19:55:07Z",
+        "members": [
+            1,
+            2,
+            3
+        ]
+    }
+},
+{
+    "model": "games.lobby",
+    "pk": 12,
+    "fields": {
+        "match_status": 1,
+        "name": "Chrono Challenge Hub",
+        "game": 4,
+        "game_mod_status": 2,
+        "created_by": 4,
+        "min_players": 3,
+        "max_players": 5,
+        "time_constraint": 300,
+        "lobby_created": "2023-11-21T19:55:30Z",
+        "members": [
+            4,
+            5
+        ]
+    }
+},
+{
+    "model": "games.lobby",
+    "pk": 13,
+    "fields": {
+        "match_status": 1,
+        "name": "Pirate's Paradise Plaza",
+        "game": 5,
+        "game_mod_status": 1,
+        "created_by": 6,
+        "min_players": 3,
+        "max_players": 5,
+        "time_constraint": 300,
+        "lobby_created": "2023-11-21T19:55:50Z",
+        "members": [
+            6,
+            7
+        ]
+    }
+},
+{
+    "model": "games.lobby",
+    "pk": 14,
+    "fields": {
+        "match_status": 1,
+        "name": "Mythical Maze Meeting Point",
+        "game": 5,
+        "game_mod_status": 2,
+        "created_by": 6,
+        "min_players": 2,
+        "max_players": 5,
+        "time_constraint": 300,
+        "lobby_created": "2023-11-21T19:56:12Z",
+        "members": [
+            3,
+            6
+        ]
+    }
+},
+{
+    "model": "games.lobby",
+    "pk": 15,
+    "fields": {
+        "match_status": 1,
+        "name": "Neon Nexus Lounge",
+        "game": 4,
+        "game_mod_status": 1,
+        "created_by": 8,
+        "min_players": 3,
+        "max_players": 6,
+        "time_constraint": 300,
+        "lobby_created": "2023-11-21T19:56:45Z",
+        "members": [
+            8
+        ]
+    }
+}
+]

@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block extrahead %}
+  <link rel="stylesheet"
+        type="text/css"
+        href="{% static 'tournament_styles.css' %}" />
+{% endblock extrahead %}
+{% block content %}
+  <h1>Archived Tournaments</h1>
+  <form method="post">
+    {% csrf_token %}
+    <input type="hidden" name="tournament_id" value="{{ tournament.id }}" />
+    <input type="hidden" name="action" value="switch_all" />
+    <button type="submit">Switch to All Tournament List</button>
+  </form>
+  <ul>
+    {% for tournament in archived_tournament_list %}
+      <li>
+        <div class="tournament-header">
+          <h2 class="tournament-name">
+            <a href="{% url 'tournament-detail' tournament.id %}">{{ tournament.name }}</a> ({{ tournament.status }})
+          </h2>
+          {% if tournament.status == "tournament ended" %}
+            {% if tournament.archived %}
+              {% if user.is_staff %}
+                <form method="post">
+                  {% csrf_token %}
+                  <input type="hidden" name="tournament_id" value="{{ tournament.id }}" />
+                  <input type="hidden" name="action" value="unarchive" />
+                  <button type="submit">
+                    <img src="{% static 'images/tournaments_icons/Archived_icon.png' %}"
+                         alt="Archived"
+                         width="30" />
+                  </button>
+                </form>
+              {% else %}
+                <img src="{% static 'images/tournaments_icons/Archived_icon.png' %}"
+                     alt="Archived"
+                     width="30" />
+              {% endif %}
+            {% else %}
+              {% if user.is_staff %}
+                <form method="post">
+                  {% csrf_token %}
+                  <input type="hidden" name="tournament_id" value="{{ tournament.id }}" />
+                  <input type="hidden" name="action" value="archive" />
+                  <button type="submit">
+                    <img src="{% static 'images/tournaments_icons/Unarchived_icon.png' %}"
+                         alt="Not archived"
+                         width="30" />
+                  </button>
+                </form>
+              {% else %}
+                <img src="{% static 'images/tournaments_icons/Unarchived_icon.png' %}"
+                     alt="Not archived"
+                     width="30" />
+              {% endif %}
+            {% endif %}
+          {% endif %}
+        </div>
+        <p>Game: {{ tournament.game }}</p>
+        <p>Registration Start Date: {{ tournament.registration_start_date }}</p>
+        <p>Registration End Date: {{ tournament.registration_end_date }}</p>
+        <p>Tournament Start date: {{ tournament.tournament_start_date }}</p>
+        <p>Tournament End date: {{ tournament.tournament_end_date }}</p>
+        <p>Max players: {{ tournament.max_players }}</p>
+        <p>Description: {{ tournament.description }}</p>
+        <p>Rules: {{ tournament.rules }}</p>
+        <p>Draw rules: {{ tournament.draw_rules }}</p>
+        {% if tournament.get_all_winners %}
+          <p>Winners:</p>
+          <ul>
+            {% for winner in tournament.get_all_winners %}
+              <li>
+                <p>
+                  {% if winner.name %}
+                    <a href="{% url 'users:detail' winner.id %}">{{ winner.name }}</a>
+                  {% else %}
+                    <a href="{% url 'users:detail' winner.id %}">{{ winner.email }}</a>
+                  {% endif %}
+                </p>
+              </li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+        <p>Players:</p>
+        {% if tournament.get_all_players %}
+          <ul>
+            {% for player in tournament.get_all_players %}
+              <li>
+                <p>
+                  {% if player.name %}
+                    <a href="{% url 'users:detail' player.id %}">{{ player.name }}</a>
+                  {% else %}
+                    <a href="{% url 'users:detail' player.id %}">{{ player.email }}</a>
+                  {% endif %}
+                </p>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p>No player yet.</p>
+        {% endif %}
+        {% if user.is_authenticated and tournament.status == "registration open" %}
+          <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="tournament_id" value="{{ tournament.id }}" />
+            <input type="hidden" name="action" value="join" />
+            <button type="submit" id="Join">Join</button>
+          </form>
+          <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="tournament_id" value="{{ tournament.id }}" />
+            <input type="hidden" name="action" value="withdraw" />
+            <button type="submit" id="Withdraw">Withdraw</button>
+          </form>
+        {% endif %}
+        <!-- You can add more fields as needed -->
+      </li>
+    {% empty %}
+      <li>No tournaments available.</li>
+    {% endfor %}
+  </ul>
+{% endblock content %}

@@ -1,3 +1,4 @@
+from django.apps import apps
 from django.contrib import admin
 
 from .models import Game, Lobby, Match, MatchProposal, Player
@@ -28,3 +29,14 @@ class PlayerAdmin(admin.ModelAdmin):
 @admin.register(MatchProposal)
 class MatchProposalAdmin(admin.ModelAdmin):
     pass
+
+
+# Tournaments
+
+models = apps.get_models()
+
+for model in models:
+    try:
+        admin.site.register(model)
+    except admin.sites.AlreadyRegistered:
+        pass

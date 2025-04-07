@@ -12,4 +12,7 @@
       </li>
     {% endfor %}
   </ul>
+  {% if user.is_staff %}
+    <a href="{% url 'game-create' %}">Create New Game</a>
+  {% endif %}
 {% endblock content %}
