@@ -6,7 +6,7 @@ from django.utils.translation import gettext_lazy as _
 
 from chigame.users.forms import UserAdminChangeForm, UserAdminCreationForm
 
-from .models import FriendInvitation, UserProfile
+from .models import FriendInvitation, Notification, UserProfile
 
 User = get_user_model()
 
@@ -53,3 +53,4 @@ class UserAdmin(auth_admin.UserAdmin):
 
 admin.site.register(UserProfile)
 admin.site.register(FriendInvitation)
+admin.site.register(Notification)
