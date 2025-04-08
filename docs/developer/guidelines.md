@@ -73,8 +73,12 @@ format, with the following modifications:
 
 - Instead of starting the commit message with `<type>[optional scope]` (e.g., `feat:`, `fix(api)`, etc.),
   you should start with the name of the component you are working on in square brackets (e.g., `[api]`, `[games]`, etc.)
+- If the commit represents a work-in-progress, you can use the `WIP` prefix (e.g., `[api] WIP: add new tournaments endpoint`).
 - Commit message titles must not exceed 50 characters. The lines of the body of the commit message, if any,
   must not exceed 72 characters (see the [Git 50/72 rule](https://www.midori-global.com/blog/2018/04/02/git-50-72-rule))
+- If the commit relates to an issue or PR, you must include the issue/PR number
+  in the commit message body, using the format `#<issue number>` (e.g., `#42`). This
+  ensures the commit is linked to the issue/PR in GitHub.
 
 We also recommend reading [How to Write a Git Commit Message](https://chris.beams.io/posts/git-commit/) for more
 details on how to compose the title and body of the commit message.
