@@ -25,8 +25,7 @@ repository, and pull requests will not be approved if they don't pass
 these checks.
 
 To ensure your code already passes these checks, we suggest you get into
-the habit of running the `black` command to automatically reformat your code
-(or use a code editor plugin to do so automatically). For example:
+the habit of running the `black` command to automatically reformat your code. For example:
 
 ```raw
 $ black src/chigame/games/views.py 
@@ -36,7 +35,10 @@ All done! ✨ 🍰 ✨
 1 file reformatted.
 ```
 
-While `black` is only one of the tools that will be run by our automated checks,
+You can also enable automatic formatting on most code editors, so you don't
+have to run `black` manually. For VS Code, see [Fornatting Python in VS Code](https://code.visualstudio.com/docs/python/formatting).
+
+Note: While `black` is only one of the tools that will be run by our automated checks,
 it will typically catch most style issues, and will fix them automatically
 for you.
 
@@ -82,6 +84,42 @@ format, with the following modifications:
 
 We also recommend reading [How to Write a Git Commit Message](https://chris.beams.io/posts/git-commit/) for more
 details on how to compose the title and body of the commit message.
+
+Here are a few examples of valid commit messages:
+
+```
+[games] Add missing header to game listing page
+```
+
+```
+[api] Fix pagination bug in game listing endpoint
+
+Fixes: #42
+```
+
+```
+[frontend] WIP: Update styles for game listing page
+
+The new styles for the game listing page are mostly
+done, but there are still a few issues with the layout
+of the game cards for games with long descriptions.
+
+WIP: #15
+```
+
+```
+[users] Improve error messages on failed login attempts
+
+Replaced previous "Invalid credentials" message with
+more descriptive messages that distinguish the 
+following cases:
+
+- Invalid username
+- Invalid password
+- Account locked
+
+Closes: #37
+```
 
 ## Git branches
 
