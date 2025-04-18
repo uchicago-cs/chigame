@@ -35,6 +35,7 @@ class User(AbstractUser):
     username = models.CharField(
         _("username"), max_length=255, unique=True, blank=True, null=True, validators=[validate_username]
     )
+    friends = models.ManyToManyField('self', symmetrical=True, blank=True)
     tokens = models.PositiveSmallIntegerField(validators=[MaxValueValidator(3)], default=1)
 
     USERNAME_FIELD = "email"
@@ -69,7 +70,6 @@ class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     display_name = models.TextField()
     bio = models.TextField(blank=True)
-    friends = models.ManyToManyField(User, related_name="friendship", blank=True)
     date_joined = models.DateTimeField(auto_now_add=True)
 
     @classmethod
@@ -98,11 +98,8 @@ class FriendInvitation(models.Model):
 
     def accept_invitation(self):
         sender = self.sender
-        sender_profile = UserProfile.objects.get(user__pk=sender.pk)
         receiver = self.receiver
-        receiver_profile = UserProfile.objects.get(user__pk=receiver.pk)
-        sender_profile.friends.add(receiver)
-        receiver_profile.friends.add(sender)
+        sender.friends.add(receiver)
         self.accepted = True
         self.save()
 
