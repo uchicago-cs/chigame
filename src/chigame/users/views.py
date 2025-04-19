@@ -104,18 +104,18 @@ def user_history(request, pk):
 
 def user_profile_detail_view(request, pk):
     try:
-        profile = get_object_or_404(UserProfile, user__pk=pk)
+        target_user = get_object_or_404(User, pk=pk)
+        profile = UserProfile.objects.get(user=target_user)
         if request.user.pk == pk:
             return render(request, "users/userprofile_detail.html", {"object": profile})
         is_friend = None
         friendship_request = None
         if request.user.pk:
-            is_friend = profile.friends.filter(pk=request.user.pk).exists()
+            is_friend = target_user.friends.filter(pk=request.user.pk).exists()
             if not is_friend:
-                curr_user = User.objects.get(pk=request.user.id)
-                other_user = profile.user
+                curr_user = request.user
                 friendship_request = FriendInvitation.objects.filter(
-                    Q(sender=curr_user, receiver=other_user) | Q(sender=other_user, receiver=curr_user)
+                    Q(sender=target_user, receiver=curr_user) | Q(sender=curr_user, receiver=target_user)
                 ).first()
         context = {"object": profile, "is_friend": is_friend, "friendship_request": friendship_request}
         return render(request, "users/userprofile_detail.html", context=context)
