@@ -104,12 +104,17 @@ def user_history(request, pk):
 
 def user_profile_detail_view(request, pk):
     try:
-        profile = get_object_or_404(UserProfile, user__pk=pk)
         if request.user.pk == pk:
+            # if user is accessing their own profile, create a profile if it doesn't exist
+            profile = UserProfile.get_or_create_profile(request.user)
             return render(request, "users/userprofile_detail.html", {"object": profile})
+        else:
+            # fetch another user's profile
+            profile = get_object_or_404(UserProfile, user__pk=pk)
+
         is_friend = None
         friendship_request = None
-        if request.user.pk:
+        if request.user.is_authenticated:
             is_friend = profile.friends.filter(pk=request.user.pk).exists()
             if not is_friend:
                 curr_user = User.objects.get(pk=request.user.id)
@@ -212,14 +217,14 @@ def decline_friend_invitation(request, pk):
 
 def user_search_results(request):
     query_input = request.GET.get("q")
-    context = {"nothing_found": True, "query_type": "Users"}
+    context = {"found": False, "query_type": "Users"}
     if query_input:
-        users_list = UserProfile.objects.filter(
+        profiles_list = UserProfile.objects.filter(
             Q(user__email__icontains=query_input) | Q(user__name__icontains=query_input)
         )
-        if users_list.count() > 0:
-            context.pop("nothing_found")
-            context["object_list"] = users_list
+        if profiles_list.count() > 0:
+            context["found"] = True
+            context["object_list"] = profiles_list
     return render(request, "pages/search_results.html", context)
 
 

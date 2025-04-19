@@ -5,7 +5,6 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator
 from django.db.models import Q
-from django.shortcuts import redirect
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -252,67 +251,67 @@ class Notification(models.Model):
         self.save()
 
 
-class FriendRequestNotification(Notification):
-    def __init__(self, actor, receiver, message):
-        self.notification = Notification.objects.create(
-            actor=actor, receiver=receiver, message=message, type="FRIEND_REQUEST"
-        )
-        return self.notification
+# class FriendRequestNotification(Notification):
+#     def __init__(self, actor, receiver, message):
+#         self.notification = Notification.objects.create(
+#             actor=actor, receiver=receiver, message=message, type="FRIEND_REQUEST"
+#         )
+#         return self.notification
 
-    def get_redirect_str(self):
-        return f"profile/{self.notification.actor.id}/"
+#     def get_redirect_str(self):
+#         return f"profile/{self.notification.actor.id}/"
 
-    def redirect_to_actor(self):
-        return redirect(self.get_redirect_str())
-
-
-class ReminderNotification(Notification):
-    def __init__(self, actor, receiver, message):
-        self.notification = Notification.objects.create(
-            actor=actor, receiver=receiver, message=message, type="REMINDER"
-        )
-
-    def get_redirect_str(self):
-        return f"inbox/{self.notification.receiver.id}/"
-
-    def redirect_to_actor(self):
-        return redirect(self.get_redirect_str())
+#     def redirect_to_actor(self):
+#         return redirect(self.get_redirect_str())
 
 
-class UpcomingMatchNotification(Notification):
-    def __init__(self, actor, receiver, message):
-        self.notification = Notification.objects.create(
-            actor=actor, receiver=receiver, message=message, type="UPCOMING_MATCH"
-        )
+# class ReminderNotification(Notification):
+#     def __init__(self, actor, receiver, message):
+#         self.notification = Notification.objects.create(
+#             actor=actor, receiver=receiver, message=message, type="REMINDER"
+#         )
 
-    def get_redirect_str(self):
-        return f"user_history/{self.notification.receiver.id}/"
+#     def get_redirect_str(self):
+#         return f"inbox/{self.notification.receiver.id}/"
 
-    def redirect_to_actor(self):
-        return redirect(self.get_redirect_str())
-
-
-class MatchProposalNotification(Notification):
-    def __init__(self, actor, receiver, message):
-        self.notification = Notification.objects.create(
-            actor=actor, receiver=receiver, message=message, type="MATCH_PROPOSAL"
-        )
-
-    def get_redirect_str(self):
-        return f"act_on_inbox_notification/{self.notification.id}/view/"
-
-    def redirect_to_actor(self):
-        return redirect(self.get_redirect_str())
+#     def redirect_to_actor(self):
+#         return redirect(self.get_redirect_str())
 
 
-class GroupInvitationNotification(Notification):
-    def __init__(self, actor, receiver, message):
-        self.notification = Notification.objects.create(
-            actor=actor, receiver=receiver, message=message, type="GROUP_INVITATION"
-        )
+# class UpcomingMatchNotification(Notification):
+#     def __init__(self, actor, receiver, message):
+#         self.notification = Notification.objects.create(
+#             actor=actor, receiver=receiver, message=message, type="UPCOMING_MATCH"
+#         )
 
-    def get_redirect_str(self):
-        return f"groups/{self.notification.actor.id}/"
+#     def get_redirect_str(self):
+#         return f"user_history/{self.notification.receiver.id}/"
 
-    def redirect_to_actor(self):
-        return redirect(self.get_redirect_str())
+#     def redirect_to_actor(self):
+#         return redirect(self.get_redirect_str())
+
+
+# class MatchProposalNotification(Notification):
+#     def __init__(self, actor, receiver, message):
+#         self.notification = Notification.objects.create(
+#             actor=actor, receiver=receiver, message=message, type="MATCH_PROPOSAL"
+#         )
+
+#     def get_redirect_str(self):
+#         return f"act_on_inbox_notification/{self.notification.id}/view/"
+
+#     def redirect_to_actor(self):
+#         return redirect(self.get_redirect_str())
+
+
+# class GroupInvitationNotification(Notification):
+#     def __init__(self, actor, receiver, message):
+#         self.notification = Notification.objects.create(
+#             actor=actor, receiver=receiver, message=message, type="GROUP_INVITATION"
+#         )
+
+#     def get_redirect_str(self):
+#         return f"groups/{self.notification.actor.id}/"
+
+#     def redirect_to_actor(self):
+#         return redirect(self.get_redirect_str())
