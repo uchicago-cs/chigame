@@ -36,10 +36,9 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'daphne', # Must be listed before staticfiles
     'django.contrib.staticfiles',
-    # Live chat app
     'channels',
-    'daphne',
 ]
 
 MIDDLEWARE = [
@@ -123,3 +122,5 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+ASGI_APPLICATION = 'chatdemo.asgi.application'
