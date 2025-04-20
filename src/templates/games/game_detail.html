@@ -19,6 +19,8 @@
         players
       </h4>
       <h4>Complexity: {{ game.complexity }}/5</h4>
+      <h4>Average Rating: {{ avg_rating|floatformat:2|default:"N/A" }}</h4>
+      <h4>Number of Reviews: {{ popularity|default:0 }}</h4>
       {% for category in game.category.all %}
         <a href="#"><span class="badge rounded-pill text-bg-primary">{{ category }}</span></a>
       {% endfor %}
