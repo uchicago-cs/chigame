@@ -2,6 +2,12 @@
 <html lang="en">
   <head>
     <title>Live Chat Demo</title>
+
+    <style>
+      .chat__item__container {
+        font-size: 20px;
+      }
+    </style>
   </head>
   <body>
     <center><h1>Hello , Welcome to my chat site ! {{request.user}}</h1></center>
@@ -11,11 +17,7 @@
       Logout the chat Page <a href="{% url 'logout-user' %}">Logout</a>
     </center>
     {% endif %}
-    <div
-      class="chat__item__container"
-      id="id_chat_item_container"
-      style="font-size: 20px"
-    >
+    <div class="chat__item__container" id="id_chat_item_container">
       <br />
       <input type="text" id="id_message_send_input" />
       <button type="submit" id="id_message_send_button">Send Message</button>
