@@ -35,7 +35,7 @@ class User(AbstractUser):
     username = models.CharField(
         _("username"), max_length=255, unique=True, blank=True, null=True, validators=[validate_username]
     )
-    friends = models.ManyToManyField('self', symmetrical=True, blank=True)
+    friends = models.ManyToManyField("self", symmetrical=True, blank=True)
     tokens = models.PositiveSmallIntegerField(validators=[MaxValueValidator(3)], default=1)
 
     USERNAME_FIELD = "email"
@@ -97,7 +97,7 @@ class FriendInvitation(models.Model):
     objects = FriendInvitationManager()
 
     class Meta:
-        unique_together = ('sender', 'receiver')
+        unique_together = ("sender", "receiver")
 
     def accept_invitation(self):
         sender = self.sender
