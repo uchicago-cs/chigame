@@ -1,6 +1,7 @@
 # from django.shortcuts import render
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
+from django.core.exceptions import PermissionDenied
 from rest_framework import generics, status
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
@@ -82,6 +83,18 @@ class LobbyListView(generics.ListCreateAPIView):
 class LobbyDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Lobby.objects.all()
     serializer_class = LobbySerializer
+
+    def perform_destroy(self, instance):
+        #if the user is the creator of the lobby, delete the lobby 
+        if self.request.user != instance.created_by and not self.request.user.is_staff: 
+            raise PermissionDenied("You do not have permission to delete this lobby.")
+        instance.delete()
+    
+    def perform_update(self, serializer): 
+        #if the user is the creator of the lobby, delete the lobby 
+        if self.request.user != serializer.instance.created_by and not self.request.user.is_staff: 
+            raise PermissionDenied("You do not have permission to update this lobby.")
+        serializer.save()
 
 
 class UserListView(generics.ListCreateAPIView):
