@@ -96,6 +96,9 @@ class FriendInvitation(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     objects = FriendInvitationManager()
 
+    class Meta:
+        unique_together = ('sender', 'receiver')
+
     def accept_invitation(self):
         sender = self.sender
         receiver = self.receiver

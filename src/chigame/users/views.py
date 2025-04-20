@@ -255,10 +255,8 @@ def user_inbox_view(request, pk):
 
 
 def unfriend_users(user1, user2):
-    profile1 = UserProfile.objects.get(user__pk=user1.pk)
-    profile2 = UserProfile.objects.get(user__pk=user2.pk)
-    profile1.friends.remove(user2)
-    profile2.friends.remove(user1)
+    user1.friends.remove(user2)
+    user2.friends.remove(user1)
     friend_invite = FriendInvitation.objects.get_by_users(user1, user2)
     notification = Notification.objects.get_by_actor(friend_invite)
     notification.mark_as_deleted()
@@ -289,8 +287,8 @@ def remove_friend(request, pk):
 @login_required
 def friend_list_view(request, pk):
     user = request.user
-    profile = get_object_or_404(UserProfile, user__pk=pk)
-    friends = profile.friends.all()
+    target_user = get_object_or_404(User, pk=pk)
+    friends = target_user.friends.all()
     table = FriendsTable(friends)
     context = {"table": table}
     if pk == user.id:
