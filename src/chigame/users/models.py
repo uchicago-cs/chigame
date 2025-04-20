@@ -251,67 +251,37 @@ class Notification(models.Model):
         self.save()
 
 
-# class FriendRequestNotification(Notification):
-#     def __init__(self, actor, receiver, message):
-#         self.notification = Notification.objects.create(
-#             actor=actor, receiver=receiver, message=message, type="FRIEND_REQUEST"
-#         )
-#         return self.notification
+class BaseNotificationHandler:
+    def __init__(self, notification):
+        self.notification = notification
 
-#     def get_redirect_str(self):
-#         return f"profile/{self.notification.actor.id}/"
-
-#     def redirect_to_actor(self):
-#         return redirect(self.get_redirect_str())
+    def get_redirect_str(self):
+        raise NotImplementedError("Subclasses must implement get_redirect_str")
 
 
-# class ReminderNotification(Notification):
-#     def __init__(self, actor, receiver, message):
-#         self.notification = Notification.objects.create(
-#             actor=actor, receiver=receiver, message=message, type="REMINDER"
-#         )
-
-#     def get_redirect_str(self):
-#         return f"inbox/{self.notification.receiver.id}/"
-
-#     def redirect_to_actor(self):
-#         return redirect(self.get_redirect_str())
+# Paths must be updated as urls are added
 
 
-# class UpcomingMatchNotification(Notification):
-#     def __init__(self, actor, receiver, message):
-#         self.notification = Notification.objects.create(
-#             actor=actor, receiver=receiver, message=message, type="UPCOMING_MATCH"
-#         )
-
-#     def get_redirect_str(self):
-#         return f"user_history/{self.notification.receiver.id}/"
-
-#     def redirect_to_actor(self):
-#         return redirect(self.get_redirect_str())
+class FriendRequestNotification(BaseNotificationHandler):
+    def get_redirect_str(self):
+        return f"/notification_detail/{self.notification.id}"
 
 
-# class MatchProposalNotification(Notification):
-#     def __init__(self, actor, receiver, message):
-#         self.notification = Notification.objects.create(
-#             actor=actor, receiver=receiver, message=message, type="MATCH_PROPOSAL"
-#         )
-
-#     def get_redirect_str(self):
-#         return f"act_on_inbox_notification/{self.notification.id}/view/"
-
-#     def redirect_to_actor(self):
-#         return redirect(self.get_redirect_str())
+class MatchProposalNotification(BaseNotificationHandler):
+    def get_redirect_str(self):
+        return f"/notification_detail/{self.notification.id}"
 
 
-# class GroupInvitationNotification(Notification):
-#     def __init__(self, actor, receiver, message):
-#         self.notification = Notification.objects.create(
-#             actor=actor, receiver=receiver, message=message, type="GROUP_INVITATION"
-#         )
+class GroupInvitationNotification(BaseNotificationHandler):
+    def get_redirect_str(self):
+        return f"/notification_detail/{self.notification.id}"
 
-#     def get_redirect_str(self):
-#         return f"groups/{self.notification.actor.id}/"
 
-#     def redirect_to_actor(self):
-#         return redirect(self.get_redirect_str())
+class ReminderNotification(BaseNotificationHandler):
+    def get_redirect_str(self):
+        raise NotImplementedError("Reminder notifications do not have a redirect URL")
+
+
+class UpcomingMatchNotification(BaseNotificationHandler):
+    def get_redirect_str(self):
+        raise NotImplementedError("Upcoming match notifications do not have a redirect URL")

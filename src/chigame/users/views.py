@@ -15,7 +15,14 @@ from rest_framework.response import Response
 
 from chigame.games.models import Lobby, Player, Tournament
 
-from .models import FriendInvitation, Notification, UserProfile
+from .models import (
+    FriendInvitation,
+    FriendRequestNotification,
+    GroupInvitationNotification,
+    MatchProposalNotification,
+    Notification,
+    UserProfile,
+)
 from .tables import FriendsTable, UserTable
 
 User = get_user_model()
@@ -334,7 +341,17 @@ def notification_detail(request, pk):
             messages.error(request, "Something went wrong. This notification is invalid")
             return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
         if notification.type == Notification.FRIEND_REQUEST:
-            return redirect(reverse("users:user-profile", kwargs={"pk": notification.actor.sender.pk}))
+            handler = FriendRequestNotification(notification)
+            return redirect(handler.get_redirect_str())
+        elif notification.type == Notification.MATCH_PROPOSAL:
+            handler = MatchProposalNotification(notification)
+            return redirect(handler.get_redirect_str())
+        elif notification.type == Notification.GROUP_INVITATION:
+            handler = GroupInvitationNotification(notification)
+            return redirect(handler.get_redirect_str())
+        else:
+            raise NotImplementedError("No notification detail implemented for this notification type")
+
     except Notification.DoesNotExist:
         messages.error(request, "Something went wrong. This notification does not exist")
     return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
