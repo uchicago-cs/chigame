@@ -264,17 +264,17 @@ class BaseNotificationHandler:
 
 class FriendRequestNotification(BaseNotificationHandler):
     def get_redirect_str(self):
-        return f"/notification_detail/{self.notification.id}"
+        return reverse("users:user-profile", kwargs={"pk": self.notification.actor.sender.pk})
 
 
 class MatchProposalNotification(BaseNotificationHandler):
     def get_redirect_str(self):
-        return f"/notification_detail/{self.notification.id}"
+        raise NotImplementedError("Match proposal notifications do not have a redirect URL")
 
 
 class GroupInvitationNotification(BaseNotificationHandler):
     def get_redirect_str(self):
-        return f"/notification_detail/{self.notification.id}"
+        raise NotImplementedError("Group invitation notifications do not have a redirect URL")
 
 
 class ReminderNotification(BaseNotificationHandler):

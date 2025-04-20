@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models import Q
-from django.http import HttpResponseNotFound
+from django.http import Http404, HttpResponseNotFound
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
@@ -351,10 +351,8 @@ def notification_detail(request, pk):
             return redirect(handler.get_redirect_str())
         else:
             raise NotImplementedError("No notification detail implemented for this notification type")
-
     except Notification.DoesNotExist:
-        messages.error(request, "Something went wrong. This notification does not exist")
-    return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
+        raise Http404("Notification does not exist")
 
 
 @login_required
