@@ -17,8 +17,8 @@ from chigame.api.serializers import (
     MessageSerializer,
     UserSerializer,
 )
-from chigame.games.models import Game, Lobby, Message, User
-from chigame.users.models import Group, UserProfile
+from chigame.games.models import Game, Lobby, Message
+from chigame.users.models import Group, User
 
 
 # Helper function to get user from slug
