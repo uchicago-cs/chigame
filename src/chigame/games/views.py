@@ -549,6 +549,17 @@ class TournamentDetailView(DetailView):
                 messages.error(request, "This match is already in progress.")
                 return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
             
+            # Check if the match is already finished
+            if match.lobby.match_status == Lobby.Finished:
+                messages.error(request, "This match has already finished.")
+                return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
+            
+            # Add user to lobby members if not already there
+            if request.user not in match.lobby.members.all():
+                match.lobby.members.add(request.user)
+                match.lobby.save()
+                messages.success(request, "You have joined the match lobby.")
+            
             # Check if all players are ready
             if match.players.count() == match.lobby.members.count():
                 # Start the match
@@ -556,7 +567,7 @@ class TournamentDetailView(DetailView):
                 match.lobby.save()
                 messages.success(request, "Match has started!")
             else:
-                messages.info(request, "Waiting for other players to join...")
+                messages.info(request, f"Waiting for other players to join... ({match.lobby.members.count()}/{match.players.count()})")
             
             return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
 

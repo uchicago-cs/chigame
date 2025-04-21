@@ -93,11 +93,11 @@
   <!-- You can add more fields as needed -->
   <p>Matches:</p>
   {% if tournament.get_all_matches %}
-    <ul>
+    <ul class="match-list">
       {% for match in tournament.get_all_matches %}
-        <li>
+        <li class="match-item">
           <div class="match-info">
-            <p>
+            <p class="match-players">
               Match (
               {% for player in match.players.all %}
                 {% if player.name %}
@@ -111,7 +111,14 @@
               {% endfor %}
               )
             </p>
-            <p>Status: {{ match.lobby.get_match_status_display }}</p>
+            <p class="match-status">Status: {{ match.lobby.get_match_status_display }}</p>
+            {% if match.lobby.match_status == match.lobby.Viewable %}
+              <p class="match-in-progress">Match in progress</p>
+            {% elif match.lobby.match_status == match.lobby.Finished %}
+              <p class="match-finished">Match finished</p>
+            {% else %}
+              <p class="match-waiting">Waiting for players ({{ match.lobby.members.count }}/{{ match.players.count }})</p>
+            {% endif %}
             {% if user in match.players.all and tournament.status == "tournament in progress" and match.lobby.match_status != match.lobby.Viewable %}
               <form method="post" class="join-match-form">
                 {% csrf_token %}
