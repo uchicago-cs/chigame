@@ -1,5 +1,4 @@
 import django_filters
-
 from django_filters import BaseInFilter
 
 from chigame.games.models import Game
@@ -34,7 +33,6 @@ class GameFilter(django_filters.FilterSet):
     min_players__gte = django_filters.NumberFilter(field_name="min_players", lookup_expr="gte")
     min_players__lte = django_filters.NumberFilter(field_name="min_players", lookup_expr="lte")
 
-    max_players = django_filters.NumberFilter(lookup_expr="exact")
     max_players__gte = django_filters.NumberFilter(field_name="max_players", lookup_expr="gte")
     max_players__lte = django_filters.NumberFilter(field_name="max_players", lookup_expr="lte")
 
