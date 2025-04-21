@@ -96,21 +96,31 @@
     <ul>
       {% for match in tournament.get_all_matches %}
         <li>
-          <p>
-            Match (
-            {% for player in match.players.all %}
-              {% if player.name %}
-                <a href="{% url 'users:detail' player.id %}">{{ player.name }}</a>
-              {% else %}
-                <a href="{% url 'users:detail' player.id %}">{{ player.email }}</a>
-              {% endif %}
-              {% if not forloop.last %}vs.{% endif %}
-            {% empty %}
-              Forfeited
-            {% endfor %}
-            )
-          </p>
-          <!-- You can add more fields as needed -->
+          <div class="match-info">
+            <p>
+              Match (
+              {% for player in match.players.all %}
+                {% if player.name %}
+                  <a href="{% url 'users:detail' player.id %}">{{ player.name }}</a>
+                {% else %}
+                  <a href="{% url 'users:detail' player.id %}">{{ player.email }}</a>
+                {% endif %}
+                {% if not forloop.last %}vs.{% endif %}
+              {% empty %}
+                Forfeited
+              {% endfor %}
+              )
+            </p>
+            <p>Status: {{ match.lobby.get_match_status_display }}</p>
+            {% if user in match.players.all and tournament.status == "tournament in progress" and match.lobby.match_status != match.lobby.Viewable %}
+              <form method="post" class="join-match-form">
+                {% csrf_token %}
+                <input type="hidden" name="tournament_id" value="{{ tournament.id }}" />
+                <input type="hidden" name="action" value="join_match" />
+                <button type="submit" class="join-match-button">Join Match</button>
+              </form>
+            {% endif %}
+          </div>
         </li>
       {% endfor %}
     </ul>

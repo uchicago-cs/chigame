@@ -535,7 +535,29 @@ class TournamentDetailView(DetailView):
                 raise Exception("Invalid return value")
 
         elif request.POST.get("action") == "join_match":
-            pass  # allow players to join their own matches
+            # Get the user's current match in the tournament
+            user_matches = tournament.matches.filter(players=request.user)
+            if not user_matches.exists():
+                messages.error(request, "You don't have any matches in this tournament.")
+                return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
+            
+            # Get the first match (there should only be one active match per player)
+            match = user_matches.first()
+            
+            # Check if the match is already in progress
+            if match.lobby.match_status == Lobby.Viewable:
+                messages.error(request, "This match is already in progress.")
+                return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
+            
+            # Check if all players are ready
+            if match.players.count() == match.lobby.members.count():
+                # Start the match
+                match.lobby.match_status = Lobby.Viewable
+                match.lobby.save()
+                messages.success(request, "Match has started!")
+            else:
+                messages.info(request, "Waiting for other players to join...")
+            
             return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
 
         elif request.POST.get("action") == "spectate":
