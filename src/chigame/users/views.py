@@ -104,19 +104,25 @@ def user_history(request, pk):
 
 def user_profile_detail_view(request, pk):
     try:
+        # fetch the target user object and their associated profile
         target_user = get_object_or_404(User, pk=pk)
         profile = UserProfile.objects.get(user=target_user)
+        # if the requested user is trying to view their own profile, render immediateley
         if request.user.pk == pk:
             return render(request, "users/userprofile_detail.html", {"object": profile})
+        # for checking friendship and pending friend request status
         is_friend = None
         friendship_request = None
         if request.user.pk:
+            # check if logged-in user is friended with target user
             is_friend = target_user.friends.filter(pk=request.user.pk).exists()
             if not is_friend:
                 curr_user = request.user
+                # check if friendship request exists in either direction
                 friendship_request = FriendInvitation.objects.filter(
                     Q(sender=target_user, receiver=curr_user) | Q(sender=curr_user, receiver=target_user)
                 ).first()
+        # provide frontend profile + friendship status
         context = {"object": profile, "is_friend": is_friend, "friendship_request": friendship_request}
         return render(request, "users/userprofile_detail.html", context=context)
     except UserProfile.DoesNotExist:
