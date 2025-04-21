@@ -132,12 +132,14 @@ def user_profile_detail_view(request, pk):
 
 @login_required
 def send_friend_invitation(request, pk):
+    # fetch the current user and the target user
     curr_user = User.objects.get(pk=request.user.id)
     other_user = User.objects.get(pk=pk)
+    # if the current user is trying to send a friend request to themselves, return an error
     if curr_user.id == other_user.id:
         messages.error(request, "You can't send friendship invitation to yourself")
         return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
-
+    # check if the friendship invitation already exists
     invitation, new = FriendInvitation.objects.filter(
         Q(sender=curr_user, receiver=other_user) | Q(sender=other_user, receiver=curr_user)
     ).get_or_create(defaults={"sender": curr_user, "receiver": other_user})
@@ -148,9 +150,11 @@ def send_friend_invitation(request, pk):
             receiver=other_user,
             type=Notification.FRIEND_REQUEST,
             message=Notification.DEFAULT_MESSAGES[Notification.FRIEND_REQUEST],
-        )
+        ) 
+    # if the friendship invitation already exists, return an error
     elif invitation.sender.pk == other_user.pk:
         messages.info(request, "You already have a pending friend invitation from this profile.")
+    # if the friendship invitation already exists, return an error
     else:
         messages.info(request, "Friendship invitation already sent before.")
         try:
@@ -165,10 +169,12 @@ def send_friend_invitation(request, pk):
 
 @login_required
 def cancel_friend_invitation(request, pk):
+    # fetch the current user and the target user
     sender = User.objects.get(pk=request.user.id)
     receiver = User.objects.get(pk=pk)
     num = None
     try:
+        # check if the friendship invitation exists
         friendship = FriendInvitation.objects.get(sender=sender, receiver=receiver)
         notification = Notification.objects.get_by_actor(friendship)
     except FriendInvitation.DoesNotExist:
@@ -193,7 +199,9 @@ def cancel_friend_invitation(request, pk):
 @login_required
 def accept_friend_invitation(request, pk):
     try:
+        # fetch the friendship invitation
         friendship = FriendInvitation.objects.get(pk=pk)
+        # check if the friendship invitation is not for the current user
         if friendship.receiver.pk != request.user.pk:
             messages.error(request, "You are not the receiver of this friend invitation ")
         else:
@@ -205,8 +213,10 @@ def accept_friend_invitation(request, pk):
 
 @login_required
 def decline_friend_invitation(request, pk):
-    try:
+    try:    
+        # fetch the friendship invitation
         friendship = FriendInvitation.objects.get(pk=pk)
+        # check if the friendship invitation is not for the current user
         if friendship.receiver.pk != request.user.pk:
             messages.error(request, "You are not the receiver of this friend invitation ")
         else:
@@ -261,11 +271,16 @@ def user_inbox_view(request, pk):
 
 
 def unfriend_users(user1, user2):
+    # remove the users from each other's friends list
     user1.friends.remove(user2)
     user2.friends.remove(user1)
+    # fetch the friendship invitation
     friend_invite = FriendInvitation.objects.get_by_users(user1, user2)
+    # fetch the notification
     notification = Notification.objects.get_by_actor(friend_invite)
+    # delete the notification
     notification.mark_as_deleted()
+    # if the friendship invitation was accepted, delete it
     if friend_invite.accepted:
         friend_invite.delete()
     else:
@@ -274,10 +289,13 @@ def unfriend_users(user1, user2):
 
 @login_required
 def remove_friend(request, pk):
+    # check if the current user is not trying to remove themselves
     if request.user.pk != pk:
         try:
+            # fetch the current user and the target user
             curr_user = User.objects.get(pk=request.user.pk)
             other_user = User.objects.get(pk=pk)
+            # remove the users from each other's friends list
             unfriend_users(curr_user, other_user)
             messages.success(request, "Friend removed successfully")
             return redirect(reverse("users:user-profile", kwargs={"pk": pk}))
@@ -292,11 +310,15 @@ def remove_friend(request, pk):
 
 @login_required
 def friend_list_view(request, pk):
+    # fetch the current user and the target user    
     user = request.user
     target_user = get_object_or_404(User, pk=pk)
+    # fetch the target user's friends
     friends = target_user.friends.all()
+    # render the friends table
     table = FriendsTable(friends)
     context = {"table": table}
+    # if the target user is the current user, render the friends list
     if pk == user.id:
         return render(request, "users/user_friend_list.html", context)
     else:
