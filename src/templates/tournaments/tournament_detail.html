@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% load static %}
+{% load tags %}
 
 {% block extrahead %}
   <link rel="stylesheet"
@@ -109,6 +110,14 @@
               Forfeited
             {% endfor %}
             )
+            {% if tournament.status == "tournament in progress" %}
+              {% if user.is_authenticated %}
+                <a href="{% url 'simulate-match-result' tournament.id match.id %}"
+                   class="simulate-match-btn">
+                  <button>Simulate Match</button>
+                </a>
+              {% endif %}
+            {% endif %}
           </p>
           <!-- You can add more fields as needed -->
         </li>

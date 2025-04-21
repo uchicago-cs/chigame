@@ -34,4 +34,10 @@ urlpatterns = [
     path("lobby/<int:pk>/flipresult", views.check_guess, name="flip-result"),
     # chat in tournaments
     path("tournaments/<int:pk>/chat/", views.TournamentChatDetailView, name="tournament-chat"),
+    # simulate tournament match
+    path(
+        "tournaments/<int:tournament_id>/match/<int:match_id>/simulate/",
+        views.simulate_match_result,
+        name="simulate-match-result",
+    ),
 ]
