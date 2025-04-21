@@ -11,8 +11,8 @@ from rest_framework.utils.serializer_helpers import ReturnDict
 
 # Local application/library specific imports
 from chigame.api.serializers import GameSerializer
-from chigame.api.tests.factories import ChatFactory, GameFactory, TournamentFactory, UserFactory
-from chigame.games.models import Game, Message, User
+from chigame.api.tests.factories import ChatFactory, GameFactory, GameListFactory, TournamentFactory, UserFactory
+from chigame.games.models import Game, GameList, Message, User
 
 
 class GameTests(APITestCase):
@@ -571,3 +571,71 @@ class UserTests(APITestCase):
         self.assertEqual(response.data[3]["update_on"], data4["update_on"])
         self.assertEqual(response.data[4]["update_on"], delete1["update_on"])
         self.assertEqual(response.data[5]["update_on"], delete2["update_on"])
+
+
+# Tests for GameList API
+class GameListTests(APITestCase):
+    def setUp(self):
+        # Create a user and authenticate
+        self.user = UserFactory()
+        self.client.force_authenticate(user=self.user)
+        # Create sample games
+        self.game1 = GameFactory()
+        self.game2 = GameFactory()
+
+    def test_create_game_list(self):
+        url = reverse("api-gamelist-list")
+        data = {
+            "name": "My Favorites",
+            "description": "A list of my favorite games",
+            "games": [self.game1.id, self.game2.id],
+        }
+        response = self.client.post(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        # Verify GameList created correctly
+        self.assertEqual(GameList.objects.count(), 1)
+        gl = GameList.objects.get()
+        self.assertEqual(gl.name, data["name"])
+        self.assertEqual(gl.description, data["description"])
+        self.assertEqual(gl.created_by, self.user)
+        self.assertCountEqual([g.id for g in gl.games.all()], data["games"])
+
+    def test_list_game_lists(self):
+        # Create two lists: one for this user and one for another
+        gl1 = GameListFactory(created_by=self.user, games=[self.game1])
+        other_user = UserFactory()
+        gl2 = GameListFactory(created_by=other_user, games=[self.game2])
+        url = reverse("api-gamelist-list")
+        # Get all lists
+        response = self.client.get(url, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        ids = [item["id"] for item in response.data["results"]]
+        self.assertIn(gl1.id, ids)
+        self.assertIn(gl2.id, ids)
+        # Filter by created_by
+        response2 = self.client.get(f"{url}?created_by={self.user.id}", format="json")
+        self.assertEqual(response2.status_code, status.HTTP_200_OK)
+        ids2 = [item["id"] for item in response2.data["results"]]
+        self.assertIn(gl1.id, ids2)
+        self.assertNotIn(gl2.id, ids2)
+
+    def test_retrieve_update_delete_game_list(self):
+        # Create a GameList for this user
+        gl = GameListFactory(created_by=self.user, games=[self.game1])
+        url = reverse("api-gamelist-detail", args=[gl.id])
+        # Retrieve
+        response = self.client.get(url, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["id"], gl.id)
+        self.assertEqual(response.data["name"], gl.name)
+        # Update
+        new_data = {"name": "Renamed List", "games": [self.game2.id]}
+        response2 = self.client.patch(url, new_data, format="json")
+        self.assertEqual(response2.status_code, status.HTTP_200_OK)
+        gl.refresh_from_db()
+        self.assertEqual(gl.name, new_data["name"])
+        self.assertCountEqual([g.id for g in gl.games.all()], new_data["games"])
+        # Delete
+        response3 = self.client.delete(url, format="json")
+        self.assertEqual(response3.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(GameList.objects.filter(id=gl.id).exists())
