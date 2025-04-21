@@ -242,7 +242,7 @@ class Tournament(models.Model):
     """
 
     name = models.CharField(max_length=255)
-    game = models.ForeignKey(Game, on_delete=models.CASCADE)
+    game = models.ForeignKey(Game, on_delete=models.CASCADE, null=True, blank=True)
     registration_start_date = models.DateTimeField()  # the start date of the registration period
     registration_end_date = models.DateTimeField()  # the end date of the registration period
     tournament_start_date = models.DateTimeField()  # the start date of the tournament
