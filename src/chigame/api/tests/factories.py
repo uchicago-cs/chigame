@@ -119,11 +119,11 @@ class LobbyFactory(DjangoModelFactory):
     game = SubFactory(GameFactory)
     game_mod_status = Iterator([Lobby.Default_game, Lobby.Modified_game])
     created_by = SubFactory(UserFactory)
-    # members =
+
     min_players = LazyAttribute(lambda x: random.randint(2, 6))
     max_players = LazyAttribute(lambda o: random.randint(o.min_players, 10))
     time_constraint = LazyAttribute(lambda x: random.randint(100, 500))
-    # lobby_created = LazyFunction(timezone.now)
+    lobby_created = LazyFunction(timezone.now)
 
     lobby_created = Faker("date_time_this_decade")
 
