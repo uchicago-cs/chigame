@@ -4,7 +4,7 @@ from django.utils import timezone
 from factory import Faker, Iterator, LazyAttribute, LazyFunction, Sequence, SubFactory, post_generation
 from factory.django import DjangoModelFactory
 
-from chigame.games.models import Category, Chat, Game, GameList, Lobby, Mechanic, Tournament
+from chigame.games.models import Category, Chat, Game, Lobby, Mechanic, Tournament
 from chigame.users.models import User
 
 
@@ -128,23 +128,3 @@ class LobbyFactory(DjangoModelFactory):
     lobby_created = LazyFunction(timezone.now)
     created_by = SubFactory(UserFactory)
     lobby_created = Faker("date_time_this_decade")
-
-
-class GameListFactory(DjangoModelFactory):
-    class Meta:
-        model = GameList
-
-    name = Sequence(lambda n: f"GameList {n + 1}")
-    description = Faker("text", max_nb_chars=200)
-    created_by = SubFactory(UserFactory)
-
-    @post_generation
-    def games(self, create, extracted, **kwargs):
-        if not create:
-            return
-        if extracted:
-            for game in extracted:
-                self.games.add(game)
-        else:
-            # Add a default game if none specified
-            self.games.add(GameFactory())
