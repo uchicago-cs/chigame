@@ -11,8 +11,8 @@ from rest_framework.utils.serializer_helpers import ReturnDict
 
 # Local application/library specific imports
 from chigame.api.serializers import GameSerializer
-from chigame.api.tests.factories import ChatFactory, GameFactory, TournamentFactory, UserFactory, LobbyFactory
-from chigame.games.models import Game, Message, User, Lobby
+from chigame.api.tests.factories import ChatFactory, GameFactory, LobbyFactory, TournamentFactory, UserFactory
+from chigame.games.models import Game, Lobby, Message, User
 
 
 class GameTests(APITestCase):
@@ -575,7 +575,7 @@ class UserTests(APITestCase):
 
 class LobbyTests(APITestCase):
     """
-    Test cases for Lobby API Endpoints. 
+    Test cases for Lobby API Endpoints.
     """
 
     def test_get_lobby(self):
@@ -583,14 +583,14 @@ class LobbyTests(APITestCase):
         Ensure we can get a lobby object.
         """
 
-        #Create a lobby object 
+        # Create a lobby object
         lobby = LobbyFactory()
 
-        #Get the lobby object 
+        # Get the lobby object
         url = reverse("api-lobby-detail", args=[lobby.id])
         response = self.client.get(url, format="json")
 
-        #Check that the lobby object was retrieved correctly 
+        # Check that the lobby object was retrieved correctly
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(Lobby.objects.count(), 1)
         self.assertEqual(response.data["id"], lobby.id)
@@ -602,25 +602,23 @@ class LobbyTests(APITestCase):
         self.assertEqual(response.data["max_players"], lobby.max_players)
         self.assertEqual(response.data["time_constraint"], lobby.time_constraint)
 
-    def test_delete_lobby(self): 
+    def test_delete_lobby(self):
         """
-        Ensure we can delete a game object. 
+        Ensure we can delete a game object.
         """
 
-        #Create a lobby object 
+        # Create a lobby object
         user = UserFactory()
         self.client.force_authenticate(user=user)
         lobby = LobbyFactory(created_by=user)
 
-
-        #Delete the lobby object 
+        # Delete the lobby object
         url = reverse("api-lobby-detail", args=[lobby.id])
         response = self.client.delete(url, format="json")
 
-        #Check that the lobby object was deleted correctly
+        # Check that the lobby object was deleted correctly
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(Lobby.objects.count(), 0)
-    
 
     def test_delete_lobby_unauthorized(self):
         """
@@ -630,22 +628,21 @@ class LobbyTests(APITestCase):
         # Create a lobby object
         lobby = LobbyFactory()
 
-        #Create user who creates the lobby and another user 
-        creator = UserFactory() 
+        # Create user who creates the lobby and another user
+        creator = UserFactory()
         other_user = UserFactory()
         lobby.created_by = creator
         lobby.save()
         self.client.force_authenticate(user=other_user)
-    
+
         # Delete the lobby object
         url = reverse("api-lobby-detail", args=[lobby.id])
         response = self.client.delete(url, format="json")
 
-        #Check lobby not deleted 
+        # Check lobby not deleted
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(Lobby.objects.count(), 1)
         self.assertEqual(Lobby.objects.get(id=lobby.id).created_by, creator)
-    
 
     def test_patch_lobby_authorized(self):
         """
@@ -656,7 +653,7 @@ class LobbyTests(APITestCase):
         self.client.force_authenticate(user=user)
         lobby = LobbyFactory(created_by=user)
 
-        # Update data 
+        # Update data
         updated_data = {
             "name": "Updated Lobby Name",
             "min_players": 3,
@@ -673,13 +670,13 @@ class LobbyTests(APITestCase):
         self.assertEqual(response.data["min_players"], updated_data["min_players"])
         self.assertEqual(response.data["max_players"], updated_data["max_players"])
 
-        #Check that database was updated 
+        # Check that database was updated
 
         updated_lobby = Lobby.objects.get(id=lobby.id)
         self.assertEqual(updated_lobby.name, updated_data["name"])
         self.assertEqual(updated_lobby.min_players, updated_data["min_players"])
         self.assertEqual(updated_lobby.max_players, updated_data["max_players"])
-    
+
     def test_patch_lobby_unauthorized(self):
         """
         Ensure we cannot patch a lobby object if the user is not the creator of the lobby.
@@ -688,14 +685,14 @@ class LobbyTests(APITestCase):
         # Create a lobby object
         lobby = LobbyFactory()
 
-        #Create user who creates the lobby and another user 
-        creator = UserFactory() 
+        # Create user who creates the lobby and another user
+        creator = UserFactory()
         other_user = UserFactory()
         lobby.created_by = creator
         lobby.save()
         self.client.force_authenticate(user=other_user)
 
-        # Update data 
+        # Update data
         updated_data = {
             "name": "Updated Lobby Name",
             "min_players": 3,
@@ -709,16 +706,6 @@ class LobbyTests(APITestCase):
         # Check that the lobby object was patched correctly
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-        #Check database not updated 
+        # Check database not updated
         unchanged_lobby = Lobby.objects.get(id=lobby.id)
         self.assertEqual(unchanged_lobby.name, lobby.name)
-
-
-
-    
-
-
-
-
-
-
