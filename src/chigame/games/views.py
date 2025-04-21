@@ -823,6 +823,52 @@ def check_guess(request, pk):
 
 
 @login_required
+def simulate_match_result(request, tournament_id, match_id):
+    """
+    Simulates a match result by randomly selecting a winner from the players in the match.
+    This is used for tournament simulation when no actual game is played.
+    """
+    tournament = get_object_or_404(Tournament, id=tournament_id)
+    match = get_object_or_404(Match, id=match_id)
+
+    # check if the tournament is in progress
+    if tournament.status != "tournament in progress":
+        messages.error(request, "This tournament is not in progress.")
+        return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament_id}))
+
+    # check if the match already has a winner
+    match_players = [Player.objects.get(user=user, match=match) for user in match.players.all()]
+    has_winner = any(player.outcome == Player.WIN for player in match_players)
+
+    if has_winner:
+        messages.error(request, "This match already has a winner.")
+        return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament_id}))
+
+    # randomly select a winner
+    players = list(match.players.all())
+    if not players:
+        messages.error(request, "This match has no players.")
+        return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament_id}))
+
+    winner = choice(players)
+
+    # set the outcome for all players
+    for user in match.players.all():
+        player = Player.objects.get(user=user, match=match)
+        if user == winner:
+            player.outcome = Player.WIN
+        else:
+            player.outcome = Player.LOSE
+        player.save()
+
+    # check if we need to create matches for the next round
+    tournament.next_round_tournaments_brackets()
+
+    messages.success(request, f"{winner.email} has been randomly selected as the winner!")
+    return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament_id}))
+
+
+@login_required
 def TournamentChatDetailView(request, pk):
     try:
         tournament = Tournament.objects.get(pk=pk)
