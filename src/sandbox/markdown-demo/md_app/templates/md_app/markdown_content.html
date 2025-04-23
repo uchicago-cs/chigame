@@ -1,131 +1,14 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html lang="en-US">
   <head>
     <meta charset="utf-8" />
     <title>Django Markdown</title>
-    <style>
-      html,
-      body {
-        padding: 0;
-        margin: 0;
-        height: 100%;
-        font-family: sans-serif;
-        background-color: #eee;
-        display: flex;
-        flex-direction: column;
-      }
-
-      .header {
-        background-color: dimgray;
-        padding: 4px 24px;
-        color: #ddd;
-        /* https://getcssscan.com/css-box-shadow-examples, shadow #1 */
-        box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
-        z-index: 2;
-      }
-
-      .sandbox-wrapper {
-        width: 80%;
-        margin-left: auto;
-        margin-right: auto;
-        background-color: #fff;
-        position: relative;
-        padding: 24px;
-        margin-top: 0;
-        overflow: auto;
-        flex-grow: 1;
-      }
-
-      /* Table of Contents Styling */
-      .toc {
-        background-color: #f8f9fa;
-        border: 1px solid #dee2e6;
-        border-radius: 4px;
-        padding: 15px;
-        margin-bottom: 20px;
-      }
-
-      .toc ul {
-        list-style-type: none;
-        padding-left: 20px;
-      }
-
-      .toc a {
-        text-decoration: none;
-        color: #007bff;
-      }
-
-      .toc a:hover {
-        text-decoration: underline;
-      }
-
-      /* Table Styling */
-      table {
-        border-collapse: collapse;
-        width: 100%;
-        margin-bottom: 1rem;
-        background-color: transparent;
-      }
-
-      th,
-      td {
-        padding: 0.75rem;
-        vertical-align: top;
-        border-top: 1px solid #dee2e6;
-      }
-
-      thead th {
-        vertical-align: bottom;
-        border-bottom: 2px solid #dee2e6;
-        background-color: #f8f9fa;
-      }
-
-      /* Code Block Styling */
-      pre {
-        background-color: #f8f9fa;
-        border: 1px solid #dee2e6;
-        border-radius: 4px;
-        padding: 16px;
-        overflow: auto;
-      }
-
-      code {
-        font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-        font-size: 0.875em;
-        color: #e83e8c;
-      }
-
-      /* List Styling */
-      ul,
-      ol {
-        padding-left: 2rem;
-      }
-
-      li {
-        margin-bottom: 0.5rem;
-      }
-
-      /* Heading Styling */
-      h1 {
-        font-size: 2.5rem;
-        margin-bottom: 1rem;
-      }
-
-      h2 {
-        font-size: 2rem;
-        margin-top: 2rem;
-        margin-bottom: 1rem;
-      }
-
-      h3 {
-        font-size: 1.75rem;
-        margin-top: 1.5rem;
-        margin-bottom: 1rem;
-      }
-    </style>
+    <link href="{% static 'css/md_app.css' %}" rel="stylesheet" />
   </head>
   <body>
-    <div class="header">
+    <script src="{% static 'js/md_app.js' %}"></script>    <div class="header">
       <h1>{{ markdown_content.title }}</h1>
     </div>
     <div class="sandbox-wrapper">
