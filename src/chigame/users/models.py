@@ -106,6 +106,9 @@ class FriendInvitation(models.Model):
         self.accepted = True
         self.save()
 
+    class Meta:
+        unique_together = ["sender", "receiver"]
+
 
 class Group(models.Model):
     """
@@ -128,6 +131,9 @@ class GroupInvitation(models.Model):
     receiver = models.ForeignKey(User, related_name="received_group_invitations", on_delete=models.CASCADE)
     accepted = models.BooleanField(default=False)
     timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ["friend_group", "sender", "receiver"]
 
 
 class NotificationQuerySet(models.QuerySet):
@@ -228,6 +234,9 @@ class Notification(models.Model):
     actor = GenericForeignKey("actor_content_type", "actor_object_id")
     message = models.CharField(max_length=255, blank=True, null=True)
     objects = NotificationQuerySet.as_manager()
+
+    class Meta:
+        unique_together = ["receiver", "actor_content_type", "actor_object_id", "type"]
 
     def mark_as_read(self):
         if not self.read:
