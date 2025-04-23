@@ -1,9 +1,10 @@
 # Knowledge Base Markdown Library Sandbox
 
 This sandbox was implemented from Real Python's [tutorial](https://realpython.com/django-markdown/).
-The only significant changes was implementing the markdown file as a string to allow
+The main technical change was implementing the markdown file as a string to allow
 for easier in-line editing. This should be changed once we implement file storage for markdown files,
-per issue #514.
+per issue #514. Additionally, this sandbox has its own UI to clearly distinguish rendered markdown
+vs. the sandbox UI.
 
 ## Running the Sandbox
 
