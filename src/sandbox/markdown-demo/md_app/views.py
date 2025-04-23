@@ -63,14 +63,16 @@ def calculate_damage(base_damage, critical_chance):
 
 
 def markdown_content_view(request):
-    md = markdown.Markdown(extensions=[
-        "fenced_code",  # For code blocks
-        "tables",      # For table support
-        "toc",         # For table of contents
-        "nl2br",       # For converting newlines to <br> tags
-        "sane_lists",  # For better list handling
-        "codehilite"   # For syntax highlighting
-    ])
+    md = markdown.Markdown(
+        extensions=[
+            "fenced_code",  # For code blocks
+            "tables",  # For table support
+            "toc",  # For table of contents
+            "nl2br",  # For converting newlines to <br> tags
+            "sane_lists",  # For better list handling
+            "codehilite",  # For syntax highlighting
+        ]
+    )
     markdown_content = {
         "title": "Knowledge Base Markdown Sandbox",
         "content": MARKDOWN_STRING,
