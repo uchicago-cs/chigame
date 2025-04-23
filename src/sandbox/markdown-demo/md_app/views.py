@@ -8,7 +8,7 @@ MARKDOWN_STRING = """
 [TOC]
 
 ## Introduction
-This guide covers the basic combat mechanics in our game.  
+This guide covers the basic combat mechanics in our game.
 New players should read this guide carefully before starting their adventure.
 
 ## Combat Basics
