@@ -1,0 +1,12 @@
+#hero {
+  padding-top: 5vw;
+  font-size: 5vw;
+  text-align: center;
+}
+
+#pixeltext {
+  color: #800000;
+  font-family: "Pixelify Sans", sans-serif;
+  font-weight: bold;
+  font-size: 7vw;
+}

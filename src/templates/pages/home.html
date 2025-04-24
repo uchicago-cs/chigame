@@ -1,1 +1,34 @@
 {% extends "base.html" %}
+
+{% load static %}
+
+{% block css %}
+  {{ block.super }}
+  <!-- pixelify sans google font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&display=swap"
+        rel="stylesheet" />
+  <link href="{% static 'css/homepage.css' %}" rel="stylesheet" />
+{% endblock css %}
+{% block content %}
+  {% verbatim %}
+    <div id="hero">
+      <p>{{ message }}</p>
+      <p id="pixeltext">{{ message2 }}</p>
+    </div>
+    <script type="module">
+      import {
+        createApp
+      } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js'
+      createApp({
+        data() {
+          return {
+            message: 'Welcome to',
+            message2: 'Chigame.'
+          }
+        }
+      }).mount('#hero')
+    </script>
+  {% endverbatim %}
+{% endblock content %}
