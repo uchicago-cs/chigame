@@ -694,7 +694,7 @@ class LiveChat(models.Model):
     """
 
     # used to identify which channel the chat is on
-    channel = models.TextField(null=False)
+    channel = models.TextField(unique=True, null=False)
 
 
 class LiveChatMessage(models.Model):
