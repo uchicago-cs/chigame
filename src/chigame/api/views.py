@@ -163,7 +163,7 @@ class GameReviewListView(generics.ListAPIView):
     serializer_class = ReviewSerializer
 
     def get_queryset(self):
-        game_id = self.kwags["pk"]
+        game_id = self.kwargs["pk"]
         return Review.objects.filter(game__id=game_id)
 
 

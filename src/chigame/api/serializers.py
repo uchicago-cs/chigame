@@ -101,4 +101,4 @@ class MessageFeedSerializer(serializers.ModelSerializer):
 class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
-        field = ["id", "title", "rating", "review", "is_public", "created_at"]
+        fields = ["id", "title", "rating", "review", "is_public", "created_at"]
