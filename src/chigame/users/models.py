@@ -95,6 +95,7 @@ class FriendInvitation(models.Model):
     accepted = models.BooleanField(default=False)
     timestamp = models.DateTimeField(auto_now_add=True)
     objects = FriendInvitationManager()
+    is_deleted = models.BooleanField(default=False)
 
     def accept_invitation(self):
         sender = self.sender
@@ -104,6 +105,11 @@ class FriendInvitation(models.Model):
         sender_profile.friends.add(receiver)
         receiver_profile.friends.add(sender)
         self.accepted = True
+        self.save()
+    
+    # override default delete
+    def delete(self):
+        self.is_deleted = True
         self.save()
 
 
