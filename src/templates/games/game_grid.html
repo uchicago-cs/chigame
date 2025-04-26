@@ -96,6 +96,18 @@
             Playtime
             - Longest First
           </option>
+          <option value="avg_rating-desc"
+                  {% if request.GET.sort_by == 'avg_rating-desc' %}selected{% endif %}>Rating - Highest First</option>
+          <option value="avg_rating-asc"
+                  {% if request.GET.sort_by == 'avg_rating-asc' %}selected{% endif %}>Rating - Lowest First</option>
+          <option value="popularity-desc"
+                  {% if request.GET.sort_by == 'popularity-desc' %}selected{% endif %}>
+            Popularity - Most Popular
+          </option>
+          <option value="popularity-asc"
+                  {% if request.GET.sort_by == 'popularity-asc' %}selected{% endif %}>
+            Popularity - Least Popular
+          </option>
         </select>
       </div>
     </form>
