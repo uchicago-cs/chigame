@@ -48,8 +48,10 @@ function drawBoard(scene) {
       // draw tiles
       scene.add.rectangle(
         // phaser actually positions shape based on the center, not top-left
-        10 + x * TILE_SIZE + TILE_SIZE / 2, // x position
-        10 + y * TILE_SIZE + TILE_SIZE / 2, // y position
+        // margin + x returns the top-left location of each tile
+        // tile size / 2 returns the center of the tile
+        margin + x * TILE_SIZE + TILE_SIZE / 2, // x position
+        margin + y * TILE_SIZE + TILE_SIZE / 2, // y position
         TILE_SIZE, // width
         TILE_SIZE, // height
         tile_color
