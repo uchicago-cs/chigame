@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}
+  Playing {{ game.name }}
+{% endblock title %}
+{% block content %}
+  <h1 class="text-center mt-3">Playing {{ game.name }}</h1>
+  <div class="d-flex justify-content-center">
+    <div id="game-container"></div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.js"></script>
+  <script>
+    const config = {
+      type: Phaser.AUTO,
+      width: 512,
+      height: 512,
+      backgroundColor: 'black',
+      parent: 'game-container',
+      scene: {
+        create: create
+      }
+    };
+
+    const game = new Phaser.Game(config);
+
+    function create() {
+      const graphics = this.add.graphics();
+      const tileSize = 64;
+      const rows = 8;
+      const cols = 8;
+
+      for (let row = 0; row < rows; row++) {
+        for (let col = 0; col < cols; col++) {
+          const x = col * tileSize;
+          const y = row * tileSize;
+          const isEven = (row + col) % 2 === 0;
+
+          graphics.fillStyle(isEven ? 0xFFFFFF : 0x4B7C7B, 1);
+          graphics.fillRect(x, y, tileSize, tileSize);
+        }
+      }
+    }
+  </script>
+{% endblock content %}

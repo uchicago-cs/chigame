@@ -12,6 +12,7 @@ from django.db.models import Q
 from django.db.models.functions import Lower
 from django.http import HttpResponseForbidden, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render, reverse
+from django.template.loader import select_template
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.utils.decorators import method_decorator
@@ -119,6 +120,23 @@ class GameEditView(UserPassesTestMixin, UpdateView):
         context["is_create"] = False
 
         return context
+
+
+# TEMPORARY: a function-based view that transfers the user into the game
+def play_match(request, pk):
+    game = get_object_or_404(Game, pk=pk)
+
+    # Create the template name dynamically
+    game_template_name = f"games/{game.name.lower().replace(' ', '_')}.html"
+
+    try:
+        # Check if the specific template exists
+        template = select_template([game_template_name, "games/play_match.html"])
+    except Exception:
+        # fallback if no template found
+        template = "games/play_match.html"
+
+    return render(request, template.template.name, {"game": game})
 
 
 # =============== BGG Searching =================
