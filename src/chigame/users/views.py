@@ -110,32 +110,58 @@ def user_history(request, pk):
 
 
 def user_profile_detail_view(request, pk):
-    try:
-        if request.user.is_authenticated and request.user.pk == pk:
-            # if user is accessing their own profile, create a profile if it doesn't exist
-            profile = UserProfile.get_or_create_profile(request.user)
-            return render(request, "users/userprofile_detail.html", {"object": profile})
-        else:
-            # fetch another user's profile
-            profile = get_object_or_404(UserProfile, user__pk=pk)
+    """
+    Displays a user's profile and options for managing friends and
+    friendship requests.
 
-        # for checking friendship and pending friend request status
-        is_friend = None
-        friendship_request = None
-        target_user = get_object_or_404(User, pk=pk)
-        if request.user.is_authenticated:
-            is_friend = target_user.friends.filter(pk=request.user.pk).exists()
-            if not is_friend:
-                curr_user = request.user
-                friendship_request = FriendInvitation.objects.filter(
-                    Q(sender=target_user, receiver=curr_user) | Q(sender=curr_user, receiver=target_user)
-                ).first()
-        # provide frontend profile + friendship status
-        context = {"object": profile, "is_friend": is_friend, "friendship_request": friendship_request}
-        return render(request, "users/userprofile_detail.html", context=context)
-    except UserProfile.DoesNotExist:
-        messages.error(request, "Profile does not exist")
-        return redirect(reverse("users:detail", kwargs={"pk": request.user.pk}))
+    Handles both viewing one's own profile and other users' profiles. If
+    viewing another profile, will check friendship status and any
+    pending friend requests between the current user and the user
+    being viewed.
+
+    Args:
+        request (HttpRequest)
+        pk (int): The primary key of the user whose profile is being viewed
+
+    Returns:
+        HttpResponse: Rendered template with user profile context including
+            - object: UserProfile instance
+            - is_friend: Boolean indicating friendship status
+            - friendship_request: FriendInvitation instance (can be from target user
+              to current user or current user to target user)
+
+    Raises:
+        Http404: If the requested user profile does not exist
+    """
+    if request.user.is_authenticated and request.user.pk == pk:
+        # if user is accessing their own profile, create a profile if it doesn't exist
+        profile = UserProfile.get_or_create_profile(request.user)
+        return render(request, "users/userprofile_detail.html", {"object": profile})
+    else:
+        # fetch another user's profile
+        try:
+            profile = get_object_or_404(UserProfile, user__pk=pk)
+        except UserProfile.DoesNotExist:
+            if User.objects.filter(pk=pk).exists():
+                raise Http404("The user you are trying to access does not have their profile set up.")
+            else:
+                raise Http404("The user you are trying to access does not exist.")
+
+    # for checking friendship and pending friend request status
+    is_friend = None
+    friendship_request = None
+    target_user = get_object_or_404(User, pk=pk)
+    if request.user.is_authenticated:
+        is_friend = target_user.friends.filter(pk=request.user.pk).exists()
+        if not is_friend:
+            curr_user = request.user
+            friendship_request = FriendInvitation.objects.filter(
+                Q(sender=target_user, receiver=curr_user) | Q(sender=curr_user, receiver=target_user)
+            ).first()
+
+    # provide frontend profile + friendship status
+    context = {"object": profile, "is_friend": is_friend, "friendship_request": friendship_request}
+    return render(request, "users/userprofile_detail.html", context=context)
 
 
 @login_required
