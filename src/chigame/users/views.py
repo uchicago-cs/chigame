@@ -19,7 +19,7 @@ from .models import (
     FriendInvitation,
     FriendRequestNotification,
     GroupInvitationNotification,
-    MatchProposalNotification,
+    MatchInvitationNotification,
     Notification,
     UserProfile,
 )
@@ -392,7 +392,7 @@ def notification_detail(request, pk):
             handler = FriendRequestNotification(notification)
             return redirect(handler.get_redirect_str())
         elif notification.type == Notification.MATCH_PROPOSAL:
-            handler = MatchProposalNotification(notification)
+            handler = MatchInvitationNotification(notification)
             return redirect(handler.get_redirect_str())
         elif notification.type == Notification.GROUP_INVITATION:
             handler = GroupInvitationNotification(notification)
