@@ -261,6 +261,15 @@ def decline_friend_invitation(request, pk):
 
 
 def user_search_results(request):
+    """
+    Search for user profiles based on email or name.
+
+    Args:
+        request (HttpRequest)
+
+    Returns:
+        HttpResponse: Rendered template with search results
+    """
     query_input = request.GET.get("q")
     context = {"found": False, "query_type": "Users"}
     if query_input:
@@ -274,20 +283,46 @@ def user_search_results(request):
 
 
 def notification_search_results(request):
+    """
+    Search for notifications based on message.
+
+    Args:
+        request (HttpRequest)
+
+    Returns:
+        HttpResponse: Rendered template with search results
+    """
     query_input = request.GET.get("q")
-    context = {"nothing_found": True, "query_type": "Notifications"}
+    context = {"found": False, "query_type": "Notifications"}
     if query_input:
         notifications_list = Notification.objects.filter_by_receiver(request.user).filter(
             message__icontains=query_input
         )
         if notifications_list.count() > 0:
-            context["nothing_found"] = False
+            context["found"] = True
             context["object_list"] = notifications_list
     return render(request, "pages/search_results.html", context)
 
 
 @login_required
 def user_inbox_view(request, pk):
+    """
+    Displays a user's inbox containing notifications. The user can only access
+    their own inbox.
+
+    Args:
+        request (HttpRequest)
+        pk (int): The primary key of the user
+
+    Returns:
+        HttpResponse: Rendered template with user inbox context including
+            - pk: The primary key of the user
+            - user: The user
+            - notifications: The notifications in the user's inbox
+            - default_notification_messages: The default notification messages
+            for each notification type
+    """
+
     user = request.user
     notifications = Notification.objects.filter_by_receiver(user)
     default_notification_messages = Notification.DEFAULT_MESSAGES
