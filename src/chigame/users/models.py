@@ -210,14 +210,14 @@ class Notification(models.Model):
     FRIEND_REQUEST = 1
     REMINDER = 2
     UPCOMING_MATCH = 3
-    MATCH_PROPOSAL = 4
+    MATCH_INVITATION = 4
     GROUP_INVITATION = 5
 
     NOTIFICATION_TYPES = (
         (FRIEND_REQUEST, "FRIEND_REQUEST"),
         (REMINDER, "REMINDER"),
         (UPCOMING_MATCH, "UPCOMING_MATCH"),
-        (MATCH_PROPOSAL, "MATCH_PROPOSAL"),
+        (MATCH_INVITATION, "MATCH_INVITATION"),
         (GROUP_INVITATION, "GROUP_INVITATION"),
     )
 
@@ -273,7 +273,7 @@ class FriendRequestNotification(BaseNotificationHandler):
         return reverse("users:user-profile", kwargs={"pk": self.notification.actor.sender.pk})
 
 
-class MatchProposalNotification(BaseNotificationHandler):
+class MatchInvitationNotification(BaseNotificationHandler):
     def get_redirect_str(self):
         return reverse("games:lobby-details", kwargs={"pk": self.notification.actor.lobby.pk})
 
