@@ -275,7 +275,7 @@ class FriendRequestNotification(BaseNotificationHandler):
 
 class MatchProposalNotification(BaseNotificationHandler):
     def get_redirect_str(self):
-        raise NotImplementedError("Match proposal notifications do not have a redirect URL")
+        return reverse("games:lobby-details", kwargs={"pk": self.notification.actor.lobby.pk})
 
 
 class GroupInvitationNotification(BaseNotificationHandler):
@@ -290,4 +290,4 @@ class ReminderNotification(BaseNotificationHandler):
 
 class UpcomingMatchNotification(BaseNotificationHandler):
     def get_redirect_str(self):
-        raise NotImplementedError("Upcoming match notifications do not have a redirect URL")
+        return reverse("games:lobby-details", kwargs={"pk": self.notification.actor.lobby.pk})
