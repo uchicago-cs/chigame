@@ -391,7 +391,7 @@ def notification_detail(request, pk):
         if notification.type == Notification.FRIEND_REQUEST:
             handler = FriendRequestNotification(notification)
             return redirect(handler.get_redirect_str())
-        elif notification.type == Notification.MATCH_INVITATION:
+        elif notification.type == Notification.MATCH_PROPOSAL:
             handler = MatchInvitationNotification(notification)
             return redirect(handler.get_redirect_str())
         elif notification.type == Notification.GROUP_INVITATION:
