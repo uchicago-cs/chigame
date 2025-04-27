@@ -1,11 +1,18 @@
 .homepage-block {
   font-size: 2vw;
   font-weight: 500;
-  background-color: #F9F9F9;
-  border: 1px solid #D9D9D9;
+  background-color: white;
+  border: 1px solid white;
   border-radius: 5px;
   padding: 0.5rem;
   margin: 0.5rem 0rem;
+}
+
+.game-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 5px;
 }
 
 .favorite-games {
@@ -19,7 +26,7 @@
 }
 
 .fave-game {
-  background-color: rebeccapurple;
+  background-color: white;
   border-radius: 5px;
   margin: 0.5rem;
   flex: 1;
@@ -29,12 +36,96 @@
   margin-left: 0.5rem;
 }
 
+.friends-list-block {
+  height: 90%;
+}
+
+.friend {
+  flex: 1;
+  margin: 0.2rem;
+  background-color: #F9F9F9;
+  border: 1px solid #D9D9D9;
+  border-radius: 5px;
+}
+
+.friend-block {
+  width: 80%;
+}
+
+.dot {
+  height: 1vh;
+  width: 1vh;
+  background-color: #789D4A;
+  border-radius: 50%;
+  margin-right: 0.8rem;
+}
+
+.friend-name {
+  font-size: 1.3vw;
+  font-weight: normal;
+  margin: 0.2rem 0rem 0rem 0rem;
+}
+
+.friend-status {
+  font-size: 1vw;
+  font-weight: normal;
+  margin: 0rem;
+}
+
+.profile-pic {
+  border-radius: 100%;
+  object-fit: cover;
+  width: 6vh;
+  height: 6vh;
+  margin: 0rem 0.8rem 0rem 0.8rem;
+}
+
 .trending-games {
-  height: 50vh;
+  height: 54vh;
+  margin-bottom: 0.5rem;
+}
+
+.trending-games-block {
+  background-color: #F9F9F9;
+  border: 1px solid #D9D9D9;
+  border-radius: 5px;
+  padding: 0.5rem;
+  height: 90%;
 }
 
 .tournaments {
-  height: 60vh;;
+  height: 60vh;
+  margin-top: 0.5rem;
+}
+
+.tournaments-block {
+  height: 90%;
+}
+
+.tournament {
+  flex: 1;
+  margin: 0.5rem;
+  background-color: white;
+  border-radius: 5px;
+}
+
+.tournament-img {
+  width: 100%;
+  height: 80%;
+  object-fit: cover;
+  border-radius: 5px;
+}
+
+.tournament-name {
+  font-size: 1.7vw;
+  font-weight: normal;
+  margin-bottom: 0rem;
+}
+
+.tournament-description {
+  font-size: 1.3vw;
+  font-weight: normal;
+  margin-top: 0rem;
 }
 
 .live-chat {
@@ -42,7 +133,46 @@
   margin-right: 0.5rem;
 }
 
+.live-chat-block {
+  background-color: #F9F9F9;
+  border: 1px solid #D9D9D9;
+  border-radius: 5px;
+  padding: 0.5rem;
+  height: 90%;
+}
+
 .forum {
   width: 54vw;
   margin-left: 0.5rem;
+}
+
+.forum-block {
+  height: 90%;
+}
+
+.forum-topic {
+  flex: 1;
+  margin: 0.2rem;
+  background-color: #F9F9F9;
+  border: 1px solid #D9D9D9;
+  border-radius: 5px;
+}
+
+.forum-post-title {
+  font-size: 1.3vw;
+  font-weight: normal;
+  margin: 0.5rem 0.5rem 0rem 0.8rem;
+}
+
+.forum-post-body {
+  font-size: 1vw;
+  font-weight: normal;
+  margin: 0rem 0.5rem 0rem 0.8rem;
+}
+
+.forum-post-author {
+  font-size: 1vw;
+  font-weight: normal;
+  margin: 0rem 0.8rem 0.5rem 0.5rem;
+  text-align: right;
 }
