@@ -573,6 +573,8 @@ class TournamentDetailView(DetailView):
             for round_num, brackets in simulator_data["rounds"].items():
                 for bracket_type, matches in brackets.items():
                     for match in matches:
+                        # Ensure match ID is a string
+                        match_id_in_data = str(match["id"])
                         match_data = {
                             "match": None,
                             "players": [
@@ -589,17 +591,26 @@ class TournamentDetailView(DetailView):
                             "round": int(round_num),
                             "bracket": bracket_type,
                         }
-                        simulator.simulated_matches[match["id"]] = match_data
+                        simulator.simulated_matches[match_id_in_data] = match_data
 
             simulator.current_round = simulator_data["current_round"]
 
             # Simulate the match
-            simulator.simulate_match_outcome(match_id)
+            if match_id not in simulator.simulated_matches:
+                messages.error(request, f"Match ID {match_id} not found in simulation data")
+                return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
+
+            winner, loser = simulator.simulate_match_outcome(match_id)
 
             # Save the updated simulator data
-            request.session[f"tournament_{tournament.id}_simulator_data"] = simulator.get_bracket_data()
+            updated_data = simulator.get_bracket_data()
+            request.session[f"tournament_{tournament.id}_simulator_data"] = updated_data
+            request.session.modified = True
 
-            messages.success(request, "Match simulated successfully")
+            if winner:
+                messages.success(request, f"Match simulated successfully. Winner: {winner.username}")
+            else:
+                messages.error(request, "Failed to simulate match. No winner determined.")
             return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
 
         elif request.POST.get("action") == "advance_round":
@@ -634,12 +645,29 @@ class TournamentDetailView(DetailView):
                             "round": int(round_num),
                             "bracket": bracket_type,
                         }
-                        simulator.simulated_matches[match["id"]] = match_data
+                        simulator.simulated_matches[str(match["id"])] = match_data
 
             simulator.current_round = simulator_data["current_round"]
 
+            # Check if all matches in the current round have winners
+            current_round_matches = [
+                m for m in simulator.simulated_matches.values() if m["round"] == simulator.current_round
+            ]
+
+            all_matches_have_winners = all(m["winner"] is not None for m in current_round_matches)
+
+            if not all_matches_have_winners:
+                messages.error(
+                    request, "Cannot advance to next round until all matches in the current round have winners."
+                )
+                return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
+
             # Create next round matches
-            simulator.create_next_round_matches()
+            next_round_matches = simulator.create_next_round_matches()
+
+            if not next_round_matches:
+                messages.info(request, "Tournament has reached its conclusion. No more rounds to advance to.")
+                return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
 
             # For double elimination, check if we need to create the final match
             if simulator.is_double_elimination:
@@ -654,9 +682,11 @@ class TournamentDetailView(DetailView):
                     simulator.create_final_match()
 
             # Save the updated simulator data
-            request.session[f"tournament_{tournament.id}_simulator_data"] = simulator.get_bracket_data()
+            updated_data = simulator.get_bracket_data()
+            request.session[f"tournament_{tournament.id}_simulator_data"] = updated_data
+            request.session.modified = True
 
-            messages.success(request, "Advanced to next round")
+            messages.success(request, f"Advanced to round {simulator.current_round}")
             return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
 
         elif request.POST.get("action") == "reset_simulation":

@@ -62,7 +62,9 @@ class TournamentSimulator:
 
         # store initial matches
         for match in matches:
-            self.simulated_matches[match.id] = {
+            # Convert match ID to string for consistent key handling
+            match_id_str = str(match.id)
+            self.simulated_matches[match_id_str] = {
                 "match": match,
                 "players": list(match.players.all()),
                 "winner": None,
@@ -81,13 +83,22 @@ class TournamentSimulator:
         Returns:
             A tuple containing the winner and loser User objects
         """
-        if match_id not in self.simulated_matches:
+        # Convert match_id to string if it's not already
+        match_id_str = str(match_id)
+
+        # Check if the match exists in either string or integer form
+        if match_id_str in self.simulated_matches:
+            match_data = self.simulated_matches[match_id_str]
+        elif match_id in self.simulated_matches:
+            match_data = self.simulated_matches[match_id]
+        else:
+            print(f"Match ID {match_id} not found in simulated matches")
             return None, None
 
-        match_data = self.simulated_matches[match_id]
         players = match_data["players"]
 
         if len(players) < 2:
+            print(f"Not enough players in match {match_id}: {players}")
             return None, None
 
         # randomly select a winner
@@ -96,6 +107,7 @@ class TournamentSimulator:
 
         loser = players[1 - winner_index] if len(players) == 2 else None
 
+        # Update the match data with the winner and loser
         match_data["winner"] = winner
         match_data["loser"] = loser
 
