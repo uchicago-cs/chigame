@@ -20,23 +20,23 @@
           <p class="hero-description">Make games. Play with friends. Get competitive.</p>
         </div>
       </div>
-      <script type="module">
-        import {
-          createApp
-        } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js'
-        createApp({
-          data() {
-            return {
-              message: 'Welcome to',
-              message2: 'Chigame.'
-            }
+    </div>
+    <script type="module">
+      import {
+        createApp
+      } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js'
+      createApp({
+        data() {
+          return {
+            message: 'Welcome to',
+            message2: 'Chigame.'
           }
-        }).mount('#hero')
-      </script>
-      <div class="side-rect left-rect"></div>
-      <div class="side-rect right-rect"></div>
-    {% endverbatim %}
-  </div>
+        }
+      }).mount('#hero')
+    </script>
+    <div class="side-rect left-rect"></div>
+    <div class="side-rect right-rect"></div>
+  {% endverbatim %}
   <div class="auth-buttons">
     <a href="{% url 'account_signup' %}" class="auth-button">Sign Up</a>
     <a href="{% url 'account_login' %}" class="auth-button">Sign In</a>
