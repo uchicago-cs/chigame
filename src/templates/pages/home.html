@@ -4,7 +4,6 @@
 
 {% block css %}
   {{ block.super }}
-  <!-- pixelify sans google font -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&display=swap"
@@ -13,22 +12,33 @@
 {% endblock css %}
 {% block content %}
   {% verbatim %}
-    <div id="hero">
-      <p>{{ message }}</p>
-      <p id="pixeltext">{{ message2 }}</p>
-    </div>
-    <script type="module">
-      import {
-        createApp
-      } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js'
-      createApp({
-        data() {
-          return {
-            message: 'Welcome to',
-            message2: 'Chigame.'
+    <div class="hero-section">
+      <div class="hero-content">
+        <div id="hero">
+          <p id="hero-title">{{ message }}</p>
+          <p id="pixeltext">{{ message2 }}</p>
+          <p class="hero-description">Make games. Play with friends. Get competitive.</p>
+        </div>
+      </div>
+      <script type="module">
+        import {
+          createApp
+        } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js'
+        createApp({
+          data() {
+            return {
+              message: 'Welcome to',
+              message2: 'Chigame.'
+            }
           }
-        }
-      }).mount('#hero')
-    </script>
-  {% endverbatim %}
+        }).mount('#hero')
+      </script>
+      <div class="side-rect left-rect"></div>
+      <div class="side-rect right-rect"></div>
+    {% endverbatim %}
+  </div>
+  <div class="auth-buttons">
+    <a href="{% url 'account_signup' %}" class="auth-button">Sign Up</a>
+    <a href="{% url 'account_login' %}" class="auth-button">Sign In</a>
+  </div>
 {% endblock content %}
