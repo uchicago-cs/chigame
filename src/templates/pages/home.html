@@ -1,1 +1,38 @@
 {% extends "base.html" %}
+
+{% load static %}
+
+{% block css %}
+  {{ block.super }}
+  <link href="{% static 'css/homepage.css' %}" rel="stylesheet" />
+{% endblock css %}
+{% block content %}
+  <div class="d-flex flex-row justify-content-between">
+    <div class="homepage-block favorite-games">
+      Favorite Games
+      <div class="d-flex flex-row justify-content-between game-row">
+        <div class="fave-game">1</div>
+        <div class="fave-game">2</div>
+        <div class="fave-game">3</div>
+      </div>
+      <div class="d-flex flex-row justify-content-between game-row">
+        <div class="fave-game">4</div>
+        <div class="fave-game">5</div>
+        <div class="fave-game">6</div>
+      </div>
+    </div>
+    <div class="homepage-block friends-list flex-grow-1">Friends</div>
+  </div>
+  <div class="homepage-block trending-games">Trending Games</div>
+  <div class="homepage-block tournaments">
+    {% if user.is_authenticated %}
+      My Tournaments
+    {% else %}
+      Ongoing Tournaments
+    {% endif %}
+  </div>
+  <div class="d-flex flex-row justify-content-between">
+    <div class="homepage-block live-chat flex-grow-1">Live Chat</div>
+    <div class="homepage-block forum">Forum</div>
+  </div>
+{% endblock content %}
