@@ -4,6 +4,7 @@ from random import choice
 from types import SimpleNamespace
 
 import requests
+import os
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
