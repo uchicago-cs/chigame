@@ -32,6 +32,7 @@
       <link href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/themes/ui-lightness/jquery-ui.css"
             rel="stylesheet"
             type="text/css" />
+      <link href="{% static 'css/base.css' %}" rel="stylesheet" />
     {% endblock css %}
     <!-- Le javascript
     ================================================== -->
@@ -52,7 +53,7 @@
       <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.js"></script>
     {% endblock javascript %}
   </head>
-  <body>
+  <body class="d-flex flex-column">
     <div class="mb-1">
       <nav class="navbar navbar-expand-md navbar-light bg-light">
         <div class="container-fluid">
@@ -310,5 +311,14 @@
 </script><!-- djlint:on -->
 {# turn djlint back on so that the rest of the code is checked for format/stylistic errors#}
 {% endblock inline_javascript %}
+<footer class="mt-auto">
+<div>
+<img class="navbar-logo img-fluid align-top" src="{% static 'images/logos/logo.png' %}" alt="ChiGame Logo" />
+Chigame footer
+<ul class="nav flex-column">
+<li class="nav-item"></li>
+</ul>
+</div>
+</footer>
 </body>
 </html>
