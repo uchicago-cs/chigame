@@ -2,6 +2,7 @@
 
 from django.db import migrations, models
 
+
 # added is_deleted to migrations
 class Migration(migrations.Migration):
     dependencies = [

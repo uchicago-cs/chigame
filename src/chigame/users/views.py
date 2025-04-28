@@ -176,7 +176,7 @@ def cancel_friend_invitation(request, pk):
         )
         notification.mark_as_deleted()
 
-    friendship.delete()    
+    friendship.delete()
     notification.mark_as_deleted()
     messages.success(request, "Friendship invitation cancelled successfully.")
 
@@ -324,7 +324,7 @@ def notification_detail(request, pk):
             messages.error(request, "You can not redirect from this notification")
             return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
         notification.mark_as_read()
-        
+
         if notification.type == Notification.FRIEND_REQUEST:
             return redirect(reverse("users:user-profile", kwargs={"pk": notification.actor.sender.pk}))
     except Notification.DoesNotExist:

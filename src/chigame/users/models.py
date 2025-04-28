@@ -106,7 +106,7 @@ class FriendInvitation(models.Model):
         receiver_profile.friends.add(sender)
         self.accepted = True
         self.save()
-    
+
     # override default delete
     def delete(self):
         self.is_deleted = True
