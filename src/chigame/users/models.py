@@ -111,7 +111,7 @@ class FriendInvitation(models.Model):
         # set the invitation as accepted
         self.accepted = True
         self.save()
-        
+
         # Remove the notification
         try:
             notification = Notification.objects.get_by_actor(self)
@@ -148,7 +148,7 @@ class GroupInvitation(models.Model):
         """
         self.accepted = True
         self.save()
-        
+
         # Remove the notification
         try:
             notification = Notification.objects.get_by_actor(self)
@@ -293,8 +293,8 @@ class Notification(models.Model):
             Returns True if the notification was removed, e;se False
         """
         if self.is_addressed():
-            #If the notification is a friend invitation or group invitation,
-            #completely delete the notification
+            # If the notification is a friend invitation or group invitation,
+            # completely delete the notification
             if self.type in [self.FRIEND_REQUEST, self.GROUP_INVITATION]:
                 # Delete the invitation object
                 if self.type == self.FRIEND_REQUEST:
@@ -309,13 +309,13 @@ class Notification(models.Model):
                         invitation.delete()
                     except GroupInvitation.DoesNotExist:
                         pass
-                
+
                 # Completely delete the notification
                 self.delete()
             else:
                 # For other notification types, just mark as deleted so users can recover it
                 self.mark_as_deleted()
-            
+
             return True
         return False
 

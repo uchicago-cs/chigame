@@ -224,7 +224,7 @@ def cancel_friend_invitation(request, pk):
             type=Notification.FRIEND_REQUEST,
         )
         notification.delete()
-    
+
     num, _ = friendship.delete()
     if num:
         messages.success(request, "Friendship invitation cancelled successfully.")
@@ -242,7 +242,7 @@ def accept_friend_invitation(request, pk):
         if friendship.receiver != request.user:
             messages.error(request, "You are not the receiver of this friend invitation")
             return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
-        
+
         # get the related notification before accepting
         try:
             notification = Notification.objects.get_by_actor(friendship)
@@ -250,7 +250,7 @@ def accept_friend_invitation(request, pk):
             notification.delete()
         except Notification.DoesNotExist:
             pass
-            
+
         # accept the friendship invitation
         friendship.accept_invitation()
         messages.success(request, "Friend invitation accepted successfully")
@@ -277,7 +277,7 @@ def decline_friend_invitation(request, pk):
                 notification.delete()
             except Notification.DoesNotExist:
                 pass
-                
+
             friendship.delete()
     except FriendInvitation.DoesNotExist:
         messages.error(request, "This friend invitation does not exist")
@@ -349,11 +349,11 @@ def user_inbox_view(request, pk):
 
     user = request.user
     notifications = Notification.objects.filter_by_receiver(user)
-    
+
     # check for any notifications that have already been addressed
     for notification in notifications:
         notification.remove_if_addressed()
-    
+
     # refresh the notifications queryset
     notifications = Notification.objects.filter_by_receiver(user)
     default_notification_messages = Notification.DEFAULT_MESSAGES
@@ -374,7 +374,7 @@ def unfriend_users(user1, user2):
     # remove the users from each other's friends list
     user1.friends.remove(user2)
     user2.friends.remove(user1)
-    
+
     # Try to find and handle any friend invitations and notifications
     try:
         # get the friendship invitation and notification
