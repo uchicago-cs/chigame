@@ -150,7 +150,7 @@ def send_friend_invitation(request, pk):
             receiver=other_user,
             type=Notification.FRIEND_REQUEST,
             message=Notification.DEFAULT_MESSAGES[Notification.FRIEND_REQUEST],
-        ) 
+        )
     # if the friendship invitation already exists, return an error
     elif invitation.sender.pk == other_user.pk:
         messages.info(request, "You already have a pending friend invitation from this profile.")
@@ -213,7 +213,7 @@ def accept_friend_invitation(request, pk):
 
 @login_required
 def decline_friend_invitation(request, pk):
-    try:    
+    try:
         # fetch the friendship invitation
         friendship = FriendInvitation.objects.get(pk=pk)
         # check if the friendship invitation is not for the current user
@@ -310,7 +310,7 @@ def remove_friend(request, pk):
 
 @login_required
 def friend_list_view(request, pk):
-    # fetch the current user and the target user    
+    # fetch the current user and the target user
     user = request.user
     target_user = get_object_or_404(User, pk=pk)
     # fetch the target user's friends

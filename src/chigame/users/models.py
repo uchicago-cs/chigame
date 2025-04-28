@@ -106,7 +106,8 @@ class FriendInvitation(models.Model):
         """
         sender = self.sender
         receiver = self.receiver
-        # add the receiver to the sender's friends list (symmetrical relationship, so this will also add the sender to the receiver's friends list)
+        # add the receiver to the sender's friends list (symmetrical relationship,
+        # so this will also add the sender to the receiver's friends list)
         sender.friends.add(receiver)
         # set the invitation as accepted
         self.accepted = True
