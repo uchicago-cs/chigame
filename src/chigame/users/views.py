@@ -211,18 +211,21 @@ def cancel_friend_invitation(request, pk):
         # check if the friendship invitation exists
         friendship = FriendInvitation.objects.get(sender=sender, receiver=receiver)
         notification = Notification.objects.get_by_actor(friendship)
+        # completely delete the notification
+        notification.delete()
     except FriendInvitation.DoesNotExist:
         messages.error(request, "Friendship invitation does not exist")
         return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
     except Notification.DoesNotExist:
+        # If notification doesn't exist, create one and delete it immediately
         notification = Notification.objects.create(
             actor=friendship,
             receiver=receiver,
             type=Notification.FRIEND_REQUEST,
         )
-        notification.mark_as_deleted()
+        notification.delete()
+    
     num, _ = friendship.delete()
-    notification.mark_as_deleted()
     if num:
         messages.success(request, "Friendship invitation cancelled successfully.")
     else:
@@ -239,6 +242,15 @@ def accept_friend_invitation(request, pk):
         if friendship.receiver != request.user:
             messages.error(request, "You are not the receiver of this friend invitation")
             return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
+        
+        # get the related notification before accepting
+        try:
+            notification = Notification.objects.get_by_actor(friendship)
+            # ensure the notification is deleted
+            notification.delete()
+        except Notification.DoesNotExist:
+            pass
+            
         # accept the friendship invitation
         friendship.accept_invitation()
         messages.success(request, "Friend invitation accepted successfully")
@@ -258,6 +270,14 @@ def decline_friend_invitation(request, pk):
         if friendship.receiver.pk != request.user.pk:
             messages.error(request, "You are not the receiver of this friend invitation ")
         else:
+            # get the notification
+            try:
+                notification = Notification.objects.get_by_actor(friendship)
+                # ensure deletion of the notification
+                notification.delete()
+            except Notification.DoesNotExist:
+                pass
+                
             friendship.delete()
     except FriendInvitation.DoesNotExist:
         messages.error(request, "This friend invitation does not exist")
@@ -354,17 +374,20 @@ def unfriend_users(user1, user2):
     # remove the users from each other's friends list
     user1.friends.remove(user2)
     user2.friends.remove(user1)
-    # fetch the friendship invitation
-    friend_invite = FriendInvitation.objects.get_by_users(user1, user2)
-    # fetch the notification
-    notification = Notification.objects.get_by_actor(friend_invite)
-    # delete the notification
-    notification.mark_as_deleted()
-    # if the friendship invitation was accepted, delete it
-    if friend_invite.accepted:
-        friend_invite.delete()
-    else:
-        raise ValueError("Friend invitation between these users was not accepted")
+    
+    # Try to find and handle any friend invitations and notifications
+    try:
+        # get the friendship invitation and notification
+        friend_invite = FriendInvitation.objects.get_by_users(user1, user2)
+        notification = Notification.objects.get_by_actor(friend_invite)
+        # completely delete the notification
+        notification.delete()
+        # if the friendship invitation was accepted then we should delete it
+        if friend_invite.accepted:
+            friend_invite.delete()
+    except (FriendInvitation.DoesNotExist, Notification.DoesNotExist):
+        # If there's no invitation or notification, that's fine since we've already removed the friendship
+        pass
 
 
 @login_required

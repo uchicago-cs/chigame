@@ -293,7 +293,29 @@ class Notification(models.Model):
             Returns True if the notification was removed, e;se False
         """
         if self.is_addressed():
-            self.mark_as_deleted()
+            #If the notification is a friend invitation or group invitation,
+            #completely delete the notification
+            if self.type in [self.FRIEND_REQUEST, self.GROUP_INVITATION]:
+                # Delete the invitation object
+                if self.type == self.FRIEND_REQUEST:
+                    try:
+                        invitation = FriendInvitation.objects.get(pk=self.actor_object_id)
+                        invitation.delete()
+                    except FriendInvitation.DoesNotExist:
+                        pass
+                elif self.type == self.GROUP_INVITATION:
+                    try:
+                        invitation = GroupInvitation.objects.get(pk=self.actor_object_id)
+                        invitation.delete()
+                    except GroupInvitation.DoesNotExist:
+                        pass
+                
+                # Completely delete the notification
+                self.delete()
+            else:
+                # For other notification types, just mark as deleted so users can recover it
+                self.mark_as_deleted()
+            
             return True
         return False
 
