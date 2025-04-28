@@ -399,12 +399,8 @@ class InteractiveFictionView(TemplateView):
         #check if there is an uploaded IF file
         uploaded_file = self.request.session.get('uploaded_interactive_file')
         if uploaded_file:
-            try:
-                with open(f"media/{uploaded_file}", 'r', encoding='utf-8') as f:
-                    file_content = f.read()
-                context['uploaded_file_content'] = file_content
-            except Exception as e:
-                context['uploaded_file_content'] = f"Error reading uploaded file: {str(e)}"
+            file_url = f"/media/{uploaded_file}" 
+            context['uploaded_file_url'] = file_url
 
         
         return context
