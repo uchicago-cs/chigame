@@ -14,7 +14,7 @@ from django.db.models import Q
 from django.db.models.functions import Lower
 from django.http import HttpResponseForbidden, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render, reverse
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.utils import timezone
 from django.views import View
 from django.utils.decorators import method_decorator
@@ -405,10 +405,10 @@ class UploadFileView(View):
         if uploaded_file:
             fs = FileSystemStorage()
             filename = fs.save(uploaded_file.name, uploaded_file)
-            return redirect('game-detail', pk=pk)
+            return redirect(reverse('interactive-fiction'))
 
         #if no file uploaded, just reload the page for now
-        return redirect('game-detail', pk=pk)
+        return redirect(reverse('interactive-fiction'))
 
 
 
