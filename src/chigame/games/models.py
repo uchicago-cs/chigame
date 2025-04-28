@@ -46,17 +46,8 @@ class Game(models.Model):
     categories = models.ManyToManyField("Category", related_name="games", blank=True)
     mechanics = models.ManyToManyField("Mechanic", related_name="games", blank=True)
 
-    avg_rating = models.FloatField(default=0.0)
-    popularity = models.IntegerField(default=0)
-
     # ================ OTHER ================
     BGG_id = models.PositiveIntegerField(null=True, blank=True)  # BoardGameGeek ID
-
-    def update_metrics(self):
-        reviews = Review.objects.filter(game=self, rating__isnull=False)
-        self.popularity = reviews.count()
-        self.avg_rating = reviews.aggregate(models.Avg("rating"))["rating__avg"]
-        self.save()
 
     # ================ VALIDATON ================
     def clean(self):
@@ -695,3 +686,32 @@ class Review(models.Model):
     def save(self, *args, **kwargs):
         self.full_clean()
         super().save(*args, **kwargs)
+
+
+class LiveChat(models.Model):
+    """
+    Represents a new live chat between users.
+    """
+
+    # used to identify which channel the chat is on
+    channel = models.TextField(unique=True, null=False)
+
+
+class LiveChatMessage(models.Model):
+    """
+    Represents a new message in the live chat.
+    """
+
+    live_chat_id = models.ForeignKey(LiveChat, on_delete=models.CASCADE)
+    user_id = models.ForeignKey(User, on_delete=models.CASCADE)
+    sent_at = models.DateTimeField(auto_now_add=True)
+    message_content = models.TextField(null=False)
+
+
+class LiveChatUser(models.Model):
+    """
+    Represents a user mapped to a new live chat.
+    """
+
+    user_id = models.ForeignKey(User, on_delete=models.CASCADE)
+    live_chat_id = models.ForeignKey(LiveChat, on_delete=models.CASCADE)
