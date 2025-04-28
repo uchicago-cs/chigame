@@ -95,6 +95,9 @@ class Person(models.Model):
     person_role = models.PositiveSmallIntegerField(choices=ROLE_CHOICES)
     games = models.ManyToManyField(Game, related_name="people")
 
+    class Meta:
+        verbose_name_plural = "People"
+
     def __str__(self):
         return self.name
 
@@ -123,6 +126,9 @@ class Category(models.Model):
     description = models.TextField(null=True)
     image = models.TextField(default="/static/images/no_picture_available.png")
 
+    class Meta:
+        verbose_name_plural = "Categories"
+
     def __str__(self):
         return self.name
 
@@ -136,6 +142,9 @@ class Mechanic(models.Model):
     name = models.CharField(max_length=255, unique=True)
     description = models.TextField(null=True)
     image = models.TextField(default="/static/images/no_picture_available.png")
+
+    class Meta:
+        verbose_name_plural = "Mechanics"
 
     def __str__(self):
         return self.name
