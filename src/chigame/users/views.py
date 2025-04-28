@@ -10,8 +10,6 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import DetailView, RedirectView, UpdateView
-from rest_framework import status
-from rest_framework.response import Response
 
 from chigame.games.models import Lobby, Player, Tournament
 
@@ -70,6 +68,18 @@ user_redirect_view = UserRedirectView.as_view()
 
 @login_required
 def user_list(request):
+    """
+    Displays a list of all users in the database. Only accessible to admins.
+
+    Args:
+        request (HttpRequest)
+
+    Returns:
+        HttpResponse: Rendered template with context using UserTable
+
+    Raises:
+        HttpResponseNotFound: If the user is not an admin
+    """
     if request.user.is_staff:
         users = User.objects.all()
         table = UserTable(users)
@@ -83,6 +93,24 @@ def user_list(request):
 
 
 def user_history(request, pk):
+    """
+    Displays a user's history of matches and tournaments.
+
+    Args:
+        request (HttpRequest)
+        pk (int): The primary key of the user
+
+    Returns:
+        HttpResponse: Rendered template with user history context including
+            - user: The user
+            - match_count: The number of matches the user has played
+            - match_wins: The number of matches the user has won
+            - tournament_count: The number of tournaments the user has played
+            - tournament_wins: The number of tournaments the user has won
+
+    Raises:
+        Http404: If the requested user profile does not exist
+    """
     try:
         user = User.objects.get(pk=pk)
 
@@ -106,7 +134,7 @@ def user_history(request, pk):
             },
         )
     except User.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
+        raise Http404("The user you are trying to access does not exist")
 
 
 def user_profile_detail_view(request, pk):
@@ -115,7 +143,7 @@ def user_profile_detail_view(request, pk):
     friendship requests.
 
     Handles both viewing one's own profile and other users' profiles. If
-    viewing another profile, will check friendship status and any
+    viewing another profile, will check friendship status and display
     pending friend requests between the current user and the user
     being viewed.
 
@@ -170,14 +198,30 @@ def send_friend_invitation(request, pk):
     """
     Send a friend invitation from the current user to another user.
     Handles creation or renewal of associated notifications.
+
+    Args:
+        request (HttpRequest)
+        pk (int): The primary key of the user to send the friend invitation to
+
+    Returns:
+        HttpResponse: Redirects to the user's profile
+        Error messages: When trying to send invitation to yourself or to someone
+        who is already a friend or who has already requested you
     """
     # fetch the current user and the target user
     curr_user = User.objects.get(pk=request.user.id)
     other_user = User.objects.get(pk=pk)
+
+    # if the current user and the target user are already friends, return an error
+    if curr_user.friends.filter(pk=other_user.pk).exists():
+        messages.error(request, "You are already friends with this user")
+        return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
+
     # if the current user is trying to send a friend request to themselves, return an error
     if curr_user.id == other_user.id:
         messages.error(request, "You can't send friendship invitation to yourself")
         return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
+
     # check if the friendship invitation already exists
     invitation, new = FriendInvitation.objects.filter(
         Q(sender=curr_user, receiver=other_user) | Q(sender=other_user, receiver=curr_user)
@@ -190,7 +234,7 @@ def send_friend_invitation(request, pk):
             type=Notification.FRIEND_REQUEST,
             message=Notification.DEFAULT_MESSAGES[Notification.FRIEND_REQUEST],
         )
-    # if the friendship invitation already exists, return an error
+    # if the other user has already sent a friend request, return an error
     elif invitation.sender.pk == other_user.pk:
         messages.info(request, "You already have a pending friend invitation from this profile.")
     # if the friendship invitation already exists, return an error
@@ -210,6 +254,15 @@ def send_friend_invitation(request, pk):
 def cancel_friend_invitation(request, pk):
     """
     Cancel a sent friend invitation and mark related notifications as deleted.
+
+    Args:
+        request (HttpRequest)
+        pk (int): The primary key of the friend invitation
+
+    Returns:
+        HttpResponse: Redirects to the user's profile
+        Error messages: When trying to cancel a non-existent invitation or if deleting
+        the invitation fails
     """
     # fetch the current user and the target user
     sender = User.objects.get(pk=request.user.id)
@@ -245,6 +298,18 @@ def cancel_friend_invitation(request, pk):
 def accept_friend_invitation(request, pk):
     """
     Accept a received friend invitation and establish friendship.
+
+    Args:
+        request (HttpRequest)
+        pk (int): The primary key of the friend invitation
+
+    Returns:
+        HttpResponse: Redirects to the user's profile
+        Error messages: When user is not the receiver of the invitation or if accepting
+        the invitation fails or if the friendship invitation does not exist
+
+    Raises:
+        Http404: If deleting the notification fails
     """
     try:
         # fetch the friendship invitation
@@ -260,6 +325,7 @@ def accept_friend_invitation(request, pk):
             # ensure the notification is deleted
             notification.delete()
         except Notification.DoesNotExist:
+            # fine if no notification exists
             pass
 
         # accept the friendship invitation
@@ -276,6 +342,15 @@ def accept_friend_invitation(request, pk):
 def decline_friend_invitation(request, pk):
     """
     Decline (delete) a received friend invitation.
+
+    Args:
+        request (HttpRequest)
+        pk (int): The primary key of the friend invitation
+
+    Returns:
+        HttpResponse: Redirects to the user's profile
+        Error messages: When user is not the receiver of the invitation or if declining
+        the invitation fails or if the friendship invitation does not exist
     """
     try:
         # fetch the friendship invitation
@@ -290,6 +365,7 @@ def decline_friend_invitation(request, pk):
                 # ensure deletion of the notification
                 notification.delete()
             except Notification.DoesNotExist:
+                # fine if no notification exists
                 pass
 
             friendship.delete()
@@ -387,19 +463,21 @@ def user_inbox_view(request, pk):
 def unfriend_users(user1, user2):
     """
     Remove friendship between two users and delete associated invitation and notifications.
+
+    Args:
+        user1 (User): The first user
+        user2 (User): The second user
     """
     # remove the users from each other's friends list
     user1.friends.remove(user2)
     user2.friends.remove(user1)
 
-    # Try to find and handle any friend invitations and notifications
+    # handle any friend invitations and notifications
     try:
-        # get the friendship invitation and notification
+        # delete the notification and delete the friendship invitation if it was accepted
         friend_invite = FriendInvitation.objects.get_by_users(user1, user2)
         notification = Notification.objects.get_by_actor(friend_invite)
-        # completely delete the notification
         notification.delete()
-        # if the friendship invitation was accepted then we should delete it
         if friend_invite.accepted:
             friend_invite.delete()
     except (FriendInvitation.DoesNotExist, Notification.DoesNotExist):
@@ -411,6 +489,15 @@ def unfriend_users(user1, user2):
 def remove_friend(request, pk):
     """
     Handle the process of a user removing another user from their friends list.
+
+    Args:
+        request (HttpRequest)
+        pk (int): The primary key of the user to remove from the current user's friends list
+
+    Returns:
+        HttpResponse: Redirects to the current user's profile
+        Error messages: When trying to remove a non-existent user or yourself or
+        if removing the user fails
     """
     # check if the current user is not trying to remove themselves
     if request.user.pk != pk:
@@ -434,8 +521,18 @@ def remove_friend(request, pk):
 @login_required
 def friend_list_view(request, pk):
     """
-    Display a user's list of friends.
-    Only accessible by the user themselves.
+    Display a user's list of friends. Only accessible by the user themselves.
+
+    Args:
+        request (HttpRequest)
+        pk (int): The primary key of the user
+
+    Returns:
+        HttpResponse: Rendered template with user friend list context
+        Error messages: When trying to access another user's friend list
+
+    Raises:
+        Http404: If the requested user profile does not exist
     """
     # fetch the current user and the target user
     user = request.user
@@ -454,6 +551,17 @@ def friend_list_view(request, pk):
 
 
 def deleted_notifications_view(request, pk):
+    """
+    Display a user's list of deleted notifications. Only accessible by the user themselves.
+
+    Args:
+        request (HttpRequest)
+        pk (int): The primary key of the user
+
+    Returns:
+        HttpResponse: Rendered template with user deleted notifications context
+        Error messages: When trying to access another user's inbox
+    """
     user = request.user
     notifications = Notification.objects.filter_by_receiver(user, deleted=True)
     default_notification_messages = Notification.DEFAULT_MESSAGES
@@ -474,6 +582,16 @@ def deleted_notifications_view(request, pk):
 def notification_detail(request, pk):
     """
     Redirect the user based on a specific notification's action type (e.g., friend request, match proposal).
+
+    Args:
+        request (HttpRequest)
+        pk (int): The primary key of the notification
+
+    Returns:
+        HttpResponse: Redirects to the appropriate page based on the notification type
+
+    Raises:
+        Http404: If the requested notification does not exist
     """
     try:
         notification = Notification.objects.get(pk=pk)
@@ -503,6 +621,16 @@ def notification_detail(request, pk):
 def act_on_inbox_notification(request, pk, action):
     """
     Allow a user to perform actions (mark as read/unread, delete) on a notification in their inbox.
+
+    Args:
+        request (HttpRequest)
+        pk (int): The primary key of the notification
+        action (str): The action to perform on the notification
+
+    Returns:
+        HttpResponse: Redirects to the user's inbox
+        Error messages: When trying to perform actions on a non-existent notification or
+        when trying to perform actions on someone else's notifications
     """
     try:
         notification = Notification.objects.get(pk=pk)
@@ -526,6 +654,12 @@ def act_on_inbox_notification(request, pk, action):
 def bulk_inbox(request):
     """
     Perform bulk operations (delete or mark as read) on multiple selected notifications.
+
+    Args:
+        request (HttpRequest)
+
+    Returns:
+        HttpResponse: Redirects to the user's inbox
     """
     if request.method == "POST":
         selected_notifications = request.POST.getlist("notification[]")

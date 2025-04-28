@@ -141,8 +141,7 @@ class Group(models.Model):
 
 class GroupInvitation(models.Model):
     """
-    An invitation to join a group
-
+    An invitation to join a group.
     """
 
     friend_group = models.ForeignKey(Group, on_delete=models.CASCADE)
@@ -234,7 +233,7 @@ class NotificationQuerySet(models.QuerySet):
 
 class Notification(models.Model):
     """
-    A notification to user
+    A notification to user.
 
     Supports different types (friend request, match reminder, etc.).
     Links to an actor object (e.g., another user or a lobby) using a GenericForeignKey.
@@ -367,30 +366,49 @@ class BaseNotificationHandler:
 
 class FriendRequestNotification(BaseNotificationHandler):
     """
-    Handles redirection logic for friend request notifications.
-    
-    Redirects the user to the sender's profile page upon interaction.
+    Handles redirection logic for friend request notifications. Redirects the
+    user to the sender's profile page upon interaction.
     """
-    
+
     def get_redirect_str(self):
         return reverse("users:user-profile", kwargs={"pk": self.notification.actor.sender.pk})
 
 
 class MatchProposalNotification(BaseNotificationHandler):
+    """
+    Handles redirection logic for match proposal notifications. Redirects the
+    user to the lobby of the match upon interaction.
+    """
+
     def get_redirect_str(self):
         return reverse("games:lobby-details", kwargs={"pk": self.notification.actor.lobby.pk})
 
 
 class GroupInvitationNotification(BaseNotificationHandler):
+    """
+    Handles redirection logic for group invitation notifications. Redirects the
+    user to the group page upon interaction.
+    """
+
     def get_redirect_str(self):
         raise NotImplementedError("Group invitation notifications do not have a redirect URL")
 
 
 class ReminderNotification(BaseNotificationHandler):
+    """
+    Handles redirection logic for reminder notifications. Redirects the
+    user to the notification page upon interaction.
+    """
+
     def get_redirect_str(self):
         raise NotImplementedError("Reminder notifications do not have a redirect URL")
 
 
 class UpcomingMatchNotification(BaseNotificationHandler):
+    """
+    Handles redirection logic for upcoming match notifications. Redirects the
+    user to the lobby of the match upon interaction.
+    """
+
     def get_redirect_str(self):
         return reverse("games:lobby-details", kwargs={"pk": self.notification.actor.lobby.pk})
