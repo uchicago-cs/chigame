@@ -55,7 +55,6 @@ class Game(models.Model):
     def update_metrics(self):
         reviews = Review.objects.filter(game=self, rating__isnull=False)
         self.popularity = reviews.count()
-        reviews = Review.objects.filter(game=self, rating__isnull=False)
         self.avg_rating = reviews.aggregate(models.Avg("rating"))["rating__avg"]
         self.save()
 
