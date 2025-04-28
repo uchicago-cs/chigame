@@ -411,14 +411,15 @@ class UploadFileView(View):
         uploaded_file = request.FILES.get('uploaded_file')
 
         if uploaded_file:
-            fs = FileSystemStorage(location='media/interactive_uploads/')
+            upload_path = os.path.join(settings.MEDIA_ROOT, 'interactive_uploads')
+            os.makedirs(upload_path, exist_ok=True)  # Make sure directory exists
+            fs = FileSystemStorage(location=upload_path)
 
-            # Clean up filename: replace spaces with underscores
             safe_filename = uploaded_file.name.replace(' ', '_')
             filename = fs.save(safe_filename, uploaded_file)
             
-            # Save session
-            request.session['uploaded_interactive_file'] = 'interactive_uploads/' + safe_filename
+            #session path should be relative to /media as file will otherwise come from user root
+            request.session['uploaded_interactive_file'] = f'interactive_uploads/{safe_filename}'
 
             messages.success(request, 'File uploaded successfully!')
             return redirect('interactive-fiction')
