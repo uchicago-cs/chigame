@@ -16,9 +16,8 @@
   .side-rect {
     position: absolute;
     top: 50%;
-    transform: translateY(-50%);
     width: 25vw;
-    height: 20vw;
+    height: 15vw;
     background: #800000;
     border-radius: 1vw;
     z-index: 1;
@@ -32,12 +31,22 @@
     right: 0;
   }
 
-  #hero-title {
-    font-size: 5vw;
-    margin: 0;
+  .logo {
+    position: absolute;
+    bottom: 49%;
+    left: 10%;
+    z-index: 10;
+    width: 20%;
+    height: auto;
   }
 
-  #pixeltext {
+  .hero-title {
+    font-size: 5vw;
+    margin: 0;
+    font-weight: bold;
+  }
+
+  .pixeltext {
     color: #800000;
     font-family: "Pixelify Sans", sans-serif;
     font-weight: bold;
@@ -50,8 +59,6 @@
     color: #444;
     text-align: center;
   }
-
-
 
   #signin-button {
     margin-top: 2vw;
