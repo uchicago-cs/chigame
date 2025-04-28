@@ -1,0 +1,53 @@
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Phaser Board</title>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.js"></script>
+    <style>
+      body {
+        margin: 0;
+      }
+      canvas {
+        display: block;
+        margin: 0 auto;
+      }
+    </style>
+  </head>
+  <body>
+    <script>
+      const config = {
+        type: Phaser.AUTO,
+        width: 512,
+        height: 512,
+        backgroundColor: 'black',
+        scene: {
+          create: create
+        }
+      };
+
+      const game = new Phaser.Game(config);
+
+      function create() {
+        const graphics = this.add.graphics();
+        const tileSize = 64; 
+        const rows = 8;
+        const cols = 8;
+        //graphics.backgroundColor('#4B7C7B') 
+
+        for (let row = 0; row < rows; row++) {
+          for (let col = 0; col < cols; col++) {
+            const x = col * tileSize;
+            const y = row * tileSize;
+            const isEven = (row + col) % 2 === 0;
+
+            graphics.fillStyle(isEven ? 0xFFFFFF : 0x000000, 0X4B7C7B);
+            graphics.fillRect(x, y, tileSize, tileSize);
+            
+          }
+        }
+      }
+    </script>
+  </body>
+</html>
+
