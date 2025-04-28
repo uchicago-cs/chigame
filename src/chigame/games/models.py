@@ -46,8 +46,18 @@ class Game(models.Model):
     categories = models.ManyToManyField("Category", related_name="games", blank=True)
     mechanics = models.ManyToManyField("Mechanic", related_name="games", blank=True)
 
+    avg_rating = models.FloatField(default=0.0)
+    popularity = models.IntegerField(default=0)
+
     # ================ OTHER ================
     BGG_id = models.PositiveIntegerField(null=True, blank=True)  # BoardGameGeek ID
+
+    def update_metrics(self):
+        reviews = Review.objects.filter(game=self, rating__isnull=False)
+        self.popularity = reviews.count()
+        reviews = Review.objects.filter(game=self, rating__isnull=False)
+        self.avg_rating = reviews.aggregate(models.Avg("rating"))["rating__avg"]
+        self.save()
 
     # ================ VALIDATON ================
     def clean(self):

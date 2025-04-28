@@ -41,6 +41,26 @@
       background-size: cover;
       filter: blur(10px);
     }
+
+    .game-card-link {
+      position: relative;
+      z-index: 1;
+    }
+
+    .popup-content {
+      display: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.95);
+      z-index: 10;
+      padding: 15px;
+      box-sizing: border-box;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      border-radius: 8px;
+    }
   </style>
   <!-- Sorting and Filtering Bar -->
   <div class="d-flex align-items-center justify-content-between mb-3">
@@ -103,9 +123,9 @@
   <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
     {% for game in page_obj %}
       <div class="col">
-        <a href="{% url 'game-detail' game.id %}"
-           class="text-decoration-none text-dark">
-          <div class="card h-200 d-flex flex-column">
+        <div class="card h-100 d-flex flex-column position-relative">
+          <a href="{% url 'game-detail' game.id %}"
+             class="text-decoration-none text-dark game-card-link">
             <div class="card-img-area">
               <div class="card-img-background"
                    style="background-image: url('{{ game.image }}')"></div>
@@ -115,11 +135,26 @@
               <h4 class="card-title">{{ game.name }}</h4>
               <p class="card-text flex-grow-1">{{ game.description|linebreaksbr|truncatewords:20 }}</p>
               <div>
-                {% for category in game.category.all %}<span class="badge text-bg-primary">{{ category }}</span>{% endfor %}
+                {% for category in game.categories.all %}<span class="badge text-bg-primary">{{ category }}</span>{% endfor %}
               </div>
             </div>
+          </a>
+          <!-- The popup is inside the .card but outside the <a> -->
+          <div class="popup-content bg-light border rounded p-3 shadow">
+            <p>
+              <strong>Players:</strong> {{ game.min_players }} - {{ game.max_players }}
+            </p>
+            <p>
+              <strong>Complexity:</strong> {{ game.complexity }}/5
+            </p>
+            <p>
+              <strong>Playtime:</strong> {{ game.min_playtime }}–{{ game.max_playtime }} minutes
+            </p>
+            <p>
+              <strong>Description:</strong> {{ game.description|truncatewords:30 }}
+            </p>
           </div>
-        </a>
+        </div>
       </div>
     {% endfor %}
   </div>
@@ -168,5 +203,23 @@
     function updateFilterAndSorting() {
       document.getElementById('filter-form').submit();
     }
+
+    // Added a function to implement the popup mechanism
+
+    document.addEventListener('DOMContentLoaded', function() {
+      document.querySelectorAll('.card').forEach(function(card) {
+        const popup = card.querySelector('.popup-content');
+
+        if (popup) {
+          card.addEventListener('mouseenter', function() {
+            popup.style.display = 'block';
+          });
+
+          card.addEventListener('mouseleave', function() {
+            popup.style.display = 'none';
+          });
+        }
+      });
+    });
   </script>
 {% endblock content %}
