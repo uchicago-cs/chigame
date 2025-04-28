@@ -99,7 +99,12 @@
               <input type="file" id="myFile" name="uploaded_file">
               <input type="submit" class="btn btn-primary" value="Upload">
             </form>
+            <h3>Uploaded Story</h3>
+            <pre style="background-color: #f8f9fa; padding: 1rem; border-radius: 0.5rem;">
+              {{ uploaded_file_content }}
+            </pre>
           {% endif %}
+          
         </div>
         <a href="{% url 'game-review-list' pk=game.pk %}">See All Reviews for {{ game.name }}</a>
       </div>
