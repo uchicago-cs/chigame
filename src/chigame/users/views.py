@@ -152,6 +152,7 @@ def user_profile_detail_view(request, pk):
     friendship_request = None
     target_user = get_object_or_404(User, pk=pk)
     if request.user.is_authenticated:
+        # check friendship or pending invitation with the target user
         is_friend = target_user.friends.filter(pk=request.user.pk).exists()
         if not is_friend:
             curr_user = request.user
@@ -166,6 +167,10 @@ def user_profile_detail_view(request, pk):
 
 @login_required
 def send_friend_invitation(request, pk):
+    """
+    Send a friend invitation from the current user to another user.
+    Handles creation or renewal of associated notifications.
+    """
     # fetch the current user and the target user
     curr_user = User.objects.get(pk=request.user.id)
     other_user = User.objects.get(pk=pk)
@@ -203,6 +208,9 @@ def send_friend_invitation(request, pk):
 
 @login_required
 def cancel_friend_invitation(request, pk):
+    """
+    Cancel a sent friend invitation and mark related notifications as deleted.
+    """
     # fetch the current user and the target user
     sender = User.objects.get(pk=request.user.id)
     receiver = User.objects.get(pk=pk)
@@ -235,6 +243,9 @@ def cancel_friend_invitation(request, pk):
 
 @login_required
 def accept_friend_invitation(request, pk):
+    """
+    Accept a received friend invitation and establish friendship.
+    """
     try:
         # fetch the friendship invitation
         friendship = FriendInvitation.objects.get(pk=pk)
@@ -263,6 +274,9 @@ def accept_friend_invitation(request, pk):
 
 @login_required
 def decline_friend_invitation(request, pk):
+    """
+    Decline (delete) a received friend invitation.
+    """
     try:
         # fetch the friendship invitation
         friendship = FriendInvitation.objects.get(pk=pk)
@@ -371,6 +385,9 @@ def user_inbox_view(request, pk):
 
 
 def unfriend_users(user1, user2):
+    """
+    Remove friendship between two users and delete associated invitation and notifications.
+    """
     # remove the users from each other's friends list
     user1.friends.remove(user2)
     user2.friends.remove(user1)
@@ -392,6 +409,9 @@ def unfriend_users(user1, user2):
 
 @login_required
 def remove_friend(request, pk):
+    """
+    Handle the process of a user removing another user from their friends list.
+    """
     # check if the current user is not trying to remove themselves
     if request.user.pk != pk:
         try:
@@ -413,6 +433,10 @@ def remove_friend(request, pk):
 
 @login_required
 def friend_list_view(request, pk):
+    """
+    Display a user's list of friends.
+    Only accessible by the user themselves.
+    """
     # fetch the current user and the target user
     user = request.user
     target_user = get_object_or_404(User, pk=pk)
@@ -448,6 +472,9 @@ def deleted_notifications_view(request, pk):
 
 @login_required
 def notification_detail(request, pk):
+    """
+    Redirect the user based on a specific notification's action type (e.g., friend request, match proposal).
+    """
     try:
         notification = Notification.objects.get(pk=pk)
         if notification.receiver.pk != request.user.pk:
@@ -474,6 +501,9 @@ def notification_detail(request, pk):
 
 @login_required
 def act_on_inbox_notification(request, pk, action):
+    """
+    Allow a user to perform actions (mark as read/unread, delete) on a notification in their inbox.
+    """
     try:
         notification = Notification.objects.get(pk=pk)
         if notification.receiver.pk != request.user.pk:
@@ -494,6 +524,9 @@ def act_on_inbox_notification(request, pk, action):
 
 @login_required
 def bulk_inbox(request):
+    """
+    Perform bulk operations (delete or mark as read) on multiple selected notifications.
+    """
     if request.method == "POST":
         selected_notifications = request.POST.getlist("notification[]")
         if "delete_all" in request.POST:

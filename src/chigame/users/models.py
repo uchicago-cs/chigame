@@ -22,9 +22,15 @@ def validate_username(value):
 
 class User(AbstractUser):
     """
-    Default custom user model for ChiGame.
-    If adding fields that need to be filled at user signup,
-    check forms.SignupForm and forms.SocialSignupForms accordingly.
+    Custom user model for ChiGame.
+
+    Extends Django's AbstractUser to:
+    - Use email instead of username as the primary login field.
+    - Allow optional username and name fields.
+    - Enforce username validation (not purely numeric).
+    - Support symmetrical friend relationships between users.
+
+    When modifying signup fields, update forms.SignupForm and forms.SocialSignupForms accordingly.
     """
 
     # First and last name do not cover name patterns around the globe
@@ -123,6 +129,8 @@ class FriendInvitation(models.Model):
 class Group(models.Model):
     """
     A group of users.
+
+    Groups are created by a user (creator) and can have multiple members.
     """
 
     name = models.TextField()
@@ -134,6 +142,7 @@ class Group(models.Model):
 class GroupInvitation(models.Model):
     """
     An invitation to join a group
+
     """
 
     friend_group = models.ForeignKey(Group, on_delete=models.CASCADE)
@@ -226,6 +235,10 @@ class NotificationQuerySet(models.QuerySet):
 class Notification(models.Model):
     """
     A notification to user
+
+    Supports different types (friend request, match reminder, etc.).
+    Links to an actor object (e.g., another user or a lobby) using a GenericForeignKey.
+    Handles visibility, read/unread status, and timestamping of events.
     """
 
     FRIEND_REQUEST = 1
@@ -353,6 +366,12 @@ class BaseNotificationHandler:
 
 
 class FriendRequestNotification(BaseNotificationHandler):
+    """
+    Handles redirection logic for friend request notifications.
+    
+    Redirects the user to the sender's profile page upon interaction.
+    """
+    
     def get_redirect_str(self):
         return reverse("users:user-profile", kwargs={"pk": self.notification.actor.sender.pk})
 
