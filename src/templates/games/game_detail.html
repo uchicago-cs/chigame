@@ -100,9 +100,9 @@
               <input type="submit" class="btn btn-primary" value="Upload">
             </form>
             <h3>Uploaded Story</h3>
-            <pre style="background-color: #f8f9fa; padding: 1rem; border-radius: 0.5rem;">
-              {{ uploaded_file_content }}
-            </pre>
+            <a href="{{ uploaded_file_url }}" target="_blank" class="btn btn-success">
+              Play Uploaded Game
+            </a>
           {% endif %}
           
         </div>
