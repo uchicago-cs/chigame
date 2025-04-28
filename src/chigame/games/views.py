@@ -9,12 +9,14 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.core.paginator import Paginator
+from django.core.files.storage import FileSystemStorage
 from django.db.models import Q
 from django.db.models.functions import Lower
 from django.http import HttpResponseForbidden, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render, reverse
 from django.urls import reverse_lazy
 from django.utils import timezone
+from django.views import View
 from django.utils.decorators import method_decorator
 from django.utils.timezone import now
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView, TemplateView
@@ -396,7 +398,17 @@ class InteractiveFictionView(TemplateView):
         return context
 
 
+class UploadFileView(View):
+    def post(self, request, pk):
+        uploaded_file = request.FILES.get('uploaded_file')
 
+        if uploaded_file:
+            fs = FileSystemStorage()
+            filename = fs.save(uploaded_file.name, uploaded_file)
+            return redirect('game-detail', pk=pk)
+
+        #if no file uploaded, just reload the page for now
+        return redirect('game-detail', pk=pk)
 
 
 
