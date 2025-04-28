@@ -1,6 +1,7 @@
 import xml.etree.ElementTree as ET
 from functools import wraps
 from random import choice
+from types import SimpleNamespace
 
 import requests
 from django.contrib import messages
@@ -16,7 +17,7 @@ from django.urls import reverse_lazy
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.utils.timezone import now
-from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
+from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView, TemplateView
 from django.views.generic.edit import FormMixin
 
 from chigame.users.models import User
@@ -379,7 +380,27 @@ def search_results(request):
     return render(request, "games/game_grid.html", context)
 
 
-# Tournaments
+# =============== Interactive Fiction Views ===============
+class InteractiveFictionView(TemplateView):
+    template_name = "games/game_detail.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # creates a fake game object
+        fake_game = Game(
+            pk=9999,
+            name="Interactive Fiction Adventure",
+            description="Embark on an interactive text-based journey!",
+        )
+        context["game"] = fake_game
+        return context
+
+
+
+
+
+
+# =============== Tournaments Views ===============
 
 
 # Currently, only staff users can create, update, and delete tournaments.
