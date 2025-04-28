@@ -412,11 +412,13 @@ class UploadFileView(View):
 
         if uploaded_file:
             fs = FileSystemStorage(location='media/interactive_uploads/')
-            filename = fs.save(uploaded_file.name, uploaded_file)
-            file_url = fs.url(filename)
 
-            # save uploaded file info in session
-            request.session['uploaded_interactive_file'] = 'interactive_uploads/' + uploaded_file.name
+            # Clean up filename: replace spaces with underscores
+            safe_filename = uploaded_file.name.replace(' ', '_')
+            filename = fs.save(safe_filename, uploaded_file)
+            
+            # Save session
+            request.session['uploaded_interactive_file'] = 'interactive_uploads/' + safe_filename
 
             messages.success(request, 'File uploaded successfully!')
             return redirect('interactive-fiction')
