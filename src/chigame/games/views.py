@@ -395,6 +395,18 @@ class InteractiveFictionView(TemplateView):
             description="Embark on an interactive text-based journey!",
         )
         context["game"] = fake_game
+
+        #check if there is an uploaded IF file
+        uploaded_file = self.request.session.get('uploaded_interactive_file')
+        if uploaded_file:
+            try:
+                with open(f"media/{uploaded_file}", 'r', encoding='utf-8') as f:
+                    file_content = f.read()
+                context['uploaded_file_content'] = file_content
+            except Exception as e:
+                context['uploaded_file_content'] = f"Error reading uploaded file: {str(e)}"
+
+        
         return context
 
 
@@ -403,12 +415,18 @@ class UploadFileView(View):
         uploaded_file = request.FILES.get('uploaded_file')
 
         if uploaded_file:
-            fs = FileSystemStorage()
+            fs = FileSystemStorage(location='media/interactive_uploads/')
             filename = fs.save(uploaded_file.name, uploaded_file)
-            return redirect(reverse('interactive-fiction'))
+            file_url = fs.url(filename)
 
-        #if no file uploaded, just reload the page for now
-        return redirect(reverse('interactive-fiction'))
+            # save uploaded file info in session
+            request.session['uploaded_interactive_file'] = 'interactive_uploads/' + uploaded_file.name
+
+            messages.success(request, 'File uploaded successfully!')
+            return redirect('interactive-fiction')
+
+        messages.error(request, 'No file selected.')
+        return redirect('interactive-fiction')
 
 
 
