@@ -161,7 +161,6 @@ def send_friend_invitation(request, pk):
 def cancel_friend_invitation(request, pk):
     sender = User.objects.get(pk=request.user.id)
     receiver = User.objects.get(pk=pk)
-    num = None
     try:
         friendship = FriendInvitation.objects.get(sender=sender, receiver=receiver)
         notification = Notification.objects.get_by_actor(friendship)
