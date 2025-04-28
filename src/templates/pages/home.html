@@ -1,1 +1,55 @@
 {% extends "base.html" %}
+
+{% load static %}
+
+{% block content %}
+  <div class="trending-section">
+    <h2 class="section-title">Trending Games</h2>
+    <div class="swiper">
+      <div class="swiper-wrapper">
+        <div class="swiper-slide">
+          <img src="{% static 'images/games/management.png' %}" alt="Management" />
+        </div>
+        <div class="swiper-slide">
+          <img src="{% static 'images/games/checkers.png' %}" alt="Checkers" />
+        </div>
+        <div class="swiper-slide">
+          <img src="{% static 'images/games/wordgame.png' %}" alt="Word Game" />
+        </div>
+        <div class="swiper-slide">
+          <img src="{% static 'images/games/reversi.png' %}" alt="Reversi" />
+        </div>
+      </div>
+      <!-- Pagination dots -->
+      <div class="swiper-pagination"></div>
+    </div>
+  </div>
+{% endblock content %}
+{% block javascript %}
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const swiper = new Swiper('.swiper', {
+        effect: 'coverflow',
+        grabCursor: true,
+        centeredSlides: true,
+        slidesPerView: 'auto',
+        loop: true,
+        autoplay: {
+          delay: 2500, // 2.5 seconds
+          disableOnInteraction: false, // keeps moving even if clicked
+        },
+        coverflowEffect: {
+          rotate: 30, // tilt
+          stretch: 0,
+          depth: 100,
+          modifier: 1,
+          slideShadows: true,
+        },
+        pagination: {
+          el: '.swiper-pagination',
+          clickable: true,
+        },
+      });
+    });
+  </script>
+{% endblock javascript %}
