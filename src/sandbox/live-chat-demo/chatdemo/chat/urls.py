@@ -1,6 +1,6 @@
 from chat import views as chat_views
 from django.contrib.auth.views import LoginView, LogoutView
-from django.urls import include, path
+from django.urls import path
 
 urlpatterns = [
     path("", chat_views.chatPage, name="chat-page"),
