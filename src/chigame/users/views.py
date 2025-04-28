@@ -236,10 +236,14 @@ def accept_friend_invitation(request, pk):
         # fetch the friendship invitation
         friendship = FriendInvitation.objects.get(pk=pk)
         # check if the friendship invitation is not for the current user
-        if friendship.receiver.pk != request.user.pk:
-            messages.error(request, "You are not the receiver of this friend invitation ")
-        else:
-            friendship.accept_invitation()
+        if friendship.receiver != request.user:
+            messages.error(request, "You are not the receiver of this friend invitation")
+            return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
+        # accept the friendship invitation
+        friendship.accept_invitation()
+        messages.success(request, "Friend invitation accepted successfully")
+        # delete the friendship invitation
+        friendship.delete()
     except FriendInvitation.DoesNotExist:
         messages.error(request, "This friend invitation does not exist")
     return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
@@ -324,6 +328,13 @@ def user_inbox_view(request, pk):
     """
 
     user = request.user
+    notifications = Notification.objects.filter_by_receiver(user)
+    
+    # check for any notifications that have already been addressed
+    for notification in notifications:
+        notification.remove_if_addressed()
+    
+    # refresh the notifications queryset
     notifications = Notification.objects.filter_by_receiver(user)
     default_notification_messages = Notification.DEFAULT_MESSAGES
     context = {

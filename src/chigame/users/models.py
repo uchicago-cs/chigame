@@ -111,6 +111,13 @@ class FriendInvitation(models.Model):
         # set the invitation as accepted
         self.accepted = True
         self.save()
+        
+        # Remove the notification
+        try:
+            notification = Notification.objects.get_by_actor(self)
+            notification.remove_if_addressed()
+        except Notification.DoesNotExist:
+            pass
 
 
 class Group(models.Model):
@@ -134,6 +141,20 @@ class GroupInvitation(models.Model):
     receiver = models.ForeignKey(User, related_name="received_group_invitations", on_delete=models.CASCADE)
     accepted = models.BooleanField(default=False)
     timestamp = models.DateTimeField(auto_now_add=True)
+
+    def accept_invitation(self):
+        """
+        Accept a group invitation.
+        """
+        self.accepted = True
+        self.save()
+        
+        # Remove the notification
+        try:
+            notification = Notification.objects.get_by_actor(self)
+            notification.remove_if_addressed()
+        except Notification.DoesNotExist:
+            pass
 
 
 class NotificationQuerySet(models.QuerySet):
@@ -234,6 +255,47 @@ class Notification(models.Model):
     actor = GenericForeignKey("actor_content_type", "actor_object_id")
     message = models.CharField(max_length=255, blank=True, null=True)
     objects = NotificationQuerySet.as_manager()
+
+    def is_addressed(self):
+        """
+        Check if a notification has been addressed (i.e. accepted or deleted)
+        Output: Bool
+            Returns True if the notification should be removed.
+        """
+        if self.type == self.FRIEND_REQUEST:
+            # For friend requests, check if the invitation has been either accepted or deleted
+            try:
+                invitation = FriendInvitation.objects.get(pk=self.actor_object_id)
+                return invitation.accepted or not self.visible
+            except FriendInvitation.DoesNotExist:
+                return True
+        elif self.type == self.GROUP_INVITATION:
+            # For group invitations, check if the invitation has been eitheraccepted or deleted
+            try:
+                invitation = GroupInvitation.objects.get(pk=self.actor_object_id)
+                return invitation.accepted or not self.visible
+            except GroupInvitation.DoesNotExist:
+                return True
+        elif self.type == self.MATCH_PROPOSAL:
+            # For match proposals, check if the match has been accepted or rejected
+            try:
+                match = self.actor
+                return match.accepted or match.rejected
+            except AttributeError:
+                return True
+        # For REMINDER and UPCOMING_MATCH, they don't need to be automatically removed, so we just return False
+        return False
+
+    def remove_if_addressed(self):
+        """
+        Automatically remove the notification if it has been addressed (i.e. accepted or deleted)
+        Output: Bool
+            Returns True if the notification was removed, e;se False
+        """
+        if self.is_addressed():
+            self.mark_as_deleted()
+            return True
+        return False
 
     def mark_as_read(self):
         if not self.read:
