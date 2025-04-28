@@ -8,7 +8,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.core.paginator import Paginator
-from django.db.models import Avg, Count, Q
+from django.db.models import Avg, Count, ExpressionWrapper, F, FloatField, Q
 from django.db.models.functions import Lower
 from django.http import HttpResponseForbidden, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render, reverse
@@ -40,7 +40,10 @@ class GameListView(ListView):
         """
         # Adding average rating and popularity to the queryset
         queryset = (
-            super().get_queryset().annotate(avg_rating=Avg("reviews__rating"), popularity=Count("reviews__is_public"))
+            super()
+            .get_queryset()
+            .annotate(avg_rating=Avg("reviews__rating"), popularity=Count("reviews__is_public"))
+            .annotate(rating_percentage=ExpressionWrapper((F("avg_rating") / 5) * 100, output_field=FloatField()))
         )
         sort = self.request.GET.get("sort_by", "name-asc")
         players = self.request.GET.get("players", "")

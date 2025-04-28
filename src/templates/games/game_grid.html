@@ -50,6 +50,34 @@
     .game-metrics h4 {
       margin-bottom: 0;
     }
+
+    .star-rating {
+      position: relative;
+      display: inline-block;
+      font-size: 1.5rem;
+      /* adjust size */
+      line-height: 1;
+      /* important to remove extra vertical spacing */
+      white-space: nowrap;
+      /* force all stars into one line */
+    }
+
+    .star-rating-empty,
+    .star-rating-filled {
+      color: #d3d3d3;
+      display: block;
+
+    }
+
+    .star-rating-filled {
+      color: gold;
+      position: absolute;
+      top: 0;
+      left: 0;
+      overflow: hidden;
+      white-space: nowrap;
+      pointer-events: none;
+    }
   </style>
   <!-- Sorting and Filtering Bar -->
   <div class="d-flex align-items-center justify-content-between mb-3">
@@ -126,9 +154,12 @@
                 <h4 class="card-title mb-0">{{ game.name }}</h4>
                 <div class="d-flex flex-column align-items-end ms-3 game-metrics">
                   {% if game.avg_rating %}
-                    <h4 class="game-metrics">Avg. Rating: {{ game.avg_rating | floatformat:2 }} / 5</h4>
+                    <div class="star-rating">
+                      <div class="star-rating-filled"
+                           style="width: {{ game.rating_percentage }}%">★★★★★</div>
+                      <div class="star-rating-empty">★★★★★</div>
+                    </div>
                   {% endif %}
-                  <h4 class="game-metrics">Popularity: {{ game.popularity | default:0 }}</h4>
                 </div>
               </div>
               <p class="card-text flex-grow-1">{{ game.description|linebreaksbr|truncatewords:20 }}</p>
