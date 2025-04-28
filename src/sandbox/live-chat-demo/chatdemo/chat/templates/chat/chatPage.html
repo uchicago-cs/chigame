@@ -2,7 +2,6 @@
 <html lang="en">
   <head>
     <title>Live Chat Demo</title>
-
     <style>
       .chat__item__container {
         font-size: 20px;
@@ -10,12 +9,14 @@
     </style>
   </head>
   <body>
-    <center><h1>Hello , Welcome to my chat site ! {{request.user}}</h1></center>
+    <center>
+      <h1>Hello , Welcome to my chat site ! {{ request.user }}</h1>
+    </center>
     <br />
     {% if request.user.is_authenticated %}
-    <center>
-      Logout the chat Page <a href="{% url 'logout-user' %}">Logout</a>
-    </center>
+      <center>
+        Logout the chat Page <a href="{% url 'logout-user' %}">Logout</a>
+      </center>
     {% endif %}
     <div class="chat__item__container" id="id_chat_item_container">
       <br />
@@ -26,19 +27,19 @@
     </div>
     <script>
       const chatSocket = new WebSocket("ws://" + window.location.host + "/");
-      chatSocket.onopen = function (e) {
+      chatSocket.onopen = function(e) {
         console.log("The connection was setup successfully !");
       };
-      chatSocket.onclose = function (e) {
+      chatSocket.onclose = function(e) {
         console.log("Something unexpected happened !");
       };
       document.querySelector("#id_message_send_input").focus();
-      document.querySelector("#id_message_send_input").onkeyup = function (e) {
+      document.querySelector("#id_message_send_input").onkeyup = function(e) {
         if (e.keyCode == 13) {
           document.querySelector("#id_message_send_button").click();
         }
       };
-      document.querySelector("#id_message_send_button").onclick = function (e) {
+      document.querySelector("#id_message_send_button").onclick = function(e) {
         var messageInput = document.querySelector(
           "#id_message_send_input"
         ).value;
@@ -49,7 +50,7 @@
           })
         );
       };
-      chatSocket.onmessage = function (e) {
+      chatSocket.onmessage = function(e) {
         const data = JSON.parse(e.data);
         var div = document.createElement("div");
         div.innerHTML = data.username + " : " + data.message;

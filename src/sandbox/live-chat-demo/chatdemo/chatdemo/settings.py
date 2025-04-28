@@ -13,13 +13,13 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
-    'chat.apps.ChatConfig', # This is: chatdemo/chat/apps.py
+    'chat.apps.ChatConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'daphne', # Must be listed before staticfiles
+    'daphne',
     'django.contrib.staticfiles',
     'channels',
 ]
@@ -87,8 +87,7 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-ASGI_APPLICATION = 'chatdemo' \
-'.asgi.application'
+ASGI_APPLICATION = 'chatdemo.asgi.application'
 
 CHANNEL_LAYERS = {
     "default": {
