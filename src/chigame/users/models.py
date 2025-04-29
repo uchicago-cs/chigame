@@ -37,6 +37,9 @@ class User(AbstractUser):
     )
     tokens = models.PositiveSmallIntegerField(validators=[MaxValueValidator(3)], default=1)
 
+    # a moderator can manage/approve game guides in Knowledge Base
+    moderator = models.BooleanField(default=False)
+
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
 
@@ -80,14 +83,15 @@ class UserProfile(models.Model):
 
 class FriendInvitationManager(models.Manager):
     def get_by_users(self, user1, user2, **kwargs):
-        """Gets a friend invitation given two user, each of which can be a sender
+        """Gets a friend invitation given two user, which can be a sender
         or a receiver"""
         return self.get(Q(sender=user1, receiver=user2) | Q(sender=user2, receiver=user1), **kwargs)
 
 
 class FriendInvitation(models.Model):
     """
-    An invitation from a User to another User, requesting that they become friends.
+    An invitation from a User to another User, requesting that they become
+    friends.
     """
 
     sender = models.ForeignKey(User, related_name="sent_friend_invitations", on_delete=models.CASCADE)
@@ -95,6 +99,7 @@ class FriendInvitation(models.Model):
     accepted = models.BooleanField(default=False)
     timestamp = models.DateTimeField(auto_now_add=True)
     objects = FriendInvitationManager()
+    is_deleted = models.BooleanField(default=False)
 
     def accept_invitation(self):
         sender = self.sender
@@ -106,6 +111,14 @@ class FriendInvitation(models.Model):
         self.accepted = True
         self.save()
 
+    # override default delete
+    def delete(self):
+        self.is_deleted = True
+        self.save()
+
+    class Meta:
+        unique_together = ["sender", "receiver"]
+
 
 class Group(models.Model):
     """
@@ -115,6 +128,7 @@ class Group(models.Model):
     name = models.TextField()
     members = models.ManyToManyField(User)
     created_by = models.ForeignKey(User, related_name="created_groups", on_delete=models.CASCADE)
+
     date_created = models.DateTimeField(auto_now_add=True)
 
 
@@ -128,6 +142,9 @@ class GroupInvitation(models.Model):
     receiver = models.ForeignKey(User, related_name="received_group_invitations", on_delete=models.CASCADE)
     accepted = models.BooleanField(default=False)
     timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ["friend_group", "sender", "receiver"]
 
 
 class NotificationQuerySet(models.QuerySet):
@@ -230,6 +247,9 @@ class Notification(models.Model):
     actor = GenericForeignKey("actor_content_type", "actor_object_id")
     message = models.CharField(max_length=255, blank=True, null=True)
     objects = NotificationQuerySet.as_manager()
+
+    class Meta:
+        unique_together = ["receiver", "actor_content_type", "actor_object_id", "type"]
 
     def mark_as_read(self):
         if not self.read:
