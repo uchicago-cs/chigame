@@ -111,7 +111,6 @@ class FriendInvitation(models.Model):
         self.accepted = True
         self.save()
 
-
     # override default delete
     def delete(self):
         self.is_deleted = True
@@ -119,7 +118,6 @@ class FriendInvitation(models.Model):
 
     class Meta:
         unique_together = ["sender", "receiver"]
-
 
 
 class Group(models.Model):
