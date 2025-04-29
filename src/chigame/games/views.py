@@ -1,26 +1,26 @@
+import os
 import xml.etree.ElementTree as ET
 from functools import wraps
 from random import choice
 
 import requests
-import os
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
-from django.core.paginator import Paginator
 from django.core.files.storage import FileSystemStorage
+from django.core.paginator import Paginator
 from django.db.models import Q
 from django.db.models.functions import Lower
 from django.http import HttpResponseForbidden, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse_lazy, reverse
+from django.urls import reverse, reverse_lazy
 from django.utils import timezone
-from django.views import View
 from django.utils.decorators import method_decorator
 from django.utils.timezone import now
-from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView, TemplateView
+from django.views import View
+from django.views.generic import CreateView, DeleteView, DetailView, ListView, TemplateView, UpdateView
 from django.views.generic.edit import FormMixin
 
 from chigame.users.models import User
@@ -397,11 +397,11 @@ class InteractiveFictionView(TemplateView):
         )
         context["game"] = fake_game
 
-        #check if there is an uploaded IF file
-        uploaded_file = self.request.session.get('uploaded_interactive_file')
+        # check if there is an uploaded IF file
+        uploaded_file = self.request.session.get("uploaded_interactive_file")
         if uploaded_file:
-            file_url = f"/media/{uploaded_file}" 
-            context['uploaded_file_url'] = file_url
+            file_url = f"/media/{uploaded_file}"
+            context["uploaded_file_url"] = file_url
         return context
 
 
