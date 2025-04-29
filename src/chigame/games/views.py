@@ -15,7 +15,7 @@ from django.db.models import Q
 from django.db.models.functions import Lower
 from django.http import HttpResponseForbidden, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.utils import timezone
 from django.views import View
 from django.utils.decorators import method_decorator
@@ -412,7 +412,7 @@ class UploadFileView(View):
         if uploaded_file:
             upload_path = os.path.join(settings.MEDIA_ROOT, 'interactive_uploads')
             os.makedirs(upload_path, exist_ok=True)  # Make sure directory exists
-            fs = FileSystemStorage(location=upload_path)
+            ##fs = FileSystemStorage(location=upload_path)
 
             safe_filename = uploaded_file.name.replace(' ', '_')
             #filename = fs.save(safe_filename, uploaded_file)
