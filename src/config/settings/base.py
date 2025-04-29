@@ -78,6 +78,7 @@ DJANGO_APPS = [
     "django_filters",
     "django_tables2",
 ]
+
 THIRD_PARTY_APPS = [
     "crispy_forms",
     "crispy_bootstrap5",
