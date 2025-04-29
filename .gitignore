@@ -188,3 +188,6 @@ chigame_template/media/
 
 # Mac icons
 *DS_Store
+
+#Node Modules
+node_modules/
