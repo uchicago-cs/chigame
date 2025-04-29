@@ -1,6 +1,8 @@
+import re
 from xml.etree import ElementTree
 
 from markdown.extensions import Extension
+from markdown.preprocessors import Preprocessor
 from markdown.treeprocessors import Treeprocessor
 
 
@@ -66,3 +68,28 @@ class SectionWrapperTreeprocessor(Treeprocessor):
 class SectionWrapperExtension(Extension):
     def extendMarkdown(self, md):
         md.treeprocessors.register(SectionWrapperTreeprocessor(md), "sectionwrapper", 0)
+
+
+class HtmlSanitizerPreprocessor(Preprocessor):
+    """Preprocessor that sanitizes HTML tags before they are re-injected."""
+
+    def run(self, lines):
+        # Get the raw HTML tags from the markdown instance
+        raw_html_tags = self.markdown.htmlStash.rawHtmlBlocks
+
+        # Sanitize each HTML tag
+        for i, html in enumerate(raw_html_tags):
+            # Replace the original HTML with a sanitized version
+            # For now, we'll just strip all HTML tags
+            # Later we can add more sophisticated sanitization
+            raw_html_tags[i] = re.sub(r"<[^>]+>", "", html)
+
+        return lines
+
+
+class HtmlSanitizerExtension(Extension):
+    """Extension that sanitizes HTML content in markdown."""
+
+    def extendMarkdown(self, md):
+        # Register our preprocessor with high priority to ensure it runs before other processors
+        md.preprocessors.register(HtmlSanitizerPreprocessor(md), "html_sanitizer", 0)

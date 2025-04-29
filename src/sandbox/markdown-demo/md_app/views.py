@@ -1,9 +1,10 @@
 import markdown
 from django.shortcuts import render
 
-from .markdown_extensions import SectionWrapperExtension
+from .markdown_extensions import HtmlSanitizerExtension, SectionWrapperExtension
 
 MARKDOWN_STRING = """
+<script>console.log("Injected code")</script>
 # Introduction
 Welcome to our knowledge base guide. This is the introduction section.
 
@@ -21,8 +22,8 @@ def markdown_content_view(request):
     # Check if minimal UI is requested
     is_minimal = request.GET.get("minimal", "false").lower() == "true"
 
-    # Initialize markdown with our section wrapper extension
-    md = markdown.Markdown(extensions=["fenced_code", SectionWrapperExtension()])
+    # Initialize markdown with our extensions
+    md = markdown.Markdown(extensions=["fenced_code", SectionWrapperExtension(), HtmlSanitizerExtension()])
 
     # Convert markdown to HTML
     html_content = md.convert(MARKDOWN_STRING)
