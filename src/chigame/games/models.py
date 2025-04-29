@@ -716,7 +716,6 @@ class LiveChatUser(models.Model):
     user_id = models.ForeignKey(User, on_delete=models.CASCADE)
     live_chat_id = models.ForeignKey(LiveChat, on_delete=models.CASCADE)
 
-
 class GameList(models.Model):
     """
     A collection of games defined by users.
