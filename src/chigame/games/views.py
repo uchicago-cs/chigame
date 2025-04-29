@@ -407,25 +407,23 @@ class InteractiveFictionView(TemplateView):
 
 class UploadFileView(View):
     def post(self, request, pk):
-        uploaded_file = request.FILES.get('uploaded_file')
+        uploaded_file = request.FILES.get("uploaded_file")
 
         if uploaded_file:
-            upload_path = os.path.join(settings.MEDIA_ROOT, 'interactive_uploads')
-            os.makedirs(upload_path, exist_ok=True)  # Make sure directory exists
-            ##fs = FileSystemStorage(location=upload_path)
+            upload_path = os.path.join(settings.MEDIA_ROOT, "interactive_uploads")
+            os.makedirs(upload_path, exist_ok=True)
 
-            safe_filename = uploaded_file.name.replace(' ', '_')
-            #filename = fs.save(safe_filename, uploaded_file)
-            
-            #session path should be relative to /media as file will otherwise come from user root
-            request.session['uploaded_interactive_file'] = f'interactive_uploads/{safe_filename}'
+            fs = FileSystemStorage(location=upload_path)
+            safe_filename = uploaded_file.name.replace(" ", "_")
+            filename = fs.save(safe_filename, uploaded_file)
 
-            messages.success(request, 'File uploaded successfully!')
-            return redirect('interactive-fiction')
+            request.session["uploaded_interactive_file"] = f"interactive_uploads/{safe_filename}"
 
-        messages.error(request, 'No file selected.')
-        return redirect('interactive-fiction')
+            messages.success(request, "File uploaded successfully!")
+            return redirect("interactive-fiction")
 
+        messages.error(request, "No file selected.")
+        return redirect("interactive-fiction")
 
 
 # =============== Tournaments Views ===============
