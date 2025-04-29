@@ -83,14 +83,15 @@ class UserProfile(models.Model):
 
 class FriendInvitationManager(models.Manager):
     def get_by_users(self, user1, user2, **kwargs):
-        """Gets a friend invitation given two user, each of which can be a sender
+        """Gets a friend invitation given two user, which can be a sender
         or a receiver"""
         return self.get(Q(sender=user1, receiver=user2) | Q(sender=user2, receiver=user1), **kwargs)
 
 
 class FriendInvitation(models.Model):
     """
-    An invitation from a User to another User, requesting that they become friends.
+    An invitation from a User to another User, requesting that they become
+    friends.
     """
 
     sender = models.ForeignKey(User, related_name="sent_friend_invitations", on_delete=models.CASCADE)
@@ -98,6 +99,7 @@ class FriendInvitation(models.Model):
     accepted = models.BooleanField(default=False)
     timestamp = models.DateTimeField(auto_now_add=True)
     objects = FriendInvitationManager()
+    is_deleted = models.BooleanField(default=False)
 
     def accept_invitation(self):
         sender = self.sender
@@ -107,6 +109,11 @@ class FriendInvitation(models.Model):
         sender_profile.friends.add(receiver)
         receiver_profile.friends.add(sender)
         self.accepted = True
+        self.save()
+
+    # override default delete
+    def delete(self):
+        self.is_deleted = True
         self.save()
 
     class Meta:
@@ -121,6 +128,7 @@ class Group(models.Model):
     name = models.TextField()
     members = models.ManyToManyField(User)
     created_by = models.ForeignKey(User, related_name="created_groups", on_delete=models.CASCADE)
+
     date_created = models.DateTimeField(auto_now_add=True)
 
 
