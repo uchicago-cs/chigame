@@ -39,6 +39,9 @@ class User(AbstractUser):
     friends = models.ManyToManyField("self", symmetrical=True, blank=True)
     tokens = models.PositiveSmallIntegerField(validators=[MaxValueValidator(3)], default=1)
 
+    # a moderator can manage/approve game guides in Knowledge Base
+    moderator = models.BooleanField(default=False)
+
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
 
