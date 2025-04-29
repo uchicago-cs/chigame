@@ -415,7 +415,7 @@ class UploadFileView(View):
 
             fs = FileSystemStorage(location=upload_path)
             safe_filename = uploaded_file.name.replace(" ", "_")
-            filename = fs.save(safe_filename, uploaded_file)
+            fs.save(safe_filename, uploaded_file)
 
             request.session["uploaded_interactive_file"] = f"interactive_uploads/{safe_filename}"
 
