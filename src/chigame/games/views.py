@@ -857,6 +857,18 @@ class ReviewListView(ListView):
         return context
 
 
+class FavoriteListView(LoginRequiredMixin, ListView):
+    """Display the current user's favorite games."""
+
+    model = Game
+    template_name = "games/favorites_list.html"
+    context_object_name = "favorite_games"
+
+    def get_queryset(self):
+        favorites_list, _ = GameList.objects.get_or_create(name="Favorites", created_by=self.request.user)
+        return favorites_list.games.all()
+
+
 @login_required
 def add_to_favorites(request, pk):
     """Add a game to the current user's 'Favorites' list."""
@@ -876,15 +888,3 @@ def remove_from_favorites(request, pk):
     except GameList.DoesNotExist:
         pass
     return redirect("favorite-list")
-
-
-class FavoriteListView(LoginRequiredMixin, ListView):
-    """Display the current user's favorite games."""
-
-    model = Game
-    template_name = "games/favorites_list.html"
-    context_object_name = "favorite_games"
-
-    def get_queryset(self):
-        favorites_list, _ = GameList.objects.get_or_create(name="Favorites", created_by=self.request.user)
-        return favorites_list.games.all()
