@@ -1,7 +1,6 @@
 import xml.etree.ElementTree as ET
 from functools import wraps
 from random import choice
-from types import SimpleNamespace
 
 import requests
 import os
@@ -15,8 +14,8 @@ from django.core.files.storage import FileSystemStorage
 from django.db.models import Q
 from django.db.models.functions import Lower
 from django.http import HttpResponseForbidden, HttpResponseRedirect, JsonResponse
-from django.shortcuts import get_object_or_404, redirect, render, reverse
-from django.urls import reverse_lazy, reverse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse_lazy
 from django.utils import timezone
 from django.views import View
 from django.utils.decorators import method_decorator
@@ -403,8 +402,6 @@ class InteractiveFictionView(TemplateView):
         if uploaded_file:
             file_url = f"/media/{uploaded_file}" 
             context['uploaded_file_url'] = file_url
-
-        
         return context
 
 
@@ -418,7 +415,7 @@ class UploadFileView(View):
             fs = FileSystemStorage(location=upload_path)
 
             safe_filename = uploaded_file.name.replace(' ', '_')
-            filename = fs.save(safe_filename, uploaded_file)
+            #filename = fs.save(safe_filename, uploaded_file)
             
             #session path should be relative to /media as file will otherwise come from user root
             request.session['uploaded_interactive_file'] = f'interactive_uploads/{safe_filename}'
