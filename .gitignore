@@ -190,4 +190,4 @@ chigame_template/media/
 *DS_Store
 
 #Node Modules
-node_modules/
+frontend/vue/node_modules/
