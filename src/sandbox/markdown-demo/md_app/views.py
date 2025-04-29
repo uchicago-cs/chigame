@@ -18,6 +18,8 @@ Learn about advanced features and capabilities.
 def markdown_content_view(request):
     # Get the requested section from query parameters
     requested_section = request.GET.get("section", "introduction")
+    # Check if minimal UI is requested
+    is_minimal = request.GET.get("minimal", "false").lower() == "true"
 
     # Initialize markdown with our section wrapper extension
     md = markdown.Markdown(extensions=["fenced_code", SectionWrapperExtension()])
@@ -31,4 +33,7 @@ def markdown_content_view(request):
         "requested_section": requested_section,
     }
 
-    return render(request, "md_app/markdown_content.html", context=context)
+    # Choose template based on UI mode
+    template = "md_app/minimal_content.html" if is_minimal else "md_app/markdown_content.html"
+
+    return render(request, template, context=context)
