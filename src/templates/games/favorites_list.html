@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}
+  My Favorites
+{% endblock title %}
+{% block content %}
+  <div class="container mt-4">
+    <h1>My Favorite Games</h1>
+    {% if favorite_games %}
+      <ul class="list-group">
+        {% for game in favorite_games %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <a href="{% url 'game-detail' pk=game.pk %}">{{ game.name }}</a>
+            <a href="{% url 'remove-from-favorites' pk=game.pk %}"
+               class="btn btn-sm btn-outline-warning">Remove</a>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>You have no favorite games yet.</p>
+    {% endif %}
+    <a href="{% url 'game-list' %}" class="btn btn-primary mt-3">Browse Games</a>
+  </div>
+{% endblock content %}
