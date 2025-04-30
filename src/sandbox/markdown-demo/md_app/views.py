@@ -4,35 +4,6 @@ from django.shortcuts import render
 from .markdown_extensions import SectionWrapperExtension
 
 MARKDOWN_STRING = """
-# Introduction
-Welcome to our knowledge base guide. This is the introduction section.
-
-# Getting Started
-Here's how to get started with our product.
-
-# Advanced Features
-Learn about advanced features and capabilities.
-"""
-
-
-def markdown_content_view(request):
-    # Get the requested section from query parameters
-    requested_section = request.GET.get("section", "introduction")
-
-    # Initialize markdown with our section wrapper extension
-    md = markdown.Markdown(extensions=["fenced_code", SectionWrapperExtension()])
-
-    # Convert markdown to HTML
-    html_content = md.convert(MARKDOWN_STRING)
-
-    # Create context with the rendered content
-    context = {
-        "html_content": html_content,
-        "requested_section": requested_section,
-    }
-
-
-MARKDOWN_STRING = """
 # Game Guide: Basic Combat Mechanics
 
 ## Table of Contents
@@ -68,7 +39,9 @@ The combat system consists of several key elements:
 Here's how damage is calculated in the game:
 
 ```python
-def calculate_damage(base_damage, critical_chance):
+import random
+
+def calculate_damage(base_damage: float, critical_chance: float) -> float:
     if random.random() < critical_chance:
         return base_damage * 2
     return base_damage
@@ -94,6 +67,10 @@ def calculate_damage(base_damage, critical_chance):
 
 
 def markdown_content_view(request):
+    # Get the requested section from query parameters
+    requested_section = request.GET.get("section", "introduction")
+
+    # Initialize markdown with our extensions
     md = markdown.Markdown(
         extensions=[
             "fenced_code",  # For code blocks
@@ -102,12 +79,17 @@ def markdown_content_view(request):
             "nl2br",  # For converting newlines to <br> tags
             "sane_lists",  # For better list handling
             "codehilite",  # For syntax highlighting
+            SectionWrapperExtension(),
         ]
     )
-    markdown_content = {
-        "title": "Knowledge Base Markdown Sandbox",
-        "content": MARKDOWN_STRING,
+
+    # Convert markdown to HTML
+    html_content = md.convert(MARKDOWN_STRING)
+
+    # Create context with the rendered content
+    context = {
+        "html_content": html_content,
+        "requested_section": requested_section,
     }
-    context = {"markdown_content": markdown_content}
-    markdown_content["content"] = md.convert(markdown_content["content"])
+
     return render(request, "md_app/markdown_content.html", context=context)
