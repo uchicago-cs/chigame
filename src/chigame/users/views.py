@@ -114,9 +114,11 @@ def user_profile_detail_view(request, pk):
             if not is_friend:
                 curr_user = User.objects.get(pk=request.user.id)
                 other_user = profile.user
+                # fetches the most recent friendship request
                 friendship_request = FriendInvitation.objects.filter(
-                    Q(sender=curr_user, receiver=other_user) | Q(sender=other_user, receiver=curr_user)
-                ).first()
+                    Q(sender=curr_user, receiver=other_user) | Q(sender=other_user, receiver=curr_user),
+                    is_deleted=False
+                ).order_by('-timestamp').first()
         context = {"object": profile, "is_friend": is_friend, "friendship_request": friendship_request}
         return render(request, "users/userprofile_detail.html", context=context)
     except UserProfile.DoesNotExist:
@@ -132,9 +134,21 @@ def send_friend_invitation(request, pk):
         messages.error(request, "You can't send friendship invitation to yourself")
         return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
 
-    invitation, new = FriendInvitation.objects.filter(
-        Q(sender=curr_user, receiver=other_user) | Q(sender=other_user, receiver=curr_user)
-    ).get_or_create(defaults={"sender": curr_user, "receiver": other_user})
+    # fetch any latest pending friend requests
+    invitation = FriendInvitation.objects.filter(
+        Q(sender=curr_user, receiver=other_user) | Q(sender=other_user, receiver=curr_user), is_deleted=False
+                ).order_by('-timestamp').first()
+    
+    new = False;
+
+    if invitation is None:
+        invitation = FriendInvitation.objects.create(
+        sender=curr_user,
+        receiver=other_user)
+        new = True
+    else:
+        new = False
+
     if new:
         messages.success(request, "Friendship invitation sent successfully.")
         notification = Notification.objects.create(
