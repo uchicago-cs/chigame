@@ -31,7 +31,7 @@ def markdown_content_view(request):
         "requested_section": requested_section,
     }
 
-=======
+
 MARKDOWN_STRING = """
 # Game Guide: Basic Combat Mechanics
 
