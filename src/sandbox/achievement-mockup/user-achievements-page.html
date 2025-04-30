@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="zh-hans">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="x-ua-compatible" content="ie=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ChiGame - User Achievements</title>
+    <meta name="description" content="ChiGame User Achievements" />
+    <meta name="author" content="University of Chicago" />
+    <link rel="icon" href="/static/images/favicons/chigame.ico" />
+
+    <!-- Latest compiled and minified Bootstrap CSS -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/css/bootstrap.min.css"
+      integrity="sha512-SbiR/eusphKoMVVXysTKG/7VseWii+Y3FdHrt0EpKgpToZeemhqHeZeLWLhJutz/2ut2Vw1uQEj2MbRF+TVBUA=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <!-- Bootstrap CSS Icons-->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css"
+    />
+
+    <style>
+      :root {
+        --bg-light: #f8f9fa;
+        --text-dark: #212529;
+        --card-bg: #ffffff;
+        --header-bg: #f8f9fa;
+        --accent: #0d6efd;
+      }
+
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: var(--bg-light);
+        color: var(--text-dark);
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      .user-info {
+        display: flex;
+        align-items: center;
+        margin-bottom: 30px;
+      }
+
+      .user-avatar {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background-color: #eee;
+        margin-right: 20px;
+        overflow: hidden;
+      }
+
+      .user-stats {
+        background-color: var(--card-bg);
+        padding: 20px;
+        border-radius: 5px;
+        margin-bottom: 30px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+
+      .search-box {
+        padding: 10px;
+        margin-bottom: 20px;
+        width: 100%;
+        border: 1px solid #ced4da;
+        border-radius: 0.25rem;
+        font-size: 16px;
+      }
+
+      .games-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        margin-bottom: 30px;
+      }
+
+      .game-card {
+        background-color: var(--card-bg);
+        border-radius: 0.25rem;
+        padding: 15px;
+        width: calc(33.33% - 20px);
+        min-width: 300px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(0, 0, 0, 0.125);
+      }
+
+      .game-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 15px;
+      }
+
+      .game-icon {
+        width: 50px;
+        height: 50px;
+        margin-right: 15px;
+        border-radius: 5px;
+      }
+
+      .game-title {
+        margin: 0;
+        font-size: 1.4em;
+      }
+
+      .progress-bar {
+        height: 10px;
+        background-color: #333;
+        border-radius: 5px;
+        margin: 10px 0;
+        overflow: hidden;
+      }
+
+      .progress-fill {
+        height: 100%;
+        background-color: var(--accent);
+      }
+
+      .achievements-list {
+        margin-top: 20px;
+      }
+
+      .achievement {
+        display: flex;
+        background-color: rgba(0, 0, 0, 0.03);
+        margin-bottom: 10px;
+        padding: 10px;
+        border-radius: 0.25rem;
+        position: relative;
+        border: 1px solid rgba(0, 0, 0, 0.125);
+      }
+
+      .pinned {
+        order: -1;
+        border-left: 3px solid var(--accent);
+      }
+
+      .achievement.hidden .achievement-info h4,
+      .achievement.hidden .achievement-info p {
+        color: #6c757d;
+      }
+
+      .achievement.hidden .achievement-info p.achievement-desc {
+        color: #6c757d;
+        font-style: italic;
+      }
+
+      .achievement-icon {
+        width: 50px;
+        height: 50px;
+        margin-right: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .achievement-info {
+        flex-grow: 1;
+      }
+
+      .achievement-info h4 {
+        margin: 0 0 5px 0;
+      }
+
+      .achievement-info p {
+        margin: 0;
+        font-size: 0.9em;
+      }
+
+      .achievement-date {
+        font-size: 0.8em;
+        color: #aaa;
+      }
+
+      .achievement-percent {
+        position: absolute;
+        right: 10px;
+        top: 10px;
+        font-size: 0.8em;
+        background-color: rgba(0, 0, 0, 0.05);
+        padding: 3px 8px;
+        border-radius: 10px;
+        border: 1px solid rgba(0, 0, 0, 0.125);
+      }
+
+      .achievement.common .achievement-icon {
+        color: var(--common-color);
+      }
+
+      .achievement.uncommon .achievement-icon {
+        color: var(--uncommon-color);
+      }
+
+      .achievement.rare .achievement-icon {
+        color: var(--rare-color);
+      }
+
+      .achievement.precious .achievement-icon {
+        color: var(--precious-color);
+      }
+      .achievement.not-unlocked .achievement-info h4,
+      .achievement.not-unlocked .achievement-info p {
+        color: #6c757d;
+      }
+
+      .not-unlocked .trophy-icon img {
+        filter: brightness(0.6); /* 60% brightness (30% darker) */
+        opacity: 0.8;
+      }
+      .toggle-button {
+        background-color: var(--accent);
+        color: white;
+        border: none;
+        padding: 8px 15px;
+        border-radius: 0.25rem;
+        cursor: pointer;
+        margin-left: 10px;
+      }
+
+      .toggle-button:hover {
+        background-color: #0a58ca;
+      }
+
+      .nav-tabs {
+        display: flex;
+        list-style: none;
+        padding: 0;
+        margin: 0 0 20px 0;
+        border-bottom: 1px solid #dee2e6;
+      }
+
+      .nav-tabs li {
+        padding: 10px 20px;
+        cursor: pointer;
+      }
+
+      .nav-tabs li.active {
+        background-color: var(--accent);
+        color: white;
+        border-radius: 0.25rem 0.25rem 0 0;
+      }
+
+      .tab-content > div {
+        display: none;
+      }
+
+      .tab-content > div.active {
+        display: block;
+      }
+
+      .pin-button {
+        background-color: transparent;
+        border: none;
+        color: #888;
+        cursor: pointer;
+        margin-left: 10px;
+      }
+
+      .pin-button:hover {
+        color: var(--accent);
+      }
+
+      /* Trophy icons based on rarity */
+      .trophy-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+      }
+
+      .trophy-icon img {
+        width: 32px;
+        height: 32px;
+        object-fit: contain;
+      }
+      .achievement.hidden .trophy-icon img {
+        filter: brightness(0); /* 0% brightness (completely black) */
+        opacity: 0.5;
+      }
+
+      .achievement.hidden .achievement-info h4,
+      .achievement.hidden .achievement-info p {
+        color: #6c757d;
+      }
+
+      .achievement.hidden .achievement-info p.achievement-desc {
+        color: #6c757d;
+        font-style: italic;
+      }
+
+      /* Responsive styles */
+      @media (max-width: 768px) {
+        .game-card {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="user-stats">
+        <h3>Achievement Progress</h3>
+        <p>Overall: 23 achievements unlocked out of 35</p>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width: 65.7%"></div>
+        </div>
+      </div>
+
+      <input
+        type="text"
+        id="searchBox"
+        class="search-box"
+        placeholder="Search games or achievements..."
+      />
+
+      <ul class="nav-tabs">
+        <li class="active" data-tab="all-games">All Games</li>
+        <li data-tab="pinned-achievements">Pinned Achievements</li>
+      </ul>
+      <div class="tab-content">
+        <!-- First tab content -->
+        <div id="all-games" class="active">
+          <div class="games-list">
+            <!-- Checkers Game Card -->
+            <div class="game-card">
+              <div class="game-header">
+                <div>
+                  <h3 class="game-title">Checkers</h3>
+                  <p>15 of 20 achievements unlocked</p>
+                  <div class="progress-bar">
+                    <div class="progress-fill" style="width: 75%"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="achievements-list">
+                <div class="achievement common pinned">
+                  <div class="achievement-icon">
+                    <span class="trophy-icon"
+                      ><img src="common.png" alt="Common Achievement"
+                    /></span>
+                  </div>
+                  <div class="achievement-info">
+                    <h4>First Jump</h4>
+                    <p class="achievement-desc">Capture your first piece</p>
+                    <p class="achievement-date">Unlocked on March 10, 2025</p>
+                  </div>
+                  <span class="achievement-percent">95% of players</span>
+                  <button class="pin-button">📌</button>
+                </div>
+
+                <div class="achievement uncommon">
+                  <div class="achievement-icon">
+                    <span class="trophy-icon"
+                      ><img src="uncommon.png" alt="Uncommon Achievement"
+                    /></span>
+                  </div>
+                  <div class="achievement-info">
+                    <h4>King Me</h4>
+                    <p class="achievement-desc">Get a piece to the opposite end of the board</p>
+                    <p class="achievement-date">Unlocked on March 12, 2025</p>
+                  </div>
+                  <span class="achievement-percent">60% of players</span>
+                  <button class="pin-button">📌</button>
+                </div>
+
+                <div class="achievement rare - not-unlocked">
+                  <div class="achievement-icon">
+                    <span class="trophy-icon"><img src="rare.png" alt="Rare Achievement" /></span>
+                  </div>
+                  <div class="achievement-info">
+                    <h4>Triple Jump</h4>
+                    <p class="achievement-desc">Capture 3 pieces in a single move</p>
+                    <p class="achievement-date">Not yet unlocked</p>
+                  </div>
+                  <span class="achievement-percent">12% of players</span>
+                  <button class="pin-button">📌</button>
+                </div>
+
+                <div class="achievement precious">
+                  <div class="achievement-icon">
+                    <span class="trophy-icon"
+                      ><img src="precious.png" alt="Precious Achievement"
+                    /></span>
+                  </div>
+                  <div class="achievement-info">
+                    <h4>Completionist</h4>
+                    <p class="achievement-desc">Complete all challenges in the game</p>
+                    <p class="achievement-date">Unlocked on April 5, 2025</p>
+                  </div>
+                  <span class="achievement-percent">2% of players</span>
+                  <button class="pin-button">📌</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Word Game Card -->
+            <div class="game-card">
+              <div class="game-header">
+                <div>
+                  <h3 class="game-title">Word Game</h3>
+                  <p>8 of 15 achievements unlocked</p>
+                  <div class="progress-bar">
+                    <div class="progress-fill" style="width: 53.3%"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="achievements-list">
+                <div class="achievement common">
+                  <div class="achievement-icon">
+                    <span class="trophy-icon"
+                      ><img src="common.png" alt="Common Achievement"
+                    /></span>
+                  </div>
+                  <div class="achievement-info">
+                    <h4>First Word</h4>
+                    <p class="achievement-desc">Complete your first word</p>
+                    <p class="achievement-date">Unlocked on February 3, 2025</p>
+                  </div>
+                  <span class="achievement-percent">98% of players</span>
+                  <button class="pin-button">📌</button>
+                </div>
+
+                <div class="achievement uncommon">
+                  <div class="achievement-icon">
+                    <span class="trophy-icon"
+                      ><img src="uncommon.png" alt="Uncommon Achievement"
+                    /></span>
+                  </div>
+                  <div class="achievement-info">
+                    <h4>Wordsmith</h4>
+                    <p class="achievement-desc">Create a word with more than 8 letters</p>
+                    <p class="achievement-date">Unlocked on February 10, 2025</p>
+                  </div>
+                  <span class="achievement-percent">45% of players</span>
+                  <button class="pin-button">📌</button>
+                </div>
+
+                <div class="achievement rare">
+                  <div class="achievement-icon">
+                    <span class="trophy-icon"><img src="rare.png" alt="Rare Achievement" /></span>
+                  </div>
+                  <div class="achievement-info">
+                    <h4>Triple Score</h4>
+                    <p class="achievement-desc">Get a triple word score</p>
+                    <p class="achievement-date">Unlocked on March 20, 2025</p>
+                  </div>
+                  <span class="achievement-percent">25% of players</span>
+                  <button class="pin-button">📌</button>
+                </div>
+
+                <div class="achievement precious - not-unlocked">
+                  <div class="achievement-icon">
+                    <span class="trophy-icon"
+                      ><img src="precious.png" alt="Precious Achievement"
+                    /></span>
+                  </div>
+                  <div class="achievement-info">
+                    <h4>Lexicographer</h4>
+                    <p class="achievement-desc">
+                      Use all 26 letters of the alphabet in a single game
+                    </p>
+                    <p class="achievement-date">Not yet unlocked</p>
+                  </div>
+                  <span class="achievement-percent">1% of players</span>
+                  <button class="pin-button">📌</button>
+                </div>
+                <div class="achievement uncommon hidden">
+                  <div class="achievement-icon">
+                    <span class="trophy-icon"
+                      ><img src="uncommon.png" alt="Hidden Achievement"
+                    /></span>
+                  </div>
+                  <div class="achievement-info">
+                    <h4>???</h4>
+                    <p class="achievement-desc">??? Secret word challenge</p>
+                    <p class="achievement-date">Not yet unlocked</p>
+                  </div>
+                  <span class="achievement-percent">5% of players</span>
+                  <button class="pin-button">📌</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Second tab content -->
+        <div id="pinned-achievements">
+          <h3>Pinned Achievements</h3>
+          <div class="achievements-list">
+            <div class="achievement common">
+              <div class="achievement-icon">
+                <span class="trophy-icon"><img src="common.png" alt="Common Achievement" /></span>
+              </div>
+              <div class="achievement-info">
+                <h4>First Jump</h4>
+                <p class="achievement-desc">Capture your first piece in Checkers</p>
+                <p class="achievement-date">Unlocked on March 10, 2025</p>
+              </div>
+              <span class="achievement-percent">95% of players</span>
+              <button class="pin-button">📌</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      // Basic functionality for demo purposes
+      document.getElementById('searchBox').addEventListener('input', function () {
+        const searchText = this.value.toLowerCase();
+        const gameCards = document.querySelectorAll('.game-card');
+
+        gameCards.forEach((card) => {
+          const gameTitle = card.querySelector('.game-title').textContent.toLowerCase();
+          const achievements = Array.from(card.querySelectorAll('.achievement-info h4')).map(
+            (el) => el.textContent.toLowerCase()
+          );
+
+          if (gameTitle.includes(searchText) || achievements.some((a) => a.includes(searchText))) {
+            card.style.display = 'block';
+          } else {
+            card.style.display = 'none';
+          }
+        });
+      });
+
+      // Tab switching
+      const tabs = document.querySelectorAll('.nav-tabs li');
+      const tabContents = document.querySelectorAll('.tab-content > div');
+
+      tabs.forEach((tab) => {
+        tab.addEventListener('click', () => {
+          const tabId = tab.getAttribute('data-tab');
+
+          // Deactivate all tabs
+          tabs.forEach((t) => t.classList.remove('active'));
+          tabContents.forEach((c) => c.classList.remove('active'));
+
+          // Activate clicked tab
+          tab.classList.add('active');
+          document.getElementById(tabId).classList.add('active');
+        });
+      });
+
+      // Pin achievement functionality (simplified for demo)
+      const pinButtons = document.querySelectorAll('.pin-button');
+
+      pinButtons.forEach((button) => {
+        button.addEventListener('click', function () {
+          const achievement = this.closest('.achievement');
+          achievement.classList.toggle('pinned');
+
+          // This would normally update the pinned achievements tab as well
+          // but for demo purposes we're keeping it simple
+        });
+      });
+    </script>
+  </body>
+</html>
