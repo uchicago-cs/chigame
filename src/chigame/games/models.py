@@ -48,6 +48,9 @@ class Game(models.Model):
 
     # ================ OTHER ================
     BGG_id = models.PositiveIntegerField(null=True, blank=True)  # BoardGameGeek ID
+    published_guide_id = models.ForeignKey(
+        "knowledge_base.Guide", on_delete=models.CASCADE, null=True, blank=True
+    )  # Knowledge Base Guide ID
 
     # ================ VALIDATON ================
     def clean(self):
