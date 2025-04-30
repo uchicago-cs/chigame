@@ -109,6 +109,7 @@ LOCAL_APPS = [
     # Additional apps go here
     "chigame.api",
     "chigame.forums.base",
+    "chigame.knowledge_base",
     # Overridden django-machina apps
     "chigame.forums.forum_conversation",
 ]
