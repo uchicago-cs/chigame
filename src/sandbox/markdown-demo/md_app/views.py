@@ -8,6 +8,10 @@ MARKDOWN_STRING = """
 # Introduction
 Welcome to our knowledge base guide. This is the introduction section.
 
+This is the first example of a <a href="https://google.com">link</a>.
+
+This is the second example of a [link](https://google.com).
+
 # Getting Started
 Here's how to get started with our product.
 

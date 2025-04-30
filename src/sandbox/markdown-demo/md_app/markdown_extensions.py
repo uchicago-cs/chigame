@@ -2,6 +2,7 @@ import re
 from xml.etree import ElementTree
 
 from markdown.extensions import Extension
+from markdown.postprocessors import Postprocessor
 from markdown.preprocessors import Preprocessor
 from markdown.treeprocessors import Treeprocessor
 
@@ -73,18 +74,39 @@ class SectionWrapperExtension(Extension):
 class HtmlSanitizerPreprocessor(Preprocessor):
     """Preprocessor that sanitizes HTML tags before they are re-injected."""
 
+    def sanitize_html(self, tag):
+        text = re.sub(r"<[^>]+>", "", tag)
+        return f"<span class='render-warning'>{text}</span>"
+
     def run(self, lines):
-        # Get the raw HTML tags from the markdown instance
-        raw_html_tags = self.markdown.htmlStash.rawHtmlBlocks
+        # (1) Grab the raw HTML tags from the markdown instance
+        raw_html_tags = self.md.htmlStash.rawHtmlBlocks
 
         # Sanitize each HTML tag
         for i, html in enumerate(raw_html_tags):
             # Replace the original HTML with a sanitized version
             # For now, we'll just strip all HTML tags
             # Later we can add more sophisticated sanitization
-            raw_html_tags[i] = re.sub(r"<[^>]+>", "", html)
+            raw_html_tags[i] = self.sanitize_html(raw_html_tags[i])
 
         return lines
+
+
+class LinkSanitizerPostprocessor(Postprocessor):
+    def run(self, text):
+        # There are two types of links that will be rendered by our feature. We
+        # want to ensure that we sanitize both of them
+        # First, <a href="..."> tags
+        html_link_pattern = re.compile(r'<a\s+[^>]*href=[\'"][^\'"]+[\'"][^>]*>.*?</a>', re.IGNORECASE)
+        # Additionally, [link text](link) markdown elements
+        markdown_link_pattern = re.compile(r"\[.*?\]\([^\)]+\)")
+
+        # Then we can replace the HTML text as it exists in the parser
+        # text = unmatched_tags.sub("<span class='render-warning'>Unmatched Tag</span>", text)
+        text = html_link_pattern.sub("<span class='render-warning'>Hard-coded link</span>", text)
+        text = markdown_link_pattern.sub("<span class='render-warning'>Hard-coded link</span>", text)
+
+        return text
 
 
 class HtmlSanitizerExtension(Extension):
@@ -93,3 +115,4 @@ class HtmlSanitizerExtension(Extension):
     def extendMarkdown(self, md):
         # Register our preprocessor with high priority to ensure it runs before other processors
         md.preprocessors.register(HtmlSanitizerPreprocessor(md), "html_sanitizer", 0)
+        md.postprocessors.register(LinkSanitizerPostprocessor(md), "html_sanitizer", 0)
