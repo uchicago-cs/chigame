@@ -66,6 +66,8 @@ WSGI_APPLICATION = "config.wsgi.application"
 # APPS
 # ------------------------------------------------------------------------------
 DJANGO_APPS = [
+    "daphne", # Dapnhe must be listed before django.contrib.staticfiles
+    "channels",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
@@ -101,8 +103,6 @@ THIRD_PARTY_APPS = [
     "machina.apps.forum_tracking",
     "machina.apps.forum_member",
     "machina.apps.forum_permission",
-    "daphne",
-    "channels",
 ]
 
 LOCAL_APPS = [
