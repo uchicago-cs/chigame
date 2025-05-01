@@ -387,3 +387,12 @@ MACHINA_DEFAULT_AUTHENTICATED_USER_FORUM_PERMISSIONS = [
     "can_vote_in_polls",
     "can_download_file",
 ]
+
+# CHANNELS
+# ------------------------------------------------------------------------------
+# https://channels.readthedocs.io/en/stable/topics/channel_layers.html
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer"
+    }
+}
