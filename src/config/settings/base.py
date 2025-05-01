@@ -68,7 +68,7 @@ ASGI_APPLICATION = "config.asgi.application"
 # APPS
 # ------------------------------------------------------------------------------
 DJANGO_APPS = [
-    "daphne",  # Dapnhe must be listed before django.contrib.staticfiles
+    "daphne",  # Daphne must be listed before django.contrib.staticfiles
     "channels",
     "django.contrib.auth",
     "django.contrib.contenttypes",
