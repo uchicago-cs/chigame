@@ -7,7 +7,7 @@
   {% endif %}
   {% if user.is_authenticated %}
     {{ block.super }}
-  {% else % }
+  {% else %}
     <p>Not logged in</p>
   {% endif %}
 {% endblock content %}
