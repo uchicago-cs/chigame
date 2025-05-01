@@ -23,8 +23,10 @@ from chigame.users.models import User
 
 from .filters import LobbyFilter
 from .forms import GameForm, LobbyForm, ReviewForm
+
 from .models import Chat, Game, Lobby, Match, Player, Review, Tournament
 from .simulation_utils import TournamentSimulator, run_complete_tournament_simulation
+
 from .tables import LobbyTable
 
 
@@ -60,6 +62,10 @@ class GameDetailView(LoginRequiredMixin, FormMixin, DetailView):
         context = super().get_context_data(**kwargs)
         context["form"] = self.get_form()
         context["reviews"] = Review.objects.filter(game=self.object)
+        # Include the user's default 'Favorites' GameList for add/remove buttons
+        if self.request.user.is_authenticated:
+            favorites_list, _ = GameList.objects.get_or_create(name="Favorites", created_by=self.request.user)
+            context["favorites_list"] = favorites_list
         return context
 
     def post(self, request, *args, **kwargs):
@@ -1054,3 +1060,36 @@ class ReviewListView(ListView):
         game_pk = self.kwargs["pk"]
         context["game"] = get_object_or_404(Game, pk=game_pk)
         return context
+
+
+@login_required
+def add_to_favorites(request, pk):
+    """Add a game to the current user's 'Favorites' list."""
+    game = get_object_or_404(Game, pk=pk)
+    favorites_list, _ = GameList.objects.get_or_create(name="Favorites", created_by=request.user)
+    favorites_list.games.add(game)
+    return redirect("favorite-list")
+
+
+@login_required
+def remove_from_favorites(request, pk):
+    """Remove a game from the current user's 'Favorites' list."""
+    game = get_object_or_404(Game, pk=pk)
+    try:
+        favorites_list = GameList.objects.get(name="Favorites", created_by=request.user)
+        favorites_list.games.remove(game)
+    except GameList.DoesNotExist:
+        pass
+    return redirect("favorite-list")
+
+
+class FavoriteListView(LoginRequiredMixin, ListView):
+    """Display the current user's favorite games."""
+
+    model = Game
+    template_name = "games/favorites_list.html"
+    context_object_name = "favorite_games"
+
+    def get_queryset(self):
+        favorites_list, _ = GameList.objects.get_or_create(name="Favorites", created_by=self.request.user)
+        return favorites_list.games.all()
