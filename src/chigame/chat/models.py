@@ -1,7 +1,7 @@
 from django.db import models
-from django.utils.text import slugify
 
 from chigame.users.models import User
+
 
 class LiveChat(models.Model):
     """
