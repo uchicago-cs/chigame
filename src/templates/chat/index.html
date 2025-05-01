@@ -4,6 +4,11 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Chat</title>
+    <style>
+      .chat__item__container {
+        font-size: 20px;
+      }
+    </style>
   </head>
   <body>
     <h1>Hello , Welcome to my chat site ! {{ request.user }}</h1>
@@ -11,11 +16,7 @@
     {% if request.user.is_authenticated %} Logout the chat Page
     <a href="{% url 'logout-user' %}">Logout</a>
     {% endif %}
-    <div
-      class="chat__item__container"
-      id="id_chat_item_container"
-      style="font-size: 20px"
-    >
+    <div class="chat__item__container" id="id_chat_item_container">
       <br />
       <label for="id_message_send_input">Message:</label>
       <input
