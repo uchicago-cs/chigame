@@ -149,8 +149,6 @@ def send_friend_invitation(request, pk):
     if invitation is None:
         invitation = FriendInvitation.objects.create(sender=curr_user, receiver=other_user)
         new = True
-    else:
-        new = False
     if new:
         messages.success(request, "Friendship invitation sent successfully.")
         notification = Notification.objects.create(
