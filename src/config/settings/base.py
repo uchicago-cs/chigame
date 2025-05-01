@@ -101,6 +101,8 @@ THIRD_PARTY_APPS = [
     "machina.apps.forum_tracking",
     "machina.apps.forum_member",
     "machina.apps.forum_permission",
+    "daphne",
+    "channels",
 ]
 
 LOCAL_APPS = [
