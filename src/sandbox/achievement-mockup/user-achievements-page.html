@@ -214,7 +214,8 @@
       }
 
       .not-unlocked .trophy-icon img {
-        filter: brightness(0.6); /* 60% brightness (30% darker) */
+        filter: brightness(0.6);
+        /* 60% brightness (30% darker) */
         opacity: 0.8;
       }
       .toggle-button {
@@ -285,7 +286,8 @@
         object-fit: contain;
       }
       .achievement.hidden .trophy-icon img {
-        filter: brightness(0); /* 0% brightness (completely black) */
+        filter: brightness(0);
+        /* 0% brightness (completely black) */
         opacity: 0.5;
       }
 
@@ -348,8 +350,8 @@
                 <div class="achievement common pinned">
                   <div class="achievement-icon">
                     <span class="trophy-icon"
-                      ><img src="common.png" alt="Common Achievement"
-                    /></span>
+                      ><img src="common.png" alt="Common Achievement" />
+                    </span>
                   </div>
                   <div class="achievement-info">
                     <h4>First Jump</h4>
@@ -363,8 +365,8 @@
                 <div class="achievement uncommon">
                   <div class="achievement-icon">
                     <span class="trophy-icon"
-                      ><img src="uncommon.png" alt="Uncommon Achievement"
-                    /></span>
+                      ><img src="uncommon.png" alt="Uncommon Achievement" />
+                    </span>
                   </div>
                   <div class="achievement-info">
                     <h4>King Me</h4>
@@ -377,7 +379,9 @@
 
                 <div class="achievement rare - not-unlocked">
                   <div class="achievement-icon">
-                    <span class="trophy-icon"><img src="rare.png" alt="Rare Achievement" /></span>
+                    <span class="trophy-icon">
+                      <img src="rare.png" alt="Rare Achievement" />
+                    </span>
                   </div>
                   <div class="achievement-info">
                     <h4>Triple Jump</h4>
@@ -390,9 +394,9 @@
 
                 <div class="achievement precious">
                   <div class="achievement-icon">
-                    <span class="trophy-icon"
-                      ><img src="precious.png" alt="Precious Achievement"
-                    /></span>
+                    <span class="trophy-icon">
+                      <img src="precious.png" alt="Precious Achievement" />
+                    </span>
                   </div>
                   <div class="achievement-info">
                     <h4>Completionist</h4>
@@ -421,8 +425,8 @@
                 <div class="achievement common">
                   <div class="achievement-icon">
                     <span class="trophy-icon"
-                      ><img src="common.png" alt="Common Achievement"
-                    /></span>
+                      ><img src="common.png" alt="Common Achievement" />
+                    </span>
                   </div>
                   <div class="achievement-info">
                     <h4>First Word</h4>
@@ -436,8 +440,8 @@
                 <div class="achievement uncommon">
                   <div class="achievement-icon">
                     <span class="trophy-icon"
-                      ><img src="uncommon.png" alt="Uncommon Achievement"
-                    /></span>
+                      ><img src="uncommon.png" alt="Uncommon Achievement" />
+                    </span>
                   </div>
                   <div class="achievement-info">
                     <h4>Wordsmith</h4>
@@ -450,7 +454,9 @@
 
                 <div class="achievement rare">
                   <div class="achievement-icon">
-                    <span class="trophy-icon"><img src="rare.png" alt="Rare Achievement" /></span>
+                    <span class="trophy-icon">
+                      <img src="rare.png" alt="Rare Achievement" />
+                    </span>
                   </div>
                   <div class="achievement-info">
                     <h4>Triple Score</h4>
@@ -464,14 +470,12 @@
                 <div class="achievement precious - not-unlocked">
                   <div class="achievement-icon">
                     <span class="trophy-icon"
-                      ><img src="precious.png" alt="Precious Achievement"
-                    /></span>
+                      ><img src="precious.png" alt="Precious Achievement" />
+                    </span>
                   </div>
                   <div class="achievement-info">
                     <h4>Lexicographer</h4>
-                    <p class="achievement-desc">
-                      Use all 26 letters of the alphabet in a single game
-                    </p>
+                    <p class="achievement-desc">Use all 26 letters of the alphabet in a single game</p>
                     <p class="achievement-date">Not yet unlocked</p>
                   </div>
                   <span class="achievement-percent">1% of players</span>
@@ -479,9 +483,9 @@
                 </div>
                 <div class="achievement uncommon hidden">
                   <div class="achievement-icon">
-                    <span class="trophy-icon"
-                      ><img src="uncommon.png" alt="Hidden Achievement"
-                    /></span>
+                    <span class="trophy-icon">
+                      <img src="uncommon.png" alt="Hidden Achievement"/>
+                    </span>
                   </div>
                   <div class="achievement-info">
                     <h4>???</h4>
@@ -502,7 +506,9 @@
           <div class="achievements-list">
             <div class="achievement common">
               <div class="achievement-icon">
-                <span class="trophy-icon"><img src="common.png" alt="Common Achievement" /></span>
+                <span class="trophy-icon">
+                  <img src="common.png" alt="Common Achievement" />
+                </span>
               </div>
               <div class="achievement-info">
                 <h4>First Jump</h4>
@@ -518,7 +524,7 @@
     </div>
     <script>
       // Basic functionality for demo purposes
-      document.getElementById('searchBox').addEventListener('input', function () {
+      document.getElementById('searchBox').addEventListener('input', function() {
         const searchText = this.value.toLowerCase();
         const gameCards = document.querySelectorAll('.game-card');
 
@@ -558,7 +564,7 @@
       const pinButtons = document.querySelectorAll('.pin-button');
 
       pinButtons.forEach((button) => {
-        button.addEventListener('click', function () {
+        button.addEventListener('click', function() {
           const achievement = this.closest('.achievement');
           achievement.classList.toggle('pinned');
 
