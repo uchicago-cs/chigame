@@ -6,7 +6,7 @@
     <title>Chat</title>
   </head>
   <body>
-    <h1>Hello , Welcome to my chat site ! {{request.user}}</h1>
+    <h1>Hello , Welcome to my chat site ! {{ request.user }}</h1>
     <br />
     {% if request.user.is_authenticated %} Logout the chat Page
     <a href="{% url 'logout-user' %}">Logout</a>
@@ -17,7 +17,12 @@
       style="font-size: 20px"
     >
       <br />
-      <input type="text" id="id_message_send_input" />
+      <label for="id_message_send_input">Message:</label>
+      <input
+        type="text"
+        id="id_message_send_input"
+        placeholder="Type a message"
+      />
       <button type="submit" id="id_message_send_button">Send Message</button>
       <br />
       <br />
