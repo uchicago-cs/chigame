@@ -68,7 +68,7 @@ ASGI_APPLICATION = "config.asgi.application"
 # APPS
 # ------------------------------------------------------------------------------
 DJANGO_APPS = [
-    "daphne", # Dapnhe must be listed before django.contrib.staticfiles
+    "daphne",  # Dapnhe must be listed before django.contrib.staticfiles
     "channels",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -391,8 +391,4 @@ MACHINA_DEFAULT_AUTHENTICATED_USER_FORUM_PERMISSIONS = [
 # CHANNELS
 # ------------------------------------------------------------------------------
 # https://channels.readthedocs.io/en/stable/topics/channel_layers.html
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer"
-    }
-}
+CHANNEL_LAYERS = {"default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}}
