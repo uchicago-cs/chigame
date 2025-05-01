@@ -7,22 +7,16 @@
     <title>ChiGame - User Achievements</title>
     <meta name="description" content="ChiGame User Achievements" />
     <meta name="author" content="University of Chicago" />
-    <link rel="icon" href="/static/images/favicons/chigame.ico" />
-
+    <link rel="icon" href="{% static 'images/favicons/chigame.ico' %}" />
     <!-- Latest compiled and minified Bootstrap CSS -->
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/css/bootstrap.min.css"
-      integrity="sha512-SbiR/eusphKoMVVXysTKG/7VseWii+Y3FdHrt0EpKgpToZeemhqHeZeLWLhJutz/2ut2Vw1uQEj2MbRF+TVBUA=="
-      crossorigin="anonymous"
-      referrerpolicy="no-referrer"
-    />
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/css/bootstrap.min.css"
+          integrity="sha512-SbiR/eusphKoMVVXysTKG/7VseWii+Y3FdHrt0EpKgpToZeemhqHeZeLWLhJutz/2ut2Vw1uQEj2MbRF+TVBUA=="
+          crossorigin="anonymous"
+          referrerpolicy="no-referrer" />
     <!-- Bootstrap CSS Icons-->
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css"
-    />
-
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css" />
     <style>
       :root {
         --bg-light: #f8f9fa;
@@ -208,6 +202,7 @@
       .achievement.precious .achievement-icon {
         color: var(--precious-color);
       }
+
       .achievement.not-unlocked .achievement-info h4,
       .achievement.not-unlocked .achievement-info p {
         color: #6c757d;
@@ -218,6 +213,7 @@
         /* 60% brightness (30% darker) */
         opacity: 0.8;
       }
+
       .toggle-button {
         background-color: var(--accent);
         color: white;
@@ -251,11 +247,11 @@
         border-radius: 0.25rem 0.25rem 0 0;
       }
 
-      .tab-content > div {
+      .tab-content>div {
         display: none;
       }
 
-      .tab-content > div.active {
+      .tab-content>div.active {
         display: block;
       }
 
@@ -285,6 +281,7 @@
         height: 32px;
         object-fit: contain;
       }
+
       .achievement.hidden .trophy-icon img {
         filter: brightness(0);
         /* 0% brightness (completely black) */
@@ -315,15 +312,13 @@
         <h3>Achievement Progress</h3>
         <p>Overall: 23 achievements unlocked out of 35</p>
         <div class="progress-bar">
-          <div class="progress-fill" style="width: 65.7%"></div>
+          <div class="progress-fill" data-progress="65.7"></div>
         </div>
       </div>
-
       <input type="text"
-        id="searchBox"
-        class="search-box"
-        placeholder="Search games or achievements..." />
-
+             id="searchBox"
+             class="search-box"
+             placeholder="Search games or achievements..." />
       <ul class="nav-tabs">
         <li class="active" data-tab="all-games">All Games</li>
         <li data-tab="pinned-achievements">Pinned Achievements</li>
@@ -339,11 +334,10 @@
                   <h3 class="game-title">Checkers</h3>
                   <p>15 of 20 achievements unlocked</p>
                   <div class="progress-bar">
-                    <div class="progress-fill" style="width: 75%"></div>
+                    <div class="progress-fill" data-progress="75"></div>
                   </div>
                 </div>
               </div>
-
               <div class="achievements-list">
                 <div class="achievement common pinned">
                   <div class="achievement-icon">
@@ -359,7 +353,6 @@
                   <span class="achievement-percent">95% of players</span>
                   <button class="pin-button">📌</button>
                 </div>
-
                 <div class="achievement uncommon">
                   <div class="achievement-icon">
                     <span class="trophy-icon">
@@ -374,7 +367,6 @@
                   <span class="achievement-percent">60% of players</span>
                   <button class="pin-button">📌</button>
                 </div>
-
                 <div class="achievement rare - not-unlocked">
                   <div class="achievement-icon">
                     <span class="trophy-icon">
@@ -389,7 +381,6 @@
                   <span class="achievement-percent">12% of players</span>
                   <button class="pin-button">📌</button>
                 </div>
-
                 <div class="achievement precious">
                   <div class="achievement-icon">
                     <span class="trophy-icon">
@@ -406,7 +397,6 @@
                 </div>
               </div>
             </div>
-
             <!-- Word Game Card -->
             <div class="game-card">
               <div class="game-header">
@@ -414,11 +404,10 @@
                   <h3 class="game-title">Word Game</h3>
                   <p>8 of 15 achievements unlocked</p>
                   <div class="progress-bar">
-                    <div class="progress-fill" style="width: 53.3%"></div>
+                    <div class="progress-fill" data-progress="53.3"></div>
                   </div>
                 </div>
               </div>
-
               <div class="achievements-list">
                 <div class="achievement common">
                   <div class="achievement-icon">
@@ -434,7 +423,6 @@
                   <span class="achievement-percent">98% of players</span>
                   <button class="pin-button">📌</button>
                 </div>
-
                 <div class="achievement uncommon">
                   <div class="achievement-icon">
                     <span class="trophy-icon">
@@ -449,7 +437,6 @@
                   <span class="achievement-percent">45% of players</span>
                   <button class="pin-button">📌</button>
                 </div>
-
                 <div class="achievement rare">
                   <div class="achievement-icon">
                     <span class="trophy-icon">
@@ -464,7 +451,6 @@
                   <span class="achievement-percent">25% of players</span>
                   <button class="pin-button">📌</button>
                 </div>
-
                 <div class="achievement precious - not-unlocked">
                   <div class="achievement-icon">
                     <span class="trophy-icon">
@@ -497,7 +483,6 @@
             </div>
           </div>
         </div>
-
         <!-- Second tab content -->
         <div id="pinned-achievements">
           <h3>Pinned Achievements</h3>
@@ -568,6 +553,13 @@
 
           // This would normally update the pinned achievements tab as well
           // but for demo purposes we're keeping it simple
+        });
+        document.addEventListener('DOMContentLoaded', function() {
+          const progressElements = document.querySelectorAll('[data-progress]');
+          progressElements.forEach(element => {
+            const progressValue = element.getAttribute('data-progress');
+            element.style.width = progressValue + '%';
+          });
         });
       });
     </script>
