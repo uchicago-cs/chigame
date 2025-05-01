@@ -11,7 +11,7 @@
     </style>
   </head>
   <body>
-    <h1>Hello , Welcome to my chat site ! {{ request.user }}</h1>
+    <h1>Hello, Welcome to my chat site ! {{ request.user }}</h1>
     <br />
     {% if request.user.is_authenticated %}
       Logout the chat Page
@@ -26,7 +26,8 @@
       <br />
     </div>
     <script>
-      const chatSocket = new WebSocket("ws://" + window.location.host + "/");
+      const protocol = window.location.protocol === "https:" ? "wss://" : "ws://";
+      const chatSocket = new WebSocket(protocol + window.location.host + "/");
       chatSocket.onopen = function(e) {
         console.log("The connection was setup successfully !");
       };
@@ -35,7 +36,7 @@
       };
       document.querySelector("#id_message_send_input").focus();
       document.querySelector("#id_message_send_input").onkeyup = function(e) {
-        if (e.keyCode == 13) {
+        if (e.key === "Enter") {
           document.querySelector("#id_message_send_button").click();
         }
       };
