@@ -9,8 +9,16 @@ https://docs.djangoproject.com/en/4.2/howto/deployment/asgi/
 
 import os
 
+from channels.routing import ProtocolTypeRouter, URLRouter
 from django.core.asgi import get_asgi_application
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "chigame.settings")
+django_asgi_app = get_asgi_application()
 
-application = get_asgi_application()
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "chigame.settings")
+application = ProtocolTypeRouter(
+    {
+        "http": django_asgi_app,
+    }
+)
+
+ASGI_APPLICATION = "chigame.asgi.application"
