@@ -1,4 +1,4 @@
-from chat.consumers import ChatConsumer
+from chigame.chat.consumers import ChatConsumer
 from django.urls import path
 
 websocket_urlpatterns = [
