@@ -48,6 +48,9 @@ class Game(models.Model):
 
     # ================ OTHER ================
     BGG_id = models.PositiveIntegerField(null=True, blank=True)  # BoardGameGeek ID
+    published_guide_id = models.ForeignKey(
+        "knowledge_base.Guide", on_delete=models.CASCADE, null=True, blank=True
+    )  # Knowledge Base Guide ID
 
     # ================ VALIDATON ================
     def clean(self):
@@ -696,3 +699,48 @@ class Review(models.Model):
     def save(self, *args, **kwargs):
         self.full_clean()
         super().save(*args, **kwargs)
+
+
+class LiveChat(models.Model):
+    """
+    Represents a new live chat between users.
+    """
+
+    # used to identify which channel the chat is on
+    channel = models.TextField(unique=True, null=False)
+
+
+class LiveChatMessage(models.Model):
+    """
+    Represents a new message in the live chat.
+    """
+
+    live_chat_id = models.ForeignKey(LiveChat, on_delete=models.CASCADE)
+    user_id = models.ForeignKey(User, on_delete=models.CASCADE)
+    sent_at = models.DateTimeField(auto_now_add=True)
+    message_content = models.TextField(null=False)
+
+
+class LiveChatUser(models.Model):
+    """
+    Represents a user mapped to a new live chat.
+    """
+
+    user_id = models.ForeignKey(User, on_delete=models.CASCADE)
+    live_chat_id = models.ForeignKey(LiveChat, on_delete=models.CASCADE)
+
+
+class GameList(models.Model):
+    """
+    A collection of games defined by users.
+    """
+
+    name = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="game_lists")
+    games = models.ManyToManyField(Game, related_name="game_lists", blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.name} ({self.created_by})"
