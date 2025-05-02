@@ -15,8 +15,9 @@
       </div>
       <div class="game-modes">
         <div class="mode">
-          {% url "game.html" %}
-          <button class="mode-btn">Solo</button>
+          <a href="{% url 'game' %}">
+            <button class="mode-btn">Solo</button>
+          </a>
           <p>
             <strong>Mode:</strong> Explanation
           </p>
