@@ -1,44 +1,27 @@
 {% extends "base.html" %}
 
+{% load static %}
+
 {% block title %}
   Playing {{ game.name }}
 {% endblock title %}
 {% block content %}
   <h1 class="text-center mt-3">Playing {{ game.name }}</h1>
-  <div class="d-flex justify-content-center">
-    <div id="game-container"></div>
+  <link rel="stylesheet" href="{% static 'css/checkers.css' %}" />
+  <div class="main-content">
+    <div class="main-left">
+      <div id="game"></div>
+    </div>
+    <div class="main-right">
+      <h1>Game Rules</h1>
+      <button class="btn"
+              onclick="window.open('https://github.com/uchicago-cs/chigame/wiki/Adding-Games-~-Checkers-Rules', '_blank')">
+        Read More
+      </button>
+    </div>
   </div>
-  <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.js"></script>
-  <script>
-    const config = {
-      type: Phaser.AUTO,
-      width: 512,
-      height: 512,
-      backgroundColor: 'black',
-      parent: 'game-container',
-      scene: {
-        create: create
-      }
-    };
-
-    const game = new Phaser.Game(config);
-
-    function create() {
-      const graphics = this.add.graphics();
-      const tileSize = 64;
-      const rows = 8;
-      const cols = 8;
-
-      for (let row = 0; row < rows; row++) {
-        for (let col = 0; col < cols; col++) {
-          const x = col * tileSize;
-          const y = row * tileSize;
-          const isEven = (row + col) % 2 === 0;
-
-          graphics.fillStyle(isEven ? 0xFFFFFF : 0x4B7C7B, 1);
-          graphics.fillRect(x, y, tileSize, tileSize);
-        }
-      }
-    }
-  </script>
+  <!-- Load Phaser first -->
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+  <!-- Load your game script after Phaser -->
+  <script src="{% static 'js/checkers.js' %}"></script>
 {% endblock content %}
