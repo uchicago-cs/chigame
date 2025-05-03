@@ -11,6 +11,8 @@ from django.utils.translation import gettext_lazy as _
 
 from chigame.users.managers import UserManager
 
+# from chigame.games.models import Match, Tournament
+
 
 def validate_username(value):
     """
@@ -145,6 +147,20 @@ class GroupInvitation(models.Model):
 
     class Meta:
         unique_together = ["friend_group", "sender", "receiver"]
+
+
+class TournamentInvitation(models.Model):
+    """
+    An invitation to join a tournament
+    """
+
+    sender = models.ForeignKey("users.User", on_delete=models.CASCADE, related_name="tournament_invitations_sent")
+    receiver = models.ForeignKey(
+        "users.User", on_delete=models.CASCADE, related_name="tournament_invitations_received"
+    )
+    tournament = models.ForeignKey("games.Tournament", on_delete=models.CASCADE)
+    accepted = models.BooleanField(default=False)
+    timestamp = models.DateTimeField(auto_now_add=True)
 
 
 class NotificationQuerySet(models.QuerySet):
