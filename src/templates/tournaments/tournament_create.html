@@ -1,10 +1,116 @@
 {% extends "base.html" %}
 
+{% load static %}
+
 {% block content %}
-  <h1>Create Tournament</h1>
-  <form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Save</button>
-  </form>
+  <div class="container my-5">
+    <h1 class="mb-4">Create Tournament</h1>
+    <form method="post" class="needs-validation" novalidate>
+      {% csrf_token %}
+      <div class="row g-3">
+        <!-- Name and Game fields in first row -->
+        <div class="col-md-6 mb-3">
+          <label for="{{ form.name.id_for_label }}" class="form-label">Name</label>
+          {{ form.name }}
+          {% if form.name.errors %}<div class="text-danger">{{ form.name.errors }}</div>{% endif %}
+        </div>
+        <div class="col-md-6 mb-3">
+          <label for="{{ form.game.id_for_label }}" class="form-label">Game</label>
+          {{ form.game }}
+          {% if form.game.errors %}<div class="text-danger">{{ form.game.errors }}</div>{% endif %}
+        </div>
+        <!-- Registration dates with calendar dropdowns -->
+        <div class="col-md-6 mb-3">
+          <label for="id_registration_start_date" class="form-label">Registration start date</label>
+          <input type="date"
+                 name="{{ form.registration_start_date.html_name }}"
+                 id="id_registration_start_date"
+                 class="form-control"
+                 value="{{ form.registration_start_date.value|default:'' }}" />
+          {% if form.registration_start_date.errors %}
+            <div class="text-danger">{{ form.registration_start_date.errors }}</div>
+          {% endif %}
+        </div>
+        <div class="col-md-6 mb-3">
+          <label for="id_registration_end_date" class="form-label">Registration end date</label>
+          <input type="date"
+                 name="{{ form.registration_end_date.html_name }}"
+                 id="id_registration_end_date"
+                 class="form-control"
+                 value="{{ form.registration_end_date.value|default:'' }}" />
+          {% if form.registration_end_date.errors %}
+            <div class="text-danger">{{ form.registration_end_date.errors }}</div>
+          {% endif %}
+        </div>
+        <!-- Tournament dates with calendar dropdowns -->
+        <div class="col-md-6 mb-3">
+          <label for="id_tournament_start_date" class="form-label">Tournament start date</label>
+          <input type="date"
+                 name="{{ form.tournament_start_date.html_name }}"
+                 id="id_tournament_start_date"
+                 class="form-control"
+                 value="{{ form.tournament_start_date.value|default:'' }}" />
+          {% if form.tournament_start_date.errors %}
+            <div class="text-danger">{{ form.tournament_start_date.errors }}</div>
+          {% endif %}
+        </div>
+        <div class="col-md-6 mb-3">
+          <label for="id_tournament_end_date" class="form-label">Tournament end date</label>
+          <input type="date"
+                 name="{{ form.tournament_end_date.html_name }}"
+                 id="id_tournament_end_date"
+                 class="form-control"
+                 value="{{ form.tournament_end_date.value|default:'' }}" />
+          {% if form.tournament_end_date.errors %}
+            <div class="text-danger">{{ form.tournament_end_date.errors }}</div>
+          {% endif %}
+        </div>
+        <!-- Max players and number of winners -->
+        <div class="col-md-6 mb-3">
+          <label for="{{ form.max_players.id_for_label }}" class="form-label">Max players</label>
+          {{ form.max_players }}
+          {% if form.max_players.errors %}<div class="text-danger">{{ form.max_players.errors }}</div>{% endif %}
+        </div>
+        <div class="col-md-6 mb-3">
+          <label for="{{ form.num_winner.id_for_label }}" class="form-label">Number of winners</label>
+          {{ form.num_winner }}
+          {% if form.num_winner.errors %}<div class="text-danger">{{ form.num_winner.errors }}</div>{% endif %}
+        </div>
+        <!-- Text area fields -->
+        <div class="col-12 mb-3">
+          <label for="{{ form.description.id_for_label }}" class="form-label">Description</label>
+          {{ form.description }}
+          {% if form.description.errors %}<div class="text-danger">{{ form.description.errors }}</div>{% endif %}
+        </div>
+        <div class="col-12 mb-3">
+          <label for="{{ form.rules.id_for_label }}" class="form-label">Rules</label>
+          {{ form.rules }}
+          {% if form.rules.errors %}<div class="text-danger">{{ form.rules.errors }}</div>{% endif %}
+        </div>
+        <div class="col-12 mb-3">
+          <label for="{{ form.draw_rules.id_for_label }}" class="form-label">Draw rules</label>
+          {{ form.draw_rules }}
+          {% if form.draw_rules.errors %}<div class="text-danger">{{ form.draw_rules.errors }}</div>{% endif %}
+        </div>
+        <!-- Players selection -->
+        <div class="col-12 mb-3">
+          <label for="{{ form.players.id_for_label }}" class="form-label">Players</label>
+          {{ form.players }}
+          {% if form.players.errors %}<div class="text-danger">{{ form.players.errors }}</div>{% endif %}
+          <small class="text-muted">Hold Ctrl/Cmd to select multiple players</small>
+        </div>
+        <!-- Submit button -->
+        <div class="col-12 mt-4">
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </div>
+    </form>
+  </div>
+  {% block extra_css %}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+          rel="stylesheet" />
+  {% endblock extra_css %}
+  {% block extra_js %}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  {% endblock extra_js %}
 {% endblock content %}
