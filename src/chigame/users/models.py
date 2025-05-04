@@ -116,9 +116,6 @@ class FriendInvitation(models.Model):
         self.accepted = True
         self.save()
 
-    class Meta:
-        unique_together = ["sender", "receiver"]
-
 
 class Group(models.Model):
     """
