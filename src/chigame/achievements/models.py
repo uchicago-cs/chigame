@@ -46,9 +46,12 @@ class UserAchievementStat(models.Model):
     tracks a user's progress towards a progress-based achievement
     """
 
-    achievement = models.ForeignKey(Achievement, on_delete=models.CASCADE)  # links to Achievement stat_name
+    achievement = models.ForeignKey(Achievement, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     progress = models.IntegerField(null=True, blank=True)
+    date_start = models.DateTimeField(
+        null=True, blank=True
+    )  # for time-based achievements; useful for tracking streaks
     # can auto create a UserAchievment once progress reaches Achievement threshold
 
     class Meta:
