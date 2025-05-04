@@ -1,6 +1,7 @@
 """
 Base settings to build other settings files upon.
 """
+
 from pathlib import Path
 
 import environ
@@ -164,6 +165,7 @@ MIDDLEWARE = [
     "allauth.account.middleware.AccountMiddleware",
     # https://django-machina.readthedocs.io/en/latest/getting_started.html#django-settings
     "machina.apps.forum_permission.middleware.ForumPermissionMiddleware",
+    "chigame.forums.middleware.ForumAccessMiddleware",
 ]
 
 # STATIC
