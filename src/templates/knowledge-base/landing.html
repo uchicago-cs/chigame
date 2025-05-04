@@ -2,4 +2,14 @@
 
 {% block page-content %}
   <h1>Knowledge Base</h1>
+  <h1>Guide List</h1>
+  <div class="grid-container">
+    {% for guide in guides %}
+      <div class="game-card">
+        <a href="{% url 'guide-detail' guide.id %}">Guide for {{ guide.game_id }}</a>
+      </div>
+    {% empty %}
+      <p>No games found.</p>
+    {% endfor %}
+  </div>
 {% endblock page-content %}

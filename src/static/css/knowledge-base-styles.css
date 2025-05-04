@@ -6,3 +6,24 @@
 .knowledge-base .page-content {
   padding: 10px;
 }
+
+
+/* This is added for backend viewer landing page. Pls replace this when styling
+in front end. */
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  padding: 20px;
+}
+.game-card {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 12px;
+  background-color: #f9f9f9;
+  text-align: center;
+  transition: box-shadow 0.2s ease;
+}
+.game-card:hover {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
