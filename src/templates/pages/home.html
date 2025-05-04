@@ -1,1 +1,32 @@
 {% extends "base.html" %}
+
+{% load static %}
+
+{% block css %}
+  {{ block.super }}
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&display=swap"
+        rel="stylesheet" />
+  <link href="{% static 'css/homepage.css' %}" rel="stylesheet" />
+{% endblock css %}
+{% block content %}
+  <div class="hero-section">
+    <div class="hero-content">
+      <div class="hero">
+        <p class="hero-title">Welcome to</p>
+        <p class="pixeltext">Chigame.</p>
+        <p class="hero-description">Make games. Play with friends. Get competitive.</p>
+      </div>
+    </div>
+  </div>
+  <div class="side-rect left-rect"></div>
+  <div class="side-rect right-rect"></div>
+  <img class="img-fluid logo"
+       src="{% static 'images/logos/logo.png' %}"
+       alt="ChiGame Logo" />
+  <div class="auth-buttons">
+    <a href="{% url 'account_signup' %}" class="auth-button">Sign Up</a>
+    <a href="{% url 'account_login' %}" class="auth-button">Sign In</a>
+  </div>
+{% endblock content %}

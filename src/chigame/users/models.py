@@ -84,14 +84,15 @@ class UserProfile(models.Model):
 
 class FriendInvitationManager(models.Manager):
     def get_by_users(self, user1, user2, **kwargs):
-        """Gets a friend invitation given two user, each of which can be a sender
+        """Gets a friend invitation given two user, which can be a sender
         or a receiver"""
         return self.get(Q(sender=user1, receiver=user2) | Q(sender=user2, receiver=user1), **kwargs)
 
 
 class FriendInvitation(models.Model):
     """
-    An invitation from a User to another User, requesting that they become friends.
+    An invitation from a User to another User, requesting that they become
+    friends.
     """
 
     sender = models.ForeignKey(User, related_name="sent_friend_invitations", on_delete=models.CASCADE)
@@ -99,6 +100,7 @@ class FriendInvitation(models.Model):
     accepted = models.BooleanField(default=False)
     timestamp = models.DateTimeField(auto_now_add=True)
     objects = FriendInvitationManager()
+    is_deleted = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ("sender", "receiver")
@@ -116,10 +118,8 @@ class FriendInvitation(models.Model):
         self.accepted = True
         self.save()
 
-    def delete_invitation(self):
-        """
-        Delete a friend invitation.
-        """
+    # override default delete
+    def delete(self):
         self.is_deleted = True
         self.save()
 
@@ -132,6 +132,7 @@ class Group(models.Model):
     name = models.TextField()
     members = models.ManyToManyField(User)
     created_by = models.ForeignKey(User, related_name="created_groups", on_delete=models.CASCADE)
+
     date_created = models.DateTimeField(auto_now_add=True)
 
 
@@ -226,6 +227,7 @@ class Notification(models.Model):
     UPCOMING_MATCH = 3
     MATCH_PROPOSAL = 4
     GROUP_INVITATION = 5
+    ACHIEVEMENT = 6
 
     NOTIFICATION_TYPES = (
         (FRIEND_REQUEST, "FRIEND_REQUEST"),
@@ -233,6 +235,7 @@ class Notification(models.Model):
         (UPCOMING_MATCH, "UPCOMING_MATCH"),
         (MATCH_PROPOSAL, "MATCH_PROPOSAL"),
         (GROUP_INVITATION, "GROUP_INVITATION"),
+        (ACHIEVEMENT, "ACHIEVEMENT"),
     )
 
     DEFAULT_MESSAGES = {FRIEND_REQUEST: "You have a friend invitation"}
