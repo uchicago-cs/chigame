@@ -49,7 +49,7 @@ function preload() {}
 function create() {
   drawBoard(this);
   populatePieces(this);
-  
+
   // Set up forfeit and draw buttons
   const forfeitBtn = document.getElementById('forfeitBtn');
   const drawBtn = document.getElementById('drawBtn');
@@ -79,7 +79,7 @@ function create() {
 
   drawBtn.addEventListener('click', () => {
     if (gameOver) return;
-    
+
     if (!drawOffered) {
       drawOffered = true;
       drawOfferedBy = currentPlayer;
@@ -177,7 +177,7 @@ function createPiece(x, y, color, scene) {
   piece.sprite.on('pointerdown', () => {
     // don't allow piece selection if game is over
     if (gameOver) return;
-    
+
     // deselect and remove highlight if click a selected piece
     if (selectedPiece === piece) {
       selectedPiece.sprite.setStrokeStyle();
@@ -283,10 +283,10 @@ function endTurn() {
     selectedPiece.sprite.setStrokeStyle();
   }
   selectedPiece = null;
-  
+
   // switch between red and black player turn
   currentPlayer = currentPlayer === COLORS.red ? COLORS.black : COLORS.red;
-  
+
   // reset draw offer if it was made by the current player
   if (drawOffered && drawOfferedBy === currentPlayer) {
     const gameOverMessage = document.getElementById('gameOverMessage');
