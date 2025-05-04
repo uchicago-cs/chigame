@@ -25,9 +25,8 @@ from chigame.users.models import Group, UserProfile
 # Helper function to get user from slug
 def get_user(lookup_value):
     # If the lookup_value is an integer, use the id field
-    if lookup_value is not None:
-        if lookup_value.isdigit():
-            return get_object_or_404(User, pk=lookup_value)
+    if lookup_value.isdigit():
+        return get_object_or_404(User, pk=lookup_value)
     else:
         # Otherwise, use the slug field
         return get_object_or_404(User, username=lookup_value)
@@ -174,5 +173,5 @@ class ReviewCreateView(generics.CreateAPIView):
     def perform_create(self, serializer):
         user_id = self.request.data.get("user")
         game_id = self.kwargs["pk"]
-        user = get_user(user_id)
+        user = get_object_or_404(User, pk=user_id)
         serializer.save(user=user, game_id=game_id)
