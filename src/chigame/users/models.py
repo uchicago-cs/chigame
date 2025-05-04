@@ -116,6 +116,13 @@ class FriendInvitation(models.Model):
         self.accepted = True
         self.save()
 
+    def delete_invitation(self):
+        """
+        Delete a friend invitation.
+        """
+        self.is_deleted = True
+        self.save()
+
 
 class Group(models.Model):
     """
