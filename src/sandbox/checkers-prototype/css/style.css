@@ -41,3 +41,27 @@ canvas {
 .btn:hover {
     opacity: 0.8;
 }
+
+.btn:hover {
+    opacity: 0.8;
+}
+
+.game-controls {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.game-over-message {
+    margin-top: 20px;
+    font-family: Arial;
+    font-size: 24px;
+    color: rgb(138, 90, 68);
+    text-align: center;
+    display: none;
+}
+
+.game-over-message.show {
+    display: block;
+}

@@ -37,6 +37,9 @@ let currentPlayer = COLORS.red; // red starts first
 const RADIUS_SCALE_FACTOR = 2.5;
 // selected piece highlight stroke width
 const HIGHLIGHT_SIZE = 3;
+let gameOver = false;
+let drawOffered = false;
+let drawOfferedBy = null;
 
 // ----------------------------------------------------------------------------
 
@@ -46,6 +49,65 @@ function preload() {}
 function create() {
   drawBoard(this);
   populatePieces(this);
+  
+  // Set up forfeit and draw buttons
+  const forfeitBtn = document.getElementById('forfeitBtn');
+  const drawBtn = document.getElementById('drawBtn');
+  const declineDrawBtn = document.getElementById('declineDrawBtn');
+  const gameOverMessage = document.getElementById('gameOverMessage');
+
+  forfeitBtn.addEventListener('click', () => {
+    if (!gameOver && currentPlayer === COLORS.red) {
+      gameOver = true;
+      gameOverMessage.textContent = 'Red player has forfeited! Black wins!';
+      gameOverMessage.classList.add('show');
+    } else if (!gameOver && currentPlayer === COLORS.black) {
+      gameOver = true;
+      gameOverMessage.textContent = 'Black player has forfeited! Red wins!';
+      gameOverMessage.classList.add('show');
+    }
+  });
+
+  function resetDrawOffer() {
+    drawOffered = false;
+    drawOfferedBy = null;
+    gameOverMessage.textContent = '';
+    gameOverMessage.classList.remove('show');
+    drawBtn.textContent = 'Offer Draw';
+    declineDrawBtn.style.display = 'none';
+  }
+
+  drawBtn.addEventListener('click', () => {
+    if (gameOver) return;
+    
+    if (!drawOffered) {
+      // First player offering draw
+      drawOffered = true;
+      drawOfferedBy = currentPlayer;
+      if (currentPlayer === COLORS.red) {
+        gameOverMessage.textContent = 'Red player has offered a draw. Black player, please accept or decline.';
+      } else {
+        gameOverMessage.textContent = 'Black player has offered a draw. Red player, please accept or decline.';
+      }
+      gameOverMessage.classList.add('show');
+      drawBtn.textContent = 'Accept Draw';
+      declineDrawBtn.style.display = 'block';
+    } else if (drawOffered && drawOfferedBy !== currentPlayer) {
+      // Other player accepting draw
+      gameOver = true;
+      gameOverMessage.textContent = 'Draw accepted! Game over!';
+      gameOverMessage.classList.add('show');
+      drawBtn.style.display = 'none';
+      declineDrawBtn.style.display = 'none';
+      forfeitBtn.style.display = 'none';
+    }
+  });
+
+  declineDrawBtn.addEventListener('click', () => {
+    if (drawOffered && drawOfferedBy !== currentPlayer) {
+      resetDrawOffer();
+    }
+  });
 }
 
 function update() {}
@@ -76,8 +138,8 @@ function drawBoard(scene) {
 
       // listens for clicks on tiles
       tile.on('pointerdown', () => {
-        // does nothing if no pieces were selected
-        if (!selectedPiece) return;
+        // does nothing if no pieces were selected or game is over
+        if (!selectedPiece || gameOver) return;
 
         // see if there are any pieces at the selected square
         const targetPiece = getPiece(x, y);
@@ -113,6 +175,9 @@ function createPiece(x, y, color, scene) {
   // make the piece clickable
   piece.sprite.setInteractive();
   piece.sprite.on('pointerdown', () => {
+    // don't allow piece selection if game is over
+    if (gameOver) return;
+    
     // deselect and remove highlight if click a selected piece
     if (selectedPiece === piece) {
       selectedPiece.sprite.setStrokeStyle();
@@ -221,6 +286,20 @@ function endTurn() {
     selectedPiece.sprite.setStrokeStyle();
   }
   selectedPiece = null;
+  
+  // Reset draw offer if it was made by the current player
+  if (drawOffered && drawOfferedBy === currentPlayer) {
+    const gameOverMessage = document.getElementById('gameOverMessage');
+    const drawBtn = document.getElementById('drawBtn');
+    const declineDrawBtn = document.getElementById('declineDrawBtn');
+    drawOffered = false;
+    drawOfferedBy = null;
+    gameOverMessage.textContent = '';
+    gameOverMessage.classList.remove('show');
+    drawBtn.textContent = 'Offer Draw';
+    declineDrawBtn.style.display = 'none';
+  }
+  
   // switch between red and black player turn
   currentPlayer = currentPlayer === COLORS.red ? COLORS.black : COLORS.red;
 }
