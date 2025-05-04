@@ -227,6 +227,7 @@ class Notification(models.Model):
     UPCOMING_MATCH = 3
     MATCH_PROPOSAL = 4
     GROUP_INVITATION = 5
+    ACHIEVEMENT = 6
 
     NOTIFICATION_TYPES = (
         (FRIEND_REQUEST, "FRIEND_REQUEST"),
@@ -234,6 +235,7 @@ class Notification(models.Model):
         (UPCOMING_MATCH, "UPCOMING_MATCH"),
         (MATCH_PROPOSAL, "MATCH_PROPOSAL"),
         (GROUP_INVITATION, "GROUP_INVITATION"),
+        (ACHIEVEMENT, "ACHIEVEMENT"),
     )
 
     DEFAULT_MESSAGES = {FRIEND_REQUEST: "You have a friend invitation"}
