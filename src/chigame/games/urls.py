@@ -14,6 +14,16 @@ urlpatterns = [
     path("lobby/<int:pk>/delete/", views.LobbyDeleteView.as_view(), name="lobby-delete"),
     # For AJAX req. See lobby_details.html for invocation.
     path("lobby/<int:pk>/update_match_status/", views.update_match_status, name="update_match_status"),
+    path("lobby/<int:pk>/flipresult", views.check_guess, name="flip-result"),
+    # chat in tournaments
+    path("tournaments/<int:pk>/chat/", views.TournamentChatDetailView, name="tournament-chat"),
+    # Games favorites
+    path("favorites/", views.FavoriteListView.as_view(), name="favorite-list"),
+    path("<int:pk>/favorite/", views.add_to_favorites, name="add-to-favorites"),
+    path("<int:pk>/unfavorite/", views.remove_from_favorites, name="remove-from-favorites"),
+    # custom game list handling
+    path("<int:pk>/gamelists/<int:list_pk>/add/", views.add_to_gamelist, name="add-to-gamelist"),
+    path("<int:pk>/gamelists/<int:list_pk>/remove/", views.remove_from_gamelist, name="remove-from-gamelist"),
     # games
     path("interactive-fiction/", views.InteractiveFictionView.as_view(), name="interactive-fiction"),
     path("games/<int:pk>/upload/", UploadFileView.as_view(), name="upload-file"),
@@ -34,7 +44,4 @@ urlpatterns = [
     path("tournaments/archived/", views.TournamentArchivedListView.as_view(), name="tournament-archived"),
     # placeholder game
     path("lobby/<int:pk>/coinflip", views.coin_flip_game, name="placeholder-game"),
-    path("lobby/<int:pk>/flipresult", views.check_guess, name="flip-result"),
-    # chat in tournaments
-    path("tournaments/<int:pk>/chat/", views.TournamentChatDetailView, name="tournament-chat"),
 ]
