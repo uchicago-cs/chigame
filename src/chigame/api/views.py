@@ -16,10 +16,11 @@ from chigame.api.serializers import (
     MechanicSerializer,
     MessageFeedSerializer,
     MessageSerializer,
+    ReviewSerializer,
     UserSerializer,
 )
-from chigame.games.models import Game, Lobby, Message, User
-from chigame.users.models import Group, UserProfile
+from chigame.games.models import Game, Lobby, Message, Review
+from chigame.users.models import Group, User
 
 
 # Helper function to get user from slug
@@ -70,8 +71,8 @@ class UserFriendsAPIView(generics.RetrieveAPIView):
 
     def get_queryset(self):
         user_id = self.kwargs["pk"]
-        user_profile = get_object_or_404(UserProfile, user=user_id)
-        return user_profile.friends.all()
+        user = get_object_or_404(User, id=user_id)
+        return user.friends.all()
 
 
 class LobbyListView(generics.ListCreateAPIView):
@@ -167,3 +168,21 @@ class MessageFeedView(APIView):
 
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class GameReviewListView(generics.ListAPIView):
+    serializer_class = ReviewSerializer
+
+    def get_queryset(self):
+        game_id = self.kwargs["pk"]
+        return Review.objects.filter(game__id=game_id)
+
+
+class ReviewCreateView(generics.CreateAPIView):
+    serializer_class = ReviewSerializer
+
+    def perform_create(self, serializer):
+        user_id = self.request.data.get("user")
+        game_id = self.kwargs["pk"]
+        user = get_object_or_404(User, pk=user_id)
+        serializer.save(user=user, game_id=game_id)
