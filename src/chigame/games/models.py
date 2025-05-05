@@ -734,3 +734,56 @@ class GameList(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.created_by})"
+
+
+class GameQueue(models.Model):
+    """
+    A queue of games to be played by the user.
+    """
+
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="game_queue")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username}'s Queue"
+
+    def add_game(self, game):
+        """
+        Add a game to the end of this user's queue.
+        """
+        max_pos = self.entries.aggregate(models.Max("position"))["position__max"] or 0
+        return GameQueueEntry.objects.create(queue=self, game=game, position=max_pos + 1)
+
+    def remove_game(self, game):
+        """
+        Remove a game from the queue and re-order the remaining entries.
+        """
+        entry = self.entries.filter(game=game).first()
+        if entry:
+            entry.delete()
+            for i, e in enumerate(self.entries.order_by("position"), start=1):
+                e.position = i
+                e.save()
+
+    def get_next_game(self):
+        """
+        Return the next game in queue (or None if the queue is empty).
+        """
+        entry = self.entries.order_by("position").first()
+        return entry.game if entry else None
+
+
+class GameQueueEntry(models.Model):
+    """
+    Represents a single entry in a GameQueue, keeping track of order.
+    """
+
+    queue = models.ForeignKey(GameQueue, on_delete=models.CASCADE, related_name="entries")
+    game = models.ForeignKey(Game, on_delete=models.CASCADE)
+    position = models.PositiveIntegerField()
+
+    class Meta:
+        ordering = ["position"]
+
+    def __str__(self):
+        return f"{self.game.name} (pos {self.position})"

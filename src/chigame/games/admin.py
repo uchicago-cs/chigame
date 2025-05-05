@@ -1,13 +1,18 @@
 from django.apps import apps
 from django.contrib import admin
 
-from .models import Game, Lobby, Match, MatchProposal, Player
+from .models import Game, GameQueue, Lobby, Match, MatchProposal, Player
 
 
 @admin.register(Game)
 class GameAdmin(admin.ModelAdmin):
     list_display = ("name", "min_players", "max_players")
     search_fields = ("name__startswith",)
+
+
+@admin.register(GameQueue)
+class GameQueueAdmin(admin.ModelAdmin):
+    list_display = ("name", "created_by", "created_at")
 
 
 # for future admin page customizations
