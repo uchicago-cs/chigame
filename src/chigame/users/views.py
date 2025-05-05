@@ -241,7 +241,7 @@ def send_friend_invitation(request, pk):
     if curr_user.id == other_user.id:
         messages.error(request, "You can't send friendship invitation to yourself")
         return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
-      
+
     # check if the friendship invitation already exists
     invitation, new = FriendInvitation.objects.filter(
         Q(sender=curr_user, receiver=other_user, is_deleted=False)
@@ -468,6 +468,7 @@ def user_inbox_view(request, pk):
     else:
         messages.error(request, "Not your inbox")
         return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
+
 
 @login_required
 def remove_friend(request, pk):
