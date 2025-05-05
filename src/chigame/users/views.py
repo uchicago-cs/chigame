@@ -212,6 +212,7 @@ def user_profile_detail_view(request, pk):
     context = {"object": profile, "is_friend": is_friend, "friendship_request": friendship_request}
     return render(request, "users/userprofile_detail.html", context=context)
 
+
 @login_required
 def send_friend_invitation(request, pk):
     """
@@ -235,7 +236,7 @@ def send_friend_invitation(request, pk):
     if curr_user.friends.filter(pk=other_user.pk).exists():
         messages.error(request, "You are already friends with this user")
         return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
-      
+
     # if the current user is trying to send a friend request to themselves, return an error
     if curr_user.id == other_user.id:
         messages.error(request, "You can't send friendship invitation to yourself")
@@ -468,6 +469,7 @@ def user_inbox_view(request, pk):
     else:
         messages.error(request, "Not your inbox")
         return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
+
 
 @login_required
 def remove_friend(request, pk):
