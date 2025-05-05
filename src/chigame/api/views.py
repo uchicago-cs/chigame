@@ -19,7 +19,7 @@ from chigame.api.serializers import (
     UserSerializer,
 )
 
-from chigame.games.models import Game, Lobby, Message, Review, User
+from chigame.games.models import Game, Lobby, Message, Review
 from chigame.users.models import Group, UserProfile, User
 
 
