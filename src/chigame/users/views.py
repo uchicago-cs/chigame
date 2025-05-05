@@ -187,9 +187,7 @@ def user_profile_detail_view(request, pk):
             friendship_request = FriendInvitation.objects.filter(
                 Q(sender=target_user, receiver=curr_user, is_deleted=False)
                 | Q(sender=curr_user, receiver=target_user, is_deleted=False)
-            )
-            .order_by("-timestamp")
-            .first()
+            ).order_by("-timestamp").first()
 
     # provide frontend profile + friendship status
     context = {"object": profile, "is_friend": is_friend, "friendship_request": friendship_request}
