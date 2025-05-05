@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}
+  Knowledge Base
+{% endblock title %}
+{% load static %}
+
+{% block css %}
+  {{ block.super }}
+  <link href="{% static 'css/knowledge-base-styles.css' %}" rel="stylesheet" />
+{% endblock css %}
+{% block content %}
+  <div class="knowledge-base container mt-4">
+    <div class="nav w-100 bg-light border rounded rounded-lg d-flex flex-row justify-content-between p-2 px-4">
+      <a href="{% url 'knowledge-base' %}">
+        <p class="mb-0">Home</p>
+      </a>
+      <div class="d-flex gap-3">
+        <a href="{% url 'knowledge-base-moderator' %}">
+          <p class="mb-0">Moderator View</p>
+        </a>
+        <a href="{% url 'knowledge-base-contributor' %}">
+          <p class="mb-0">Contributor View</p>
+        </a>
+      </div>
+    </div>
+    <div class="page-content">
+      {% block page-content %}
+        <h1>Uh oh, looks like we ran into an issue.</h1>
+      {% endblock page-content %}
+    </div>
+  </div>
+{% endblock content %}

@@ -5,5 +5,5 @@
     <a class="btn btn-primary right-0"
        href="{% url 'forums:forum-create' %}">Create new forum</a>
   {% endif %}
-  {{ block.super }}
+  {% if user.is_authenticated %}{{ block.super }}{% endif %}
 {% endblock content %}
