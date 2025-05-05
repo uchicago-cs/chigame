@@ -6,12 +6,14 @@
 {% block content %}
   <h1>{{ query_type }} Search Results</h1>
   <ul>
-    {% if nothing_found %}
+    {% if not found %}
       <p>Oops! No {{ query_type }} matching your search criteria. Please try again with different search parameters.</p>
     {% elif query_type == "Users" %}
       {% for profile in object_list %}
         <li>
-          <a href="{% url 'users:user-profile' profile.user_id %}">{{ profile.display_name }}</a>
+          email: {{ profile.user.email }} |
+          name: {{ profile.display_name }} |
+          <a href="{% url 'users:user-profile' profile.user_id %}">profile</a>
         </li>
       {% endfor %}
     {% elif query_type == "Games" %}
