@@ -355,3 +355,63 @@ class UpcomingMatchNotification(BaseNotificationHandler):
 
     def get_redirect_str(self):
         return reverse("games:lobby-details", kwargs={"pk": self.notification.actor.lobby.pk})
+
+
+class AchievementNotification(BaseNotificationHandler):
+    """
+    Handles redirection logic for achievement notifications. Redirects the
+    user to the ___ page upon interaction.
+    """
+
+    def get_redirect_str(self):
+        raise NotImplementedError("Achievement notifications do not have a redirect URL")
+
+
+class TournamentInvitationNotification(BaseNotificationHandler):
+    """
+    Handles redirection logic for tournament invitation notifications. Redirects the
+    user to the ___ page upon interaction.
+    """
+
+    def get_redirect_str(self):
+        return NotImplementedError("Tournament invitation notifications do not have a redirect URL")
+
+
+class TournamentInvitationAcceptedNotification(BaseNotificationHandler):
+    """
+    Handles redirection logic for tournament invitation notifications. Redirects the
+    user to the ___ page upon interaction.
+    """
+
+    def get_redirect_str(self):
+        return NotImplementedError("Tournament invitation notifications do not have a redirect URL")
+
+
+class TournamentStartingNotification(BaseNotificationHandler):
+    """
+    Handles redirection logic for tournament starting notifications. Redirects the
+    user to the ___ page upon interaction.
+    """
+
+    def get_redirect_str(self):
+        return NotImplementedError("Tournament starting notifications do not have a redirect URL")
+
+
+class TournamentRoundCompletedNotification(BaseNotificationHandler):
+    """
+    Handles redirection logic for tournament round completed notifications. Redirects the
+    user to the ___ page upon interaction.
+    """
+
+    def get_redirect_str(self):
+        return NotImplementedError("Tournament round completed notifications do not have a redirect URL")
+
+
+class TournamentCompletedNotification(BaseNotificationHandler):
+    """
+    Handles redirection logic for tournament completed notifications. Redirects the
+    user to the ___ page upon interaction.
+    """
+
+    def get_redirect_str(self):
+        return NotImplementedError("Tournament completed notifications do not have a redirect URL")
