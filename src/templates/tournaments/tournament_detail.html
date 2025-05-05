@@ -245,11 +245,15 @@
             {% for player in tournament.get_all_players %}
               {% if player.id == simulation_data.tournament_winner %}
                 <p>
-                  {% if player.name %}
-                    <strong>{{ player.name }}</strong>
-                  {% else %}
-                    <strong>{{ player.email }}</strong>
-                  {% endif %}
+                  <strong>
+                    {% if player.name %}
+                      {{ player.name }}
+                    {% elif player.username %}
+                      {{ player.username }}
+                    {% else %}
+                      {{ player.email }}
+                    {% endif %}
+                  </strong>
                 </p>
               {% endif %}
             {% endfor %}
@@ -269,6 +273,8 @@
                           {% if player.id == player_data.id %}
                             {% if player.name %}
                               {{ player.name }}
+                            {% elif player.username %}
+                              {{ player.username }}
                             {% else %}
                               {{ player.email }}
                             {% endif %}
@@ -298,6 +304,8 @@
                           {% if player.id == player_data.id %}
                             {% if player.name %}
                               {{ player.name }}
+                            {% elif player.username %}
+                              {{ player.username }}
                             {% else %}
                               {{ player.email }}
                             {% endif %}
@@ -327,6 +335,8 @@
                           {% if player.id == player_data.id %}
                             {% if player.name %}
                               {{ player.name }}
+                            {% elif player.username %}
+                              {{ player.username }}
                             {% else %}
                               {{ player.email }}
                             {% endif %}
@@ -366,11 +376,15 @@
     {% for player in tournament.get_all_players %}
       <li>
         <p>
-          {% if player.name %}
-            <a href="{% url 'users:detail' player.id %}">{{ player.name }}</a>
-          {% else %}
-            <a href="{% url 'users:detail' player.id %}">{{ player.email }}</a>
-          {% endif %}
+          <a href="{% url 'users:detail' player.id %}">
+            {% if player.name %}
+              {{ player.name }}
+            {% elif player.username %}
+              {{ player.username }}
+            {% else %}
+              {{ player.email }}
+            {% endif %}
+          </a>
         </p>
       </li>
     {% endfor %}
@@ -382,11 +396,15 @@
       {% for winner in tournament.get_all_winners %}
         <li>
           <p>
-            {% if winner.name %}
-              <a href="{% url 'users:detail' winner.id %}">{{ winner.name }}</a>
-            {% else %}
-              <a href="{% url 'users:detail' winner.id %}">{{ winner.email }}</a>
-            {% endif %}
+            <a href="{% url 'users:detail' winner.id %}">
+              {% if winner.name %}
+                {{ winner.name }}
+              {% elif winner.username %}
+                {{ winner.username }}
+              {% else %}
+                {{ winner.email }}
+              {% endif %}
+            </a>
           </p>
         </li>
       {% endfor %}
@@ -401,11 +419,15 @@
           <p>
             Match (
             {% for player in match.players.all %}
-              {% if player.name %}
-                <a href="{% url 'users:detail' player.id %}">{{ player.name }}</a>
-              {% else %}
-                <a href="{% url 'users:detail' player.id %}">{{ player.email }}</a>
-              {% endif %}
+              <a href="{% url 'users:detail' player.id %}">
+                {% if player.name %}
+                  {{ player.name }}
+                {% elif player.username %}
+                  {{ player.username }}
+                {% else %}
+                  {{ player.email }}
+                {% endif %}
+              </a>
               {% if not forloop.last %}vs.{% endif %}
             {% empty %}
               Forfeited
