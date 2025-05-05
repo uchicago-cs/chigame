@@ -140,25 +140,23 @@
     </div>
   {% else %}
     <!-- First row of homepage for anonymous users (Hero section) -->
-    <div class="homepage-block homepage-hero chigame-text">
-      <div class="hero-section">
-        <div class="hero-content">
-          <div class="hero">
-            <p class="hero-title">Welcome to</p>
-            <p class="pixeltext">Chigame.</p>
-            <p class="hero-description">Make games. Play with friends. Get competitive.</p>
-          </div>
+    <div class="hero-section">
+      <div class="hero-content">
+        <div class="hero">
+          <p class="hero-title">Welcome to</p>
+          <p class="pixeltext">Chigame.</p>
+          <p class="hero-description">Make games. Play with friends. Get competitive.</p>
         </div>
       </div>
-      <div class="side-rect left-rect"></div>
-      <div class="side-rect right-rect"></div>
-      <img class="img-fluid logo"
-           src="{% static 'images/logos/logo.png' %}"
-           alt="ChiGame Logo" />
-      <div class="auth-buttons">
-        <a href="{% url 'account_signup' %}" class="auth-button">Sign Up</a>
-        <a href="{% url 'account_login' %}" class="auth-button">Sign In</a>
-      </div>
+    </div>
+    <div class="side-rect left-rect"></div>
+    <div class="side-rect right-rect"></div>
+    <img class="img-fluid logo"
+         src="{% static 'images/logos/logo.png' %}"
+         alt="ChiGame Logo" />
+    <div class="auth-buttons">
+      <a href="{% url 'account_signup' %}" class="auth-button">Sign Up</a>
+      <a href="{% url 'account_login' %}" class="auth-button">Sign In</a>
     </div>
   {% endif %}
   <!-- Second row of homepage (Trending Games) -->
