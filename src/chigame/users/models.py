@@ -384,7 +384,7 @@ class TournamentInvitationNotification(BaseNotificationHandler):
     """
 
     def get_redirect_str(self):
-        return NotImplementedError("Tournament invitation notifications do not have a redirect URL")
+        return reverse("tournaments:tournament-detail", kwargs={"pk": self.notification.actor.tournament.pk})
 
 
 class TournamentInvitationAcceptedNotification(BaseNotificationHandler):
@@ -394,7 +394,7 @@ class TournamentInvitationAcceptedNotification(BaseNotificationHandler):
     """
 
     def get_redirect_str(self):
-        return NotImplementedError("Tournament invitation notifications do not have a redirect URL")
+        return reverse("tournaments:tournament-detail", kwargs={"pk": self.notification.actor.tournament.pk})
 
 
 class TournamentStartingNotification(BaseNotificationHandler):
@@ -404,7 +404,7 @@ class TournamentStartingNotification(BaseNotificationHandler):
     """
 
     def get_redirect_str(self):
-        return NotImplementedError("Tournament starting notifications do not have a redirect URL")
+        return reverse("tournaments:tournament-detail", kwargs={"pk": self.notification.actor.tournament.pk})
 
 
 class TournamentRoundCompletedNotification(BaseNotificationHandler):
@@ -414,7 +414,7 @@ class TournamentRoundCompletedNotification(BaseNotificationHandler):
     """
 
     def get_redirect_str(self):
-        return NotImplementedError("Tournament round completed notifications do not have a redirect URL")
+        return reverse("tournaments:tournament-detail", kwargs={"pk": self.notification.actor.tournament.pk})
 
 
 class TournamentCompletedNotification(BaseNotificationHandler):
@@ -424,4 +424,4 @@ class TournamentCompletedNotification(BaseNotificationHandler):
     """
 
     def get_redirect_str(self):
-        return NotImplementedError("Tournament completed notifications do not have a redirect URL")
+        return reverse("tournaments:tournament-detail", kwargs={"pk": self.notification.actor.tournament.pk})
