@@ -1,5 +1,6 @@
 from django.urls import path
 
+from chigame.api.views import UserGroupsView
 from chigame.users.views import (
     accept_friend_invitation,
     act_on_inbox_notification,
@@ -48,4 +49,5 @@ urlpatterns = [
         name="act-on-inbox-notification",
     ),
     path("bulk-action/", view=bulk_inbox, name="bulk-inbox"),
+    path("<slug:slug>/groups/", UserGroupsView.as_view(), name="api-user-groups"),
 ]
