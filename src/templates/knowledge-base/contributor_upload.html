@@ -1,0 +1,25 @@
+{% extends "knowledge-base/base.html" %}
+
+{% block page-content %}
+  <h1>Knowledge Base</h1>
+  <p>Contributor View</p>
+  <h2>
+    {% if guide %}
+      Reupload
+    {% else %}
+      Upload
+    {% endif %}
+    Guide
+  </h2>
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">
+      {% if guide %}
+        Update
+      {% else %}
+        Upload
+      {% endif %}
+    </button>
+  </form>
+{% endblock page-content %}
