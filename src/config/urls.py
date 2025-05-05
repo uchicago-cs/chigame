@@ -27,6 +27,8 @@ urlpatterns = [
     # i.e. CRUD pages for django machina models
     path("forums/", include("chigame.forums.base.urls")),
     path("api/token/", obtain_auth_token, name="api-token"),
+    # Knowledge-base URLs
+    path("knowledge-base/", include("chigame.knowledge_base.urls")),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 
