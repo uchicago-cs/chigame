@@ -18,8 +18,8 @@ from chigame.api.serializers import (
     ReviewSerializer,
     UserSerializer,
 )
-from chigame.games.models import Game, Lobby, Message, Review, User
-from chigame.users.models import Group, UserProfile
+from chigame.games.models import Game, Lobby, Message, Review
+from chigame.users.models import Group, User
 
 
 # Helper function to get user from slug
@@ -70,8 +70,8 @@ class UserFriendsAPIView(generics.RetrieveAPIView):
 
     def get_queryset(self):
         user_id = self.kwargs["pk"]
-        user_profile = get_object_or_404(UserProfile, user=user_id)
-        return user_profile.friends.all()
+        user = get_object_or_404(User, id=user_id)
+        return user.friends.all()
 
 
 class LobbyListView(generics.ListCreateAPIView):
