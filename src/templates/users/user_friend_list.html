@@ -3,5 +3,8 @@
 {% load render_table from django_tables2 %}
 
 {% block content %}
-  {% render_table table %}
+  <div class="container mt-4">
+    <h2 class="mb-4">My Friends</h2>
+    <div class="table-responsive">{% render_table table %}</div>
+  </div>
 {% endblock content %}

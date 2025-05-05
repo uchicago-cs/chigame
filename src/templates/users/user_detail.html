@@ -16,8 +16,17 @@
       <!-- Action buttons -->
       <style>
         .list-item {
-          margin-bottom: 25px;
+          margin-bottom: 5px;
           list-style-type: none;
+        }
+
+        .list-button {
+          margin-bottom: 20px;
+          list-style-type: none;
+        }
+
+        .update-button {
+          margin-left: 10px;
         }
       </style>
       <div class="row">
@@ -28,23 +37,30 @@
                 <strong>Admin of Chigame</strong>
               </li>
             {% endif %}
-            <li class="list-item">
-              Name: {{ object.name }}
-              <a class="btn btn-primary" href="{% url 'users:update' %}" role="button">Update Name</a>
+            <li class="list-item">Name: {{ object.name }}</li>
+            <li class="list-button">
+              <form method="post" action="{% url 'users:update' %}">
+                {% csrf_token %}
+                <input type="text"
+                       name="name"
+                       value="{{ object.name }}"
+                       placeholder="New name" />
+                <button type="submit" class="btn btn-primary btn-sm">Update Name</button>
+              </form>
             </li>
             <li class="list-item">
-              Email: {{ object.email }}
-              <a class="btn btn-primary"
-                 href="{% url 'account_email' %}"
-                 role="button">Update E-Mail</a>
+              Email: {{ object.email }}<a class="btn btn-primary btn-sm update-button"
+   href="{% url 'account_email' %}"
+   role="button">Update E-Mail</a>
             </li>
+            <li class="list-item">Display Name: {{ object.userprofile.display_name }}</li>
             <li class="list-item">Bio: {{ object.userprofile.bio }}</li>
             <li class="list-item">Date Joined: {{ object.date_joined }}</li>
             <!-- Your Stuff: Custom user template URLs -->
             {% if object.is_staff %}
               <li class="list-item">
                 Users:
-                <a class="btn btn-primary"
+                <a class="btn btn-primary btn-sm update-button"
                    href="{% url 'users:user-list' %}"
                    role="button">List of Users</a>
               </li>

@@ -47,6 +47,19 @@ class UserUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     def get_object(self):
         return self.request.user
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["profile"] = self.request.user.userprofile
+        return context
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        profile = self.request.user.userprofile
+        profile.display_name = self.request.POST.get("display_name", profile.display_name)
+        profile.bio = self.request.POST.get("bio", profile.bio)
+        profile.save()
+        return response
+
 
 user_update_view = UserUpdateView.as_view()
 
