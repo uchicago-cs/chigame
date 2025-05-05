@@ -17,7 +17,7 @@
 .uploaded-guides-column{
     background:white;
     height: 100%;
-    display: flex;
+    display: inline-table;
 }
 
 .column-header{
@@ -28,4 +28,14 @@
     border-top: 2px solid black;
     border-bottom: 2px solid black;
     padding:10px
+}
+
+.column-entry-box{
+    border-bottom: 1px solid black;
+}
+
+.guide-entry{
+    font-size: medium;
+    padding: 10px;
+    border-bottom: 1px solid black;
 }
