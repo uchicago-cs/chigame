@@ -60,10 +60,11 @@ class GameDetailView(LoginRequiredMixin, FormMixin, DetailView):
         context = super().get_context_data(**kwargs)
         context["form"] = self.get_form()
         context["reviews"] = Review.objects.filter(game=self.object)
-        # Include the user's default 'Favorites' GameList for add/remove buttons
+        # Include the user's GameLists: default Favorites plus others
         if self.request.user.is_authenticated:
             favorites_list, _ = GameList.objects.get_or_create(name="Favorites", created_by=self.request.user)
             context["favorites_list"] = favorites_list
+            context["game_lists"] = GameList.objects.filter(created_by=self.request.user).exclude(pk=favorites_list.pk)
         return context
 
     def post(self, request, *args, **kwargs):
@@ -1091,3 +1092,19 @@ class FavoriteListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         favorites_list, _ = GameList.objects.get_or_create(name="Favorites", created_by=self.request.user)
         return favorites_list.games.all()
+
+
+@login_required
+def add_to_gamelist(request, pk, list_pk):
+    game = get_object_or_404(Game, pk=pk)
+    game_list = get_object_or_404(GameList, pk=list_pk, created_by=request.user)
+    game_list.games.add(game)
+    return redirect("game-detail", pk=pk)
+
+
+@login_required
+def remove_from_gamelist(request, pk, list_pk):
+    game = get_object_or_404(Game, pk=pk)
+    game_list = get_object_or_404(GameList, pk=list_pk, created_by=request.user)
+    game_list.games.remove(game)
+    return redirect("game-detail", pk=pk)

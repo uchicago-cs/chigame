@@ -1,5 +1,8 @@
 {% extends "base.html" %}
 
+{% block js %}
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2/dist/umd/popper.min.js"></script>
+{% endblock js %}
 {% block title %}
   {{ game.name }} Details
 {% endblock title %}
@@ -28,13 +31,34 @@
       <div class="btn-group btn-group-lg mt-3">
         <a href="#" class="btn btn-outline-primary">Join a Match</a>
         <a href="#" class="btn btn-outline-primary">Create a Match</a>
-        {% if user.is_authenticated and favorites_list is not none %}
+        {% if user.is_authenticated %}
           {% if game in favorites_list.games.all %}
             <a href="{% url 'remove-from-favorites' pk=game.pk %}"
                class="btn btn-outline-warning">Remove from Favorites</a>
           {% else %}
             <a href="{% url 'add-to-favorites' pk=game.pk %}"
                class="btn btn-outline-success">Add to Favorites</a>
+          {% endif %}
+          {% if game_lists %}
+            <div class="btn-group ms-2">
+              <button class="btn btn-outline-primary dropdown-toggle"
+                      type="button"
+                      data-bs-toggle="dropdown"
+                      aria-expanded="false">Other Lists</button>
+              <ul class="dropdown-menu">
+                {% for glist in game_lists %}
+                  <li>
+                    {% if game in glist.games.all %}
+                      <a class="dropdown-item"
+                         href="{% url 'remove-from-gamelist' game.pk glist.pk %}">Remove from {{ glist.name }}</a>
+                    {% else %}
+                      <a class="dropdown-item"
+                         href="{% url 'add-to-gamelist' game.pk glist.pk %}">Add to {{ glist.name }}</a>
+                    {% endif %}
+                  </li>
+                {% endfor %}
+              </ul>
+            </div>
           {% endif %}
         {% endif %}
       </div>
