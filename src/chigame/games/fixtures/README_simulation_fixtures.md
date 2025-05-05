@@ -29,12 +29,22 @@ This directory contains fixtures for testing tournament workflows in the ChiGame
 ### Loading the Fixtures
 
 ```bash
-# First load the test players
+# First load the game fixture (IMPORTANT: must be loaded first)
+python manage.py loaddata src/chigame/games/fixtures/games-fixture-5.json
+
+# Then load the test players
 python manage.py loaddata src/chigame/users/fixtures/test_players.json
 
-# Then load the tournament fixture
+# Finally load the tournament fixture
 python manage.py loaddata src/chigame/games/fixtures/tournaments-simulation-fixture.json
 ```
+
+### Important Note on Fixture Dependencies
+
+The fixtures must be loaded in the exact order specified above due to foreign key dependencies:
+1. Game fixtures must be loaded first as tournaments reference game IDs
+2. Player fixtures must be loaded second as tournaments and matches reference player IDs
+3. Tournament fixtures must be loaded last as they depend on both games and players
 
 ### Fixture Structure
 
