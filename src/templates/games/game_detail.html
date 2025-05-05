@@ -27,7 +27,8 @@
       {% endfor %}
       <div class="btn-group btn-group-lg mt-3">
         <a href="#" class="btn btn-outline-primary">Join a Match</a>
-        <a href="#" class="btn btn-outline-primary">Create a Match</a>
+        <a href="{% url 'match-create' pk=game.pk %}"
+           class="btn btn-outline-primary">Create a Match</a>
         {% if user.is_authenticated and favorites_list is not none %}
           {% if game in favorites_list.games.all %}
             <a href="{% url 'remove-from-favorites' pk=game.pk %}"
