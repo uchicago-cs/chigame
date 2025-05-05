@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from chigame.api.filters import GameFilter
-from chigame.api.serializers import (  # ReviewSerializer, (deleted to merge 563)
+from chigame.api.serializers import (
     CategorySerializer,
     GameSerializer,
     GroupSerializer,
@@ -18,7 +18,7 @@ from chigame.api.serializers import (  # ReviewSerializer, (deleted to merge 563
     MessageSerializer,
     UserSerializer,
 )
-from chigame.games.models import Game, Lobby, Message, User  # Review (deleted to merge 563)
+from chigame.games.models import Game, Lobby, Message, User
 from chigame.users.models import Group, UserProfile
 
 
@@ -158,19 +158,3 @@ class MessageFeedView(APIView):
 
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-# class GameReviewListView(generics.ListAPIView):
-#     serializer_class = ReviewSerializer
-
-#     def get_queryset(self):
-#         game_id = self.kwags["pk"]
-#         return Review.objects.filter(game__id=game_id)
-
-
-# class ReviewCreateView(generics.CreateAPIView):
-#     serializer_class = ReviewSerializer
-
-#     def perform_create(self, serializer):
-#         game_id = self.kwargs["pk"]
-#         serializer.save(user=self.request.user, game_id=game_id)
