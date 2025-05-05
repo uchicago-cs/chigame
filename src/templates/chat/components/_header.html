@@ -1,0 +1,6 @@
+<h1>Hello, Welcome to my chat site ! {{ request.user }}</h1>
+<br />
+{% if request.user.is_authenticated %}
+  Logout the chat Page
+  <a href="{% url 'logout-user' %}">Logout</a>
+{% endif %}
