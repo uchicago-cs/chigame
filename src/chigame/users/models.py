@@ -9,7 +9,6 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from chigame.games.models import Match
 from chigame.users.managers import UserManager
 
 
@@ -137,7 +136,6 @@ class Group(models.Model):
     name = models.TextField()
     description = models.TextField(blank=True)
     members = models.ManyToManyField(User)
-    matches = models.ManyToManyField(Match, blank=True)
     created_by = models.ForeignKey(User, related_name="created_groups", on_delete=models.CASCADE)
     date_created = models.DateTimeField(auto_now_add=True)
     group_admin_permissions = False
