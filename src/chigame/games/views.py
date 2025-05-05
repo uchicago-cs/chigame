@@ -1,22 +1,26 @@
+import os
 import xml.etree.ElementTree as ET
 from functools import wraps
 from random import choice
 
 import requests
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
+from django.core.files.storage import FileSystemStorage
 from django.core.paginator import Paginator
 from django.db.models import Avg, Count, ExpressionWrapper, F, FloatField, Q
 from django.db.models.functions import Lower
 from django.http import HttpResponseForbidden, HttpResponseRedirect, JsonResponse
-from django.shortcuts import get_object_or_404, redirect, render, reverse
-from django.urls import reverse_lazy
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.utils.timezone import now
-from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
+from django.views import View
+from django.views.generic import CreateView, DeleteView, DetailView, ListView, TemplateView, UpdateView
 from django.views.generic.edit import FormMixin
 
 from chigame.users.models import User
@@ -391,7 +395,50 @@ def search_results(request):
     return render(request, "games/game_grid.html", context)
 
 
-# Tournaments
+# =============== Interactive Fiction Views ===============
+class InteractiveFictionView(TemplateView):
+    template_name = "games/game_detail.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # creates a fake game object
+        fake_game = Game(
+            pk=9999,
+            name="Interactive Fiction Adventure",
+            description="Embark on an interactive text-based journey!",
+        )
+        context["game"] = fake_game
+
+        # check if there is an uploaded IF file
+        uploaded_file = self.request.session.get("uploaded_interactive_file")
+        if uploaded_file:
+            file_url = f"/media/{uploaded_file}"
+            context["uploaded_file_url"] = file_url
+        return context
+
+
+class UploadFileView(View):
+    def post(self, request, pk):
+        uploaded_file = request.FILES.get("uploaded_file")
+
+        if uploaded_file:
+            upload_path = os.path.join(settings.MEDIA_ROOT, "interactive_uploads")
+            os.makedirs(upload_path, exist_ok=True)
+
+            fs = FileSystemStorage(location=upload_path)
+            safe_filename = uploaded_file.name.replace(" ", "_")
+            fs.save(safe_filename, uploaded_file)
+
+            request.session["uploaded_interactive_file"] = f"interactive_uploads/{safe_filename}"
+
+            messages.success(request, "File uploaded successfully!")
+            return redirect("interactive-fiction")
+
+        messages.error(request, "No file selected.")
+        return redirect("interactive-fiction")
+
+
+# =============== Tournaments Views ===============
 
 
 # Currently, only staff users can create, update, and delete tournaments.
