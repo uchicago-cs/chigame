@@ -192,3 +192,5 @@ chigame_template/media/
 
 /media/
 /src/media/
+
+frontend/vue/node_modules/
