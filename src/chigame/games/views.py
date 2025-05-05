@@ -8,7 +8,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.core.paginator import Paginator
-from django.db.models import Q
+from django.db.models import Avg, Count, ExpressionWrapper, F, FloatField, Q
 from django.db.models.functions import Lower
 from django.http import HttpResponseForbidden, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render, reverse
@@ -39,7 +39,13 @@ class GameListView(ListView):
         Returns a queryset of Game objects sorted and filtered based on the URL parameters.
         https://docs.djangoproject.com/en/4.2/ref/models/querysets/
         """
-        queryset = super().get_queryset()
+        # Adding average rating and popularity to the queryset
+        queryset = (
+            super()
+            .get_queryset()
+            .annotate(avg_rating=Avg("review__rating"), popularity=Count("review__is_public"))
+            .annotate(rating_percentage=ExpressionWrapper((F("avg_rating") / 5) * 100, output_field=FloatField()))
+        )
         sort = self.request.GET.get("sort_by", "name-asc")
         players = self.request.GET.get("players", "")
         queryset = apply_sorting_and_filtering(queryset, sort, players)
