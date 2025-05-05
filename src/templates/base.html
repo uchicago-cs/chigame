@@ -32,6 +32,13 @@
       <link href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/themes/ui-lightness/jquery-ui.css"
             rel="stylesheet"
             type="text/css" />
+      <!-- CSS for Footer -->
+      <link href="{% static 'css/base.css' %}" rel="stylesheet" />
+      <!-- Google Fonts -->
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+      <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&display=swap"
+            rel="stylesheet" />
     {% endblock css %}
     <!-- Le javascript
     ================================================== -->
@@ -52,7 +59,7 @@
       <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.js"></script>
     {% endblock javascript %}
   </head>
-  <body>
+  <body class="d-flex flex-column">
     <div class="mb-1">
       <nav class="navbar navbar-expand-md navbar-light bg-light">
         <div class="container-fluid">
@@ -185,6 +192,42 @@
         <p>Coming soon!</p>
       {% endblock content %}
     </div>
+    <footer class="mt-auto">
+      <div class="d-flex flex-row">
+        <div class="logo-text me-auto d-flex flex-column justify-content-between">
+          <div class="d-flex flex-row">
+            <img class="navbar-logo img-fluid align-top"
+                 src="{% static 'images/logos/logo.png' %}"
+                 alt="ChiGame Logo" />
+            <span class="d-flex flex-column justify-content-around"><span class="chigame-text">Chigame</span></span>
+            <span class="d-flex flex-column justify-content-around"><a class="nav-link social-media-icons"
+   href="https://github.com/uchicago-cs/chigame"><i class="bi bi-github"></i></a></span>
+          </div>
+        </div>
+        <ul class="navbar-nav flex-column footer-link-list one">
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'home' %}">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'about' %}">About</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'game-list' %}">Games</a>
+          </li>
+        </ul>
+        <ul class="navbar-nav flex-column footer-link-list two">
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'lobby-list' %}">Lobbies</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'tournament-list' %}">Tournaments</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'forum:index' %}">Forums</a>
+          </li>
+        </ul>
+      </div>
+    </footer>
     <!-- /container -->
     {% block modal %}
     {% endblock modal %}
