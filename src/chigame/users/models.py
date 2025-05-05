@@ -245,7 +245,7 @@ class Notification(models.Model):
     FRIEND_REQUEST = 1
     REMINDER = 2
     UPCOMING_MATCH = 3
-    MATCH_PROPOSAL = 4
+    MATCH_INVITATION = 4
     GROUP_INVITATION = 5
     ACHIEVEMENT = 6
     TOURNAMENT_INVITATION = 7
@@ -258,7 +258,7 @@ class Notification(models.Model):
         (FRIEND_REQUEST, "FRIEND_REQUEST"),
         (REMINDER, "REMINDER"),
         (UPCOMING_MATCH, "UPCOMING_MATCH"),
-        (MATCH_PROPOSAL, "MATCH_PROPOSAL"),
+        (MATCH_INVITATION, "MATCH_INVITATION"),
         (GROUP_INVITATION, "GROUP_INVITATION"),
         (ACHIEVEMENT, "ACHIEVEMENT"),
         (TOURNAMENT_INVITATION, "TOURNAMENT_INVITATION"),
@@ -328,9 +328,9 @@ class FriendRequestNotification(BaseNotificationHandler):
         return reverse("users:user-profile", kwargs={"pk": self.notification.actor.sender.pk})
 
 
-class MatchProposalNotification(BaseNotificationHandler):
+class MatchInvitationNotification(BaseNotificationHandler):
     """
-    Handles redirection logic for match proposal notifications. Redirects the
+    Handles redirection logic for match invitation notifications. Redirects the
     user to the lobby of the match upon interaction.
     """
 

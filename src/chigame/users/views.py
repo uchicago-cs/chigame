@@ -17,7 +17,7 @@ from .models import (
     FriendInvitation,
     FriendRequestNotification,
     GroupInvitationNotification,
-    MatchProposalNotification,
+    MatchInvitationNotification,
     Notification,
     UserProfile,
 )
@@ -545,7 +545,7 @@ def deleted_notifications_view(request, pk):
 @login_required
 def notification_detail(request, pk):
     """
-    Redirect the user based on a specific notification's action type (e.g., friend request, match proposal).
+    Redirect the user based on a specific notification's action type (e.g., friend request, match invitation).
 
     Args:
         request (HttpRequest)
@@ -567,8 +567,8 @@ def notification_detail(request, pk):
         if notification.type == Notification.FRIEND_REQUEST:
             handler = FriendRequestNotification(notification)
             return redirect(handler.get_redirect_str())
-        elif notification.type == Notification.MATCH_PROPOSAL:
-            handler = MatchProposalNotification(notification)
+        elif notification.type == Notification.MATCH_INVITATION:
+            handler = MatchInvitationNotification(notification)
             return redirect(handler.get_redirect_str())
         elif notification.type == Notification.GROUP_INVITATION:
             handler = GroupInvitationNotification(notification)
