@@ -94,11 +94,7 @@ class GameCreateView(UserPassesTestMixin, CreateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
-        # Game create and edit views share the same template, so this variable lets us know which is which
-        # Currently, this is being so that BGG autofilling is only available when creating a game
         context["is_create"] = True
-
         return context
 
 
@@ -118,11 +114,7 @@ class GameEditView(UserPassesTestMixin, UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
-        # Game create and edit views share the same template, so this variable lets us know which is which
-        # Currently, this is being so that BGG autofilling is only available when creating a game
         context["is_create"] = False
-
         return context
 
 
@@ -747,26 +739,26 @@ class TournamentDetailView(DetailView):
             if not user_matches.exists():
                 messages.error(request, "You don't have any matches in this tournament.")
                 return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
-            
+
             # Get the first match (there should only be one active match per player)
             match = user_matches.first()
-            
+
             # Check if the match is already in progress
             if match.lobby.match_status == Lobby.Viewable:
                 messages.error(request, "This match is already in progress.")
                 return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
-            
+
             # Check if the match is already finished
             if match.lobby.match_status == Lobby.Finished:
                 messages.error(request, "This match has already finished.")
                 return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
-            
+
             # Add user to lobby members if not already there
             if request.user not in match.lobby.members.all():
                 match.lobby.members.add(request.user)
                 match.lobby.save()
                 messages.success(request, "You have joined the match lobby.")
-            
+
             # Check if all players are ready
             if match.players.count() == match.lobby.members.count():
                 # Start the match
@@ -774,8 +766,11 @@ class TournamentDetailView(DetailView):
                 match.lobby.save()
                 messages.success(request, "Match has started!")
             else:
-                messages.info(request, f"Waiting for other players to join... ({match.lobby.members.count()}/{match.players.count()})")
-            
+                messages.info(
+                    request,
+                    f"Waiting for other players to join... ({match.lobby.members.count()}/{match.players.count()})",
+                )
+
             return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
 
         elif request.POST.get("action") == "spectate":
@@ -975,8 +970,7 @@ class TournamentArchivedListView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["archived_tournament_list"] = self.get_all_archived()
-        # Additional context can be added if needed
+        context["tournament_list"] = self.get_all_archived()
         return context
 
     def get_all_archived(self):
