@@ -5,6 +5,7 @@ from django.urls import include, path
 from django.views import defaults as default_views
 from django.views.generic import TemplateView
 from machina import urls as machina_urls
+from rest_framework.authtoken.views import obtain_auth_token
 
 urlpatterns = [
     path("", TemplateView.as_view(template_name="pages/home.html"), name="home"),
@@ -25,6 +26,7 @@ urlpatterns = [
     # This is necessary in order to add our own pages under `/forums`
     # i.e. CRUD pages for django machina models
     path("forums/", include("chigame.forums.base.urls")),
+    path("api/token/", obtain_auth_token, name="api-token"),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 

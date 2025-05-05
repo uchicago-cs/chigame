@@ -24,6 +24,12 @@ user_patterns = [
 tournament_patterns = [
     path("chat/", views.MessageView.as_view(), name="api-chat-list"),
     path("chat/feed/", views.MessageFeedView.as_view(), name="api-chat-detail"),
+    path(
+        "<int:tournament_id>/feedback/",
+        views.TournamentFeedbackListView.as_view(),
+        name="api-tournament-feedback-list",
+    ),
+    path("feedback/", views.FeedbackCreateView.as_view(), name="api-feedback-create"),
 ]
 
 group_patterns = [

@@ -9,6 +9,7 @@ from rest_framework.views import APIView
 from chigame.api.filters import GameFilter
 from chigame.api.serializers import (
     CategorySerializer,
+    FeedbackSerializer,
     GameSerializer,
     GroupSerializer,
     LobbySerializer,
@@ -17,7 +18,7 @@ from chigame.api.serializers import (
     MessageSerializer,
     UserSerializer,
 )
-from chigame.games.models import Game, Lobby, Message, User
+from chigame.games.models import Feedback, Game, Lobby, Message, User
 from chigame.users.models import Group, UserProfile
 
 
@@ -156,3 +157,20 @@ class MessageFeedView(APIView):
 
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class FeedbackCreateView(generics.CreateAPIView):
+    serializer_class = FeedbackSerializer
+    queryset = Feedback.objects.all()
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+
+class TournamentFeedbackListView(generics.ListAPIView):
+    serializer_class = FeedbackSerializer
+    pagination_class = PageNumberPagination
+
+    def get_queryset(self):
+        tournament_id = self.kwargs["tournament_id"]
+        return Feedback.objects.filter(tournament_id=tournament_id).order_by("-created_at")

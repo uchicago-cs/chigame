@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from chigame.games.models import Category, Chat, Game, Lobby, Mechanic, Message, Tournament, User
+from chigame.games.models import Category, Chat, Feedback, Game, Lobby, Mechanic, Message, Tournament, User
 from chigame.users.models import Group
 
 
@@ -96,3 +96,15 @@ class MessageFeedSerializer(serializers.ModelSerializer):
 
     def get_sender(self, obj):
         return obj.sender.name
+
+
+class FeedbackSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Feedback
+        fields = ("id", "tournament", "user", "rating", "comment", "created_at")
+        read_only_fields = ("id", "user", "created_at")
+
+    def validate_rating(self, value):
+        if not 1 <= value <= 5:
+            raise serializers.ValidationError("Rating must be between 1 and 5")
+        return value
