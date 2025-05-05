@@ -6,6 +6,132 @@
   <link rel="stylesheet"
         type="text/css"
         href="{% static 'tournament_styles.css' %}" />
+  <style>
+    .simulation-controls {
+      margin: 20px 0;
+      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      background-color: #f9f9f9;
+    }
+
+    .simulation-toggle {
+      display: inline-block;
+      padding: 8px 15px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-right: 10px;
+    }
+
+    .simulation-toggle.active {
+      background-color: #f44336;
+    }
+
+    .tournament-type {
+      margin: 10px 0;
+    }
+
+    .simulation-actions {
+      margin-top: 15px;
+    }
+
+    .simulation-actions button {
+      margin-right: 10px;
+      padding: 5px 10px;
+      background-color: #2196F3;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .tournament-bracket {
+      margin-top: 20px;
+    }
+
+    .round {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-around;
+      width: 200px;
+      margin-right: 40px;
+    }
+
+    .bracket-container {
+      display: flex;
+      overflow-x: auto;
+      padding: 20px 0;
+    }
+
+    .match {
+      margin: 10px 0;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      background-color: white;
+      position: relative;
+    }
+
+    .match.winners {
+      border-color: #4CAF50;
+    }
+
+    .match.losers {
+      border-color: #f44336;
+    }
+
+    .match.final {
+      border-color: #FFD700;
+      background-color: #FFFDE7;
+    }
+
+    .match-player {
+      padding: 5px;
+      margin: 2px 0;
+    }
+
+    .match-player.winner {
+      background-color: #E8F5E9;
+      font-weight: bold;
+    }
+
+    .match-player.loser {
+      color: #999;
+    }
+
+    .simulate-match-btn {
+      margin-top: 5px;
+      padding: 2px 5px;
+      font-size: 12px;
+      background-color: #2196F3;
+      color: white;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+
+    .bracket-title {
+      font-weight: bold;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    .tournament-winner {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #FFFDE7;
+      border: 2px solid #FFD700;
+      border-radius: 5px;
+      text-align: center;
+    }
+
+    .inline-form {
+      display: inline;
+    }
+  </style>
 {% endblock extrahead %}
 {% block content %}
   <div class="tournament-header">
@@ -48,6 +174,182 @@
                width="30" />
         {% endif %}
       {% endif %}
+    {% endif %}
+  </div>
+  <!-- Tournament Simulation Controls -->
+  <div class="simulation-controls">
+    <h2>Tournament Simulation</h2>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="tournament_id" value="{{ tournament.id }}" />
+      <input type="hidden" name="action" value="toggle_simulation_mode" />
+      <button type="submit"
+              class="simulation-toggle {% if simulation_mode %}active{% endif %}">
+        {% if simulation_mode %}
+          Deactivate
+        {% else %}
+          Activate
+        {% endif %}
+        Simulation Mode
+      </button>
+    </form>
+    {% if simulation_mode %}
+      <div class="tournament-type">
+        <form method="post">
+          {% csrf_token %}
+          <input type="hidden" name="tournament_id" value="{{ tournament.id }}" />
+          <input type="hidden" name="action" value="set_tournament_type" />
+          <label>
+            <input type="radio"
+                   name="tournament_type"
+                   value="single"
+                   {% if not simulation_data.is_double_elimination %}checked{% endif %} />
+            Single Elimination
+          </label>
+          <label>
+            <input type="radio"
+                   name="tournament_type"
+                   value="double"
+                   {% if simulation_data.is_double_elimination %}checked{% endif %} />
+            Double Elimination
+          </label>
+          <button type="submit">Set Tournament Type</button>
+        </form>
+      </div>
+      <div class="simulation-actions">
+        <form method="post" class="inline-form">
+          {% csrf_token %}
+          <input type="hidden" name="tournament_id" value="{{ tournament.id }}" />
+          <input type="hidden" name="action" value="advance_round" />
+          <button type="submit">Advance to Next Round</button>
+        </form>
+        <form method="post" class="inline-form">
+          {% csrf_token %}
+          <input type="hidden" name="tournament_id" value="{{ tournament.id }}" />
+          <input type="hidden" name="action" value="reset_simulation" />
+          <button type="submit">Reset Simulation</button>
+        </form>
+        <form method="post" class="inline-form">
+          {% csrf_token %}
+          <input type="hidden" name="tournament_id" value="{{ tournament.id }}" />
+          <input type="hidden" name="action" value="run_full_simulation" />
+          <button type="submit">Run Full Simulation</button>
+        </form>
+      </div>
+      <!-- Tournament Bracket Display -->
+      <div class="tournament-bracket">
+        <h3>Tournament Bracket</h3>
+        {% if simulation_data.tournament_winner %}
+          <div class="tournament-winner">
+            <h3>Tournament Winner</h3>
+            {% for player in tournament.get_all_players %}
+              {% if player.id == simulation_data.tournament_winner %}
+                <p>
+                  {% if player.name %}
+                    <strong>{{ player.name }}</strong>
+                  {% else %}
+                    <strong>{{ player.email }}</strong>
+                  {% endif %}
+                </p>
+              {% endif %}
+            {% endfor %}
+          </div>
+        {% endif %}
+        <div class="bracket-container">
+          {% for round_num, brackets in simulation_data.rounds.items %}
+            <div class="round">
+              <div class="bracket-title">Round {{ round_num }}</div>
+              {% if brackets.winners %}
+                <div class="bracket-title">Winners Bracket</div>
+                {% for match in brackets.winners %}
+                  <div class="match winners">
+                    {% for player_data in match.players %}
+                      <div class="match-player {% if player_data.id == match.winner %}winner{% elif match.winner and player_data.id != match.winner %}loser{% endif %}">
+                        {% for player in tournament.get_all_players %}
+                          {% if player.id == player_data.id %}
+                            {% if player.name %}
+                              {{ player.name }}
+                            {% else %}
+                              {{ player.email }}
+                            {% endif %}
+                          {% endif %}
+                        {% endfor %}
+                      </div>
+                    {% endfor %}
+                    {% if not match.winner %}
+                      <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="tournament_id" value="{{ tournament.id }}" />
+                        <input type="hidden" name="action" value="simulate_match" />
+                        <input type="hidden" name="match_id" value="{{ match.id }}" />
+                        <button type="submit" class="simulate-match-btn">Simulate Match</button>
+                      </form>
+                    {% endif %}
+                  </div>
+                {% endfor %}
+              {% endif %}
+              {% if brackets.losers %}
+                <div class="bracket-title">Losers Bracket</div>
+                {% for match in brackets.losers %}
+                  <div class="match losers">
+                    {% for player_data in match.players %}
+                      <div class="match-player {% if player_data.id == match.winner %}winner{% elif match.winner and player_data.id != match.winner %}loser{% endif %}">
+                        {% for player in tournament.get_all_players %}
+                          {% if player.id == player_data.id %}
+                            {% if player.name %}
+                              {{ player.name }}
+                            {% else %}
+                              {{ player.email }}
+                            {% endif %}
+                          {% endif %}
+                        {% endfor %}
+                      </div>
+                    {% endfor %}
+                    {% if not match.winner %}
+                      <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="tournament_id" value="{{ tournament.id }}" />
+                        <input type="hidden" name="action" value="simulate_match" />
+                        <input type="hidden" name="match_id" value="{{ match.id }}" />
+                        <button type="submit" class="simulate-match-btn">Simulate Match</button>
+                      </form>
+                    {% endif %}
+                  </div>
+                {% endfor %}
+              {% endif %}
+              {% if brackets.final %}
+                <div class="bracket-title">Final Match</div>
+                {% for match in brackets.final %}
+                  <div class="match final">
+                    {% for player_data in match.players %}
+                      <div class="match-player {% if player_data.id == match.winner %}winner{% elif match.winner and player_data.id != match.winner %}loser{% endif %}">
+                        {% for player in tournament.get_all_players %}
+                          {% if player.id == player_data.id %}
+                            {% if player.name %}
+                              {{ player.name }}
+                            {% else %}
+                              {{ player.email }}
+                            {% endif %}
+                          {% endif %}
+                        {% endfor %}
+                      </div>
+                    {% endfor %}
+                    {% if not match.winner %}
+                      <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="tournament_id" value="{{ tournament.id }}" />
+                        <input type="hidden" name="action" value="simulate_match" />
+                        <input type="hidden" name="match_id" value="{{ match.id }}" />
+                        <button type="submit" class="simulate-match-btn">Simulate Match</button>
+                      </form>
+                    {% endif %}
+                  </div>
+                {% endfor %}
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+      </div>
     {% endif %}
   </div>
   <p>Game: {{ tournament.game }}</p>
