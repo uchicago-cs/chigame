@@ -185,7 +185,8 @@ def user_profile_detail_view(request, pk):
         if not is_friend:
             curr_user = request.user
             friendship_request = FriendInvitation.objects.filter(
-                Q(sender=target_user, receiver=curr_user) | Q(sender=curr_user, receiver=target_user)
+                Q(sender=target_user, receiver=curr_user, is_deleted=False)
+                | Q(sender=curr_user, receiver=target_user, is_deleted=False)
             ).first()
 
     # provide frontend profile + friendship status
@@ -224,8 +225,9 @@ def send_friend_invitation(request, pk):
 
     # check if the friendship invitation already exists
     invitation, new = FriendInvitation.objects.filter(
-        Q(sender=curr_user, receiver=other_user) | Q(sender=other_user, receiver=curr_user)
-    ).get_or_create(defaults={"sender": curr_user, "receiver": other_user})
+        Q(sender=curr_user, receiver=other_user, is_deleted=False)
+        | Q(sender=other_user, receiver=curr_user, is_deleted=False)
+    ).get_or_create(defaults={"sender": curr_user, "receiver": other_user, "is_deleted": False})
     if new:
         messages.success(request, "Friendship invitation sent successfully.")
         notification = Notification.objects.create(
@@ -267,13 +269,10 @@ def cancel_friend_invitation(request, pk):
     # fetch the current user and the target user
     sender = User.objects.get(pk=request.user.id)
     receiver = User.objects.get(pk=pk)
-    num = None
     try:
         # check if the friendship invitation exists
-        friendship = FriendInvitation.objects.get(sender=sender, receiver=receiver)
+        friendship = FriendInvitation.objects.get(sender=sender, receiver=receiver, is_deleted=False)
         notification = Notification.objects.get_by_actor(friendship)
-        # completely delete the notification
-        notification.delete()
     except FriendInvitation.DoesNotExist:
         messages.error(request, "Friendship invitation does not exist")
         return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
@@ -284,13 +283,11 @@ def cancel_friend_invitation(request, pk):
             receiver=receiver,
             type=Notification.FRIEND_REQUEST,
         )
-        notification.delete()
 
-    num, _ = friendship.delete()
-    if num:
-        messages.success(request, "Friendship invitation cancelled successfully.")
-    else:
-        messages.error(request, "Something went wrong please try again later!")
+    friendship.delete()
+    notification.mark_as_deleted()
+    messages.success(request, "Friendship invitation cancelled successfully.")
+
     return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
 
 
@@ -323,7 +320,7 @@ def accept_friend_invitation(request, pk):
         try:
             notification = Notification.objects.get_by_actor(friendship)
             # ensure the notification is deleted
-            notification.delete()
+            notification.mark_as_deleted()
         except Notification.DoesNotExist:
             # fine if no notification exists
             pass
@@ -362,8 +359,8 @@ def decline_friend_invitation(request, pk):
             # get the notification
             try:
                 notification = Notification.objects.get_by_actor(friendship)
-                # ensure deletion of the notification
-                notification.delete()
+                # mark notification as deleted
+                notification.mark_as_deleted()
             except Notification.DoesNotExist:
                 # fine if no notification exists
                 pass
@@ -439,13 +436,6 @@ def user_inbox_view(request, pk):
 
     user = request.user
     notifications = Notification.objects.filter_by_receiver(user)
-
-    # check for any notifications that have already been addressed
-    for notification in notifications:
-        notification.remove_if_addressed()
-
-    # refresh the notifications queryset
-    notifications = Notification.objects.filter_by_receiver(user)
     default_notification_messages = Notification.DEFAULT_MESSAGES
     context = {
         "pk": pk,
@@ -458,31 +448,6 @@ def user_inbox_view(request, pk):
     else:
         messages.error(request, "Not your inbox")
         return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
-
-
-def unfriend_users(user1, user2):
-    """
-    Remove friendship between two users and delete associated invitation and notifications.
-
-    Args:
-        user1 (User): The first user
-        user2 (User): The second user
-    """
-    # remove the users from each other's friends list
-    user1.friends.remove(user2)
-    user2.friends.remove(user1)
-
-    # handle any friend invitations and notifications
-    try:
-        # delete the notification and delete the friendship invitation if it was accepted
-        friend_invite = FriendInvitation.objects.get_by_users(user1, user2)
-        notification = Notification.objects.get_by_actor(friend_invite)
-        notification.delete()
-        if friend_invite.accepted:
-            friend_invite.delete()
-    except (FriendInvitation.DoesNotExist, Notification.DoesNotExist):
-        # If there's no invitation or notification, that's fine since we've already removed the friendship
-        pass
 
 
 @login_required
@@ -506,13 +471,12 @@ def remove_friend(request, pk):
             curr_user = User.objects.get(pk=request.user.pk)
             other_user = User.objects.get(pk=pk)
             # remove the users from each other's friends list
-            unfriend_users(curr_user, other_user)
+            curr_user.friends.remove(other_user)
+            other_user.friends.remove(curr_user)
             messages.success(request, "Friend removed successfully")
             return redirect(reverse("users:user-profile", kwargs={"pk": pk}))
         except User.DoesNotExist:
             messages.error(request, "This user does not exist")
-        except (FriendInvitation.DoesNotExist, ValueError):
-            messages.info(request, "Something went wrong")
     else:
         messages.error(request, "You are not friends with yourself!")
     return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
@@ -599,9 +563,7 @@ def notification_detail(request, pk):
             messages.error(request, "You can not redirect from this notification")
             return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
         notification.mark_as_read()
-        if not notification.actor:  # when friends are removed, invitation(actor) is deleted
-            messages.error(request, "Something went wrong. This notification is invalid")
-            return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
+
         if notification.type == Notification.FRIEND_REQUEST:
             handler = FriendRequestNotification(notification)
             return redirect(handler.get_redirect_str())

@@ -45,6 +45,9 @@ class User(AbstractUser):
     friends = models.ManyToManyField("self", symmetrical=True, blank=True)
     tokens = models.PositiveSmallIntegerField(validators=[MaxValueValidator(3)], default=1)
 
+    # a moderator can manage/approve game guides in Knowledge Base
+    moderator = models.BooleanField(default=False)
+
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
 
@@ -87,14 +90,15 @@ class UserProfile(models.Model):
 
 class FriendInvitationManager(models.Manager):
     def get_by_users(self, user1, user2, **kwargs):
-        """Gets a friend invitation given two user, each of which can be a sender
+        """Gets a friend invitation given two user, which can be a sender
         or a receiver"""
         return self.get(Q(sender=user1, receiver=user2) | Q(sender=user2, receiver=user1), **kwargs)
 
 
 class FriendInvitation(models.Model):
     """
-    An invitation from a User to another User, requesting that they become friends.
+    An invitation from a User to another User, requesting that they become
+    friends.
     """
 
     sender = models.ForeignKey(User, related_name="sent_friend_invitations", on_delete=models.CASCADE)
@@ -102,9 +106,7 @@ class FriendInvitation(models.Model):
     accepted = models.BooleanField(default=False)
     timestamp = models.DateTimeField(auto_now_add=True)
     objects = FriendInvitationManager()
-
-    class Meta:
-        unique_together = ("sender", "receiver")
+    is_deleted = models.BooleanField(default=False)
 
     def accept_invitation(self):
         """
@@ -118,12 +120,10 @@ class FriendInvitation(models.Model):
         self.accepted = True
         self.save()
 
-        # Remove the notification
-        try:
-            notification = Notification.objects.get_by_actor(self)
-            notification.remove_if_addressed()
-        except Notification.DoesNotExist:
-            pass
+    # override default delete
+    def delete(self):
+        self.is_deleted = True
+        self.save()
 
 
 class Group(models.Model):
@@ -136,6 +136,7 @@ class Group(models.Model):
     name = models.TextField()
     members = models.ManyToManyField(User)
     created_by = models.ForeignKey(User, related_name="created_groups", on_delete=models.CASCADE)
+
     date_created = models.DateTimeField(auto_now_add=True)
 
 
@@ -149,20 +150,20 @@ class GroupInvitation(models.Model):
     receiver = models.ForeignKey(User, related_name="received_group_invitations", on_delete=models.CASCADE)
     accepted = models.BooleanField(default=False)
     timestamp = models.DateTimeField(auto_now_add=True)
+    is_deleted = models.BooleanField(default=False)
 
     def accept_invitation(self):
         """
         Accept a group invitation.
         """
+        receiver = self.receiver
+        self.friend_group.members.add(receiver)
         self.accepted = True
         self.save()
 
-        # Remove the notification
-        try:
-            notification = Notification.objects.get_by_actor(self)
-            notification.remove_if_addressed()
-        except Notification.DoesNotExist:
-            pass
+    def delete(self):
+        self.is_deleted = True
+        self.save()
 
 
 class NotificationQuerySet(models.QuerySet):
@@ -245,6 +246,7 @@ class Notification(models.Model):
     UPCOMING_MATCH = 3
     MATCH_PROPOSAL = 4
     GROUP_INVITATION = 5
+    ACHIEVEMENT = 6
 
     NOTIFICATION_TYPES = (
         (FRIEND_REQUEST, "FRIEND_REQUEST"),
@@ -252,6 +254,7 @@ class Notification(models.Model):
         (UPCOMING_MATCH, "UPCOMING_MATCH"),
         (MATCH_PROPOSAL, "MATCH_PROPOSAL"),
         (GROUP_INVITATION, "GROUP_INVITATION"),
+        (ACHIEVEMENT, "ACHIEVEMENT"),
     )
 
     DEFAULT_MESSAGES = {FRIEND_REQUEST: "You have a friend invitation"}
@@ -268,68 +271,8 @@ class Notification(models.Model):
     message = models.CharField(max_length=255, blank=True, null=True)
     objects = NotificationQuerySet.as_manager()
 
-    def is_addressed(self):
-        """
-        Check if a notification has been addressed (i.e. accepted or deleted)
-        Output: Bool
-            Returns True if the notification should be removed.
-        """
-        if self.type == self.FRIEND_REQUEST:
-            # For friend requests, check if the invitation has been either accepted or deleted
-            try:
-                invitation = FriendInvitation.objects.get(pk=self.actor_object_id)
-                return invitation.accepted or not self.visible
-            except FriendInvitation.DoesNotExist:
-                return True
-        elif self.type == self.GROUP_INVITATION:
-            # For group invitations, check if the invitation has been eitheraccepted or deleted
-            try:
-                invitation = GroupInvitation.objects.get(pk=self.actor_object_id)
-                return invitation.accepted or not self.visible
-            except GroupInvitation.DoesNotExist:
-                return True
-        elif self.type == self.MATCH_PROPOSAL:
-            # For match proposals, check if the match has been accepted or rejected
-            try:
-                match = self.actor
-                return match.accepted or match.rejected
-            except AttributeError:
-                return True
-        # For REMINDER and UPCOMING_MATCH, they don't need to be automatically removed, so we just return False
-        return False
-
-    def remove_if_addressed(self):
-        """
-        Automatically remove the notification if it has been addressed (i.e. accepted or deleted)
-        Output: Bool
-            Returns True if the notification was removed, e;se False
-        """
-        if self.is_addressed():
-            # If the notification is a friend invitation or group invitation,
-            # completely delete the notification
-            if self.type in [self.FRIEND_REQUEST, self.GROUP_INVITATION]:
-                # Delete the invitation object
-                if self.type == self.FRIEND_REQUEST:
-                    try:
-                        invitation = FriendInvitation.objects.get(pk=self.actor_object_id)
-                        invitation.delete()
-                    except FriendInvitation.DoesNotExist:
-                        pass
-                elif self.type == self.GROUP_INVITATION:
-                    try:
-                        invitation = GroupInvitation.objects.get(pk=self.actor_object_id)
-                        invitation.delete()
-                    except GroupInvitation.DoesNotExist:
-                        pass
-
-                # Completely delete the notification
-                self.delete()
-            else:
-                # For other notification types, just mark as deleted so users can recover it
-                self.mark_as_deleted()
-
-            return True
-        return False
+    class Meta:
+        unique_together = ["receiver", "actor_content_type", "actor_object_id", "type"]
 
     def mark_as_read(self):
         if not self.read:
