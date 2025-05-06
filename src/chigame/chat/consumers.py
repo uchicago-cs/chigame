@@ -5,7 +5,7 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 
 from chigame.users.models import User
 
-from .models import LiveChat, LiveChatMessage
+from .models import LiveChat
 
 
 class ChatConsumer(AsyncWebsocketConsumer):
@@ -46,11 +46,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def save_message(self, chat_id, user_id, message):
-        chat = LiveChat.objects.get(id=chat_id)
         user = User.objects.get(id=user_id)
-        msg = LiveChatMessage.objects.create(live_chat=chat, user=user, content=message)
-        # Use username if available, otherwise use email
-        return user.username or user.email  # Return username or email if username is None
+
+        return user.username or user.email
 
     async def connect(self):
         # Get chat_id from URL parameters

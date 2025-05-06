@@ -5,22 +5,22 @@
     protocol + window.location.host + "/ws/chat/" + chatId + "/"
   );
 
-  chatSocket.onopen = function (e) {
+  chatSocket.onopen = function(e) {
     console.log("Connected to chat room:", chatId);
   };
 
-  chatSocket.onclose = function (e) {
+  chatSocket.onclose = function(e) {
     console.log("Disconnected from chat room:", chatId);
   };
 
   document.querySelector("#id_message_send_input").focus();
-  document.querySelector("#id_message_send_input").onkeyup = function (e) {
+  document.querySelector("#id_message_send_input").onkeyup = function(e) {
     if (e.key === "Enter") {
       document.querySelector("#id_message_send_button").click();
     }
   };
 
-  document.querySelector("#id_message_send_button").onclick = function (e) {
+  document.querySelector("#id_message_send_button").onclick = function(e) {
     var messageInput = document.querySelector("#id_message_send_input").value;
     if (messageInput.trim() === "") return;
 
@@ -32,7 +32,7 @@
     );
   };
 
-  chatSocket.onmessage = function (e) {
+  chatSocket.onmessage = function(e) {
     const data = JSON.parse(e.data);
     var div = document.createElement("div");
     div.className = "chat-message";
