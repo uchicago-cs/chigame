@@ -34,8 +34,6 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name="notification",
-            unique_together={
-                ("receiver", "actor_content_type", "actor_object_id", "type")
-            },
+            unique_together={("receiver", "actor_content_type", "actor_object_id", "type")},
         ),
     ]

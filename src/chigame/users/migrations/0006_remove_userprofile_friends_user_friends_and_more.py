@@ -5,23 +5,22 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('users', '0005_alter_user_username'),
+        ("users", "0005_alter_user_username"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='userprofile',
-            name='friends',
+            model_name="userprofile",
+            name="friends",
         ),
         migrations.AddField(
-            model_name='user',
-            name='friends',
+            model_name="user",
+            name="friends",
             field=models.ManyToManyField(blank=True, to=settings.AUTH_USER_MODEL),
         ),
         migrations.AlterUniqueTogether(
-            name='friendinvitation',
-            unique_together={('sender', 'receiver')},
+            name="friendinvitation",
+            unique_together={("sender", "receiver")},
         ),
     ]
