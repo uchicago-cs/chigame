@@ -48,7 +48,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
     def save_message(self, chat_id, user_id, message):
         chat = LiveChat.objects.get(id=chat_id)
         user = User.objects.get(id=user_id)
-        return LiveChatMessage.objects.create(live_chat=chat, user=user, content=message)
+        msg = LiveChatMessage.objects.create(live_chat=chat, user=user, content=message)
+        # Use username if available, otherwise use email
+        return user.username or user.email  # Return username or email if username is None
 
     async def connect(self):
         # Get chat_id from URL parameters
@@ -73,8 +75,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
         message = text_data_json["message"]
         user_id = text_data_json["user_id"]
 
-        # Save message to database
-        await self.save_message(self.chat_id, user_id, message)
+        # Save message and get username
+        username = await self.save_message(self.chat_id, user_id, message)
 
         await self.channel_layer.group_send(
             self.roomGroupName,
@@ -82,17 +84,20 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 "type": "sendMessage",
                 "message": message,
                 "user_id": user_id,
+                "username": username,
             },
         )
 
     async def sendMessage(self, event):
         message = event["message"]
         user_id = event["user_id"]
+        username = event.get("username", "")
         await self.send(
             text_data=json.dumps(
                 {
                     "message": message,
                     "user_id": user_id,
+                    "username": username,
                 }
             )
         )
