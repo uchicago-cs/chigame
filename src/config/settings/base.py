@@ -63,10 +63,14 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 ROOT_URLCONF = "config.urls"
 # https://docs.djangoproject.com/en/dev/ref/settings/#wsgi-application
 WSGI_APPLICATION = "config.wsgi.application"
+# https://docs.djangoproject.com/en/dev/ref/settings/#asgi-application
+ASGI_APPLICATION = "config.asgi.application"
 
 # APPS
 # ------------------------------------------------------------------------------
 DJANGO_APPS = [
+    "daphne",  # Daphne must be listed before django.contrib.staticfiles
+    "channels",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
@@ -111,6 +115,7 @@ LOCAL_APPS = [
     "chigame.api",
     "chigame.forums.base",
     "chigame.knowledge_base",
+    "chigame.chat",
     # Overridden django-machina apps
     "chigame.forums.forum_conversation",
 ]
@@ -385,3 +390,8 @@ MACHINA_DEFAULT_AUTHENTICATED_USER_FORUM_PERMISSIONS = [
     "can_vote_in_polls",
     "can_download_file",
 ]
+
+# CHANNELS
+# ------------------------------------------------------------------------------
+# https://channels.readthedocs.io/en/stable/topics/channel_layers.html
+CHANNEL_LAYERS = {"default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}}
