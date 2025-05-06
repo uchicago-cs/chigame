@@ -1,3 +1,4 @@
+//Set up game
 document.addEventListener("DOMContentLoaded", async () => {
     await loadWords();
     createSquares();
@@ -9,6 +10,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 const howToPlayBtn = document.getElementById('how-to-play-btn');
 const howToPlayText = document.getElementById('how-to-play-text');
 
+//Opens and closes how to play text
 howToPlayBtn.addEventListener('click', () => {
     howToPlayText.classList.toggle('visible');
     howToPlayText.classList.toggle('hidden');
@@ -32,6 +34,8 @@ const COLOR_CORRECT = "rgb(83, 141, 78)";
 const COLOR_OFF = "rgb(181, 159, 59)";
 const COLOR_WRONG = "rgb(40, 58, 60)";
 
+
+//Loads the words from WORDS.txt to the game
 function loadWords() {
     return fetch('WORDS.txt')
         .then(response => response.text())
@@ -43,11 +47,13 @@ function loadWords() {
         });
 }
 
+//Get a new word to solve
 function getNewWord() {
     word = allowedWords[Math.floor(Math.random() * allowedWords.length)];
     console.log("Today's word:", word);
 }
 
+//Create boxes/grid for the board container
 function createSquares() {
     const gameBoard = document.getElementById("board");
 
@@ -60,6 +66,7 @@ function createSquares() {
     }
 }
 
+//Sends key to board when pressed on the screen
 function setupKeyboard() {
     const keys = document.querySelectorAll(".keyboard-row button");
     for (let i = 0; i < keys.length; i++) {
@@ -81,6 +88,7 @@ function setupKeyboard() {
     }
 }
 
+//Sends key to board when pressed on your physical keyboard
 function handlePhysicalKeyboardInput() {
     document.addEventListener('keydown', (e) => {
         const key = e.key.toLowerCase();
@@ -100,11 +108,14 @@ function handlePhysicalKeyboardInput() {
         }
     });
 }
+
+//Returns current word you're ussing
 function getCurrentWordArr() {
     const numberOfGuessedWords = guessedWords.length;
     return guessedWords[numberOfGuessedWords - 1];
 }
 
+//Checks if there is space and adds letter to current word
 function updateGuessedWords(letter) {
     const currentWordArr = getCurrentWordArr();
 
@@ -117,6 +128,7 @@ function updateGuessedWords(letter) {
     }
 }
 
+//Deletes one letter from current word
 function handleDeleteLetter() {
     const currentWordArr = getCurrentWordArr();
     if (!currentWordArr.length) return;
@@ -133,6 +145,7 @@ function handleDeleteLetter() {
     }
 }
 
+//Get tile colors for each letter of the solutionWord
 function getTileColor(letter, index) {
     const isCorrectLetter = word.includes(letter);
 
@@ -150,8 +163,9 @@ function getTileColor(letter, index) {
     return COLOR_OFF;
 }
 
+//Handles running the submission of each word
 function handleSubmitWord() {
-    if(gameOver){
+    if (gameOver) {
         return;
     }
     const currentWordArr = getCurrentWordArr();
@@ -171,6 +185,7 @@ function handleSubmitWord() {
     const firstLetterId = guessedWordCount * 5 + 1;
     const interval = 200;
 
+    //Adds the Keyboard color + effects
     currentWordArr.forEach((letter, index) => {
         setTimeout(() => {
             const tileColor = getTileColor(letter, index);
@@ -183,10 +198,10 @@ function handleSubmitWord() {
             //change on-web keyboard color
             const keyButton = document.querySelector(`[data-key="${letter}"]`);
             console.log('Key color:', keyButton);
-            if(keyButton){
+            if (keyButton) {
                 const keyColor = keyButton.style.backgroundColor;
 
-                if(keyColor !== COLOR_CORRECT){
+                if (keyColor !== COLOR_CORRECT) {
                     keyButton.style.backgroundColor = tileColor;
                     keyButton.style.borderColor = tileColor;
                 }
@@ -196,6 +211,7 @@ function handleSubmitWord() {
 
     guessedWordCount += 1;
 
+    //game end
     if (currentWord === word) {
         window.alert("Congratulations! 🎉");
         gameOver = true;
