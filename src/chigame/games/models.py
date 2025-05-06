@@ -523,30 +523,68 @@ class Tournament(models.Model):
 
         # Note: we don't delete the tournament because we want to keep it in the database
 
+    def promote_from_waitlist(self) -> list[User]:
+        """
+        Promotes users from the waitlist to the tournament if spots are available
+        and the registration is open. Users are promoted based on the order they appear
+        in the waitlist query (typically insertion order for ManyToMany, but not guaranteed).
+
+        Returns:
+            list[User]: List of users who were promoted.
+        """
+        promoted_users = []
+        if self.status != "registration open":
+            return promoted_users  # Can only promote during registration
+
+        available_spots = self.max_players - self.players.count()
+        if available_spots <= 0:
+            return promoted_users  # No spots available
+
+        # Get waitlisted users (order might vary based on DB backend)
+        # Convert to list to avoid modifying queryset while iterating if needed later
+        waitlisted_users = list(self.waitlist.all())
+
+        users_to_promote = waitlisted_users[:available_spots]
+
+        if users_to_promote:
+            for user in users_to_promote:
+                self.players.add(user)
+                self.waitlist.remove(user)
+                promoted_users.append(user)
+            self.save()  # Save once after promoting all possible users
+
+        return promoted_users
+
     def tournament_sign_up(self, user: User) -> int:
         """
         Signs up a user for a tournament. If the user has already joined the
-        tournament, nothing happens.
+        tournament or is on the waitlist, nothing happens. If the tournament is full,
+        the user is added to the waitlist.
 
         Args:
             user: the user
 
         Returns:
             int: 0 if the user has successfully signed up for the tournament,
-            1 if the user has already joined the tournament,
-            2 if the tournament is full,
-            3 if the registration period of tournament has already ended
+                 1 if the user has already joined the tournament or is on the waitlist,
+                 2 if the user was added to the waitlist,
+                 3 if the registration period of tournament has already ended.
         """
         if self.status != "registration open":
-            # The registration period has ended (the join and withdraw buttons only appear
-            # during the registration period)
+            # The registration period has ended
             return 3
-        if user in self.players.all():
-            # The user has already joined the tournament
+
+        if user in self.players.all() or user in self.waitlist.all():
+            # The user has already joined the tournament or is on the waitlist
             return 1
+
         if self.players.count() >= self.max_players:
-            # The tournament is full
+            # The tournament is full, add to waitlist
+            self.waitlist.add(user)
+            self.save()  # Save after adding to waitlist
             return 2
+
+        # Add user to players if there is space
         self.players.add(user)
         self.save()
         return 0
@@ -556,27 +594,48 @@ class Tournament(models.Model):
         user: User,
     ) -> int:
         """
-        Withdraws a user from a tournament. If the user has not joined the
-        tournament, nothing happens.
+        Withdraws a user from a tournament or its waitlist.
+        If the user has not joined either, nothing happens.
+        When a player withdraws during the registration period,
+        users from the waitlist are automatically promoted if spots become available.
 
         Args:
             user: the user
 
         Returns:
-            int: 0 if the user has successfully withdrawn from the tournament,
-            1 if the user has not joined the tournament
-            3 if the registration period of tournament has already ended
+            int: 0 if the user has successfully withdrawn,
+                 1 if the user was not found in players or waitlist,
+                 3 if the withdrawal attempt is outside the registration period.
         """
         if self.status != "registration open":
-            # The registration period has ended (the join and withdraw buttons only appear
-            # during the registration period)
+            # Can only withdraw during registration period
             return 3
-        if user not in self.players.all():
-            # The user has not joined the tournament
+
+        withdrew_from_players = False
+        if user in self.players.all():
+            # User is a player, remove them
+            self.players.remove(user)
+            # Don't save yet, promotion might modify players/waitlist again
+            withdrew_from_players = True
+        elif user in self.waitlist.all():
+            # User is on waitlist, remove them
+            self.waitlist.remove(user)
+            self.save()  # Save after removing from waitlist
+            return 0  # Successful withdrawal from waitlist
+        else:
+            # The user was not found in players or waitlist
             return 1
-        self.players.remove(user)
-        self.save()
-        return 0
+
+        # If a player withdrew, attempt promotion and save
+        if withdrew_from_players:
+            self.promote_from_waitlist()  # This method saves if promotions occur
+            # Need to save here in case no promotion occurred but player was removed
+            if not self.promote_from_waitlist():  # Check if promote_from_waitlist saved
+                self.save()
+            return 0  # Successful withdrawal from players
+
+        # Fallback case, should not be reached if logic above is correct
+        return 1
 
 
 class Announcement(models.Model):
