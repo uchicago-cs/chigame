@@ -1,1 +1,245 @@
 {% extends "base.html" %}
+
+{% load static %}
+
+{% block css %}
+  {{ block.super }}
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&display=swap"
+        rel="stylesheet" />
+  <link href="{% static 'css/homepage.css' %}" rel="stylesheet" />
+{% endblock css %}
+{% block content %}
+  <!-- First row of homepage for logged in users (Favorite Games and Friends List)-->
+  {% if user.is_authenticated %}
+    <div class="d-flex flex-row justify-content-between">
+      <!-- Favorite Games -->
+      <div class="homepage-block favorite-games">
+        <div class="d-flex flex-row justify-content-between">
+          <span>Favorite Games</span><span class="d-flex flex-column justify-content-around"><span class="see-more-link"><a class="nav-link" href="{% url 'game-list' %}">>> Games</a></span></span>
+        </div>
+        <div class="d-flex flex-row justify-content-between game-row">
+          <div class="fave-game">
+            <img src="https://cf.geekdo-images.com/oWcB33sfig9QF_KBEv7iLQ__original/img/retN48ZHxCC5YaECdlWjRdWHPGs=/0x0/filters:format(png)/pic2439783.png"
+                 class="game-img"
+                 alt="battleship" />
+          </div>
+          <div class="fave-game">
+            <img src="https://cf.geekdo-images.com/0_RWFMNapgr5yCrdhvGi_Q__original/img/c4SiusUQuh7uc0k6HDwIXYsEc8M=/0x0/filters:format(jpeg)/pic8785991.jpg"
+                 class="game-img"
+                 alt="chess" />
+          </div>
+          <div class="fave-game">
+            <img src="https://cf.geekdo-images.com/-DHiHBBSnvaLu0Do8CIykQ__original/img/fRfoyWezpQsumExNKVxf1cwtJfg=/0x0/filters:format(jpeg)/pic8204165.jpg"
+                 class="game-img"
+                 alt="uno" />
+          </div>
+        </div>
+        <div class="d-flex flex-row justify-content-between game-row">
+          <div class="fave-game">
+            <img src="https://cf.geekdo-images.com/9nGoBZ0MRbi6rdH47sj2Qg__original/img/bA8irydTCNlE38QSzM9EhcUIuNU=/0x0/filters:format(jpeg)/pic5786795.jpg"
+                 class="game-img"
+                 alt="monopoly" />
+          </div>
+          <div class="fave-game">
+            <img src="https://cf.geekdo-images.com/tjhapy1XoNga-YGrDj4BZQ__original/img/JLkqE0LUdShELen6FBEYis1mkTs=/0x0/filters:format(png)/pic8419491.png"
+                 class="game-img"
+                 alt="hello" />
+          </div>
+          <div class="fave-game">
+            <img src="https://cf.geekdo-images.com/dp-pJkUemCjhrwi9QItrPA__original/img/eeYPdva8ti4Hi2PYxkTLRPrtfKk=/0x0/filters:format(jpeg)/pic378237.jpg"
+                 class="game-img"
+                 alt="yahtzee" />
+          </div>
+        </div>
+      </div>
+      <!-- Friends List -->
+      <div class="homepage-block friends-list flex-grow-1">
+        <div class="d-flex flex-row justify-content-between">
+          <span>Friends</span><span class="d-flex flex-column justify-content-around"><span class="see-more-link">>> See all</span></span>
+        </div>
+        <div class="d-flex flex-column justify-content-between friends-list-block">
+          <div class="friend d-flex flex-row justify-content-around">
+            <div class="d-flex flex-column justify-content-around">
+              <img src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
+                   class="profile-pic"
+                   alt="profile-pic" />
+            </div>
+            <div class="friend-block d-flex flex-column justify-content-around">
+              <p class="friend-name">Friend Name</p>
+              <p class="friend-status">Online: Currently playing [Game]</p>
+              <p class="friend-status">Friend Status Message</p>
+            </div>
+            <div class="d-flex flex-column justify-content-around">
+              <span class="dot"></span>
+            </div>
+          </div>
+          <div class="friend d-flex flex-row justify-content-around">
+            <div class="d-flex flex-column justify-content-around">
+              <img src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
+                   class="profile-pic"
+                   alt="profile-pic" />
+            </div>
+            <div class="friend-block d-flex flex-column justify-content-around">
+              <p class="friend-name">Friend Name</p>
+              <p class="friend-status">Online: Currently playing [Game]</p>
+              <p class="friend-status">Friend Status Message</p>
+            </div>
+            <div class="d-flex flex-column justify-content-around">
+              <span class="dot"></span>
+            </div>
+          </div>
+          <div class="friend d-flex flex-row justify-content-around">
+            <div class="d-flex flex-column justify-content-around">
+              <img src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
+                   class="profile-pic"
+                   alt="profile-pic" />
+            </div>
+            <div class="friend-block d-flex flex-column justify-content-around">
+              <p class="friend-name">Friend Name</p>
+              <p class="friend-status">Online: Currently playing [Game]</p>
+              <p class="friend-status">Friend Status Message</p>
+            </div>
+            <div class="d-flex flex-column justify-content-around">
+              <span class="dot"></span>
+            </div>
+          </div>
+          <div class="friend d-flex flex-row justify-content-around">
+            <div class="d-flex flex-column justify-content-around">
+              <img src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
+                   class="profile-pic"
+                   alt="profile-pic" />
+            </div>
+            <div class="friend-block d-flex flex-column justify-content-around">
+              <p class="friend-name">Friend Name</p>
+              <p class="friend-status">Online: Currently playing [Game]</p>
+              <p class="friend-status">Friend Status Message</p>
+            </div>
+            <div class="d-flex flex-column justify-content-around">
+              <span class="dot"></span>
+            </div>
+          </div>
+          <div class="friend d-flex flex-row justify-content-around">
+            <div class="d-flex flex-column justify-content-around">
+              <img src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
+                   class="profile-pic"
+                   alt="profile-pic" />
+            </div>
+            <div class="friend-block d-flex flex-column justify-content-around">
+              <p class="friend-name">Friend Name</p>
+              <p class="friend-status">Online: Currently playing [Game]</p>
+              <p class="friend-status">Friend Status Message</p>
+            </div>
+            <div class="d-flex flex-column justify-content-around">
+              <span class="dot"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% else %}
+    <!-- First row of homepage for anonymous users (Hero section) -->
+    <div class="hero-section">
+      <div class="hero-content">
+        <div class="hero">
+          <p class="hero-title">Welcome to</p>
+          <p class="pixeltext">Chigame.</p>
+          <p class="hero-description">Make games. Play with friends. Get competitive.</p>
+        </div>
+      </div>
+    </div>
+    <div class="side-rect left-rect"></div>
+    <div class="side-rect right-rect"></div>
+    <img class="img-fluid logo"
+         src="{% static 'images/logos/logo.png' %}"
+         alt="ChiGame Logo" />
+    <div class="auth-buttons">
+      <a href="{% url 'account_signup' %}" class="auth-button">Sign Up</a>
+      <a href="{% url 'account_login' %}" class="auth-button">Sign In</a>
+    </div>
+  {% endif %}
+  <!-- Second row of homepage (Trending Games) -->
+  <div class="homepage-block trending-games">
+    <div class="d-flex flex-row justify-content-between">
+      <span>Trending Games</span><span class="d-flex flex-column justify-content-around"><span class="see-more-link"><a class="nav-link" href="{% url 'game-list' %}">>> See all</a></span></span>
+    </div>
+    <div class="trending-games-block tournament-name">
+      <img src="https://cf.geekdo-images.com/9nGoBZ0MRbi6rdH47sj2Qg__original/img/bA8irydTCNlE38QSzM9EhcUIuNU=/0x0/filters:format(jpeg)/pic5786795.jpg"
+           class="game-img"
+           alt="monopoly" />
+    </div>
+  </div>
+  <!-- Third row of homepage (Tournaments) -->
+  <div class="homepage-block tournaments">
+    <div class="d-flex flex-row justify-content-between">
+      {% if user.is_authenticated %}
+        <span>My Tournaments</span>
+      {% else %}
+        <span>Ongoing Tournaments</span>
+      {% endif %}
+      <span class="d-flex flex-column justify-content-around"><span class="see-more-link"><a class="nav-link" href="{% url 'tournament-list' %}">>> See all</a></span></span>
+    </div>
+    <div class="d-flex flex-row justify-content-between tournaments-block">
+      <div class="tournament">
+        <img src="https://cf.geekdo-images.com/oWcB33sfig9QF_KBEv7iLQ__original/img/retN48ZHxCC5YaECdlWjRdWHPGs=/0x0/filters:format(png)/pic2439783.png"
+             class="tournament-img"
+             alt="battleship" />
+        <p class="tournament-name">Tournament Name</p>
+        <p class="tournament-description">Tournament Description</p>
+      </div>
+      <div class="tournament">
+        <img src="https://cf.geekdo-images.com/0_RWFMNapgr5yCrdhvGi_Q__original/img/c4SiusUQuh7uc0k6HDwIXYsEc8M=/0x0/filters:format(jpeg)/pic8785991.jpg"
+             class="tournament-img"
+             alt="chess" />
+        <p class="tournament-name">Tournament Name</p>
+        <p class="tournament-description">Tournament Description</p>
+      </div>
+      <div class="tournament">
+        <img src="https://cf.geekdo-images.com/-DHiHBBSnvaLu0Do8CIykQ__original/img/fRfoyWezpQsumExNKVxf1cwtJfg=/0x0/filters:format(jpeg)/pic8204165.jpg"
+             class="tournament-img"
+             alt="uno" />
+        <p class="tournament-name">Tournament Name</p>
+        <p class="tournament-description">Tournament Description</p>
+      </div>
+    </div>
+  </div>
+  <!-- Fourth row of homepage -->
+  <div class="d-flex flex-row justify-content-between">
+    <!-- Live Chat -->
+    <div class="homepage-block live-chat flex-grow-1">
+      <div class="d-flex flex-row justify-content-between">
+        <span>Live Chat</span><span class="d-flex flex-column justify-content-around"><span class="see-more-link">>> See all</span></span>
+      </div>
+      <div class="live-chat-block tournament-name">(live chat preview here)</div>
+    </div>
+    <!-- Forum -->
+    <div class="homepage-block forum">
+      <div class="d-flex flex-row justify-content-between">
+        <span>Trending Discussion</span><span class="d-flex flex-column justify-content-around"><span class="see-more-link"><a class="nav-link" href="{% url 'forum:index' %}">>> See all</a></span></span>
+      </div>
+      <div class="d-flex flex-column justify-content-between forum-block">
+        <div class="forum-topic d-flex flex-column justify-content-between">
+          <p class="forum-post-title">Post Title</p>
+          <p class="forum-post-body">Post Body</p>
+          <p class="forum-post-author">Post Author</p>
+        </div>
+        <div class="forum-topic d-flex flex-column justify-content-between">
+          <p class="forum-post-title">Post Title</p>
+          <p class="forum-post-body">Post Body</p>
+          <p class="forum-post-author">Post Author</p>
+        </div>
+        <div class="forum-topic d-flex flex-column justify-content-between">
+          <p class="forum-post-title">Post Title</p>
+          <p class="forum-post-body">Post Body</p>
+          <p class="forum-post-author">Post Author</p>
+        </div>
+        <div class="forum-topic d-flex flex-column justify-content-between">
+          <p class="forum-post-title">Post Title</p>
+          <p class="forum-post-body">Post Body</p>
+          <p class="forum-post-author">Post Author</p>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock content %}
