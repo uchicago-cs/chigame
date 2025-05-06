@@ -17,6 +17,7 @@ canvas {
     align-items: center;
     height: 100vh;
 }
+
 .navbar {
     position: fixed;
     top: 0;
@@ -42,6 +43,11 @@ canvas {
     margin: 0;
     color: white;
     font-size: 40px;
+}
+
+.navbar h1::after {
+    content: "| CHECKERS";
+    font-weight: 100;
 }
 
 .btn {
