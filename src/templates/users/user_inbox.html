@@ -54,13 +54,51 @@
     </ul>
   </div>
   <div id="contextMenu" class="context-menu" style="display:none; position:absolute; background:white; border:1px solid #ccc; z-index:1000;">
-    <ul style="list-style:none; padding:0; margin:0;">
-      {% for key, label in notifications.first.CATEGORY_CHOICES %}
-        <li onclick="changeCategory('{{ key }}')" style="padding:8px; cursor:pointer;">{{ label }}</li>
-      {% endfor %}
+    <ul>
+      <li class="dropdown-item">
+        Move ▸
+        <ul class="dropdown-submenu">
+          {% for key, label in notifications.first.CATEGORY_CHOICES %}
+            <li onclick="changeCategory('{{ key }}')">{{ label }}</li>
+          {% endfor %}
+        </ul>
+      </li>
     </ul>
   </div>
   <meta name="csrf-token" content="{{ csrf_token }}">
+  <style>
+    .dropdown-item {
+      position: relative;
+      padding: 8px;
+      cursor: pointer;
+    }
+  
+    .dropdown-submenu {
+      display: none;
+      position: absolute;
+      top: 0;
+      left: 100%;
+      background: white;
+      border: 1px solid #ccc;
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      z-index: 1001;
+    }
+  
+    .dropdown-item:hover > .dropdown-submenu {
+      display: block;
+    }
+  
+    .dropdown-submenu li {
+      padding: 8px;
+      cursor: pointer;
+    }
+  
+    .dropdown-submenu li:hover {
+      background-color: #f0f0f0;
+    }
+  </style>  
   <script>
     const notificationItems = document.querySelectorAll('.notification-container');
     notificationItems.forEach(function(notificationItem) {
