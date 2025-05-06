@@ -1,34 +1,45 @@
 <script>
   const protocol = window.location.protocol === "https:" ? "wss://" : "ws://";
-  const chatSocket = new WebSocket(protocol + window.location.host + "/");
+  const chatId = "{{ chat.id }}";  // Make sure to pass chat.id from your view
+  const chatSocket = new WebSocket(protocol + window.location.host + "/ws/chat/" + chatId + "/");
+  
   chatSocket.onopen = function(e) {
-    console.log("The connection was setup successfully !");
+    console.log("Connected to chat room:", chatId);
   };
+  
   chatSocket.onclose = function(e) {
-    console.log("Something unexpected happened !");
+    console.log("Disconnected from chat room:", chatId);
   };
+  
   document.querySelector("#id_message_send_input").focus();
   document.querySelector("#id_message_send_input").onkeyup = function(e) {
     if (e.key === "Enter") {
       document.querySelector("#id_message_send_button").click();
     }
   };
+  
   document.querySelector("#id_message_send_button").onclick = function(e) {
-    var messageInput = document.querySelector(
-      "#id_message_send_input"
-    ).value;
+    var messageInput = document.querySelector("#id_message_send_input").value;
+    if (messageInput.trim() === "") return;
+    
     chatSocket.send(
       JSON.stringify({
         message: messageInput,
-        username: "{{request.user.username}}",
+        user_id: "{{ request.user.id }}",
       })
     );
   };
+  
   chatSocket.onmessage = function(e) {
     const data = JSON.parse(e.data);
     var div = document.createElement("div");
-    div.innerHTML = data.username + " : " + data.message;
+    div.className = "chat-message";
+    div.innerHTML = `<strong>User ${data.user_id}</strong>: ${data.message}`;
     document.querySelector("#id_message_send_input").value = "";
     document.querySelector("#id_chat_item_container").appendChild(div);
+    
+    // Scroll to bottom of chat
+    const container = document.querySelector("#id_chat_item_container");
+    container.scrollTop = container.scrollHeight;
   };
 </script>

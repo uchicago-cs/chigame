@@ -1,6 +1,8 @@
 import json
-
 from channels.generic.websocket import AsyncWebsocketConsumer
+from channels.db import database_sync_to_async
+from .models import LiveChat, LiveChatMessage, LiveChatUser
+from chigame.users.models import User
 
 
 class ChatConsumer(AsyncWebsocketConsumer):
@@ -32,10 +34,35 @@ class ChatConsumer(AsyncWebsocketConsumer):
     5. New messages are broadcast to all connected clients in the same chat room
     """
 
+    @database_sync_to_async
+    def get_live_chat(self, chat_id):
+        try:
+            return LiveChat.objects.get(id=chat_id)
+        except LiveChat.DoesNotExist:
+            return None
+
+    @database_sync_to_async
+    def save_message(self, chat_id, user_id, message):
+        chat = LiveChat.objects.get(id=chat_id)
+        user = User.objects.get(id=user_id)
+        return LiveChatMessage.objects.create(
+            live_chat=chat,
+            user=user,
+            content=message
+        )
+
     async def connect(self):
-        # Use a default room name instead of getting it from URL parameters
-        self.room_name = "default"
+        # Get chat_id from URL parameters
+        self.chat_id = self.scope['url_route']['kwargs']['chat_id']
+        self.live_chat = await self.get_live_chat(self.chat_id)
+        
+        if not self.live_chat:
+            await self.close()
+            return
+
+        self.room_name = f"chat_{self.chat_id}"
         self.roomGroupName = f"group_chat_{self.room_name}"
+        
         await self.channel_layer.group_add(self.roomGroupName, self.channel_name)
         await self.accept()
 
@@ -45,17 +72,24 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
         message = text_data_json["message"]
-        username = text_data_json["username"]
+        user_id = text_data_json["user_id"]
+        
+        # Save message to database
+        await self.save_message(self.chat_id, user_id, message)
+        
         await self.channel_layer.group_send(
             self.roomGroupName,
             {
                 "type": "sendMessage",
                 "message": message,
-                "username": username,
+                "user_id": user_id,
             },
         )
 
     async def sendMessage(self, event):
         message = event["message"]
-        username = event["username"]
-        await self.send(text_data=json.dumps({"message": message, "username": username}))
+        user_id = event["user_id"]
+        await self.send(text_data=json.dumps({
+            "message": message,
+            "user_id": user_id,
+        }))
