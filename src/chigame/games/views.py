@@ -27,7 +27,7 @@ from chigame.users.models import User
 
 from .filters import LobbyFilter
 from .forms import GameForm, LobbyForm, ReviewForm
-from .models import Chat, Game, GameList, Lobby, Match, Player, Review, Tournament, Feedback
+from .models import Chat, Feedback, Game, GameList, Lobby, Match, Player, Review, Tournament
 from .simulation_utils import TournamentSimulator, run_complete_tournament_simulation
 from .tables import LobbyTable
 
@@ -1049,7 +1049,11 @@ def tournament_feedback_list(request, tournament_id):
 
     # Retrieve feedback for the tournament
     feedback_list = Feedback.objects.filter(tournament=tournament).order_by("-created_at")
-    return render(request, "tournaments/tournament_feedback_list.html", {"tournament": tournament, "feedback_list": feedback_list})
+    return render(
+        request,
+        "tournaments/tournament_feedback_list.html",
+        {"tournament": tournament, "feedback_list": feedback_list},
+    )
 
 
 @login_required
@@ -1070,12 +1074,12 @@ def submit_feedback(request, tournament_id):
             comment=comment,  # Use 'comment' if that's the field name in the model
             rating=rating,
         )
-        print("Submitting feedback by user:", request.user)
 
         messages.success(request, "Feedback submitted successfully!")
         return redirect("tournament-detail", pk=tournament.id)
 
     return render(request, "tournaments/tournament_submit_feedback.html", {"tournament": tournament})
+
 
 # Placeholder Game
 @login_required

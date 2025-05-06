@@ -577,6 +577,7 @@ class Tournament(models.Model):
         self.save()
         return 0
 
+
 class Feedback(models.Model):
     """
     A feedback system submitted by users for a tournament.
@@ -588,6 +589,7 @@ class Feedback(models.Model):
     rating = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
     comment = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
 
 class Announcement(models.Model):
     """
