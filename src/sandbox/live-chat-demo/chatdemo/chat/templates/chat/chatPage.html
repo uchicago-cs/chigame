@@ -11,14 +11,17 @@
     </style>
   </head>
   <body>
-      <h1>Hello , Welcome to my chat site ! {{ request.user }}</h1>
+    <h1>Hello , Welcome to my chat site ! {{ request.user }}</h1>
     <br />
     {% if request.user.is_authenticated %}
-        Logout the chat Page <a href="{% url 'logout-user' %}">Logout</a>
+      Logout the chat Page <a href="{% url 'logout-user' %}">Logout</a>
     {% endif %}
     <div class="chat__item__container" id="id_chat_item_container">
       <br />
-      <input type="text" id="id_message_send_input" area-label="Message" placeholder="Message" />
+      <input type="text"
+             id="id_message_send_input"
+             area-label="Message"
+             placeholder="Message" />
       <button type="submit" id="id_message_send_button">Send Message</button>
       <br />
       <br />
