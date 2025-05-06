@@ -13,7 +13,7 @@
         {% csrf_token %}
         {% for notification in notifications %}
           {% with notification_type=notification.type %}
-            <li class="notification-container list-group-item d-flex justify-content-between align-items-start border mb-3 {% if notification.read %}bg-secondary{% endif %}">
+          <li class="notification-container list-group-item d-flex justify-content-between align-items-start border mb-3 {% if notification.read %}bg-secondary{% endif %}" oncontextmenu="openContextMenu(event, '{{ notification.id }}')">
               <div class="ms-2 me-auto">
                 <label>
                   <input type="checkbox" name="notification[]" value="{{ notification.id }}" />
@@ -23,6 +23,7 @@
                 {% else %}
                   <a href="{% url 'users:notification-detail' notification.pk %}">{{ default_notification_messages | get_dict_val:notification_type }}</a>
                 {% endif %}
+                <span class="badge bg-info ms-2">{{ notification.get_category_display }}</span>
               </div>
               <div class="button-container">
                 {% if notification.read %}
@@ -52,6 +53,14 @@
       </form>
     </ul>
   </div>
+  <div id="contextMenu" class="context-menu" style="display:none; position:absolute; background:white; border:1px solid #ccc; z-index:1000;">
+    <ul style="list-style:none; padding:0; margin:0;">
+      {% for key, label in notifications.first.CATEGORY_CHOICES %}
+        <li onclick="changeCategory('{{ key }}')" style="padding:8px; cursor:pointer;">{{ label }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  <meta name="csrf-token" content="{{ csrf_token }}">
   <script>
     const notificationItems = document.querySelectorAll('.notification-container');
     notificationItems.forEach(function(notificationItem) {
@@ -69,5 +78,37 @@
         }
       });
     });
+
+    let selectedNotificationId = null;
+
+    function openContextMenu(event, notifId) {
+      event.preventDefault();
+      selectedNotificationId = notifId;
+
+      const menu = document.getElementById("contextMenu");
+      menu.style.left = `${event.pageX}px`;
+      menu.style.top = `${event.pageY}px`;
+      menu.style.display = "block";
+    }
+
+    function changeCategory(category) {
+      const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+      fetch(`/users/notifications/${selectedNotificationId}/move/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-CSRFToken': csrfToken,
+        },
+        body: new URLSearchParams({ category: category })
+      }).then(() => {
+        window.location.reload();
+      });
+      document.getElementById("contextMenu").style.display = "none";
+    }
+
+    document.addEventListener('click', () => {
+      document.getElementById("contextMenu").style.display = "none";
+    });
+
   </script>
 {% endblock content %}

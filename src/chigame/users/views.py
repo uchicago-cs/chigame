@@ -11,6 +11,10 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import DetailView, RedirectView, UpdateView
 
+from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.http import require_POST
+from django.http import HttpResponse
+
 from chigame.games.models import Lobby, Player, Tournament
 
 from .models import (
@@ -634,3 +638,17 @@ def bulk_inbox(request):
                 notification = Notification.objects.get(pk=pk)
                 notification.mark_as_read()
     return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
+
+@csrf_protect
+@require_POST
+def move_notification(request, pk):
+    notification = get_object_or_404(Notification, pk=pk, receiver=request.user)
+    category = request.POST.get("category")
+
+    valid_categories = dict(Notification.CATEGORY_CHOICES).keys()
+    if category in valid_categories:
+        notification.category = category
+        notification.save()
+        return HttpResponse(status=204)
+
+    return HttpResponse(status=400)
