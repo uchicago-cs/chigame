@@ -27,7 +27,7 @@ from chigame.users.models import User
 
 from .filters import LobbyFilter
 from .forms import GameForm, LobbyForm, ReviewForm
-from .models import Chat, Game, GameList, Lobby, Match, Player, Review, Tournament
+from .models import Chat, Game, GameList, Lobby, Match, Player, Review, Tournament, Feedback
 from .simulation_utils import TournamentSimulator, run_complete_tournament_simulation
 from .tables import LobbyTable
 
@@ -1031,6 +1031,51 @@ class TournamentArchivedListView(ListView):
     def test_func(self):
         return self.request.user.is_staff
 
+
+# Tournament Feedback Views
+@login_required
+def tournament_feedback_list(request, tournament_id):
+    """
+    View to display all feedback for a specific tournament.
+    Only the owner of the tournament can access this view.
+    """
+    tournament = get_object_or_404(Tournament, id=tournament_id)
+
+    # Check if the requesting user is the owner of the tournament
+    if tournament.created_by != request.user:
+        # Redirect or show an error message if the user is not the owner
+        messages.error(request, "You are not authorized to view feedback for this tournament.")
+        return redirect("tournament-list")  # Redirect to the tournament list or another appropriate page
+
+    # Retrieve feedback for the tournament
+    feedback_list = Feedback.objects.filter(tournament=tournament).order_by("-created_at")
+    return render(request, "tournaments/tournament_feedback_list.html", {"tournament": tournament, "feedback_list": feedback_list})
+
+
+@login_required
+def submit_feedback(request, tournament_id):
+    tournament = get_object_or_404(Tournament, id=tournament_id)
+
+    if request.method == "POST":
+        comment = request.POST.get("content")  # Match the field name in the model
+        rating = request.POST.get("rating")
+
+        if not comment or not rating:
+            messages.error(request, "All fields are required.")
+            return redirect("tournament-detail", pk=tournament.id)
+
+        Feedback.objects.create(
+            tournament=tournament,
+            user=request.user,
+            comment=comment,  # Use 'comment' if that's the field name in the model
+            rating=rating,
+        )
+        print("Submitting feedback by user:", request.user)
+
+        messages.success(request, "Feedback submitted successfully!")
+        return redirect("tournament-detail", pk=tournament.id)
+
+    return render(request, "tournaments/tournament_submit_feedback.html", {"tournament": tournament})
 
 # Placeholder Game
 @login_required

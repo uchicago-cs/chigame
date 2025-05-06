@@ -577,6 +577,17 @@ class Tournament(models.Model):
         self.save()
         return 0
 
+class Feedback(models.Model):
+    """
+    A feedback system submitted by users for a tournament.
+    """
+
+    id = models.AutoField(primary_key=True)
+    tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE, related_name="feedback")
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    rating = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
+    comment = models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
 class Announcement(models.Model):
     """
