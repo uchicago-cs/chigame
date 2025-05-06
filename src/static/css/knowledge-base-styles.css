@@ -39,3 +39,19 @@
     padding: 10px;
     border-bottom: 1px solid black;
 }
+
+.contributor-title {
+  padding-bottom: 3vh;
+}
+.guides-col-width {
+  width: 25%;
+}
+.guides-col-wide {
+  width: 50%;
+}
+.border-left-black {
+  border-left: 2px solid black;
+}
+.border-right-black {
+  border-right: 2px solid black;
+}
