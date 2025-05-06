@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Live Chat Demo</title>
     <style>
       .chat__item__container {
@@ -9,18 +11,14 @@
     </style>
   </head>
   <body>
-    <center>
       <h1>Hello , Welcome to my chat site ! {{ request.user }}</h1>
-    </center>
     <br />
     {% if request.user.is_authenticated %}
-      <center>
         Logout the chat Page <a href="{% url 'logout-user' %}">Logout</a>
-      </center>
     {% endif %}
     <div class="chat__item__container" id="id_chat_item_container">
       <br />
-      <input type="text" id="id_message_send_input" />
+      <input type="text" id="id_message_send_input" area-label="Message" placeholder="Message" />
       <button type="submit" id="id_message_send_button">Send Message</button>
       <br />
       <br />
