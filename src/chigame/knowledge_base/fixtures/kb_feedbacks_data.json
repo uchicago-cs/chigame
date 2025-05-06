@@ -4,9 +4,9 @@
     "pk": 1,
     "fields": {
         "reviewer": 1,
-        "comment": "",
+        "comment": "This is a request change comment.",
         "guide_id": 1,
-        "status": 1,
+        "status": 3,
         "timestamp": "2025-05-06T02:53:27.777Z"
     }
 },
@@ -52,6 +52,17 @@
         "guide_id": 7,
         "status": 2,
         "timestamp": "2025-05-06T02:56:08.681Z"
+    }
+},
+{
+    "model": "knowledge_base.reviewfeedback",
+    "pk": 6,
+    "fields": {
+        "reviewer": 1,
+        "comment": "",
+        "guide_id": 1,
+        "status": 1,
+        "timestamp": "2025-05-06T03:43:06.947Z"
     }
 }
 ]
