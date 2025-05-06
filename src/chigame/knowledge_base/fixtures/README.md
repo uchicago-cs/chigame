@@ -3,12 +3,7 @@ Here are the fixtures for Knowledge Base. Assume makemigrations are up-to-date.
 
 ## Pls run this command in the root directory:
 
-```bash
-python manage.py loaddata \
-src/chigame/knowledge_base/fixtures/kb_user_game_data.json \
-src/chigame/knowledge_base/fixtures/kb_guides_data.json \
-src/chigame/knowledge_base/fixtures/kb_feedbacks_data.json
-```
+```python manage.py loaddata src/chigame/knowledge_base/fixtures/kb_user_game_data.json src/chigame/knowledge_base/fixtures/kb_guides_data.json src/chigame/knowledge_base/fixtures/kb_feedbacks_data.json```
 
 
 ## The fixture contains the following info:
