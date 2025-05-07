@@ -104,3 +104,34 @@ canvas {
 #declineDrawBtn {
     display: none;
 }
+
+.play-again-prompt {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: "Outfit", sans-serif;
+    font-size: 24px;
+    color: rgb(138, 90, 68);
+    text-align: center;
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+}
+
+.play-again-prompt p {
+    margin: 0 0 15px 0;
+}
+
+.play-again-btns {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.play-again-btns .btn {
+    font-size: 18px;
+    padding: 10px 25px;
+}

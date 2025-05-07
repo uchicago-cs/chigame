@@ -61,10 +61,12 @@ function create() {
       gameOver = true;
       gameOverMessage.textContent = 'Red player has forfeited! Black wins!';
       gameOverMessage.classList.add('show');
+      document.getElementById('playAgainPrompt').style.display = 'block';
     } else if (!gameOver && currentPlayer === COLORS.black) {
       gameOver = true;
       gameOverMessage.textContent = 'Black player has forfeited! Red wins!';
       gameOverMessage.classList.add('show');
+      document.getElementById('playAgainPrompt').style.display = 'block';
     }
   });
 
@@ -100,6 +102,7 @@ function create() {
       drawBtn.style.display = 'none';
       declineDrawBtn.style.display = 'none';
       forfeitBtn.style.display = 'none';
+      document.getElementById('playAgainPrompt').style.display = 'block';
     }
   });
 
