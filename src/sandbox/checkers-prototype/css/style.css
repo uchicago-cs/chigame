@@ -1,0 +1,43 @@
+body {
+  margin: 0;
+  background-color: rgb(254, 200, 154);
+}
+canvas {
+  display: inline-block;
+  background: black;
+}
+
+.main-content {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    top: 0px;
+    height: 90%;
+    padding: 20px;
+}
+
+.main-left {
+    flex: 1;
+}
+
+.main-right {
+    flex: 1;
+}
+
+.btn {
+    font-family: Arial;
+    font-size: 32px;
+    color: rgb(254, 200, 154);
+    background-color: rgb(138, 90, 68);
+    border: none;
+    height: 64px;
+    width: 160px;
+    font-size: 18px;
+    margin-right: 20px;
+    cursor: pointer;
+    transition: opacity 0.3s;
+}
+
+.btn:hover {
+    opacity: 0.8;
+}
