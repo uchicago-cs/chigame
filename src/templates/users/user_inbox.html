@@ -55,12 +55,7 @@
     </ul>
   </div>
   <div id="contextMenu"
-       class="context-menu"
-       style="display:none;
-              position:absolute;
-              background:white;
-              border:1px solid #ccc;
-              z-index:1000">
+       class="context-menu">
     <ul>
       <li class="dropdown-item">
         Move ▸
@@ -74,6 +69,14 @@
   </div>
   <meta name="csrf-token" content="{{ csrf_token }}" />
   <style>
+    .context-menu {
+      display: none;
+      position: absolute;
+      background: white;
+      border: 1px solid #ccc;
+      z-index: 1000;
+    }
+
     .dropdown-item {
       position: relative;
       padding: 8px;
