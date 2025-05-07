@@ -2,17 +2,32 @@
 
 {% block page-content %}
   <h1>Pending Guides</h1>
-  <ul>
-    {% for guide in pendingGuides %}
-      <li>
-        <strong>Guide for {{ guide.game_id }}</strong>
-        <br />
-        <p>Contributed by: {{ guide.author }}</p>
-        <p>Date uploaded: {{ guide.recent_upload }}</p>
-        <a href="#">Review</a>
-      </li>
-    {% empty %}
-      <li>No guides pending for review.</li>
-    {% endfor %}
-  </ul>
+  <div class="table-responsive">
+    <table class="table table-striped table-bordered align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>Game</th>
+          <th>Author</th>
+          <th>Date Uploaded</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for guide in pendingGuides %}
+          <tr>
+            <td>{{ guide.game_id.name }}</td>
+            <td>{{ guide.author.username|default:guide.author.email }}</td>
+            <td>{{ guide.recent_upload|date:"Y-m-d H:i" }}</td>
+            <td>
+              <a href="#" class="btn btn-sm btn-primary">Review</a>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="4" class="text-center">No guides pending for review.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 {% endblock page-content %}
