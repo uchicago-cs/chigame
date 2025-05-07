@@ -42,13 +42,28 @@ class LeaderboardPrivacySetting(models.Model):
         """
         Retrieve the user's setting for a specific game or leaderboard.
         If no specific game or leaderboard is provided, return global setting.
+
+        This follows the hierarchy:
+        1. Specific leaderboard Setting (highest priority)
+        2. Game-level setting
+        3. Global setting (lowest priority)
+
+        If no setting is found, return None.
         """
         if leaderboard:
             # specific leaderboard setting
-            return cls.objects.filter(user=user, leaderboard=leaderboard).first()
-        elif game:
+            setting = cls.objects.filter(user=user, leaderboard=leaderboard).first()
+            if setting:
+                return setting
+        if game:
             # game-level setting
-            return cls.objects.filter(user=user, game=game, leaderboard__isnull=True).first()
+            setting = cls.objects.filter(user=user, game=game, leaderboard__isnull=True).first()
+            if setting:
+                return setting
         else:
             # global setting
-            return cls.objects.filter(user=user, game__isnull=True, leaderboard__isnull=True).first()
+            setting = cls.objects.filter(user=user, game__isnull=True, leaderboard__isnull=True).first()
+            if setting:
+                return setting
+
+        return None
