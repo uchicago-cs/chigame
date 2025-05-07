@@ -18,7 +18,7 @@
               {% else %}
                 <a href="{% url 'users:notification-detail' notification.pk %}">{{ default_notification_messages | get_dict_val:notification_type }}</a>
               {% endif %}
-            </div> 
+            </div>
             <div class="button-container">
               <a href="{% url 'users:act-on-inbox-notification' notification.pk 'move_to_inbox' %}">
                 <span class="badge bg-primary rounded-pill me-2">

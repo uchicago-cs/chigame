@@ -13,7 +13,8 @@
         {% csrf_token %}
         {% for notification in notifications %}
           {% with notification_type=notification.type %}
-          <li class="notification-container list-group-item d-flex justify-content-between align-items-start border mb-3 {% if notification.read %}bg-secondary{% endif %}" oncontextmenu="openContextMenu(event, '{{ notification.id }}')">
+            <li class="notification-container list-group-item d-flex justify-content-between align-items-start border mb-3 {% if notification.read %}bg-secondary{% endif %}"
+                oncontextmenu="openContextMenu(event, '{{ notification.id }}')">
               <div class="ms-2 me-auto">
                 <label>
                   <input type="checkbox" name="notification[]" value="{{ notification.id }}" />
@@ -53,7 +54,13 @@
       </form>
     </ul>
   </div>
-  <div id="contextMenu" class="context-menu" style="display:none; position:absolute; background:white; border:1px solid #ccc; z-index:1000;">
+  <div id="contextMenu"
+       class="context-menu"
+       style="display:none;
+              position:absolute;
+              background:white;
+              border:1px solid #ccc;
+              z-index:1000">
     <ul>
       <li class="dropdown-item">
         Move ▸
@@ -65,14 +72,14 @@
       </li>
     </ul>
   </div>
-  <meta name="csrf-token" content="{{ csrf_token }}">
+  <meta name="csrf-token" content="{{ csrf_token }}" />
   <style>
     .dropdown-item {
       position: relative;
       padding: 8px;
       cursor: pointer;
     }
-  
+
     .dropdown-submenu {
       display: none;
       position: absolute;
@@ -85,20 +92,20 @@
       margin: 0;
       z-index: 1001;
     }
-  
-    .dropdown-item:hover > .dropdown-submenu {
+
+    .dropdown-item:hover>.dropdown-submenu {
       display: block;
     }
-  
+
     .dropdown-submenu li {
       padding: 8px;
       cursor: pointer;
     }
-  
+
     .dropdown-submenu li:hover {
       background-color: #f0f0f0;
     }
-  </style>  
+  </style>
   <script>
     const notificationItems = document.querySelectorAll('.notification-container');
     notificationItems.forEach(function(notificationItem) {
@@ -137,7 +144,9 @@
           'Content-Type': 'application/x-www-form-urlencoded',
           'X-CSRFToken': csrfToken,
         },
-        body: new URLSearchParams({ category: category })
+        body: new URLSearchParams({
+          category: category
+        })
       }).then(() => {
         window.location.reload();
       });
@@ -147,6 +156,5 @@
     document.addEventListener('click', () => {
       document.getElementById("contextMenu").style.display = "none";
     });
-
   </script>
 {% endblock content %}
