@@ -2,6 +2,28 @@
 
 {% block page-content %}
   <h1>Guide List</h1>
+  <form method="get">
+    <input type="text"
+           name="q"
+           value="{{ query }}"
+           placeholder="Search guides..." />
+    <select name="category">
+      <option value="">All Categories</option>
+      {% for cat in categories %}
+        <option value="{{ cat }}"
+                {% if request.GET.category == cat %}selected{% endif %}>{{ cat }}</option>
+      {% endfor %}
+    </select>
+    <select name="sort">
+      <option value="">Sort by: Most Recent Update</option>
+      <option value="az" {% if request.GET.sort == "az" %}selected{% endif %}>Game Name A–Z</option>
+      <option value="za" {% if request.GET.sort == "za" %}selected{% endif %}>Game Name Z–A</option>
+      <option value="old" {% if request.GET.sort == "old" %}selected{% endif %}>Oldest Update</option>
+    </select>
+    <button type="submit">Search</button>
+  </form>
+  <!-- Clear Search Button -->
+  <a href="{% url 'knowledge-base' %}">Clear Search</a>
   <div class="grid-container">
     {% for guide in guides %}
       <div class="game-card">
