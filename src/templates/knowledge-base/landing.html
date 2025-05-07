@@ -12,4 +12,9 @@
       <p>No guides found.</p>
     {% endfor %}
   </div>
+  <a href="#">Upload a Guide</a>
+  <!-- should replace this link with the upload guide link -->
+  <br />
+  {% if has_guides %}<a href="#">Manage My Guides</a>{% endif %}
+  <p>Note: If you have contributed a guide and wish to check update, please log in first.</p>
 {% endblock page-content %}
