@@ -13,11 +13,12 @@ This is the first example of a <a href="https://google.com">link</a>.
 This is the second example of a [link](https://google.com).
 
 # Getting Started
-Here's how to get started with our product.
+
+Second page
 
 # Advanced Features
-Learn about advanced features and capabilities.
-=======
+
+More content and <a href="...">link</a>
 """
 
 

@@ -15,6 +15,11 @@
         <li>
           <a href="?section=advanced-features">Advanced Features</a>
         </li>
+        {% for item in toc_items %}
+          <li class="{% if item.id == requested_section %}active{% endif %}">
+            <a href="?section={{ item.id }}">{{ item.title }}</a>
+          </li>
+        {% endfor %}
       </ul>
     </div>
     <!-- Main content area -->

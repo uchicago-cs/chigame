@@ -62,6 +62,43 @@ class SectionWrapperTreeprocessor(Treeprocessor):
             # Move the header into the section div as the first child
             parent.remove(header)
             section_div.insert(0, header)
+        # Build a parent map for fast lookups
+        parent_map = {child: parent for parent in root.iter() for child in parent}
+
+        # Gather only H2 headers for section wrapping
+        headers = [el for el in root.iter() if el.tag == "h2"]
+
+        for header in headers:
+            parent = parent_map.get(header)
+            if not parent:
+                continue
+
+            idx = list(parent).index(header)
+            section_id = header.text.strip().lower().replace(" ", "-")
+
+            # Create wrapper <div>
+            section_div = ElementTree.Element(
+                "div",
+                {
+                    "class": "kb-section",
+                    "data-section-id": section_id,
+                },
+            )
+
+            # Move header into wrapper first
+            parent.remove(header)
+            section_div.append(header)
+
+            # Pull siblings until the next H2 into the wrapper
+            siblings = list(parent)[idx:]
+            for sib in siblings:
+                if sib.tag == "h2":
+                    break
+                parent.remove(sib)
+                section_div.append(sib)
+
+            # Insert the wrapper back at the original index
+            parent.insert(idx, section_div)
 
         return root
 
@@ -116,3 +153,4 @@ class HtmlSanitizerExtension(Extension):
         # Register our preprocessor with high priority to ensure it runs before other processors
         md.preprocessors.register(HtmlSanitizerPreprocessor(md), "html_sanitizer", 0)
         md.postprocessors.register(LinkSanitizerPostprocessor(md), "html_sanitizer", 0)
+        md.treeprocessors.register(SectionWrapperTreeprocessor(md), "sectionwrapper", priority=30)
