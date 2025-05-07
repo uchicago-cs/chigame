@@ -60,32 +60,39 @@ class ChatConsumer(AsyncWebsocketConsumer):
         return chat.users.filter(id=user.id).exists()
 
     async def connect(self):
-        # Get chat_id from URL parameters
+        # Initialize room attributes early
         self.chat_id = self.scope["url_route"]["kwargs"]["chat_id"]
-        self.live_chat = await self.get_live_chat(self.chat_id)
-
-        if not self.live_chat:
-            await self.close()
-            return
+        self.room_name = f"chat_{self.chat_id}"
+        self.roomGroupName = f"group_chat_{self.room_name}"
         
-        # Get the authenticated user and check if they are a member of the chat
+        # Get the authenticated user
         self.user = self.scope["user"]
+        
+        # Check if user is authenticated
         if not self.user.is_authenticated:
             await self.close()
             return
+            
+        # Get the chat and check if it exists
+        self.live_chat = await self.get_live_chat(self.chat_id)
+        if not self.live_chat:
+            await self.close()
+            return
+            
+        # Check if user is a member of the chat
         is_member = await self.check_user_in_chat(self.user, self.live_chat)
         if not is_member:
             await self.close()
             return
-        
-        self.room_name = f"chat_{self.chat_id}"
-        self.roomGroupName = f"group_chat_{self.room_name}"
 
+        # Only add to group and accept if all checks pass
         await self.channel_layer.group_add(self.roomGroupName, self.channel_name)
         await self.accept()
 
     async def disconnect(self, close_code):
-        await self.channel_layer.group_discard(self.roomGroupName, self.channel_name)
+        # Safely handle disconnect even if connection was never fully established
+        if hasattr(self, 'roomGroupName'):
+            await self.channel_layer.group_discard(self.roomGroupName, self.channel_name)
 
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
