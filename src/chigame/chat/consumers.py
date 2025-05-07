@@ -54,6 +54,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         # Return the display name (username or email)
         return user.username or user.email
+    
+    @database_sync_to_async
+    def check_user_in_chat(self, user, chat):
+        return chat.users.filter(id=user.id).exists()
 
     async def connect(self):
         # Get chat_id from URL parameters
@@ -63,7 +67,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
         if not self.live_chat:
             await self.close()
             return
-
+        
+        # Get the authenticated user and check if they are a member of the chat
+        self.user = self.scope["user"]
+        if not self.user.is_authenticated:
+            await self.close()
+            return
+        is_member = await self.check_user_in_chat(self.user, self.live_chat)
+        if not is_member:
+            await self.close()
+            return
+        
         self.room_name = f"chat_{self.chat_id}"
         self.roomGroupName = f"group_chat_{self.room_name}"
 
