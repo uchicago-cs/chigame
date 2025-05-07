@@ -36,6 +36,7 @@ canvas {
 .nav-btns {
     display: flex;
     justify-content: flex-end;
+    align-items: center;
     gap: 1.5rem;
 }
 
@@ -73,19 +74,27 @@ canvas {
 }
 
 .game-controls {
-    margin-top: 20px;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     gap: 10px;
+    margin: 0;
 }
 
 .game-over-message {
-    margin-top: 20px;
-    font-family: Arial;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: "Outfit", sans-serif;
     font-size: 24px;
     color: rgb(138, 90, 68);
     text-align: center;
     display: none;
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
 }
 
 .game-over-message.show {
