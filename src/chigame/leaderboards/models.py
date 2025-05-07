@@ -60,10 +60,10 @@ class LeaderboardPrivacySetting(models.Model):
             setting = cls.objects.filter(user=user, game=game, leaderboard__isnull=True).first()
             if setting:
                 return setting
-        else:
-            # global setting
-            setting = cls.objects.filter(user=user, game__isnull=True, leaderboard__isnull=True).first()
-            if setting:
-                return setting
+
+        # global setting
+        setting = cls.objects.filter(user=user, game__isnull=True, leaderboard__isnull=True).first()
+        if setting:
+            return setting
 
         return None
