@@ -11,12 +11,12 @@ class Leaderboard(models.Model):
 
 class LeaderboardPrivacySetting(models.Model):
     """
-    Stores user preferences for leaderboard visibility.
+    Stores user Settings for leaderboard visibility.
 
-    Preference hierarchy:
-    1. Specific leaderboard preference (highest priority)
-    2. Game-level preference
-    3. Global preference (lowest priority)
+    Setting hierarchy:
+    1. Specific leaderboard Setting (highest priority)
+    2. Game-level setting
+    3. Global setting (lowest priority)
     """
 
     complete_opt_out = models.BooleanField(default=False)
@@ -31,24 +31,24 @@ class LeaderboardPrivacySetting(models.Model):
 
     def __str__(self):
         if self.leaderboard:
-            return f"{self.user.display_name}'s preferences for {self.leaderboard.name}"
+            return f"{self.user.display_name}'s settings for {self.leaderboard.name}"
         elif self.game:
-            return f"{self.user.display_name}'s preferences for {self.game.name}"
+            return f"{self.user.display_name}'s settings for {self.game.name}"
         else:
-            return f"{self.user.display_name}'s global preferences"
+            return f"{self.user.display_name}'s global settings"
 
     @classmethod
-    def get_user_preferences(cls, user, game=None, leaderboard=None):
+    def get_user_setting(cls, user, game=None, leaderboard=None):
         """
-        Retrieve the user's preferences for a specific game or leaderboard.
-        If no specific game or leaderboard is provided, return global preferences.
+        Retrieve the user's setting for a specific game or leaderboard.
+        If no specific game or leaderboard is provided, return global setting.
         """
         if leaderboard:
-            # specific leaderboard preference
+            # specific leaderboard setting
             return cls.objects.filter(user=user, leaderboard=leaderboard).first()
         elif game:
-            # game-level preference
+            # game-level setting
             return cls.objects.filter(user=user, game=game, leaderboard__isnull=True).first()
         else:
-            # global preference
+            # global setting
             return cls.objects.filter(user=user, game__isnull=True, leaderboard__isnull=True).first()
