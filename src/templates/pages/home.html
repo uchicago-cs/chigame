@@ -165,9 +165,27 @@
       <span>Trending Games</span><span class="d-flex flex-column justify-content-around"><span class="see-more-link"><a class="nav-link" href="{% url 'game-list' %}">>> See all</a></span></span>
     </div>
     <div class="trending-games-block tournament-name">
-      <img src="https://cf.geekdo-images.com/9nGoBZ0MRbi6rdH47sj2Qg__original/img/bA8irydTCNlE38QSzM9EhcUIuNU=/0x0/filters:format(jpeg)/pic5786795.jpg"
-           class="game-img"
-           alt="monopoly" />
+      <div class="trending-section">
+        <h2 class="section-title">Trending Games</h2>
+        <div class="swiper">
+          <div class="swiper-wrapper">
+            <div class="swiper-slide">
+              <img src="{% static 'images/games/management.png' %}" alt="Management" />
+            </div>
+            <div class="swiper-slide">
+              <img src="{% static 'images/games/checkers.png' %}" alt="Checkers" />
+            </div>
+            <div class="swiper-slide">
+              <img src="{% static 'images/games/wordgame.png' %}" alt="Word Game" />
+            </div>
+            <div class="swiper-slide">
+              <img src="{% static 'images/games/reversi.png' %}" alt="Reversi" />
+            </div>
+          </div>
+          <!-- Pagination dots -->
+          <div class="swiper-pagination"></div>
+        </div>
+      </div>
     </div>
   </div>
   <!-- Third row of homepage (Tournaments) -->
@@ -243,3 +261,31 @@
     </div>
   </div>
 {% endblock content %}
+{% block javascript %}
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const swiper = new Swiper('.swiper', {
+        effect: 'coverflow',
+        grabCursor: true,
+        centeredSlides: true,
+        slidesPerView: 'auto',
+        loop: true,
+        autoplay: {
+          delay: 2500, // 2.5 seconds
+          disableOnInteraction: false, // keeps moving even if clicked
+        },
+        coverflowEffect: {
+          rotate: 30, // tilt
+          stretch: 0,
+          depth: 100,
+          modifier: 1,
+          slideShadows: true,
+        },
+        pagination: {
+          el: '.swiper-pagination',
+          clickable: true,
+        },
+      });
+    });
+  </script>
+{% endblock javascript %}
