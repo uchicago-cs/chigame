@@ -16,6 +16,7 @@ Here are the fixtures for Knowledge Base. Assume makemigrations are up-to-date.
 | 4  | Alice | alice@example.com | False     |
 
 With all the passwords being: **test12345**
+
 Only Admin and Alex are moderators.
 
 ### Game
