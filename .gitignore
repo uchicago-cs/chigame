@@ -189,5 +189,9 @@ chigame_template/media/
 # Mac icons
 *DS_Store
 
+
+/media/
+/src/media/
+
 #Node Modules
 frontend/vue/node_modules/
