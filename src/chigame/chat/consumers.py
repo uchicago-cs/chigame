@@ -68,26 +68,40 @@ class ChatConsumer(AsyncWebsocketConsumer):
         # Get the authenticated user
         self.user = self.scope["user"]
         
+        # Accept the connection first so we can send error messages
+        await self.accept()
+        
         # Check if user is authenticated
         if not self.user.is_authenticated:
-            await self.close()
+            await self.send(text_data=json.dumps({
+                "type": "error",
+                "message": "You must be logged in to join this chat"
+            }))
+            await self.close(code=4001)
             return
             
         # Get the chat and check if it exists
         self.live_chat = await self.get_live_chat(self.chat_id)
         if not self.live_chat:
-            await self.close()
+            await self.send(text_data=json.dumps({
+                "type": "error",
+                "message": "Chat room does not exist"
+            }))
+            await self.close(code=4002)
             return
             
         # Check if user is a member of the chat
         is_member = await self.check_user_in_chat(self.user, self.live_chat)
         if not is_member:
-            await self.close()
+            await self.send(text_data=json.dumps({
+                "type": "error",
+                "message": "You are not a member of this chat"
+            }))
+            await self.close(code=4003)
             return
 
-        # Only add to group and accept if all checks pass
+        # Only add to group if all checks pass
         await self.channel_layer.group_add(self.roomGroupName, self.channel_name)
-        await self.accept()
 
     async def disconnect(self, close_code):
         # Safely handle disconnect even if connection was never fully established
