@@ -47,6 +47,9 @@ let drawOfferedBy = null;
 function preload() {}
 
 function create() {
+  // Store reference to the scene
+  const scene = this;
+  
   drawBoard(this);
   populatePieces(this);
 
@@ -55,6 +58,39 @@ function create() {
   const drawBtn = document.getElementById('drawBtn');
   const declineDrawBtn = document.getElementById('declineDrawBtn');
   const gameOverMessage = document.getElementById('gameOverMessage');
+  const playAgainPrompt = document.getElementById('playAgainPrompt');
+  const playAgainYes = document.getElementById('playAgainYes');
+  const playAgainNo = document.getElementById('playAgainNo');
+
+  function resetGame() {
+    // Clear all pieces
+    pieces.forEach(piece => piece.sprite.destroy());
+    pieces = [];
+    
+    // Reset game state
+    gameOver = false;
+    selectedPiece = null;
+    currentPlayer = COLORS.red;
+    drawOffered = false;
+    drawOfferedBy = null;
+    
+    // Reset UI
+    gameOverMessage.textContent = '';
+    gameOverMessage.classList.remove('show');
+    playAgainPrompt.style.display = 'none';
+    drawBtn.style.display = 'block';
+    drawBtn.textContent = 'Offer Draw';
+    forfeitBtn.style.display = 'block';
+    declineDrawBtn.style.display = 'none';
+    
+    // Repopulate the board using the stored scene reference
+    populatePieces(scene);
+  }
+
+  playAgainYes.addEventListener('click', resetGame);
+  playAgainNo.addEventListener('click', () => {
+    playAgainPrompt.style.display = 'none';
+  });
 
   forfeitBtn.addEventListener('click', () => {
     if (!gameOver && currentPlayer === COLORS.red) {
