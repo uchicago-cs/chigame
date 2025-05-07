@@ -399,3 +399,13 @@ def view_bookmarked_notifications(request, pk):
     else:
         messages.error(request, "Not your inbox")
         return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
+
+
+@login_required
+def upload_profile_photo(request):
+    if request.method == "POST" and request.FILES.get("photo"):
+        profile = UserProfile.get_or_create_profile(request.user)
+        profile.profile_photo = request.FILES["photo"]
+        profile.save()
+        messages.success(request, "Profile photo updated.")
+    return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))

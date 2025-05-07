@@ -74,6 +74,7 @@ class UserProfile(models.Model):
     bio = models.TextField(blank=True)
     friends = models.ManyToManyField(User, related_name="friendship", blank=True)
     date_joined = models.DateTimeField(auto_now_add=True)
+    profile_photo = models.ImageField(upload_to="profile_photos/", blank=True, null=True)
 
     @classmethod
     def get_or_create_profile(cls, user: User) -> "UserProfile":
