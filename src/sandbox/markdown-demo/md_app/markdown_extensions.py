@@ -1,8 +1,6 @@
-
 # src/sandbox/markdown-demo/md_app/markdown_extensions.py
 
 import xml.etree.ElementTree as ET
-
 
 from markdown.extensions import Extension
 from markdown.treeprocessors import Treeprocessor
@@ -10,7 +8,6 @@ from markdown.treeprocessors import Treeprocessor
 
 class SectionWrapperTreeprocessor(Treeprocessor):
     def run(self, root):
-
         # Build a parent map for fast lookups
         parent_map = {child: parent for parent in root.iter() for child in parent}
 
@@ -49,13 +46,10 @@ class SectionWrapperTreeprocessor(Treeprocessor):
             # Insert the wrapper back at the original index
             parent.insert(idx, section_div)
 
-
         return root
 
 
 class SectionWrapperExtension(Extension):
     def extendMarkdown(self, md):
-
         # Use priority 30 (greater than the built-in TOC's 20)
         md.treeprocessors.register(SectionWrapperTreeprocessor(md), "sectionwrapper", priority=30)
-

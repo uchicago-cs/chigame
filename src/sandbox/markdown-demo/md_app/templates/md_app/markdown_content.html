@@ -6,13 +6,11 @@
     <div class="kb-sidebar">
       <h3>Table of Contents</h3>
       <ul>
-
         {% for item in toc_items %}
           <li class="{% if item.id == requested_section %}active{% endif %}">
             <a href="?section={{ item.id }}">{{ item.title }}</a>
           </li>
         {% endfor %}
-
       </ul>
     </div>
     <!-- Main content area -->

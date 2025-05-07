@@ -5,7 +5,6 @@ from django.shortcuts import render
 
 from .markdown_extensions import SectionWrapperExtension
 
-
 MARKDOWN_STRING = """
 # Game Guide: Basic Combat Mechanics
 
@@ -85,12 +84,19 @@ Unlock advanced gameplay with these features:
 * Practice your timing for perfect blocks
   """
 
+
 def markdown_content_view(request):
     requested_section = request.GET.get("section", "introduction")
     is_minimal = request.GET.get("minimal", "false").lower() == "true"
 
+    # Remove TOC section in minimal mode
+    if is_minimal:
+        content = re.sub(r"## Table of Contents\n\[TOC\]\n?", "", MARKDOWN_STRING, flags=re.IGNORECASE)
+    else:
+        content = MARKDOWN_STRING
+
     # Extract TOC manually from H2s
-    raw_headings = re.findall(r"^##\s+(.*)$", MARKDOWN_STRING, flags=re.MULTILINE)
+    raw_headings = re.findall(r"^##\s+(.*)$", content, flags=re.MULTILINE)
     toc_items = [
         {
             "title": title.strip(),
@@ -110,7 +116,7 @@ def markdown_content_view(request):
             SectionWrapperExtension(),
         ]
     )
-    html_content = md.convert(MARKDOWN_STRING)
+    html_content = md.convert(content)
 
     template = "md_app/minimal_content.html" if is_minimal else "md_app/markdown_content.html"
 
@@ -123,4 +129,3 @@ def markdown_content_view(request):
             "requested_section": requested_section,
         },
     )
-
