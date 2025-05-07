@@ -1,4 +1,8 @@
-from xml.etree import ElementTree
+
+# src/sandbox/markdown-demo/md_app/markdown_extensions.py
+
+import xml.etree.ElementTree as ET
+
 
 from markdown.extensions import Extension
 from markdown.treeprocessors import Treeprocessor
@@ -6,63 +10,52 @@ from markdown.treeprocessors import Treeprocessor
 
 class SectionWrapperTreeprocessor(Treeprocessor):
     def run(self, root):
-        # Find all headers
-        headers = (
-            root.findall(".//h1")
-            + root.findall(".//h2")
-            + root.findall(".//h3")
-            + root.findall(".//h4")
-            + root.findall(".//h5")
-            + root.findall(".//h6")
-        )
+
+        # Build a parent map for fast lookups
+        parent_map = {child: parent for parent in root.iter() for child in parent}
+
+        # Gather only H2 headers for section wrapping
+        headers = [el for el in root.iter() if el.tag == "h2"]
 
         for header in headers:
-            # Create a new section div
-            section_div = ElementTree.Element("div")
-            section_div.set("class", "kb-section")
-            section_div.set("data-section-id", header.text.strip().lower().replace(" ", "-"))
-
-            # Find the parent of the header
-            def find_parent(element, tree):
-                for child in tree:
-                    if child is element:
-                        return tree
-                    result = find_parent(element, child)
-                    if result is not None:
-                        return result
-                return None
-
-            parent = find_parent(header, root)
-            if parent is None:
+            parent = parent_map.get(header)
+            if not parent:
                 continue
 
-            # Get the index of the header in its parent
-            header_index = list(parent).index(header)
+            idx = list(parent).index(header)
+            section_id = header.text.strip().lower().replace(" ", "-")
 
-            # Get all siblings after the header until the next header
-            siblings = list(parent)[header_index + 1 :]
-            elements_to_move = []
+            # Create wrapper <div>
+            section_div = ET.Element(
+                "div",
+                {
+                    "class": "kb-section",
+                    "data-section-id": section_id,
+                },
+            )
 
-            for sibling in siblings:
-                if sibling.tag in ["h1", "h2", "h3", "h4", "h5", "h6"]:
-                    break
-                elements_to_move.append(sibling)
-
-            # Move the elements into our section div
-            for elem in elements_to_move:
-                parent.remove(elem)
-                section_div.append(elem)
-
-            # Insert the section div after the header
-            parent.insert(header_index + 1, section_div)
-
-            # Move the header into the section div as the first child
+            # Move header into wrapper first
             parent.remove(header)
-            section_div.insert(0, header)
+            section_div.append(header)
+
+            # Pull siblings until the next H2 into the wrapper
+            siblings = list(parent)[idx:]
+            for sib in siblings:
+                if sib.tag == "h2":
+                    break
+                parent.remove(sib)
+                section_div.append(sib)
+
+            # Insert the wrapper back at the original index
+            parent.insert(idx, section_div)
+
 
         return root
 
 
 class SectionWrapperExtension(Extension):
     def extendMarkdown(self, md):
-        md.treeprocessors.register(SectionWrapperTreeprocessor(md), "sectionwrapper", 0)
+
+        # Use priority 30 (greater than the built-in TOC's 20)
+        md.treeprocessors.register(SectionWrapperTreeprocessor(md), "sectionwrapper", priority=30)
+
