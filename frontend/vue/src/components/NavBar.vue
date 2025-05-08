@@ -14,6 +14,7 @@
 
     <div class="auth-btn">
       <router-link to="/login" class="sign-in">Sign In</router-link>
+      <router-link to="/signup" class="sign-up">Sign Up</router-link>
     </div>
   </nav>
 </template>
@@ -80,4 +81,20 @@ export default {
   text-decoration: none;
   font-weight: 600;
 }
+.auth-btn .sign-up {
+  background-color: #fff;
+  color: #800000;
+  padding: 0.5rem 1rem;
+  border: 1px solid #800000;
+  border-radius: 4px;
+  text-decoration: none;
+  font-weight: 600;
+  margin-left: 0.5rem;
+}
+
+.auth-btn .sign-up:hover {
+  background-color: #800000;
+  color: #fff;
+}
+
 </style>
