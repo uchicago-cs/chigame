@@ -6,7 +6,7 @@
     <input type="text"
            name="q"
            value="{{ query }}"
-           placeholder="Search guides..." />
+           placeholder="Search for a Guide" />
     <select name="category">
       <option value="">All Categories</option>
       {% for cat in categories %}
@@ -16,8 +16,8 @@
     </select>
     <select name="sort">
       <option value="">Sort by: Most Recent Update</option>
-      <option value="az" {% if request.GET.sort == "az" %}selected{% endif %}>Game Name A–Z</option>
-      <option value="za" {% if request.GET.sort == "za" %}selected{% endif %}>Game Name Z–A</option>
+      <option value="az" {% if request.GET.sort == "az" %}selected{% endif %}>Game Name A-Z</option>
+      <option value="za" {% if request.GET.sort == "za" %}selected{% endif %}>Game Name Z-A</option>
       <option value="old" {% if request.GET.sort == "old" %}selected{% endif %}>Oldest Update</option>
     </select>
     <button type="submit">Search</button>
@@ -35,8 +35,9 @@
     {% endfor %}
   </div>
   <a href="#">Upload a Guide</a>
-  <!-- should replace this link with the upload guide link -->
+  <!-- should replace this link with the "upload guide" link -->
   <br />
   {% if has_guides %}<a href="#">Manage My Guides</a>{% endif %}
+  <!-- should replace this link with the "manage my guide" link -->
   <p>Note: If you have contributed a guide and wish to check update, please log in first.</p>
 {% endblock page-content %}

@@ -20,16 +20,20 @@ class DefaultView(ListView):
         query = self.request.GET.get("q")
 
         if query:
-            # add queryset.annotate to make query for "Guide for Game A" works
+            # the query is originally on the game name of Guide object, and will
+            # fail for queries like "Guide for [game name]"
+            # here add queryset.annotate to make query for "Guide for..." works
             queryset = queryset.annotate(
                 guide_title=Concat(Value("Guide for "), F("game_id__name"), output_field=CharField())
             ).filter(Q(guide_title__icontains=query) | Q(content__icontains=query))
 
+        # for filtering; only support single-choice filtering for now
         category = self.request.GET.get("category")
         if category:
             categorymatch = Category.objects.get(name=category)
             queryset = queryset.filter(game__categories=categorymatch)
 
+        # for sorting
         sort = self.request.GET.get("sort")
         if sort == "az":
             queryset = queryset.order_by("game__name")
@@ -44,9 +48,12 @@ class DefaultView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        # make sure "manage my guide" only shows up when the user uploads
+        # a guide previously
         context["has_guides"] = (
             self.request.user.is_authenticated and Guide.objects.filter(author=self.request.user).exists()
-        )  # if the user hasn't uploaded any guide, "manage your guide" button will not show up
+        )
+        # to facilitate filtering
         context["categories"] = Category.objects.filter(
             id__in=Game.objects.values_list("categories", flat=True).distinct()
         )
