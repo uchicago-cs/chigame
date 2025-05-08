@@ -9,6 +9,7 @@ game_patterns = [
     path("<int:pk>/mechanics/", views.GameMechanicsAPIView.as_view(), name="api-game-mechanics"),
     path("<int:pk>/reviews/", views.GameReviewListView.as_view(), name="api-game-reviews"),
     path("<int:pk>/reviews/create/", views.ReviewCreateView.as_view(), name="api-game-review-create"),
+    path("<int:game_id>/reviews/<int:pk>/", views.ReviewDetailView.as_view(), name="api-game-review-detail"),
 ]
 
 lobby_patterns = [
