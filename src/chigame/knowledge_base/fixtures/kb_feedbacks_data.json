@@ -1,0 +1,68 @@
+[
+{
+    "model": "knowledge_base.reviewfeedback",
+    "pk": 1,
+    "fields": {
+        "reviewer": 1,
+        "comment": "This is a request change comment.",
+        "guide_id": 1,
+        "status": 3,
+        "timestamp": "2025-05-06T02:53:27.777Z"
+    }
+},
+{
+    "model": "knowledge_base.reviewfeedback",
+    "pk": 2,
+    "fields": {
+        "reviewer": 2,
+        "comment": "",
+        "guide_id": 2,
+        "status": 1,
+        "timestamp": "2025-05-06T02:53:41.130Z"
+    }
+},
+{
+    "model": "knowledge_base.reviewfeedback",
+    "pk": 3,
+    "fields": {
+        "reviewer": 1,
+        "comment": "",
+        "guide_id": 3,
+        "status": 1,
+        "timestamp": "2025-05-06T02:55:20.052Z"
+    }
+},
+{
+    "model": "knowledge_base.reviewfeedback",
+    "pk": 4,
+    "fields": {
+        "reviewer": 1,
+        "comment": "Please add a \"strategy\" section. Thanks!",
+        "guide_id": 6,
+        "status": 3,
+        "timestamp": "2025-05-06T02:55:53.780Z"
+    }
+},
+{
+    "model": "knowledge_base.reviewfeedback",
+    "pk": 5,
+    "fields": {
+        "reviewer": 2,
+        "comment": "",
+        "guide_id": 7,
+        "status": 2,
+        "timestamp": "2025-05-06T02:56:08.681Z"
+    }
+},
+{
+    "model": "knowledge_base.reviewfeedback",
+    "pk": 6,
+    "fields": {
+        "reviewer": 1,
+        "comment": "",
+        "guide_id": 1,
+        "status": 1,
+        "timestamp": "2025-05-06T03:43:06.947Z"
+    }
+}
+]
