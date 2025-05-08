@@ -1,0 +1,151 @@
+<!-- addedum -->
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block title %}
+  Tournament Analytics Dashboard
+{% endblock title %}
+{% block content %}
+  <div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h1>Tournament Analytics Dashboard</h1>
+      <a href="{% url 'tournament-detail' tournament.id %}"
+         class="btn btn-secondary">Back to Tournament</a>
+    </div>
+    <div class="row">
+      <!-- Overview Cards -->
+      <div class="col-md-3 mb-4">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">Total Games</h5>
+            <p class="card-text display-4">{{ total_games }}</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 mb-4">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">Average Rating</h5>
+            <p class="card-text display-4">{{ avg_rating|floatformat:1 }}</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 mb-4">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">Active Players</h5>
+            <p class="card-text display-4">{{ active_players }}</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 mb-4">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">Total Reviews</h5>
+            <p class="card-text display-4">{{ total_reviews }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Charts Section -->
+    <div class="row mt-4">
+      <div class="col-md-6 mb-4">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">Game Ratings Distribution</h5>
+            <canvas id="ratingsChart"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6 mb-4">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">Games by Category</h5>
+            <canvas id="categoryChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Recent Reviews Table -->
+    <div class="card mt-4">
+      <div class="card-body">
+        <h5 class="card-title">Recent Reviews</h5>
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Game</th>
+                <th>User</th>
+                <th>Rating</th>
+                <th>Comment</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for review in recent_reviews %}
+                <tr>
+                  <td>{{ review.match.game.title }}</td>
+                  <td>{{ review.user.username }}</td>
+                  <td>{{ review.rating }}</td>
+                  <td>{{ review.comment|truncatechars:50 }}</td>
+                  <td>{{ review.created_at|date:"M d, Y" }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% block extra_js %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+      // Ratings Distribution Chart
+      const ratingsCtx = document.getElementById('ratingsChart').getContext('2d');
+      new Chart(ratingsCtx, {
+        type: 'bar',
+        data: {
+          labels: ['1 Star', '2 Stars', '3 Stars', '4 Stars', '5 Stars'],
+          datasets: [{
+            label: 'Number of Ratings',
+            data: JSON.parse('{{ ratings_distribution|safe }}'),
+            backgroundColor: 'rgba(54, 162, 235, 0.5)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: {
+              beginAtZero: true
+            }
+          }
+        }
+      });
+
+      // Category Distribution Chart
+      const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+      new Chart(categoryCtx, {
+        type: 'pie',
+        data: {
+          labels: JSON.parse('{{ categories|safe }}'),
+          datasets: [{
+            data: JSON.parse('{{ category_counts|safe }}'),
+            backgroundColor: [
+              'rgba(255, 99, 132, 0.5)',
+              'rgba(54, 162, 235, 0.5)',
+              'rgba(255, 206, 86, 0.5)',
+              'rgba(75, 192, 192, 0.5)',
+              'rgba(153, 102, 255, 0.5)'
+            ]
+          }]
+        },
+        options: {
+          responsive: true
+        }
+      });
+    </script>
+  {% endblock extra_js %}
+{% endblock content %}

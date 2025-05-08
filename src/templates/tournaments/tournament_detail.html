@@ -465,4 +465,11 @@
       <a href="{% url 'tournament-update' tournament.id %}">Update</a>
     </p>
   {% endif %}
+  <!-- addedum -->
+  {% if user.is_staff %}
+    <p>
+      <a href="{% url 'tournament-analytics' tournament.id %}"
+         class="btn btn-info">View Analytics</a>
+    </p>
+  {% endif %}
 {% endblock content %}

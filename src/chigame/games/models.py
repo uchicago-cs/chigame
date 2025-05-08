@@ -322,14 +322,16 @@ class Tournament(models.Model):
         # when the tournament is created and would not be checked when the tournament is updated (
         # the date cannot be changed after the tournament is created)
         if self.pk is None:  # the tournament is being created
-            if self.registration_start_date < timezone.now():
-                raise ValidationError("The registration start date should be in the future.")
-            if self.registration_end_date < timezone.now():
-                raise ValidationError("The registration end date should be in the future.")
-            if self.tournament_start_date < timezone.now():
-                raise ValidationError("The tournament start date should be in the future.")
-            if self.tournament_end_date < timezone.now():
-                raise ValidationError("The tournament end date should be in the future.")
+            # addedum
+            min_time_delta = timezone.timedelta(minutes=5)  # minimum 5 minutes in advance
+            if self.registration_start_date < timezone.now() + min_time_delta:
+                raise ValidationError("The registration start date should be at least 5 minutes in the future.")
+            if self.registration_end_date < timezone.now() + min_time_delta:
+                raise ValidationError("The registration end date should be at least 5 minutes in the future.")
+            if self.tournament_start_date < timezone.now() + min_time_delta:
+                raise ValidationError("The tournament start date should be at least 5 minutes in the future.")
+            if self.tournament_end_date < timezone.now() + min_time_delta:
+                raise ValidationError("The tournament end date should be at least 5 minutes in the future.")
 
         # the registration start date should be earlier than the registration end date
         if self.registration_start_date >= self.registration_end_date:

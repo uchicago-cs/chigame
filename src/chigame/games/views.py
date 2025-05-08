@@ -1,3 +1,4 @@
+import json
 import xml.etree.ElementTree as ET
 from functools import wraps
 from random import choice
@@ -8,7 +9,10 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.core.paginator import Paginator
-from django.db.models import Q
+
+# addedum
+from django.db import models
+from django.db.models import Count, Q
 from django.db.models.functions import Lower
 from django.http import HttpResponseForbidden, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render, reverse
@@ -1091,3 +1095,104 @@ class FavoriteListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         favorites_list, _ = GameList.objects.get_or_create(name="Favorites", created_by=self.request.user)
         return favorites_list.games.all()
+
+
+# addedeum
+@login_required
+def analytics_dashboard(request):
+    #  basic statistics
+    total_games = Game.objects.count()
+    avg_rating = Review.objects.aggregate(avg_rating=models.Avg("rating"))["avg_rating"] or 0
+    #  players who have participated in matches in the last 30 days?
+    thirty_days_ago = timezone.now() - timezone.timedelta(days=30)
+    active_players = Player.objects.filter(match__date_played__gte=thirty_days_ago).values("user").distinct().count()
+    total_reviews = Review.objects.count()
+
+    # ratings distribution
+    ratings_distribution = [
+        Review.objects.filter(rating=1).count(),
+        Review.objects.filter(rating=2).count(),
+        Review.objects.filter(rating=3).count(),
+        Review.objects.filter(rating=4).count(),
+        Review.objects.filter(rating=5).count(),
+    ]
+
+    # Get games by category
+    category_stats = Game.objects.values("categories__name").annotate(count=Count("id")).order_by("-count")
+    categories = [stat["categories__name"] for stat in category_stats if stat["categories__name"]]
+    category_counts = [stat["count"] for stat in category_stats if stat["categories__name"]]
+
+    # recent reviews
+    recent_reviews = Review.objects.select_related("game", "user").order_by("-created_at")[:10]
+
+    #  games data for autocomplete
+    games = Game.objects.all()
+    games_json = json.dumps(
+        [{"url": reverse("game-detail", kwargs={"pk": game.pk}), "label": game.name} for game in games]
+    )
+
+    context = {
+        "total_games": total_games,
+        "avg_rating": avg_rating,
+        "active_players": active_players,
+        "total_reviews": total_reviews,
+        "ratings_distribution": ratings_distribution,
+        "categories": categories,
+        "category_counts": category_counts,
+        "recent_reviews": recent_reviews,
+        "games_json": games_json,
+    }
+
+    return render(request, "games/analytics_dashboard.html", context)
+
+
+# addedum
+@method_decorator(staff_required, name="dispatch")
+class TournamentAnalyticsView(DetailView):
+    model = Tournament
+    template_name = "games/analytics_dashboard.html"
+    context_object_name = "tournament"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        tournament = self.get_object()
+
+        # this si for te all matches for this tournament
+        matches = tournament.matches.all()
+
+        # calc total game
+        context["total_games"] = matches.count()
+
+        # aclc avg rate
+        ratings = [match.rating for match in matches if match.rating is not None]
+        context["avg_rating"] = sum(ratings) / len(ratings) if ratings else 0
+
+        # active playersthat  have participated in matchg
+        active_players = set()
+        for match in matches:
+            active_players.update(match.players.all())
+        context["active_players"] = len(active_players)
+
+        #  total reviews
+        context["total_reviews"] = matches.filter(review__isnull=False).count()
+
+        #  recent review
+        context["recent_reviews"] = Review.objects.filter(match__in=matches).order_by("-created_at")[:10]
+
+        # calc ratings distribution
+        ratings_dist = [0] * 5
+        for match in matches:
+            if match.rating:
+                ratings_dist[match.rating - 1] += 1
+        context["ratings_distribution"] = json.dumps(ratings_dist)
+
+        #  categories distribution
+        categories = list(Game.objects.values_list("category", flat=True).distinct())
+        category_counts = []
+        for category in categories:
+            count = matches.filter(game__category=category).count()
+            category_counts.append(count)
+        context["categories"] = json.dumps(categories)
+        context["category_counts"] = json.dumps(category_counts)
+
+        return context
