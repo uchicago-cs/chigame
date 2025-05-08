@@ -1,8 +1,6 @@
-# from django.shortcuts import render
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import generics, status
-from rest_framework.exceptions import PermissionDenied
+from rest_framework import exceptions, generics, status
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -184,7 +182,7 @@ class ReviewDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     def perform_destroy(self, instance):
         if instance.user != self.request.user:
-            raise PermissionDenied("You do not have permission to delete this review.")
+            raise exceptions.PermissionDenied("You do not have permission to delete this review.")
         instance.delete()
 
     def perform_update(self, serializer):
@@ -192,5 +190,5 @@ class ReviewDetailView(generics.RetrieveUpdateDestroyAPIView):
         user = get_object_or_404(User, pk=user_id)
 
         if user != self.request.user:
-            raise PermissionDenied("You do not have permission to edit this review.")
+            raise exceptions.PermissionDenied("You do not have permission to edit this review.")
         serializer.save()
