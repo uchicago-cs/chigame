@@ -38,4 +38,4 @@ class LiveChatUser(models.Model):
     live_chat = models.ForeignKey(LiveChat, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f"{self.user} in chat {self.live_chat.channel}"
+        return f"{self.user} in chat {self.live_chat.name}"

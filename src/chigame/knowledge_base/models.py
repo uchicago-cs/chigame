@@ -30,8 +30,8 @@ class Guide(models.Model):
     )
 
     # record user likes and favorites
-    likes = models.ManyToManyField(User, related_name="liked_guides")
-    favorites = models.ManyToManyField(User, related_name="favorite_guides")
+    likes = models.ManyToManyField(User, blank=True, related_name="liked_guides")
+    favorites = models.ManyToManyField(User, blank=True, related_name="favorite_guides")
 
     # manually save the guide object, to update the timestamp if and only if
     # the content field is updated (didn't use auto_now = True, because the
@@ -52,7 +52,7 @@ class Guide(models.Model):
 # ReviewFeedback objects)
 class ReviewFeedback(models.Model):
     reviewer = models.ForeignKey(
-        User, on_delete=models.CASCADE
+        User, on_delete=models.CASCADE, limit_choices_to={"moderator": True}
     )  # assume we delete this feedback if the reviewer deletes account
     comment = models.TextField(blank=True, null=True)
     guide_id = models.ForeignKey(Guide, on_delete=models.CASCADE)
