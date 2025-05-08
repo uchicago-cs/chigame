@@ -7,6 +7,55 @@
   padding: 10px;
 }
 
+.uploaded-guides-box{
+    background: dimgray;
+    width: 95%;
+    height: fit-content;
+    display: flex;
+}
+
+.uploaded-guides-column{
+    background:white;
+    height: 100%;
+    display: inline-table;
+}
+
+.column-header{
+    background:grey;
+    justify-content: center;
+    font-size: large;
+    width: 100%;
+    border-top: 2px solid black;
+    border-bottom: 2px solid black;
+    padding:10px
+}
+
+.column-entry-box{
+    border-bottom: 1px solid black;
+}
+
+.guide-entry{
+    font-size: medium;
+    padding: 10px;
+    border-bottom: 1px solid black;
+}
+
+.contributor-title {
+  padding-bottom: 3vh;
+}
+.guides-col-width {
+  width: 25%;
+}
+.guides-col-wide {
+  width: 50%;
+}
+.border-left-black {
+  border-left: 2px solid black;
+}
+.border-right-black {
+  border-right: 2px solid black;
+}
+
 /* This is added for backend viewer landing page. Pls replace this when styling
  in front end. */
  .grid-container {

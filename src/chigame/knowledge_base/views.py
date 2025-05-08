@@ -1,6 +1,6 @@
 from django.db.models import CharField, F, Q, Value
 from django.db.models.functions import Concat
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from django.views.generic import ListView
 
 from chigame.games.models import Category, Game
@@ -58,6 +58,12 @@ class DefaultView(ListView):
             id__in=Game.objects.values_list("categories", flat=True).distinct()
         )
         return context
+
+
+def GuideDetailView(request, pk):
+    guide = get_object_or_404(Guide, pk=pk)
+    context = {"guide": guide}
+    return render(request, "knowledge-base/guide_detail.html", context)
 
 
 def ModeratorView(request):
