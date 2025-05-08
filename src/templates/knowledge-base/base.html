@@ -19,9 +19,15 @@
         <a href="{% url 'knowledge-base-moderator' %}">
           <p class="mb-0">Moderator View</p>
         </a>
-        <a href="{% url 'knowledge-base-contributor' %}">
-          <p class="mb-0">Contributor View</p>
-        </a>
+        {% if user.is_authenicated %}
+          <a href="{% url 'knowledge-base-contributor' %}">
+            <p class="mb-0">Contributor View</p>
+          </a>
+        {% else %}
+          <a href="{% url 'knowledge-base-contributor' %}">
+            <p class="mb-0">Contributor View</p>
+          </a>
+        {% endif %}
       </div>
     </div>
     <div class="page-content">
