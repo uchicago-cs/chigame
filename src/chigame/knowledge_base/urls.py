@@ -7,3 +7,6 @@ urlpatterns = [
     path("moderation", ModeratorView, name="knowledge-base-moderator"),
     path("contribution", ContributorView, name="knowledge-base-contributor"),
 ]
+
+# Eventually, we should add '!<slug:username>' the contribution path so we can
+# list all the guides associated with the current user
