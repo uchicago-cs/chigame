@@ -86,8 +86,9 @@ Unlock advanced gameplay with these features:
 
 
 def markdown_content_view(request):
-    requested_section = request.GET.get("section", "introduction")
     is_minimal = request.GET.get("minimal", "false").lower() == "true"
+    # Only get section if not in minimal mode
+    requested_section = None if is_minimal else request.GET.get("section", "introduction")
 
     # Remove TOC section in minimal mode
     if is_minimal:
