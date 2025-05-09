@@ -48,4 +48,5 @@ urlpatterns = [
         name="act-on-inbox-notification",
     ),
     path("bulk-action/", view=bulk_inbox, name="bulk-inbox"),
+    path("notifications/<int:pk>/move/", views.move_notification, name="move-notification"),
 ]
