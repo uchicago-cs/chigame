@@ -851,12 +851,14 @@ class TournamentCreateView(CreateView):
             return redirect(reverse_lazy("tournament-create"))
 
         # Check if the user is not a staff member and has less than one token
+
         if not user.is_staff and user.tokens < 1:
             messages.error(self.request, "You do not have enough tokens to create a tournament.")
             return redirect("tournament-list")
 
         try:
             # Save the form instance but don't commit to the database yet
+
             tournament = form.save(commit=False)
             tournament.created_by = user
             tournament.full_clean()  # trigger the model's clean() method
