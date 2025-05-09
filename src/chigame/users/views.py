@@ -642,6 +642,41 @@ def bulk_inbox(request):
     return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
 
 
+@login_required
+def bookmark_notification(request, pk):
+    try:
+        notification = Notification.objects.get(pk=pk)
+        if notification.receiver != request.user:
+            messages.error(request, "This notification is not yours. You can not bookmark it.")
+        else:
+            notification.bookmarked = not notification.bookmarked
+            notification.save()
+            status_msg = "Bookmarked" if notification.bookmarked else "Un-bookmarked"
+            messages.success(request, f"Notification {status_msg.lower()}.")
+    except Notification.DoesNotExist:
+        messages.error(request, "Notification does not exist.")
+
+    return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
+
+
+@login_required
+def view_bookmarked_notifications(request, pk):
+    user = request.user
+    notifications = Notification.objects.filter_by_receiver(user).filter(bookmarked=True)
+    default_notification_messages = Notification.DEFAULT_MESSAGES
+    context = {
+        "pk": pk,
+        "user": user,
+        "notifications": notifications,
+        "default_notification_messages": default_notification_messages,
+    }
+    if pk == user.id:
+        return render(request, "users/bookmarked_notifications.html", context)
+    else:
+        messages.error(request, "Not your inbox")
+        return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
+
+
 @csrf_protect
 @require_POST
 def move_notification(request, pk):

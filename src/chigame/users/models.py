@@ -290,6 +290,7 @@ class Notification(models.Model):
     actor = GenericForeignKey("actor_content_type", "actor_object_id")
     message = models.CharField(max_length=255, blank=True, null=True)
     objects = NotificationQuerySet.as_manager()
+    bookmarked = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ["receiver", "actor_content_type", "actor_object_id", "type"]
