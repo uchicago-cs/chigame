@@ -24,7 +24,10 @@ def ContributorView(request):
 
 @login_required
 def ContributorMdUpload(request, pk=None):
-    guide = get_object_or_404(Guide, pk=pk)
+    if pk:
+        guide = get_object_or_404(Guide, pk=pk)
+    else:
+        guide = None
 
     # if it's reupload, we will make the game field read-only on the form
     fixed_game = guide.game_id if guide else None

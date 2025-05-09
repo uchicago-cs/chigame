@@ -1,8 +1,18 @@
+.knowledge-base.container {
+  max-width: 1000px;
+}
+
 .knowledge-base .nav a {
   color: gray;
   text-decoration: none;
 }
 
+.knowledge-base .nav {
+  margin-bottom: 20px;
+}
+
 .knowledge-base .page-content {
   padding: 10px;
 }
+
+/*  */

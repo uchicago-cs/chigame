@@ -1,0 +1,80 @@
+.form-float-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.form-container {
+  max-width: 650px;
+  margin: 2rem;
+  padding: 3rem;
+  /* From TailwindUI */
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  border: 1px solid #DFDFDF;
+  border-radius: 25px;
+  padding-bottom: 2rem;
+}
+
+.form-container form {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.form-container label {
+  display: block;
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+.form-container select {
+  width: 100%;
+  padding: 4px;
+  border: 0.8px solid #BBB;
+  border-radius: 6px;
+  margin-bottom: 20px;
+}
+
+.form-container p {
+  margin: 0;
+}
+
+
+.form-container input[type="file"] {
+  display: none;
+}
+
+.form-container .file-upload {
+  background-color: #DDD;
+  padding: 28px;
+  margin-bottom: 25px;
+  margin-top: 5px;
+  color: #777;
+  font-size: 14px;
+  border-radius: 8px;
+  border: 2px dashed #AAA;
+  padding-bottom: 36px;
+}
+
+.form-container .psuedo-icon {
+  font-size: 28px;
+  text-align: center;
+  padding: 0 0 8px 0;
+  margin: 0;
+}
+
+.form-container button {
+  float: right;
+  /* Also from TailwindUI */
+  background-color: oklch(58.5% 0.233 277.117);
+  border: none;
+  padding: 10px 16px;
+  color: #EDEDED;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: 150ms;
+}
+
+.form-container button:hover {
+  box-shadow: 0 0 0 1px white, oklch(58.5% 0.233 277.117) 0px 0px 0px 4px;
+  transition: 100ms;
+}
