@@ -166,13 +166,13 @@
     });
 
     function openContextMenuFromButton(event, notifId) {
-    event.stopPropagation(); // Prevent document click from hiding the menu
-    selectedNotificationId = notifId;
+      event.stopPropagation(); // Prevent document click from hiding the menu
+      selectedNotificationId = notifId;
 
-    const menu = document.getElementById("contextMenu");
-    menu.style.left = `${event.pageX}px`;
-    menu.style.top = `${event.pageY}px`;
-    menu.style.display = "block";
-}
+      const menu = document.getElementById("contextMenu");
+      menu.style.left = `${event.pageX}px`;
+      menu.style.top = `${event.pageY}px`;
+      menu.style.display = "block";
+    }
   </script>
 {% endblock content %}
