@@ -48,10 +48,10 @@ class LiveChatMessageReaction(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     message = models.ForeignKey(LiveChatMessage, on_delete=models.CASCADE)
-    icon = models.CharField(null=False, max_length=10)
+    content = models.CharField(null=False, max_length=10)
 
     class Meta:
-        unique_together = ("user", "message", "icon")
+        unique_together = ("user", "message", "content")
 
     def __str__(self):
-        return f"{self.user} reacted with {self.icon} to message {self.message}"
+        return f"{self.user} reacted with {self.content} to message {self.message}"
