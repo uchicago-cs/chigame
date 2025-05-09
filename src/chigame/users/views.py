@@ -676,6 +676,7 @@ def view_bookmarked_notifications(request, pk):
         messages.error(request, "Not your inbox")
         return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
 
+
 @csrf_protect
 @require_POST
 def move_notification(request, pk):
