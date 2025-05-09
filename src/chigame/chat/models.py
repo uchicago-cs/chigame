@@ -39,3 +39,19 @@ class LiveChatUser(models.Model):
 
     def __str__(self):
         return f"{self.user} in chat {self.live_chat.name}"
+
+
+class LiveChatMessageReaction(models.Model):
+    """
+    A reaction to a LiveChat message.
+    """
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    message = models.ForeignKey(LiveChatMessage, on_delete=models.CASCADE)
+    icon = models.CharField(null=False)
+
+    class Meta:
+        unique_together = ("user", "message", "icon")
+
+    def __str__(self):
+        return f"{self.user} reacted with {self.icon} to message {self.message}"
