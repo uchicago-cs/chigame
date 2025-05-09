@@ -837,7 +837,7 @@ class TournamentCreateView(CreateView):
     ]
 
     def form_invalid(self, form):
-        """Handle invalid form submission."""
+        # this is wo so we handle invalid form submission
         for field, errors in form.errors.items():
             for error in errors:
                 messages.error(self.request, f"{field}: {error}")
