@@ -43,7 +43,7 @@ class LiveChatUser(models.Model):
 
 class LiveChatMessageReaction(models.Model):
     """
-    A reaction to a LiveChat message.
+    A reaction to a LiveChatMessage.
     """
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
