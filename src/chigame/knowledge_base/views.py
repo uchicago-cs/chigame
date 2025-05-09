@@ -44,13 +44,14 @@ def ContributorMdUpload(request, pk=None):
             # Read the file content (assume UTF-8 encoded Markdown)
             content = uploaded_file.read().decode("utf-8")
 
-            game = form.cleaned_data["game"]  # assuming you're also choosing a game
-
+            # when reupload
             if guide:
                 guide.content = content
                 guide.status = 0
                 guide.save()
+            # when upload
             else:
+                game = form.cleaned_data["game"]  # the game user chooses
                 guide = Guide.objects.create(author=request.user, content=content, game_id=game, status=0)
         return redirect("knowledge-base")
         # I make it redirects to landing page after submission for now, could later
