@@ -13,6 +13,7 @@ from django.core.files.storage import FileSystemStorage
 from django.core.paginator import Paginator
 from django.db.models import Avg, Count, ExpressionWrapper, F, FloatField, Q
 from django.db.models.functions import Lower
+from django.forms import ValidationError
 from django.http import HttpResponseForbidden, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
@@ -835,6 +836,13 @@ class TournamentCreateView(CreateView):
         "players",  # This field should be removed in the production version. For testing only.
     ]
 
+    def form_invalid(self, form):
+        """Handle invalid form submission."""
+        for field, errors in form.errors.items():
+            for error in errors:
+                messages.error(self.request, f"{field}: {error}")
+        return super().form_invalid(form)
+
     def form_valid(self, form):
         user = self.request.user
 
@@ -847,28 +855,34 @@ class TournamentCreateView(CreateView):
             messages.error(self.request, "You do not have enough tokens to create a tournament.")
             return redirect("tournament-list")
 
-        # If the user is not staff, deduct a token
-        if not user.is_staff:
-            user.tokens -= 1
-            user.save()
+        try:
+            # Save the form instance but don't commit to the database yet
+            tournament = form.save(commit=False)
+            tournament.created_by = user
+            tournament.full_clean()  # trigger the model's clean() method
+            tournament.save()
 
-        # Save the form instance but don't commit to the database yet
-        tournament = form.save(commit=False)
-        tournament.created_by = user
-        tournament.save()
+            players = form.cleaned_data["players"]
+            tournament.players.add(*players)
 
-        players = form.cleaned_data["players"]
-        tournament.players.add(*players)
+            # Auto-create a chat for this respective tournament
+            chat = Chat(tournament=tournament)
+            chat.save()
 
-        # Auto-create a chat for this respective tournament
-        chat = Chat(tournament=tournament)
-        chat.save()
+            # If the user is not staff, deduct a token after successful creation
+            if not user.is_staff:
+                user.tokens -= 1
+                user.save()
 
-        # (Optional) Insert bracket-related logic here if needed
-
-        # Redirect to the tournament's detail page or another appropriate response
-        self.object = tournament
-        return HttpResponseRedirect(self.get_success_url())
+            # Redirect to the tournament's detail page
+            self.object = tournament
+            return HttpResponseRedirect(self.get_success_url())
+        except ValidationError as e:
+            # this w should handle validation errors from the model's clean() method?
+            for field, errors in e.message_dict.items():
+                for error in errors:
+                    messages.error(self.request, f"{field}: {error}")
+            return self.form_invalid(form)
 
     def get_success_url(self):
         return reverse("tournament-detail", kwargs={"pk": self.object.pk})
