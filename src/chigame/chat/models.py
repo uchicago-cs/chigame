@@ -2,6 +2,8 @@ from django.db import models
 
 from chigame.users.models import User
 
+from .validators import validate_emoji
+
 
 class LiveChat(models.Model):
     """
@@ -48,7 +50,7 @@ class LiveChatMessageReaction(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     message = models.ForeignKey(LiveChatMessage, on_delete=models.CASCADE)
-    content = models.CharField(null=False, max_length=10)
+    content = models.CharField(null=False, max_length=10, validators=[validate_emoji])
 
     class Meta:
         unique_together = ("user", "message", "content")
