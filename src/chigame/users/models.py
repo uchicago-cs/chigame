@@ -211,6 +211,12 @@ class NotificationQuerySet(models.QuerySet):
             queryset = queryset.is_not_deleted()
         return queryset
 
+    def filter_by_category(self, category, include_deleted=False):
+        queryset = self.filter(category=category)
+        if not include_deleted:
+            queryset = queryset.is_not_deleted()
+        return queryset
+
     def mark_all_unread(self):
         self.update(read=False)
 
@@ -245,6 +251,15 @@ class Notification(models.Model):
     Handles visibility, read/unread status, and timestamping of events.
     """
 
+    CATEGORY_CHOICES = [
+        ("inbox", "Inbox"),
+        ("spam", "Spam"),
+        ("social", "Social"),
+        ("promotions", "Promotions"),
+        ("updates", "Updates"),
+        ("archived", "Archived"),
+    ]
+
     FRIEND_REQUEST = 1
     REMINDER = 2
     UPCOMING_MATCH = 3
@@ -263,6 +278,7 @@ class Notification(models.Model):
 
     DEFAULT_MESSAGES = {FRIEND_REQUEST: "You have a friend invitation"}
 
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default="inbox")
     receiver = models.ForeignKey(User, on_delete=models.CASCADE)
     first_sent = models.DateTimeField(auto_now_add=True)
     last_sent = models.DateTimeField(auto_now_add=True)
