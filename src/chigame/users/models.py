@@ -92,7 +92,11 @@ class FriendInvitationManager(models.Manager):
     def get_by_users(self, user1, user2, **kwargs):
         """Gets a friend invitation given two user, which can be a sender
         or a receiver"""
-        return self.get(Q(sender=user1, receiver=user2) | Q(sender=user2, receiver=user1), **kwargs)
+        return (
+            self.filter(Q(sender=user1, receiver=user2) | Q(sender=user2, receiver=user1), **kwargs)
+            .order_by("-timestamp")
+            .first()
+        )
 
 
 class FriendInvitation(models.Model):
