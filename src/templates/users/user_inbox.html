@@ -45,6 +45,12 @@
                     <i class="bi bi-trash3"></i> DELETE
                   </span>
                 </a>
+                <a>
+                  <span class="badge bg-secondary rounded-pill me-2"
+                        onclick="openContextMenuFromButton(event, '{{ notification.id }}')">
+                    <i class="bi bi-folder2-open"></i> MOVE
+                  </span>
+                </a>
               </div>
             </li>
           {% endwith %}
@@ -158,5 +164,15 @@
     document.addEventListener('click', () => {
       document.getElementById("contextMenu").style.display = "none";
     });
+
+    function openContextMenuFromButton(event, notifId) {
+    event.stopPropagation(); // Prevent document click from hiding the menu
+    selectedNotificationId = notifId;
+
+    const menu = document.getElementById("contextMenu");
+    menu.style.left = `${event.pageX}px`;
+    menu.style.top = `${event.pageY}px`;
+    menu.style.display = "block";
+}
   </script>
 {% endblock content %}
