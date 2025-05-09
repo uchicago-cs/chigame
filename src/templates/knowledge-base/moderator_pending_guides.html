@@ -2,6 +2,13 @@
 
 {% block page-content %}
   <h1>Pending Guides</h1>
+  <form method="get">
+    <select name="sort">
+      <option value="">Sort by: Most Recent Update</option>
+      <option value="old" {% if request.GET.sort == "old" %}selected{% endif %}>Oldest Update</option>
+    </select>
+    <button type="submit">Search</button>
+  </form>
   <ul>
     {% for guide in pendingGuides %}
       <li>
