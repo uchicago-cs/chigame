@@ -48,7 +48,7 @@ class LiveChatMessageReaction(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     message = models.ForeignKey(LiveChatMessage, on_delete=models.CASCADE)
-    icon = models.CharField(null=False)
+    icon = models.CharField(null=False, max_length=10)
 
     class Meta:
         unique_together = ("user", "message", "icon")
