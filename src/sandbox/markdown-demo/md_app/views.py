@@ -25,8 +25,6 @@ More content and <a href="...">link</a>
 def markdown_content_view(request):
     # Get the requested section from query parameters
     requested_section = request.GET.get("section", "introduction")
-    # Check if minimal UI is requested
-    is_minimal = request.GET.get("minimal", "false").lower() == "true"
 
     # Initialize markdown with our extensions
     md = markdown.Markdown(extensions=["fenced_code", SectionWrapperExtension(), HtmlSanitizerExtension()])
@@ -41,6 +39,6 @@ def markdown_content_view(request):
     }
 
     # Choose template based on UI mode
-    template = "md_app/minimal_content.html" if is_minimal else "md_app/markdown_content.html"
+    template = "md_app/markdown_content.html"
 
     return render(request, template, context=context)
