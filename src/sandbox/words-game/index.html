@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>"Words"</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <!--Add Nav Bar from Chi game-->
+    <div id="container">
+      <div id="title">
+        <h1 class="name">"Words"</h1>
+        <h2 class="select">Select Game Mode</h2>
+      </div>
+      <!--Game Modes to Choose From-->
+      <div class="game-modes">
+        <div class="mode">
+          <a href="{% url 'game' %}">
+            <button class="mode-btn">Solo</button>
+          </a>
+          <p>
+            <strong>Mode:</strong> Explanation
+          </p>
+        </div>
+        <div class="mode">
+          <a href="#">
+            <button class="mode-btn" onclick="alert('Not implemented yet')">Versus</button>
+          </a>
+          <p>
+            <strong>Mode:</strong> Explanation
+          </p>
+        </div>
+        <div class="mode">
+          <a href="#">
+            <button class="mode-btn" onclick="alert('Not implemented yet')">Tournament</button>
+          </a>
+          <p>
+            <strong>Mode:</strong> Explanation
+          </p>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

@@ -16,6 +16,11 @@
     <meta name="description" content="ChiGame" />
     <meta name="author" content="University of Chicago" />
     <link rel="icon" href="{% static 'images/favicons/chigame.ico' %}" />
+    <!-- Carousel: Swiper CSS -->
+    <link rel="stylesheet"
+          href="https://unpkg.com/swiper/swiper-bundle.min.css" />
+    <!-- Carousel: Swiper JS -->
+    <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
     {% block css %}
       <!-- Latest compiled and minified Bootstrap CSS -->
       <link rel="stylesheet"
@@ -53,6 +58,7 @@
               crossorigin="anonymous"
               referrerpolicy="no-referrer"></script>
       <!-- Your stuff: Third-party javascript libraries go here -->
+      <!-- SwiperJS CSS -->
       <!-- place project specific Javascript in this file -->
       <script defer src="{% static 'js/project.js' %}"></script>
       <script src= "https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.js"></script>
