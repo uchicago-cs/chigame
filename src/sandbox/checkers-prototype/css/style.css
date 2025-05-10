@@ -125,3 +125,7 @@ canvas {
     font-size: 18px;
     padding: 10px 25px;
 }
+
+.hidden {
+    display: none;
+}
