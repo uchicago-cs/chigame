@@ -130,7 +130,10 @@
                     {% url 'game-search-results' as game_search_url %}
                     {% url 'users:user-search-results' as users_search_url %}
                     {% url 'users:notification-search-results' as notifications_search_url %}
-                    <select id="query-type" name="query_type" class="form-select" aria-label="Search Category">
+                    <select id="query-type"
+                            name="query_type"
+                            class="form-select"
+                            aria-label="Search Category">
                       <option value="games"
                               {% if request.path == games_url or request.path == games_search_url %}selected{% endif %}>
                         Games
@@ -215,4 +218,4 @@
     {% block inline_javascript %}
     {% endblock inline_javascript %}
   </body>
-</html> 
+</html>
