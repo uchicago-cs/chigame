@@ -1,7 +1,20 @@
 {% extends "base.html" %}
 
 {% block content %}
-  {% include "chat/components/_header.html" %}
-  {% include "chat/components/_input.html" %}
-  {% include "chat/components/_script.html" %}
+  <div class="chat-container">
+    {% include "chat/components/_header.html" %}
+    {% include "chat/components/_messages.html" %}
+    {% include "chat/components/_input.html" %}
+    {% include "chat/components/_script.html" %}
+  </div>
+
+  <style>
+    .chat-container {
+      max-width: 800px;
+      margin: 0 auto;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+  </style>
 {% endblock content %}

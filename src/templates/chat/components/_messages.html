@@ -1,0 +1,72 @@
+<div class="chat-history">
+  <div class="chat-history__container">
+    {% if messages %}
+      {% for message in messages %}
+        <div class="chat-message {% if message.user == request.user %}chat-message--mine{% else %}chat-message--other{% endif %}">
+          <div class="chat-message__sender">{{ message.user.username }}</div>
+          <div class="chat-message__content">{{ message.content }}</div>
+          <div class="chat-message__timestamp">{{ message.created_at|date:"g:i A" }}</div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div class="chat-history__empty">No messages yet. Start the conversation!</div>
+    {% endif %}
+  </div>
+</div>
+
+<style>
+  .chat-history {
+    border: 1px solid #e1e1e1;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    background-color: #f9f9f9;
+  }
+  
+  .chat-history__container {
+    height: 300px;
+    overflow-y: auto;
+    padding: 15px;
+  }
+  
+  .chat-message {
+    margin-bottom: 12px;
+    padding: 10px;
+    border-radius: 8px;
+    max-width: 80%;
+  }
+  
+  .chat-message--mine {
+    background-color: #dcf8c6;
+    margin-left: auto;
+    margin-right: 10px;
+  }
+  
+  .chat-message--other {
+    background-color: #ffffff;
+    margin-right: auto;
+    margin-left: 10px;
+  }
+  
+  .chat-message__sender {
+    font-weight: bold;
+    margin-bottom: 4px;
+    font-size: 0.9em;
+  }
+  
+  .chat-message__content {
+    word-break: break-word;
+  }
+  
+  .chat-message__timestamp {
+    font-size: 0.7em;
+    color: #888;
+    text-align: right;
+    margin-top: 4px;
+  }
+  
+  .chat-history__empty {
+    text-align: center;
+    color: #888;
+    padding: 20px;
+  }
+</style> 

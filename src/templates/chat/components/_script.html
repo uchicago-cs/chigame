@@ -35,13 +35,29 @@
   chatSocket.onmessage = function(e) {
     const data = JSON.parse(e.data);
     var div = document.createElement("div");
-    div.className = "chat-message";
-    div.innerHTML = `<strong>${data.username}</strong>: ${data.message}`;
+    div.className = "chat-message chat-message--mine";
+    
+    var sender = document.createElement("div");
+    sender.className = "chat-message__sender";
+    sender.textContent = data.username;
+    
+    var content = document.createElement("div");
+    content.className = "chat-message__content";
+    content.textContent = data.message;
+    
+    var timestamp = document.createElement("div");
+    timestamp.className = "chat-message__timestamp";
+    timestamp.textContent = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+    
+    div.appendChild(sender);
+    div.appendChild(content);
+    div.appendChild(timestamp);
+    
     document.querySelector("#id_message_send_input").value = "";
-    document.querySelector("#id_chat_item_container").appendChild(div);
+    document.querySelector(".chat-history__container").appendChild(div);
 
     // Scroll to bottom of chat
-    const container = document.querySelector("#id_chat_item_container");
+    const container = document.querySelector(".chat-history__container");
     container.scrollTop = container.scrollHeight;
   };
 </script>

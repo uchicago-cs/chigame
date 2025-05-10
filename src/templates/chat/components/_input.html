@@ -1,8 +1,41 @@
-<div class="chat__item__container" id="id_chat_item_container">
-  <br />
-  <label for="id_message_send_input">Message:</label>
+<div class="chat-input">
   <input type="text" id="id_message_send_input" placeholder="Type a message" />
-  <button type="submit" id="id_message_send_button">Send Message</button>
-  <br />
-  <br />
+  <button type="submit" id="id_message_send_button">Send</button>
 </div>
+
+<style>
+  .chat-input {
+    display: flex;
+    padding: 10px;
+    background-color: #f0f0f0;
+    border-radius: 8px;
+    margin-top: 10px;
+  }
+  
+  .chat-input input {
+    flex-grow: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    margin-right: 10px;
+    outline: none;
+  }
+  
+  .chat-input input:focus {
+    border-color: #4a90e2;
+  }
+  
+  .chat-input button {
+    background-color: #4a90e2;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  
+  .chat-input button:hover {
+    background-color: #3a7bd5;
+  }
+</style>
