@@ -8,15 +8,18 @@ import machina.models.fields
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('forum_conversation', '0002_post_anonymous_key'),
+        ("forum_conversation", "0002_post_anonymous_key"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='post',
-            name='content',
-            field=machina.models.fields.MarkupTextField(no_rendered_field=True, validators=[machina.core.validators.NullableMaxLengthValidator(None)], verbose_name='Content'),
+            model_name="post",
+            name="content",
+            field=machina.models.fields.MarkupTextField(
+                no_rendered_field=True,
+                validators=[machina.core.validators.NullableMaxLengthValidator(None)],
+                verbose_name="Content",
+            ),
         ),
     ]
