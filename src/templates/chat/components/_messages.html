@@ -3,7 +3,7 @@
     {% if messages %}
       {% for message in messages %}
         <div class="chat-message {% if message.user == request.user %}chat-message--mine{% else %}chat-message--other{% endif %}">
-          <div class="chat-message__sender">{{ message.user.username }}</div>
+          <div class="chat-message__sender">{{ message.user.email }}</div>
           <div class="chat-message__content">{{ message.content }}</div>
           <div class="chat-message__timestamp">{{ message.created_at|date:"g:i A" }}</div>
         </div>
