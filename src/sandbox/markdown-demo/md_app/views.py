@@ -35,10 +35,10 @@ The combat system consists of several key elements:
    - Shield Bash
    - Kick
 
-2. Ranged Attacks
-   - Bow Shot
-   - Magic Bolt
-   - Throwing Knife
+
+# Getting Started
+Here's how to get started with our product.
+
 
 ### Damage Calculation
 | Attack Type  | Base Damage | Critical Chance |
@@ -48,8 +48,8 @@ The combat system consists of several key elements:
 | Bow Shot     | 12          | 15%             |
 | Magic Bolt   | 20          | 20%             |
 
-## Code Examples
-Here's how damage is calculated in the game:
+
+
 
 ```python
 import random
@@ -86,13 +86,18 @@ Unlock advanced gameplay with these features:
 
 
 def markdown_content_view(request):
-    # 1) What section to show/highlight
-    requested_section = request.GET.get("section", "introduction")
+    is_minimal = request.GET.get("minimal", "false").lower() == "true"
+    # Only get section if not in minimal mode
+    requested_section = None if is_minimal else request.GET.get("section", "introduction")
 
-    # 2) Build a simple TOC list from every H2 in the source
-    #    - title: the text after "## "
-    #    - id: slugified (lowercase, spaces→hyphens)
-    raw_headings = re.findall(r"^##\s+(.*)$", MARKDOWN_STRING, flags=re.MULTILINE)
+    # Remove TOC section in minimal mode
+    if is_minimal:
+        content = re.sub(r"## Table of Contents\n\[TOC\]\n?", "", MARKDOWN_STRING, flags=re.IGNORECASE)
+    else:
+        content = MARKDOWN_STRING
+
+    # Extract TOC manually from H2s
+    raw_headings = re.findall(r"^##\s+(.*)$", content, flags=re.MULTILINE)
     toc_items = [
         {
             "title": title.strip(),
@@ -102,7 +107,6 @@ def markdown_content_view(request):
         if title.strip().lower() != "table of contents"
     ]
 
-    # 3) Render Markdown ➔ HTML (no built-in TOC extension)
     md = markdown.Markdown(
         extensions=[
             "markdown.extensions.fenced_code",
@@ -110,15 +114,16 @@ def markdown_content_view(request):
             "markdown.extensions.nl2br",
             "markdown.extensions.sane_lists",
             "markdown.extensions.codehilite",
-            SectionWrapperExtension(),  # wrap each H1–H6 into <div class="kb-section">
+            SectionWrapperExtension(),
         ]
     )
-    html_content = md.convert(MARKDOWN_STRING)
+    html_content = md.convert(content)
 
-    # 4) Pass both the HTML and our manual TOC into the template
+    template = "md_app/minimal_content.html" if is_minimal else "md_app/markdown_content.html"
+
     return render(
         request,
-        "md_app/markdown_content.html",
+        template,
         {
             "html_content": html_content,
             "toc_items": toc_items,
