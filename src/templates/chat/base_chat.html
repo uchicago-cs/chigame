@@ -53,7 +53,7 @@
       <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.js"></script>
     {% endblock javascript %}
   </head>
-  <body class="d-flex flex-column">
+  <body class="d-flex flex-column vh-100">
     <div class="mb-1">
       <nav class="navbar navbar-expand-md navbar-light bg-light">
         <div class="container-fluid">
@@ -168,10 +168,7 @@
         </div>
       </nav>
     </div>
-    {% block body %}
-    {% endblock body %}
-    <div class="container-fluid p-0">
-      <!-- Message alerts have been removed from this template -->
+    <div class="container-fluid p-0 flex-grow-1 d-flex flex-column">
       {% block content %}
         <p>Coming soon!</p>
       {% endblock content %}

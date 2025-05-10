@@ -1,7 +1,7 @@
 {% extends "chat/base_chat.html" %}
 
 {% block content %}
-<div class="chat-container h-100 d-flex flex-column">
+<div class="chat-container h-100 d-flex flex-column" style="height: calc(100vh - 200px) !important; max-height: 80vh;">
   {% include "chat/components/_header.html" %}
   {% include "chat/components/_messages.html" %}
   {% include "chat/components/_input.html" %}

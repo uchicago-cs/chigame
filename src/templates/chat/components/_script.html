@@ -69,8 +69,10 @@
     document.querySelector("#id_message_send_input").value = "";
     document.querySelector(".bg-light.flex-grow-1 .d-flex.flex-column").appendChild(messageContainer);
 
-    // Scroll to bottom of chat
-    const container = document.querySelector(".bg-light.flex-grow-1");
-    container.scrollTop = container.scrollHeight;
+    // Scroll to bottom of chat - using requestAnimationFrame to ensure DOM updates first
+    requestAnimationFrame(() => {
+      const container = document.querySelector(".bg-light.flex-grow-1");
+      container.scrollTop = container.scrollHeight;
+    });
   };
 </script>
