@@ -40,20 +40,14 @@
       <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&display=swap"
             rel="stylesheet" />
     {% endblock css %}
-    <!-- Le javascript
-    ================================================== -->
-    {# Placed at the top of the document so pages load faster with defer #}
     {% block js %}
     {% endblock js %}
     {% block javascript %}
-      <!-- Bootstrap JS -->
       <script defer
               src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/js/bootstrap.min.js"
               integrity="sha512-1/RvZTcCDEUjY/CypiMz+iqqtaoQfAITmNSJY17Myp4Ms5mdxPS5UV7iOfdZoxcGhzFbOm6sntTKJppjvuhg4g=="
               crossorigin="anonymous"
               referrerpolicy="no-referrer"></script>
-      <!-- Your stuff: Third-party javascript libraries go here -->
-      <!-- place project specific Javascript in this file -->
       <script defer src="{% static 'js/project.js' %}"></script>
       <script src= "https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.js"></script>
       <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.js"></script>
@@ -136,7 +130,7 @@
                     {% url 'game-search-results' as game_search_url %}
                     {% url 'users:user-search-results' as users_search_url %}
                     {% url 'users:notification-search-results' as notifications_search_url %}
-                    <select id="query-type" name="query_type" class="form-select">
+                    <select id="query-type" name="query_type" class="form-select" aria-label="Search Category">
                       <option value="games"
                               {% if request.path == games_url or request.path == games_search_url %}selected{% endif %}>
                         Games
@@ -176,7 +170,7 @@
     </div>
     {% block body %}
     {% endblock body %}
-    <div class="container">
+    <div class="container-fluid p-0">
       <!-- Message alerts have been removed from this template -->
       {% block content %}
         <p>Coming soon!</p>

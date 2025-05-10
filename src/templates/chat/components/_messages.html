@@ -1,15 +1,19 @@
-<div class="chat-history">
-  <div class="chat-history__container">
+<div class="bg-light flex-grow-1 overflow-auto border border-light p-3">
+  <div class="d-flex flex-column h-100">
     {% if messages %}
       {% for message in messages %}
-        <div class="chat-message {% if message.user == request.user %}chat-message--mine{% else %}chat-message--other{% endif %}">
-          <div class="chat-message__sender">{{ message.user.email }}</div>
-          <div class="chat-message__content">{{ message.content }}</div>
-          <div class="chat-message__timestamp">{{ message.created_at|date:"g:i A" }}</div>
+        <div class="mb-3 {% if message.user == request.user %}align-self-end{% else %}align-self-start{% endif %}">
+          <div class="{% if message.user == request.user %}bg-success-subtle{% else %}bg-white{% endif %} rounded p-2 shadow-sm" style="max-width: 80%;">
+            <div class="fw-bold small text-danger">{{ message.user.username }}</div>
+            <div class="mt-1">{{ message.content }}</div>
+            <div class="text-end text-muted small mt-1">{{ message.created_at|date:"g:i A" }}</div>
+          </div>
         </div>
       {% endfor %}
     {% else %}
-      <div class="chat-history__empty">No messages yet. Start the conversation!</div>
+      <div class="text-center text-muted fst-italic p-4">
+        No messages yet. Start the conversation!
+      </div>
     {% endif %}
   </div>
 </div>
@@ -18,14 +22,20 @@
   .chat-history {
     border: 1px solid #e1e1e1;
     border-radius: 8px;
-    margin-bottom: 20px;
     background-color: #f9f9f9;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
   }
   
   .chat-history__container {
-    height: 300px;
+    height: 100%;
     overflow-y: auto;
     padding: 15px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
   }
   
   .chat-message {
@@ -33,28 +43,34 @@
     padding: 10px;
     border-radius: 8px;
     max-width: 80%;
+    word-break: break-word;
   }
   
   .chat-message--mine {
     background-color: #dcf8c6;
     margin-left: auto;
     margin-right: 10px;
+    align-self: flex-end;
   }
   
   .chat-message--other {
     background-color: #ffffff;
     margin-right: auto;
     margin-left: 10px;
+    align-self: flex-start;
+    border: 1px solid #e1e1e1;
   }
   
   .chat-message__sender {
     font-weight: bold;
     margin-bottom: 4px;
     font-size: 0.9em;
+    color: #800000; /* ChiGame brand color */
   }
   
   .chat-message__content {
-    word-break: break-word;
+    font-size: 1em;
+    line-height: 1.4;
   }
   
   .chat-message__timestamp {
@@ -68,5 +84,6 @@
     text-align: center;
     color: #888;
     padding: 20px;
+    font-style: italic;
   }
 </style> 

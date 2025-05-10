@@ -1,27 +1,6 @@
-<div class="chat-header">
-  <h2>{{ chat.name }}</h2>
-  <div class="chat-header__info">
+<div class="bg-danger text-white p-3 rounded-top">
+  <h2 class="chigame-text mb-0">{{ chat.name }}</h2>
+  <div class="small mt-1 opacity-75">
     Welcome, {{ request.user.username }}
   </div>
 </div>
-
-<style>
-  .chat-header {
-    background-color: #4a90e2;
-    color: white;
-    padding: 15px;
-    border-radius: 8px 8px 0 0;
-    margin-bottom: 10px;
-  }
-  
-  .chat-header h2 {
-    margin: 0;
-    font-size: 1.5em;
-  }
-  
-  .chat-header__info {
-    font-size: 0.9em;
-    margin-top: 5px;
-    opacity: 0.8;
-  }
-</style>
