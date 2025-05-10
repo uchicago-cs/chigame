@@ -44,4 +44,10 @@ urlpatterns = [
     path("tournaments/archived/", views.TournamentArchivedListView.as_view(), name="tournament-archived"),
     # placeholder game
     path("lobby/<int:pk>/coinflip", views.coin_flip_game, name="placeholder-game"),
+    # tournament feedback
+    path("tournaments/<int:tournament_id>/feedback/", views.tournament_feedback_list, name="tournament-feedback-list"),
+    path("tournaments/<int:tournament_id>/feedback/submit/", views.submit_feedback, name="submit-feedback"),
+    path("feedback/update/<int:feedback_id>/", views.update_feedback_view, name="update-feedback"),
+    path("feedback/delete/<int:feedback_id>/", views.delete_feedback_view, name="delete-feedback"),
+    path("feedback/my-feedback/", views.user_feedback_list, name="user-feedback-list"),
 ]
