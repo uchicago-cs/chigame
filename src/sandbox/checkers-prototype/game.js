@@ -49,7 +49,7 @@ function preload() {}
 function create() {
   // Store reference to the scene
   const scene = this;
-  
+
   drawBoard(this);
   populatePieces(this);
 
@@ -66,14 +66,14 @@ function create() {
     // Clear all pieces
     pieces.forEach(piece => piece.sprite.destroy());
     pieces = [];
-    
+
     // Reset game state
     gameOver = false;
     selectedPiece = null;
     currentPlayer = COLORS.red;
     drawOffered = false;
     drawOfferedBy = null;
-    
+
     // Reset UI
     gameOverMessage.textContent = '';
     gameOverMessage.classList.remove('show');
@@ -82,7 +82,7 @@ function create() {
     drawBtn.textContent = 'Offer Draw';
     forfeitBtn.style.display = 'block';
     declineDrawBtn.style.display = 'none';
-    
+
     // Repopulate the board using the stored scene reference
     populatePieces(scene);
   }
@@ -300,7 +300,7 @@ function movePiece(piece, moveX, moveY) {
     if (captured) {
       captured.sprite.destroy(); // delete the sprite (remove from display state)
       pieces = pieces.filter((p) => p !== captured); // remove it from the array (game state)
-      
+
       // Check for game over after capturing a piece
       checkGameOver();
     }
@@ -317,7 +317,7 @@ function movePiece(piece, moveX, moveY) {
 function checkGameOver() {
   const redPieces = pieces.filter(p => p.color === COLORS.red);
   const blackPieces = pieces.filter(p => p.color === COLORS.black);
-  
+
   if (redPieces.length === 0) {
     gameOver = true;
     const gameOverMessage = document.getElementById('gameOverMessage');
