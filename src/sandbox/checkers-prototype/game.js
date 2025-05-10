@@ -300,6 +300,9 @@ function movePiece(piece, moveX, moveY) {
     if (captured) {
       captured.sprite.destroy(); // delete the sprite (remove from display state)
       pieces = pieces.filter((p) => p !== captured); // remove it from the array (game state)
+      
+      // Check for game over after capturing a piece
+      checkGameOver();
     }
   }
 
@@ -308,6 +311,30 @@ function movePiece(piece, moveX, moveY) {
   piece.y = moveY;
   piece.sprite.x = MARGIN + piece.x * TILE_SIZE + TILE_SIZE / 2;
   piece.sprite.y = MARGIN + piece.y * TILE_SIZE + TILE_SIZE / 2;
+}
+
+// Check if the game is over due to all pieces of one color being captured
+function checkGameOver() {
+  const redPieces = pieces.filter(p => p.color === COLORS.red);
+  const blackPieces = pieces.filter(p => p.color === COLORS.black);
+  
+  if (redPieces.length === 0) {
+    gameOver = true;
+    const gameOverMessage = document.getElementById('gameOverMessage');
+    gameOverMessage.textContent = 'All red pieces captured! Black wins!';
+    gameOverMessage.classList.add('show');
+    document.getElementById('playAgainPrompt').style.display = 'block';
+    document.getElementById('drawBtn').style.display = 'none';
+    document.getElementById('forfeitBtn').style.display = 'none';
+  } else if (blackPieces.length === 0) {
+    gameOver = true;
+    const gameOverMessage = document.getElementById('gameOverMessage');
+    gameOverMessage.textContent = 'All black pieces captured! Red wins!';
+    gameOverMessage.classList.add('show');
+    document.getElementById('playAgainPrompt').style.display = 'block';
+    document.getElementById('drawBtn').style.display = 'none';
+    document.getElementById('forfeitBtn').style.display = 'none';
+  }
 }
 
 // helper function to get the piece
