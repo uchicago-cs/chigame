@@ -207,6 +207,8 @@ function movePiece(piece, moveX, moveY) {
   // update the display state
   piece.sprite.x = MARGIN + piece.x * TILE_SIZE + TILE_SIZE / 2;
   piece.sprite.y = MARGIN + piece.y * TILE_SIZE + TILE_SIZE / 2;
+
+  console.log("Current board state:", getBoardState());
 }
 
 // helper function to get the piece
@@ -251,4 +253,16 @@ function getBoardState() {
   }
 
   return board;
+}
+
+
+function sendBoardToServer(boardState) {
+  fetch('/api/board-state/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': getCSRFToken(),
+    },
+    body: JSON.stringify({ board: boardState }),
+  });
 }
