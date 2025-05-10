@@ -15,19 +15,22 @@
   <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&display=swap"
         rel="stylesheet" />
   </head>
-  <div id="app">
+  <div id="app" class="d-flex flex-column">
     <NavBar />
     <router-view />
+    <Footer />
   </div>
 </template>
 
 <script>
 import NavBar from './components/NavBar.vue';
+import Footer from './components/Footer.vue';
 
 export default {
   name: 'App',
   components: {
     NavBar,
+    Footer,
   },
 };
 </script>
@@ -37,5 +40,9 @@ export default {
 body {
   margin: 0;
   font-family: Arial, sans-serif;
+}
+
+#app {
+  min-height: 100vh;
 }
 </style>
