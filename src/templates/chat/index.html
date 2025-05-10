@@ -1,5 +1,8 @@
 {% extends "base.html" %}
 
+{% block messages %}
+{% endblock messages %}
+
 {% block content %}
   <div class="chat-container">
     {% include "chat/components/_header.html" %}
@@ -9,6 +12,11 @@
   </div>
 
   <style>
+    /* Hide Django messages */
+    .alert {
+      display: none !important;
+    }
+    
     .chat-container {
       max-width: 800px;
       margin: 0 auto;

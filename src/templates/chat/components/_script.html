@@ -1,4 +1,12 @@
 <script>
+  // Hide any alert messages as soon as the page loads
+  document.addEventListener('DOMContentLoaded', function() {
+    const alerts = document.querySelectorAll('.alert');
+    alerts.forEach(alert => {
+      alert.style.display = 'none';
+    });
+  });
+
   const protocol = window.location.protocol === "https:" ? "wss://" : "ws://";
   const chatId = "{{ chat.id }}"; // Make sure to pass chat.id from your view
   const chatSocket = new WebSocket(
