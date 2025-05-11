@@ -6,25 +6,24 @@ from django.db import migrations
 
 
 def update_topic_first_post_last_post(apps, schema_editor):
-    Topic = apps.get_model('forum_conversation', 'Topic')
+    Topic = apps.get_model("forum_conversation", "Topic")
     for topic in Topic.objects.all():
-        first_post = topic.posts.all().order_by('created').first()
-        last_post = topic.posts.filter(approved=True).order_by('-created').first()
+        first_post = topic.posts.all().order_by("created").first()
+        last_post = topic.posts.filter(approved=True).order_by("-created").first()
         topic.first_post = first_post
         topic.last_post = last_post
         topic.save()
+
 
 def reverse_topic_first_post_last_post(apps, schema_editor):
     pass
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('forum_conversation', '0007_auto_20160903_0450'),
+        ("forum_conversation", "0007_auto_20160903_0450"),
     ]
 
     operations = [
-        migrations.RunPython(
-            update_topic_first_post_last_post, reverse_code=reverse_topic_first_post_last_post),
+        migrations.RunPython(update_topic_first_post_last_post, reverse_code=reverse_topic_first_post_last_post),
     ]
