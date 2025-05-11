@@ -93,6 +93,15 @@
           </p>
         {% endif %}
         <p>{{ game.description|linebreaksbr }}</p>
+        {% if uploaded_file_url %}
+          <hr />
+          <h3>Play Game</h3>
+          <iframe src="{{ uploaded_file_url }}"
+                  width="100%"
+                  height="600px"
+                  style="border: none; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+          </iframe>
+        {% endif %}
         <h3 id="player-description">Players</h3>
         <p>
           {% if game.min_players == game.max_players %}
