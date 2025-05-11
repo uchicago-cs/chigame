@@ -1,7 +1,7 @@
 from django.urls import path
 
 from . import views
-from .views import LobbyCreateView, UploadFileView
+from .views import LobbyCreateView, UploadFileView, InteractiveFictionView
 
 urlpatterns = [
     # lobbies
