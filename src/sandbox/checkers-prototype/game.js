@@ -28,8 +28,8 @@ const COLORS = {
   black: 0x000000,
   red: 0xff0000,
   white: 0xffffff,
-  colorblind_blue: 0x1e88e5ff,
-  colorblind_orange: 0xffc107ff,
+  colorblind_blue: 0x1e88e5,
+  colorblind_orange: 0xffc107,
 };
 let pieces = [];
 let selectedPiece = null;
