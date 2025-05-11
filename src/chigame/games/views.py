@@ -395,6 +395,7 @@ def search_results(request):
 # =============== Interactive Fiction Views ===============
 class InteractiveFictionView(TemplateView):
     template_name = "games/interactive-fiction/IF_game_create.html"
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         # creates a fake game object
@@ -412,6 +413,7 @@ class InteractiveFictionView(TemplateView):
             context["uploaded_file_url"] = file_url
         return context
 
+
 class IFGameCreateView(UserPassesTestMixin, CreateView):
     model = InteractiveFictionGame
     form_class = IFGameForm
@@ -424,6 +426,7 @@ class IFGameCreateView(UserPassesTestMixin, CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         return context
+
 
 class UploadFileView(View):
     def post(self, request, pk):
