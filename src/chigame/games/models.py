@@ -1,4 +1,6 @@
 import random
+import secrets
+import string
 
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
@@ -170,13 +172,29 @@ class Lobby(models.Model):
     time_constraint = models.PositiveIntegerField(default=300)
     lobby_created = models.DateTimeField(default=timezone.now)
 
+    # implementation of match functionality: join lobby by code
+    join_code = models.CharField(max_length=6, unique=True, blank=True, null=True)
+
     # ================ VALIDATON ================
+    def generate_unique_code(self, length=6):
+        """
+        Generates a unique code for users to enter lobby associated with a specific match.
+        """
+        characters = string.ascii_uppercase + string.digits
+        while True:
+            code = "".join(secrets.choice(characters) for _ in range(length))
+            if not Lobby.objects.filter(join_code=code).exists():
+                return code
+
     def clean(self):
         # Ensures min_players is not greater than max_players
         if self.min_players > self.max_players:
             raise ValidationError({"min_players": "min_players cannot be greater than max_players"})
 
     def save(self, *args, **kwargs):
+        # generate unique join code if it doesn't exist
+        if not self.join_code:
+            self.join_code = self.generate_unique_code()
         # Calls full_clean to run all validations before saving
         self.full_clean()
         super().save(*args, **kwargs)

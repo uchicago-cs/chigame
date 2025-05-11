@@ -188,8 +188,6 @@ class MatchCreateView(CreateView):
         # there after successful match creation; for now, redirect to the game detail page
         return reverse("game-detail", kwargs={"pk": self.game.pk})
 
-
-# Redirects to the join match page
 def join_match(request, pk):
     game = get_object_or_404(Game, pk=pk)
     if request.method == "POST":
@@ -200,6 +198,34 @@ def join_match(request, pk):
         except Lobby.DoesNotExist:
             messages.error(request, "Invalid lobby code.")
     return render(request, "matches/match_join.html", {"game": game})
+
+@login_required
+def lobby_join_via_code(request, pk, code):
+    """
+    Lobby join via code for the individual matches. 
+    """
+    lobby = get_object_or_404(Lobby, pk=pk)
+    joined = Lobby.objects.filter(members=request.user.id)
+    if lobby in joined:
+        messages.error(request, "Already joined.")
+        # need to redirect here to the screen with the game detail 
+        return reverse("game-detail", kwargs={"pk": lobby.game.pk})
+
+    if lobby.code != code:
+        messages.error(request, "Invalid code.")
+        # need to redirect here to the screen with the game detail 
+        return reverse("game-detail", kwargs={"pk": lobby.game.pk})
+
+    lobby.members.add(request.user)
+
+    if lobby.members.all().count() == lobby.max_players:
+        lobby.match_status = 2
+        messages.success(request, "You joined! Match is now full and ready to begin.")
+    else:
+        messages.success(request, "You have successfully joined the match.")
+        
+    lobby.save()
+    return redirect("lobby-details", pk=lobby.pk)
 
 
 # =============== BGG Searching =================

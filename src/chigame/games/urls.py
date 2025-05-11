@@ -30,8 +30,8 @@ urlpatterns = [
     path("search/", views.search_results, name="game-search-results"),
     path("<int:pk>/reviews/", views.ReviewListView.as_view(), name="game-review-list"),
     # matches
-    path("<int:pk>/match/create", views.MatchCreateView.as_view(), name="match-create"),
-    path("<int:pk>/match/join", views.join_match, name="join_match"),
+    path("<int:pk>/match/create/", views.MatchCreateView.as_view(), name="match-create"),
+    path("<int:pk>/match/join/", views.join_match, name="match-join"),
     # tournaments
     path("tournaments/", views.TournamentListView.as_view(), name="tournament-list"),
     path("tournaments/<int:pk>/", views.TournamentDetailView.as_view(), name="tournament-detail"),
