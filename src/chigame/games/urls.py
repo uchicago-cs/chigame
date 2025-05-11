@@ -3,6 +3,7 @@ from django.urls import path, HttpResponse
 from . import views
 from .views import LobbyCreateView, UploadFileView, InteractiveFictionView
 
+print("✅ games/urls.py is being loaded")
 
 urlpatterns = [
     # lobbies
