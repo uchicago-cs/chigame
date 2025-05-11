@@ -31,6 +31,7 @@ canvas {
     box-sizing: border-box;
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
     max-height: 10%;
+    z-index: 100;
 }
 
 .nav-btns {
@@ -84,6 +85,7 @@ canvas {
     visibility: hidden;
     font-size: 24px;
     color: rgb(138, 90, 68);
+    z-index: 50;
 }
 
 #gameOverPrompts.show {
