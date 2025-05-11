@@ -66,7 +66,7 @@ class GameDetailView(LoginRequiredMixin, FormMixin, DetailView):
     #for twine files, redirect to different IF view
     def dispatch(self, request, *args, **kwargs):
         self.object = self.get_object()
-        if self.object.twine_file and self.object.twine_file.name.endswith(".html"):
+        if self.object.twine_file.name.endswith(".html"):
             return redirect("interactive-fiction-detail", pk=self.object.pk)
         return super().dispatch(request, *args, **kwargs)
 
