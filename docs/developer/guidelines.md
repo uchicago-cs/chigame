@@ -20,20 +20,6 @@ These checks include the following:
   for common style issues in Django templates.
 * Miscellaneous checks for trailing whitespace, missing newlines, etc.
 
-These checks are enforced via GitHub Actions any time you push code to the
-repository, and pull requests will not be approved if they don't pass
-these checks.
-
-To ensure your code already passes these checks, we suggest you get into
-the habit of running the `black` command to automatically reformat your code. For example:
-
-```raw
-$ black src/chigame/games/views.py 
-reformatted src/chigame/games/views.py
-
-All done! ✨ 🍰 ✨
-1 file reformatted.
-```
 
 You can also enable automatic formatting on most code editors, so you don't
 have to run `black` manually. For VS Code, see [Fornatting Python in VS Code](https://code.visualstudio.com/docs/python/formatting).

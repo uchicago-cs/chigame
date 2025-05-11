@@ -26,8 +26,8 @@ from django.views.generic.edit import FormMixin
 from chigame.users.models import User
 
 from .filters import LobbyFilter
-from .forms import GameForm, LobbyForm, ReviewForm, InteractiveFictionForm
-from .models import Chat, Game, GameList, Lobby, Match, Player, Review, Tournament
+from .forms import GameForm, IFGameForm, LobbyForm, ReviewForm
+from .models import Chat, Game, GameList, InteractiveFictionGame, Lobby, Match, Player, Review, Tournament
 from .simulation_utils import TournamentSimulator, run_complete_tournament_simulation
 from .tables import LobbyTable
 
@@ -105,11 +105,6 @@ class GameCreateView(UserPassesTestMixin, CreateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
-        # Game create and edit views share the same template, so this variable lets us know which is which
-        # Currently, this is being so that BGG autofilling is only available when creating a game
-        context["is_create"] = True
-
         return context
 
 
@@ -397,6 +392,7 @@ def search_results(request):
 
 # =============== Interactive Fiction Views ===============
 
+
 class InteractiveFictionView(TemplateView):
     template_name = "games/interactive-fiction/IF_game_create.html"
 
@@ -416,18 +412,20 @@ class InteractiveFictionView(TemplateView):
             file_url = f"/media/{uploaded_file}"
             context["uploaded_file_url"] = file_url
         return context
-    
-class IFGameCreateView(CreateView):
-    model = Game
-    form_class = InteractiveFictionForm  # The form that restricts to Interactive Fiction fields
-    template_name = '/games/interactive-fiction/IF_game_create.html'  # The template where the form will be rendered
-    success_url = reverse_lazy('game_list')  # Redirect to a list or detail view after successful submission
 
-    def form_valid(self, form):
-        # Optionally, modify the form data or handle logic before saving
-        # Example: If you want to set a default value for game_type when creating Interactive Fiction games
-        form.instance.game_type = 'IF'  # Automatically assign the game type as Interactive Fiction
-        return super().form_valid(form)
+
+class IFGameCreateView(UserPassesTestMixin, CreateView):
+    model = InteractiveFictionGame
+    form_class = IFGameForm
+    template_name = "games/interactive-fiction/IF_game_create.html"
+    success_url = reverse_lazy("game-list")
+
+    def test_func(self):
+        return self.request.user.is_staff
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        return context
 
 
 class UploadFileView(View):
