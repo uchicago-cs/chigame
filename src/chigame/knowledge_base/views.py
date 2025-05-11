@@ -1,10 +1,15 @@
+# Keep model imports for now, as it will be required for WIP features
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.core.exceptions import PermissionDenied
 from django.db.models import CharField, F, Q, Value
 from django.db.models.functions import Concat
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.views.generic import ListView
 
 from chigame.games.models import Category, Game
 
+from .forms import MarkdownUploadForm
 from .models import Guide
 
 
@@ -66,11 +71,72 @@ def GuideDetailView(request, pk):
     return render(request, "knowledge-base/guide_detail.html", context)
 
 
-def ModeratorView(request):
-    context = {}
-    return render(request, "knowledge-base/moderator.html", context)
+class ModeratorGuidesPending(LoginRequiredMixin, UserPassesTestMixin, ListView):
+    model = Guide
+    template_name = "knowledge-base/moderator_pending_guides.html"
+    context_object_name = "pendingGuides"
+
+    def get_queryset(self):
+        queryset = Guide.objects.filter(status=0)
+
+        # for sorting
+        sort = self.request.GET.get("sort")
+        if sort == "old":
+            queryset = queryset.order_by("recent_upload")
+        else:  # default: newest first
+            queryset = queryset.order_by("-recent_upload")
+
+        return queryset
+
+    # called when UserPassesTestMixin
+    # this makes sure only moderators can access this page
+    def test_func(self):
+        return self.request.user.moderator
 
 
 def ContributorView(request):
     context = {}
     return render(request, "knowledge-base/contributor.html", context)
+
+
+@login_required
+def ContributorMdUpload(request, pk=None):
+    # if it's reupload, we will retrieve the guide and edit fixed_game to
+    # make the game field appear read-only on the form
+    if pk:
+        guide = get_object_or_404(Guide, pk=pk)
+        # disallow user to access url if they don't access the guide or the guide
+        # status is not change requested
+        if guide.author != request.user or guide.status != 3:
+            raise PermissionDenied
+        fixed_game = guide.game_id
+    else:
+        guide = None
+        fixed_game = None
+
+    if request.method == "POST":
+        form = MarkdownUploadForm(request.POST, request.FILES, fixed_game=fixed_game)
+        if form.is_valid():
+            uploaded_file = form.cleaned_data["file"]
+
+            # Read the file content (assume UTF-8 encoded Markdown)
+            content = uploaded_file.read().decode("utf-8")
+
+            # when reupload
+            if guide:
+                guide.content = content
+                guide.status = 0
+                guide.save()
+            # when upload
+            else:
+                game = form.cleaned_data["game"]  # the game user chooses
+                guide = Guide.objects.create(author=request.user, content=content, game_id=game, status=0)
+            return redirect("knowledge-base")
+            # I make it redirects to landing page after submission for now, could later
+            # create an issue that adds a "sucessful submission" page
+
+    else:
+        form = MarkdownUploadForm(fixed_game=fixed_game)
+
+    context = {"form": form, "guide": pk}
+    return render(request, "knowledge-base/contributor_upload.html", context)
