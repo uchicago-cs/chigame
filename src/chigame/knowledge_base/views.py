@@ -1,11 +1,12 @@
 # Keep model imports for now, as it will be required for WIP features
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.exceptions import PermissionDenied
 from django.db.models import CharField, F, Q, Value
 from django.db.models.functions import Concat
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render
-from django.views.generic import ListView
+from django.views.generic import DetailView, ListView
 
 from chigame.games.models import Category, Game
 
@@ -95,6 +96,8 @@ class ContributorManageGuide(LoginRequiredMixin, ListView):
 @login_required
 def DownloadGuide(request, pk):
     guide = get_object_or_404(Guide, pk=pk)
+    if guide.author != request.user:
+        raise PermissionDenied
     content = guide.content  # Assuming this is already Markdown or close to it
 
     filename = f"guide_{guide.pk}.md"
@@ -103,7 +106,13 @@ def DownloadGuide(request, pk):
     return response
 
 
-def FeedbackDetail(request, pk):
-    feedback = get_object_or_404(ReviewFeedback, pk=pk)
-    context = {"feedback": feedback}
-    return render(request, "knowledge-base/feedback_detail.html", context)
+class FeedbackDetail(LoginRequiredMixin, DetailView):
+    model = ReviewFeedback
+    template_name = "knowledge-base/feedback_detail.html"
+    context_object_name = "feedback"
+
+    def get_object(self, queryset=None):
+        feedback = super().get_object(queryset)
+        if feedback.guide_id.author != self.request.user:
+            raise PermissionDenied
+        return feedback
