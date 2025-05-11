@@ -3,9 +3,7 @@ from django.urls import path, HttpResponse
 from . import views
 from .views import LobbyCreateView, UploadFileView, InteractiveFictionView
 
-def test_if_view(request, pk):
-    return HttpResponse(f"This is Twine game {pk}")
-    
+
 urlpatterns = [
     # lobbies
     path("lobby/", views.lobby_list, name="lobby-list"),
@@ -38,7 +36,7 @@ urlpatterns = [
     # interactive fiction
     path("interactive-fiction/", views.InteractiveFictionView.as_view(), name="interactive-fiction"),
     path("games/<int:pk>/upload/", UploadFileView.as_view(), name="upload-file"),
-    path("if-game/<int:pk>/", test_if_view, name="interactive-fiction-detail"),
+    path("if-game/<int:pk>/", InteractiveFictionView.as_view(), name="interactive-fiction-detail"),
     # tournaments
     path("tournaments/", views.TournamentListView.as_view(), name="tournament-list"),
     path("tournaments/<int:pk>/", views.TournamentDetailView.as_view(), name="tournament-detail"),
