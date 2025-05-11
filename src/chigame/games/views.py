@@ -189,6 +189,19 @@ class MatchCreateView(CreateView):
         return reverse("game-detail", kwargs={"pk": self.game.pk})
 
 
+# Redirects to the join match page
+def join_match(request, pk):
+    game = get_object_or_404(Game, pk=pk)
+    if request.method == "POST":
+        lobby_code = request.POST.get("lobby_code", "").strip().upper()
+        try:
+            lobby = Lobby.objects.get(code=lobby_code)
+            return redirect("lobby-detail", pk=lobby.pk)
+        except Lobby.DoesNotExist:
+            messages.error(request, "Invalid lobby code.")
+    return render(request, "matches/match_join.html", {"game": game})
+
+
 # =============== BGG Searching =================
 # The following functions involve using the BoardGameGeek API to search for games.
 # API documentation: https://boardgamegeek.com/wiki/page/BGG_XML_API2

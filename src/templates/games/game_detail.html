@@ -26,7 +26,8 @@
         <a href="#"><span class="badge rounded-pill text-bg-secondary">{{ mechanic }}</span></a>
       {% endfor %}
       <div class="btn-group btn-group-lg mt-3">
-        <a href="#" class="btn btn-outline-primary">Join a Match</a>
+        <a href="{% url 'join_match' pk=game.pk %}"
+           class="btn btn-outline-primary">Join a Match</a>
         <a href="{% url 'match-create' pk=game.pk %}"
            class="btn btn-outline-primary">Create a Match</a>
         {% if user.is_authenticated and favorites_list is not none %}
