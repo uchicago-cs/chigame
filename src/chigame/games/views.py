@@ -63,6 +63,13 @@ class GameDetailView(LoginRequiredMixin, FormMixin, DetailView):
     context_object_name = "game"
     form_class = ReviewForm
 
+    #for twine files, redirect to different IF view
+    def dispatch(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if self.object.twine_file and self.object.twine_file.name.endswith(".html"):
+            return redirect("interactive-fiction-detail", pk=self.object.pk)
+        return super().dispatch(request, *args, **kwargs)
+
     def get_success_url(self):
         return reverse("game-detail", kwargs={"pk": self.object.pk})
 
@@ -401,19 +408,13 @@ class InteractiveFictionView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # creates a fake game object
-        fake_game = Game(
-            pk=9999,
-            name="Interactive Fiction Adventure",
-            description="Embark on an interactive text-based journey!",
-        )
-        context["game"] = fake_game
+        game = get_object_or_404(Game, pk=kwargs["pk"])
 
-        # check if there is an uploaded IF file
-        uploaded_file = self.request.session.get("uploaded_interactive_file")
-        if uploaded_file:
-            file_url = f"/media/{uploaded_file}"
-            context["uploaded_file_url"] = file_url
+        context["game"] = game
+
+        if game.twine_file:
+            context["uploaded_file_url"] = game.twine_file.url  # use actual uploaded Twine file
+
         return context
 
 
