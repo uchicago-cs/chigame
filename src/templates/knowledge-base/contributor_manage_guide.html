@@ -37,6 +37,7 @@
           </td>
         </tr>
       {% endfor %}
+      {% if not guides %}<td colspan="4">No guides found.</td>{% endif %}
     </tbody>
   </table>
 {% endblock page-content %}
