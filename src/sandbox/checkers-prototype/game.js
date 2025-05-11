@@ -242,7 +242,7 @@ function changePieceColor(newColorOne, newColorTwo) {
   const firstPieceColor = pieces[0].color;
   pieces.forEach((piece) => {
     if (piece.color === firstPieceColor) {
-      piece.color = newColorOne; 
+      piece.color = newColorOne;
       piece.sprite.setFillStyle(newColorOne);
     }
     else {
