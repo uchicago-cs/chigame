@@ -35,6 +35,9 @@
   chatSocket.onmessage = function(e) {
     const data = JSON.parse(e.data);
 
+    // Target consistent message container using ID
+    const messageList = document.querySelector("#message-container");
+
     // Create message container
     const messageContainer = document.createElement("div");
     messageContainer.className = "mb-3 align-self-end";
@@ -68,7 +71,12 @@
     messageBubble.appendChild(timestamp);
     messageContainer.appendChild(messageBubble);
 
-    // Clear input and add message to container
+    messageList.appendChild(messageContainer);
+    messageList.scrollTop = messageList.scrollHeight;
+
+    document.querySelector("#id_message_send_input").value = "";
+
+    /*// Clear input and add message to container
     document.querySelector("#id_message_send_input").value = "";
     document.querySelector(".bg-light.flex-grow-1 .d-flex.flex-column").appendChild(messageContainer);
 
@@ -76,6 +84,38 @@
     requestAnimationFrame(() => {
       const container = document.querySelector(".bg-light.flex-grow-1");
       container.scrollTop = container.scrollHeight;
-    });
+    });*/
   };
+  // Toggle between centered and floating chat mode
+  const chatContainer = document.getElementById("chatContainer");
+  const toggleButton = document.getElementById("toggle-chat-mode");
+  const collapseButton = document.getElementById("collapse-chat");
+
+  if (collapseButton) {
+    collapseButton.addEventListener("click", () => {
+      chatContainer.classList.toggle("collapsed-chat");
+
+      // Flip arrow direction
+      const icon = collapseButton.querySelector("i");
+      if (icon) {
+        icon.classList.toggle("bi-chevron-up");
+        icon.classList.toggle("bi-chevron-down");
+      }
+    });
+  }
+
+  if (chatContainer && toggleButton) {
+    toggleButton.addEventListener("click", () => {
+      chatContainer.classList.toggle("floating-chat");
+      chatContainer.classList.toggle("centered-chat");
+
+      // Show collapse button only in floating mode
+      if (chatContainer.classList.contains("floating-chat")) {
+        collapseButton.classList.remove("d-none");
+      } else {
+        collapseButton.classList.add("d-none");
+        chatContainer.classList.remove("collapsed-chat");
+      }
+    });
+  }
 </script>

@@ -3,19 +3,55 @@
 {% block content %}
   <style>
     .chat-container {
-      height: calc(100vh - 200px) !important;
+      display: flex;
+      flex-direction: column;
+      height: auto;
       max-height: 80vh;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+    }
+
+    .centered-chat {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    #chat-body {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
     }
 
     .chat-messages-scroll {
-      height: 100%;
-      min-height: 0;
+      flex-grow: 1;
+      overflow-y: auto;
+    }
+
+    .floating-chat {
+      position: fixed;
+      bottom: 0;
+      right: 50px;
+      width: 350px;
+      z-index: 1050;
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 8px 8px 0 0;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .collapsed-chat #chat-body {
+      display: none !important;
+      /* This hides everything but the header */
     }
   </style>
-  <div class="chat-container h-100 d-flex flex-column">
+  <div id="chatContainer"
+       class="chat-container centered-chat mx-auto border rounded p-0 d-flex flex-column">
     {% include "chat/components/_header.html" %}
-    {% include "chat/components/_messages.html" %}
-    {% include "chat/components/_input.html" %}
+    <div id="chat-body" class="d-flex flex-column flex-grow-1 overflow-hidden">
+      {% include "chat/components/_messages.html" %}
+      {% include "chat/components/_input.html" %}
+    </div>
     {% include "chat/components/_script.html" %}
   </div>
 {% endblock content %}

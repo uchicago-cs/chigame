@@ -68,8 +68,8 @@
     font-style: italic;
   }
 </style>
-<div class="bg-light flex-grow-1 overflow-auto border border-light p-3">
-  <div class="d-flex flex-column h-100">
+<div class="chat-messages-scroll flex-grow-1 overflow-auto p-3 bg-light">
+  <div id="message-container" class="d-flex flex-column h-100">
     {% if messages %}
       {% for message in messages %}
         <div class="mb-3 {% if message.user == request.user %}align-self-end{% else %}align-self-start{% endif %}">
