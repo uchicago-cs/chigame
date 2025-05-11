@@ -7,6 +7,8 @@ from chigame.users.models import User
 
 from .models import LiveChat, LiveChatMessage
 
+from .utils import ProfanityFilter
+
 
 class ChatConsumer(AsyncWebsocketConsumer):
     """
@@ -77,15 +79,19 @@ class ChatConsumer(AsyncWebsocketConsumer):
         text_data_json = json.loads(text_data)
         message = text_data_json["message"]
         user_id = text_data_json["user_id"]
+        
+        # this will need to be made conditional at some point
+        filtered_message = self.profanity_filter.censor_message(message)
 
         # Save message and get username
-        username = await self.save_message(self.chat_id, user_id, message)
+        username = await self.save_message(self.chat_id, user_id, message) # pass the original message
 
+        # the filtered message is sent to the group - this is where the censorship happens
         await self.channel_layer.group_send(
             self.roomGroupName,
             {
                 "type": "sendMessage",
-                "message": message,
+                "message": filtered_message,
                 "user_id": user_id,
                 "username": username,
             },
