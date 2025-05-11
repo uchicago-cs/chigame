@@ -1,9 +1,9 @@
 import factory
 from factory.django import DjangoModelFactory
-from PROJECT_DIR.chigame.src.chigame.api.tests.factories import GameFactory
-from chigame.achievements.models import *
+from chigame.api.tests.factories import GameFactory
+from chigame.achievements.models import User, Achievement, UserAchievement
 
-### General user factory
+# General user factory
 class UserFactory(DjangoModelFactory):
     class Meta:
         model = User
