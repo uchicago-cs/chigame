@@ -4,6 +4,7 @@ Utilities for the chat app. Includes profanity filtering.
 
 import re
 
+
 class ProfanityFilter:
     """
     A simple class that allows for filtering of profanity and censoring of messages.
@@ -23,7 +24,7 @@ class ProfanityFilter:
         """
         Initialize the profanity filter.
         """
-        escaped_words = [re.escape(word) for word in self.profanity_list] # create the regex patterns
+        escaped_words = [re.escape(word) for word in self.profanity_list]  # create the regex patterns
         self.pattern = re.compile(r"\b(" + "|".join(escaped_words) + r")\b", re.IGNORECASE)
 
     def contains_profanity(self, message):
@@ -49,4 +50,3 @@ class ProfanityFilter:
             str: The censored message.
         """
         return self.pattern.sub("*" * len(message), message)
-    
