@@ -224,3 +224,13 @@ function endTurn() {
   // switch between red and black player turn
   currentPlayer = currentPlayer === COLORS.red ? COLORS.black : COLORS.red;
 }
+
+// --- Settings Menu Button --- 
+document.addEventListener('DOMContentLoaded', () => {
+  const settingsButton = document.getElementById('settings-button');
+  const settingsMenu = document.getElementById('settings-menu');
+
+  settingsButton.addEventListener('click', () => {
+    settingsMenu.classList.toggle('active');
+  });
+});
