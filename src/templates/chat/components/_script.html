@@ -91,10 +91,10 @@
       chatContainer.classList.toggle("collapsed-chat");
 
       // Flip arrow direction
-      const icon = collapseButton.querySelector("i");
+      const icon = collapseButton.querySelector("#collapse-chat i");
       if (icon) {
         icon.classList.toggle("bi-chevron-down");
-
+        icon.classList.toggle("bi-chevron-up");
       }
     });
   }
