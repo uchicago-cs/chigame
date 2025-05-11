@@ -1,9 +1,9 @@
-from django.db.models import CharField, F, Q, Value
-from django.db.models.functions import Concat
-from django.shortcuts import get_object_or_404, render
-from django.views.generic import ListView
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
+from django.db.models import CharField, F, Q, Value
+from django.db.models.functions import Concat
+from django.shortcuts import get_object_or_404, redirect, render
+from django.views.generic import ListView
 
 from chigame.games.models import Category, Game
 
