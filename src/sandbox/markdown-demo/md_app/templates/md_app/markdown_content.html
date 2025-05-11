@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <div class="kb-container">
+    <!-- Navigation sidebar -->
+    <div class="kb-sidebar">
+      <h3>Table of Contents</h3>
+      <ul>
+        {% for item in toc_items %}
+          <li class="{% if item.id == requested_section %}active{% endif %}">
+            <a href="?section={{ item.id }}">{{ item.title }}</a>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+    <!-- Main content area -->
+    <div class="kb-content">{{ html_content|safe }}</div>
+  </div>
+  <style>
+    .kb-container {
+      display: flex;
+      gap: 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    .kb-sidebar {
+      flex: 0 0 250px;
+      background: #f5f5f5;
+      padding: 1rem;
+      border-radius: 4px;
+    }
+
+    .kb-content {
+      flex: 1;
+    }
+
+    .kb-section {
+      display: none;
+    }
+
+    .kb-section[data-section-id="{{ requested_section }}"] {
+      display: block;
+    }
+  </style>
+{% endblock content %}

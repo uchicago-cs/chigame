@@ -1,0 +1,223 @@
+[
+  {
+    "model": "games.tournament",
+    "pk": 1001,
+    "fields": {
+      "name": "Simulation Test Tournament",
+      "game": 1,
+      "registration_start_date": "2025-04-01T00:00:00Z",
+      "registration_end_date": "2025-04-20T23:59:59Z",
+      "tournament_start_date": "2025-04-24T10:00:00Z",
+      "tournament_end_date": "2025-05-31T23:59:59Z",
+      "max_players": 8,
+      "description": "This tournament is created for simulation testing purposes. It includes 8 players and is designed to test all tournament formats.",
+      "rules": "Standard tournament rules apply. This is a test tournament for simulation purposes.",
+      "draw_rules": "In case of a draw, the player with the higher seed will advance.",
+      "num_winner": 1,
+      "archived": false,
+      "created_by": 101,
+      "players": [101, 102, 103, 104, 105, 106, 107, 108],
+      "winners": [],
+      "matches": [1001, 1002, 1003, 1004]
+    }
+  },
+  {
+    "model": "games.chat",
+    "pk": 1001,
+    "fields": {
+      "tournament": 1001
+    }
+  },
+  {
+    "model": "games.lobby",
+    "pk": 1001,
+    "fields": {
+      "name": "Match 1 - Quarter Finals",
+      "game": 1,
+      "match_status": 1,
+      "game_mod_status": 1,
+      "created_by": 101,
+      "min_players": 2,
+      "max_players": 2,
+      "time_constraint": 300,
+      "lobby_created": "2025-04-24T10:30:00Z"
+    }
+  },
+  {
+    "model": "games.lobby",
+    "pk": 1002,
+    "fields": {
+      "name": "Match 2 - Quarter Finals",
+      "game": 1,
+      "match_status": 1,
+      "game_mod_status": 1,
+      "created_by": 101,
+      "min_players": 2,
+      "max_players": 2,
+      "time_constraint": 300,
+      "lobby_created": "2025-04-24T11:30:00Z"
+    }
+  },
+  {
+    "model": "games.lobby",
+    "pk": 1003,
+    "fields": {
+      "name": "Match 3 - Quarter Finals",
+      "game": 1,
+      "match_status": 1,
+      "game_mod_status": 1,
+      "created_by": 101,
+      "min_players": 2,
+      "max_players": 2,
+      "time_constraint": 300,
+      "lobby_created": "2025-04-24T13:30:00Z"
+    }
+  },
+  {
+    "model": "games.lobby",
+    "pk": 1004,
+    "fields": {
+      "name": "Match 4 - Quarter Finals",
+      "game": 1,
+      "match_status": 1,
+      "game_mod_status": 1,
+      "created_by": 101,
+      "min_players": 2,
+      "max_players": 2,
+      "time_constraint": 300,
+      "lobby_created": "2025-04-24T14:30:00Z"
+    }
+  },
+  {
+    "model": "games.match",
+    "pk": 1001,
+    "fields": {
+      "game": 1,
+      "lobby": 1001,
+      "date_played": "2025-04-24T10:30:00Z"
+    }
+  },
+  {
+    "model": "games.match",
+    "pk": 1002,
+    "fields": {
+      "game": 1,
+      "lobby": 1002,
+      "date_played": "2025-04-24T11:30:00Z"
+    }
+  },
+  {
+    "model": "games.match",
+    "pk": 1003,
+    "fields": {
+      "game": 1,
+      "lobby": 1003,
+      "date_played": "2025-04-24T13:30:00Z"
+    }
+  },
+  {
+    "model": "games.match",
+    "pk": 1004,
+    "fields": {
+      "game": 1,
+      "lobby": 1004,
+      "date_played": "2025-04-24T14:30:00Z"
+    }
+  },
+  {
+    "model": "games.player",
+    "pk": 1001,
+    "fields": {
+      "user": 101,
+      "match": 1001,
+      "team": "Team A",
+      "role": "Player 1",
+      "outcome": null,
+      "victory_type": null
+    }
+  },
+  {
+    "model": "games.player",
+    "pk": 1002,
+    "fields": {
+      "user": 102,
+      "match": 1001,
+      "team": "Team B",
+      "role": "Player 2",
+      "outcome": null,
+      "victory_type": null
+    }
+  },
+  {
+    "model": "games.player",
+    "pk": 1003,
+    "fields": {
+      "user": 103,
+      "match": 1002,
+      "team": "Team A",
+      "role": "Player 1",
+      "outcome": null,
+      "victory_type": null
+    }
+  },
+  {
+    "model": "games.player",
+    "pk": 1004,
+    "fields": {
+      "user": 104,
+      "match": 1002,
+      "team": "Team B",
+      "role": "Player 2",
+      "outcome": null,
+      "victory_type": null
+    }
+  },
+  {
+    "model": "games.player",
+    "pk": 1005,
+    "fields": {
+      "user": 105,
+      "match": 1003,
+      "team": "Team A",
+      "role": "Player 1",
+      "outcome": null,
+      "victory_type": null
+    }
+  },
+  {
+    "model": "games.player",
+    "pk": 1006,
+    "fields": {
+      "user": 106,
+      "match": 1003,
+      "team": "Team B",
+      "role": "Player 2",
+      "outcome": null,
+      "victory_type": null
+    }
+  },
+  {
+    "model": "games.player",
+    "pk": 1007,
+    "fields": {
+      "user": 107,
+      "match": 1004,
+      "team": "Team A",
+      "role": "Player 1",
+      "outcome": null,
+      "victory_type": null
+    }
+  },
+  {
+    "model": "games.player",
+    "pk": 1008,
+    "fields": {
+      "user": 108,
+      "match": 1004,
+      "team": "Team B",
+      "role": "Player 2",
+      "outcome": null,
+      "victory_type": null
+    }
+  }
+]
