@@ -48,4 +48,4 @@ class ProfanityFilter:
         Returns:
             str: The censored message.
         """
-        return self.pattern.sub("*" * len(message), message)
+        return self.pattern.sub(lambda m: '*' * len(m.group()), message)
