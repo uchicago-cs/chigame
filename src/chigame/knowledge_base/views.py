@@ -1,14 +1,67 @@
 # Keep model imports for now, as it will be required for WIP features
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import CharField, F, Q, Value
+from django.db.models.functions import Concat
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render
+from django.views.generic import ListView
 
-from .models import Guide
+from chigame.games.models import Category, Game
+
+from .models import Guide, ReviewFeedback
 
 
-def DefaultView(request):
-    context = {}
-    return render(request, "knowledge-base/landing.html", context)
+class DefaultView(ListView):
+    model = Guide
+    template_name = "knowledge-base/landing.html"
+    context_object_name = "guides"
+
+    def get_queryset(self):
+        guide_ids = Game.objects.values_list("published_guide_id", flat=True).distinct()
+        queryset = Guide.objects.filter(id__in=guide_ids)
+
+        query = self.request.GET.get("q")
+
+        if query:
+            # the query is originally on the game name of Guide object, and will
+            # fail for queries like "Guide for [game name]"
+            # here add queryset.annotate to make query for "Guide for..." works
+            queryset = queryset.annotate(
+                guide_title=Concat(Value("Guide for "), F("game_id__name"), output_field=CharField())
+            ).filter(Q(guide_title__icontains=query) | Q(content__icontains=query))
+
+        # for filtering; only support single-choice filtering for now
+        category = self.request.GET.get("category")
+        if category:
+            categorymatch = Category.objects.get(name=category)
+            queryset = queryset.filter(game__categories=categorymatch)
+
+        # for sorting
+        sort = self.request.GET.get("sort")
+        if sort == "az":
+            queryset = queryset.order_by("game__name")
+        elif sort == "za":
+            queryset = queryset.order_by("-game__name")
+        elif sort == "old":
+            queryset = queryset.order_by("recent_upload")
+        else:  # default: newest first
+            queryset = queryset.order_by("-recent_upload")
+
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # make sure "manage my guide" only shows up when the user uploads
+        # a guide previously
+        context["has_guides"] = (
+            self.request.user.is_authenticated and Guide.objects.filter(author=self.request.user).exists()
+        )
+        # to facilitate filtering
+        context["categories"] = Category.objects.filter(
+            id__in=Game.objects.values_list("categories", flat=True).distinct()
+        )
+        return context
 
 
 def GuideDetailView(request, pk):
@@ -22,11 +75,21 @@ def ModeratorView(request):
     return render(request, "knowledge-base/moderator.html", context)
 
 
-@login_required
-def ContributorManageGuide(request):
-    guides = request.user.authored_guides.all()
-    context = {"guides": guides}
-    return render(request, "knowledge-base/contributor_manage_guide.html", context)
+class ContributorManageGuide(LoginRequiredMixin, ListView):
+    model = Guide
+    template_name = "knowledge-base/contributor_manage_guide.html"
+    context_object_name = "guides"
+
+    def get_queryset(self):
+        guides = self.request.user.authored_guides.all()
+
+        for guide in guides:
+            guide.latest_feedback = None
+            if guide.status != 0:
+                latest_feedback = guide.feedbacks.all().order_by("-timestamp").first()
+                guide.latest_feedback = latest_feedback
+
+        return guides
 
 
 @login_required
@@ -38,3 +101,9 @@ def DownloadGuide(request, pk):
     response = HttpResponse(content, content_type="text/markdown")
     response["Content-Disposition"] = f'attachment; filename="{filename}"'
     return response
+
+
+def FeedbackDetail(request, pk):
+    feedback = get_object_or_404(ReviewFeedback, pk=pk)
+    context = {"feedback": feedback}
+    return render(request, "knowledge-base/feedback_detail.html", context)

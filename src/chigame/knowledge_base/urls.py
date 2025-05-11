@@ -1,12 +1,13 @@
 from django.urls import path
 
-from .views import ContributorManageGuide, DefaultView, DownloadGuide, ModeratorView
+from .views import ContributorManageGuide, DefaultView, DownloadGuide, FeedbackDetail, ModeratorView
 
 urlpatterns = [
-    path("", DefaultView, name="knowledge-base"),
+    path("", DefaultView.as_view(), name="knowledge-base"),
     path("moderation", ModeratorView, name="knowledge-base-moderator"),
-    path("manage-my-guides", ContributorManageGuide, name="knowledge-base-contributor"),
+    path("manage-my-guides", ContributorManageGuide.as_view(), name="contributor-manage-guide"),
     path("guides/<int:pk>/download-md/", DownloadGuide, name="download-guide"),
+    path("manage-my-guides/feedback/<int:pk>", FeedbackDetail, name="feedback-detail"),
 ]
 
 # Eventually, we should add '!<slug:username>' the contribution path so we can
