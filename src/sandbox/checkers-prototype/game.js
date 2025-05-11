@@ -234,3 +234,34 @@ document.addEventListener('DOMContentLoaded', () => {
     settingsMenu.classList.toggle('active');
   });
 });
+
+// Function to change the color of all pieces
+function changePieceColor(newColorOne, newColorTwo) {
+  const firstPieceColor = pieces[0].color;
+  pieces.forEach((piece) => {
+    if (piece.color === firstPieceColor) {
+      piece.color = newColorOne; 
+      piece.sprite.setFillStyle(newColorOne);
+    }
+    else {
+      piece.color = newColorTwo;
+      piece.sprite.setFillStyle(newColorTwo);
+    }
+  });
+}
+
+// Event listener for the toggle colorblind button
+document.addEventListener('DOMContentLoaded', () => {
+  const changeColorButton = document.getElementById('toggle-colorblind');
+  changeColorButton.addEventListener('click', () => {
+    const firstPieceColor = pieces[0].color;
+    // if the first piece is a default color, change to colorblind colors
+    if (firstPieceColor === COLORS.red || firstPieceColor === COLORS.black) {
+      changePieceColor(COLORS.colorblind_blue, COLORS.colorblind_orange);
+    }
+    // if the first piece is a colorblind color, change to default colors
+    else {
+      changePieceColor(COLORS.colorblind_blue, COLORS.colorblind_orange);
+    }
+  });
+});
