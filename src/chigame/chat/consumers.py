@@ -84,7 +84,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         user_id = text_data_json["user_id"]
 
         # this will need to be made conditional at some point
-        filtered_message = self.profanity_filter.censor(message)
+        filtered_message = self.profanity_filter.censor_message(message)
 
         # Save message and get username
         username = await self.save_message(self.chat_id, user_id, message)  # pass the original message
