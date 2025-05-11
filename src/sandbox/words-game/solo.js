@@ -50,8 +50,14 @@ function loadWords() {
 
 //Get a new word to solve
 function getNewWord() {
-    word = allowedWords[Math.floor(Math.random() * allowedWords.length)];
-    console.log("Today's word:", word);
+    const today = new Date();
+    const startDate = new Date('2025-05-03');
+    const dayIndex = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
+    const index = dayIndex % allowedWords.length;
+    //New Different Word Everyday for 3000Days ie: all words in WORDS.txt is all used.
+    word = allowedWords[index];
+    console.log(word);
+
 }
 
 //Create boxes/grid for the board container
@@ -171,7 +177,7 @@ async function isValidWord(word) {
         const response = await fetch(word_url);
 
         if (response.status === 404) {
-            showNotification(`"${word}" Is Not A Valid Word.`);
+            showNotification(`"${word}" Is Not a Valid Word.`);
             return false;
         }
 
@@ -186,13 +192,13 @@ async function isValidWord(word) {
 
 //Handles running the submission of each word
 async function handleSubmitWord() {
-    if (gameOver) {
+    if(gameOver){
         return;
     }
     const currentWordArr = getCurrentWordArr();
 
     if (currentWordArr.length !== 5) {
-        window.alert("Word must be 5 letters");
+        showNotification("Word must be 5 letters");
         return;
     }
 
@@ -219,10 +225,10 @@ async function handleSubmitWord() {
             //change on-web keyboard color
             const keyButton = document.querySelector(`[data-key="${letter}"]`);
             console.log('Key color:', keyButton);
-            if (keyButton) {
+            if(keyButton){
                 const keyColor = keyButton.style.backgroundColor;
 
-                if (keyColor !== COLOR_CORRECT) {
+                if(keyColor !== COLOR_CORRECT){
                     keyButton.style.backgroundColor = tileColor;
                     keyButton.style.borderColor = tileColor;
                 }
@@ -234,7 +240,7 @@ async function handleSubmitWord() {
 
     //game end
     if (currentWord === word) {
-        window.alert("Congratulations! 🎉");
+        showNotification("Congratulations! 🎉");
         gameOver = true;
         return;
     }
