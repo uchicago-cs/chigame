@@ -28,8 +28,8 @@ class Game(models.Model):
     # ================ GAMEPLAY INFORMATION ================
     rules = models.TextField(null=True, blank=True)
 
-    min_players = models.PositiveIntegerField(blank=True)
-    max_players = models.PositiveIntegerField(blank=True)
+    min_players = models.PositiveIntegerField()
+    max_players = models.PositiveIntegerField()
 
     suggested_age = models.PositiveSmallIntegerField(
         null=True, blank=True
