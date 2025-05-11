@@ -1,0 +1,46 @@
+{% extends "knowledge-base/base.html" %}
+
+{% load static %}
+
+<link rel="stylesheet" href="{% static 'css/knowledge-base-styles.css' %}" />
+{% block page-content %}
+  <h1 class="contributor-title">Manage My Guides</h1>
+  <a href="{% url 'knowledge-base' %}" class="btn btn-primary mb-4">Create New Guide</a>
+  <div class="uploaded-guides-box">
+    <div class="uploaded-guides-column guides-col-width border-left-black">
+      <div class="column-header border-left-black">Your Guides</div>
+      <div class="column-entry-box border-left-black">
+        {% for guide in guides %}
+          <div class="guide-entry">
+            Guide for {{ guide.game_id }}
+            <a href="{% url 'download-guide' guide.pk %}">[Download]</a>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="uploaded-guides-column guides-col-width">
+      <div class="column-header">Unique ID</div>
+      <div class="column-entry-box">
+        {% for guide in guides %}<div class="guide-entry">{{ guide.pk }}</div>{% endfor %}
+      </div>
+    </div>
+    <div class="uploaded-guides-column guides-col-width">
+      <div class="column-header">Upload Time</div>
+      <div class="column-entry-box">
+        {% for guide in guides %}<div class="guide-entry">Last Upload: {{ guide.recent_upload }}</div>{% endfor %}
+      </div>
+    </div>
+    <div class="uploaded-guides-column guides-col-wide border-right-black">
+      <div class="column-header border-right-black">Status</div>
+      <div class="column-entry-box border-right-black">
+        {% for guide in guides %}
+          <div class="guide-entry">
+            {{ guide.get_status_display }} &nbsp;
+            <a href="#">View Details</a> &nbsp;
+            {% if guide.status == 3 %}<a href="#" class="resubmit-button">Resubmit</a>{% endif %}
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+{% endblock page-content %}

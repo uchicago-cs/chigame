@@ -18,6 +18,7 @@
     background:white;
     height: 100%;
     display: inline-table;
+    flex: 1;
 }
 
 .column-header{
@@ -54,4 +55,28 @@
 }
 .border-right-black {
   border-right: 2px solid black;
+}
+
+
+a.resubmit-button {
+  display: inline-block; /* Allows setting width and height while keeping inline flow */
+  background-color: #800000; /* Maroon */
+  color: white;
+  padding: 10px 10px; /* Adjust padding as needed */
+  text-decoration: none; /* Removes the underline from the link */
+  border-radius: 5px; /* Adds rounded corners */
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3); /* Adds a subtle shadow */
+  font-weight: bold; /* Makes the text bold */
+  font-size: medium; /* Adjust font size as needed */
+}
+
+a.resubmit-button:hover {
+  background-color: #A00000; /* Darker maroon on hover for visual feedback */
+  cursor: pointer; /* Changes the cursor to a pointer on hover */
+  box-shadow: 3px 3px 7px rgba(0, 0, 0, 0.4); /* Slightly stronger shadow on hover */
+}
+
+a.resubmit-button:active {
+  background-color: #600000; /* Even darker maroon when actively clicked */
+  box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3); /* Smaller shadow when active */
 }
