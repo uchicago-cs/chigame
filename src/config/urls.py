@@ -17,7 +17,7 @@ urlpatterns = [
     # Your stuff: custom urls includes go here
     # urls to handle api requests
     path("api/", include("chigame.api.urls")),
-    path("games/", include("chigame.games.urls")),
+    path("games/", include("games.urls")),
     path("chat/", include("chigame.chat.urls")),
     path("account/", include("django.contrib.auth.urls")),
     # Django-machina forum
