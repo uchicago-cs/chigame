@@ -417,22 +417,29 @@ class InteractiveFictionView(TemplateView):
         return context
 
 
+from .models import Game
+
 class UploadFileView(View):
-    def post(self, request, pk):
+    def post(self, request, pk=None):
         uploaded_file = request.FILES.get("uploaded_file")
 
         if uploaded_file:
-            upload_path = os.path.join(settings.MEDIA_ROOT, "interactive_uploads")
-            os.makedirs(upload_path, exist_ok=True)
-
-            fs = FileSystemStorage(location=upload_path)
+            # Save the file to twine_games/
+            fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, "twine_games"))
             safe_filename = uploaded_file.name.replace(" ", "_")
-            fs.save(safe_filename, uploaded_file)
+            filename = fs.save(safe_filename, uploaded_file)
 
-            request.session["uploaded_interactive_file"] = f"interactive_uploads/{safe_filename}"
+            # Create a basic Game instance
+            game = Game.objects.create(
+                name=uploaded_file.name.replace(".html", ""),
+                description="Uploaded Twine game",
+                min_players=1,
+                max_players=1,
+                twine_file=f"twine_games/{filename}",
+            )
 
-            messages.success(request, "File uploaded successfully!")
-            return redirect("interactive-fiction")
+            messages.success(request, f"Game '{game.name}' uploaded successfully!")
+            return redirect("game-detail", pk=game.pk)
 
         messages.error(request, "No file selected.")
         return redirect("interactive-fiction")
