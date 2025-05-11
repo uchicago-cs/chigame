@@ -7,15 +7,22 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('forum_conversation', '0009_auto_20160925_2126'),
+        ("forum_conversation", "0009_auto_20160925_2126"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='topic',
-            name='first_post',
-            field=models.ForeignKey(blank=True, editable=False, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to='forum_conversation.Post', verbose_name='First post'),
+            model_name="topic",
+            name="first_post",
+            field=models.ForeignKey(
+                blank=True,
+                editable=False,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="+",
+                to="forum_conversation.Post",
+                verbose_name="First post",
+            ),
         ),
     ]

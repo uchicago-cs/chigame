@@ -41,9 +41,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "live_chat_id",
-                    models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE, to="games.livechat"
-                    ),
+                    models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="games.livechat"),
                 ),
                 (
                     "user_id",
@@ -70,9 +68,7 @@ class Migration(migrations.Migration):
                 ("message_content", models.TextField()),
                 (
                     "live_chat_id",
-                    models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE, to="games.livechat"
-                    ),
+                    models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="games.livechat"),
                 ),
                 (
                     "user_id",
