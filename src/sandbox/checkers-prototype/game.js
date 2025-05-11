@@ -225,7 +225,7 @@ function endTurn() {
   currentPlayer = currentPlayer === COLORS.red ? COLORS.black : COLORS.red;
 }
 
-// Settings Menu Button 
+// Settings Menu Button
 document.addEventListener('DOMContentLoaded', () => {
   const settingsButton = document.getElementById('settings-button');
   const settingsMenu = document.getElementById('settings-menu');
