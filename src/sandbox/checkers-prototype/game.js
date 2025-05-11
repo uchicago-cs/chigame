@@ -54,6 +54,7 @@ function create() {
   populatePieces(this);
 
   // Set up forfeit and draw buttons
+  const gameOverPrompts = document.getElementById('gameOverPrompts');
   const forfeitBtn = document.getElementById('forfeitBtn');
   const drawBtn = document.getElementById('drawBtn');
   const declineDrawBtn = document.getElementById('declineDrawBtn');
@@ -75,6 +76,7 @@ function create() {
     drawOfferedBy = null;
 
     // Reset UI
+    gameOverPrompts.classList.remove('show');
     gameOverMessage.textContent = '';
     gameOverMessage.classList.remove('show');
     playAgainPrompt.style.display = 'none';
@@ -95,20 +97,23 @@ function create() {
   forfeitBtn.addEventListener('click', () => {
     if (!gameOver && currentPlayer === COLORS.red) {
       gameOver = true;
+      gameOverPrompts.classList.add('show');
       gameOverMessage.textContent = 'Red player has forfeited! Black wins!';
       gameOverMessage.classList.add('show');
-      document.getElementById('playAgainPrompt').style.display = 'block';
+      document.getElementById('playAgainPrompt').style.display = 'flex';
     } else if (!gameOver && currentPlayer === COLORS.black) {
       gameOver = true;
+      gameOverPrompts.classList.add('show');
       gameOverMessage.textContent = 'Black player has forfeited! Red wins!';
       gameOverMessage.classList.add('show');
-      document.getElementById('playAgainPrompt').style.display = 'block';
+      document.getElementById('playAgainPrompt').style.display = 'flex';
     }
   });
 
   function resetDrawOffer() {
     drawOffered = false;
     drawOfferedBy = null;
+    gameOverPrompts.classList.remove('show');
     gameOverMessage.textContent = '';
     gameOverMessage.classList.remove('show');
     drawBtn.textContent = 'Offer Draw';
@@ -126,6 +131,7 @@ function create() {
       } else {
         gameOverMessage.textContent = 'Black player has offered a draw. Red player, please accept or decline.';
       }
+      gameOverPrompts.classList.add('show');
       gameOverMessage.classList.add('show');
       drawBtn.textContent = 'Accept Draw';
       declineDrawBtn.style.display = 'block';
@@ -133,12 +139,13 @@ function create() {
     } else {
       // Accept Draw (second click)
       gameOver = true;
+      gameOverPrompts.classList.add('show');
       gameOverMessage.textContent = 'Draw accepted! Game over!';
       gameOverMessage.classList.add('show');
       drawBtn.style.display = 'none';
       declineDrawBtn.style.display = 'none';
       forfeitBtn.style.display = 'none';
-      document.getElementById('playAgainPrompt').style.display = 'block';
+      document.getElementById('playAgainPrompt').style.display = 'flex';
     }
   });
 
@@ -321,17 +328,19 @@ function checkGameOver() {
   if (redPieces.length === 0) {
     gameOver = true;
     const gameOverMessage = document.getElementById('gameOverMessage');
+    gameOverPrompts.classList.add('show');
     gameOverMessage.textContent = 'All red pieces captured! Black wins!';
     gameOverMessage.classList.add('show');
-    document.getElementById('playAgainPrompt').style.display = 'block';
+    document.getElementById('playAgainPrompt').style.display = 'flex';
     document.getElementById('drawBtn').style.display = 'none';
     document.getElementById('forfeitBtn').style.display = 'none';
   } else if (blackPieces.length === 0) {
     gameOver = true;
     const gameOverMessage = document.getElementById('gameOverMessage');
+    gameOverPrompts.classList.add('show');
     gameOverMessage.textContent = 'All black pieces captured! Red wins!';
     gameOverMessage.classList.add('show');
-    document.getElementById('playAgainPrompt').style.display = 'block';
+    document.getElementById('playAgainPrompt').style.display = 'flex';
     document.getElementById('drawBtn').style.display = 'none';
     document.getElementById('forfeitBtn').style.display = 'none';
   }
@@ -362,6 +371,7 @@ function endTurn() {
     drawOfferedBy = null;
     gameOverMessage.textContent = '';
     gameOverMessage.classList.remove('show');
+    gameOverPrompts.classList.remove('show');
     drawBtn.textContent = 'Offer Draw';
     declineDrawBtn.style.display = 'none';
   }
