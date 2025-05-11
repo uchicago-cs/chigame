@@ -417,9 +417,6 @@ class InteractiveFictionView(TemplateView):
 
         return context
 
-
-from .models import Game
-
 class UploadFileView(View):
     def post(self, request, pk=None):
         uploaded_file = request.FILES.get("uploaded_file")
