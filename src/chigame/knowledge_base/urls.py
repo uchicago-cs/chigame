@@ -3,7 +3,7 @@ from django.urls import path
 from .views import ContributorMdUpload, ContributorView, DefaultView, ModeratorView
 
 urlpatterns = [
-    path("", DefaultView, name="knowledge-base"),
+    path("", DefaultView.as_view(), name="knowledge-base"),
     path("moderation", ModeratorView, name="knowledge-base-moderator"),
     path("contribution", ContributorView, name="knowledge-base-contributor"),
     path("upload", ContributorMdUpload, name="knowledge-base-guide-upload"),
