@@ -263,7 +263,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     // if the first piece is a colorblind color, change to default colors
     else {
-      changePieceColor(COLORS.red, COLORS.black);
+      changePieceColor(COLORS.black, COLORS.red);
     }
   });
 });
