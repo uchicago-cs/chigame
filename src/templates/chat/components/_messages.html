@@ -77,7 +77,7 @@
           <div class="{% if message.user == request.user %}bg-success-subtle{% else %}bg-white{% endif %} rounded p-2 shadow-sm">
             <div class="fw-bold small text-danger">{{ message.user.username }}</div>
             <div class="mt-1">{{ message.content }}</div>
-            <div class="text-end text-muted small mt-1">{{ message.created_at|date:"g:i A" }}</div>
+            <div class="text-end text-muted small mt-1">{{ message.sent_at|date:"g:i A" }}</div>
           </div>
         </div>
       {% endfor %}
