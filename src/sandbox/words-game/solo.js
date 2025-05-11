@@ -242,12 +242,18 @@ async function handleSubmitWord() {
     if (currentWord === word) {
         showNotification("Congratulations! 🎉");
         gameOver = true;
+        setTimeout(() => {
+            showEndScreen(true);
+        }, 1500);
         return;
     }
 
     if (guessedWords.length === 6) {
-        window.alert(`Sorry, you have no more guesses! The word was "${word}".`);
+        showNotification(`The word was "${word}"`);
         gameOver = true;
+        setTimeout(() => {
+            showEndScreen(false);
+        }, 1500);
         return;
     }
 
@@ -266,3 +272,27 @@ function showNotification(message, duration = 1000) {
         notification.classList.add("hidden");
     }, duration);
 }
+
+//Show End Screen
+function showEndScreen(won) {
+    const endScreen = document.getElementById("end-screen");
+    const endTitle = document.getElementById("end-title");
+    const endMessage = document.getElementById("end-message");
+    const endGuesses = document.getElementById("end-guesses");
+
+    endTitle.textContent = won ? "You Won! 🎉" : "Game Over";
+    endMessage.textContent = won ? "Nice job!" : `The word was "${word}"`;
+
+    endGuesses.innerHTML = "";
+    guessedWords.forEach(guessArr => {
+        const row = document.createElement("div");
+        row.textContent = guessArr.join("").toUpperCase();
+        endGuesses.appendChild(row);
+    });
+
+    endScreen.classList.remove("hidden");
+}
+
+document.getElementById("restart-btn").addEventListener("click", () => {
+    location.reload();
+});

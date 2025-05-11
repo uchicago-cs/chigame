@@ -234,13 +234,16 @@ async function handleSubmitWord() {
 
     //game end
     if (currentWord === word) {
-        showNotification(`The word was "${word}"`);
+        showNotification("Congratulations! 🎉");
         gameOver = true;
+        setTimeout(() => {
+            showEndScreen(true);
+        }, 1500);
         return;
     }
 
     if (guessedWords.length === 6) {
-        window.alert(`Sorry, you have no more guesses! The word was "${word}".`);
+        showNotification(`The word was "${word}"`);
         gameOver = true;
         setTimeout(() => {
             showEndScreen(false);
@@ -264,6 +267,7 @@ function showNotification(message, duration = 1000) {
     }, duration);
 }
 
+//Show End Screen
 function showEndScreen(won) {
     const endScreen = document.getElementById("end-screen");
     const endTitle = document.getElementById("end-title");
