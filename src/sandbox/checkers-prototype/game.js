@@ -101,12 +101,16 @@ function create() {
       gameOverMessage.textContent = 'Red player has forfeited! Black wins!';
       gameOverMessage.classList.add('show');
       document.getElementById('playAgainPrompt').style.display = 'flex';
+      document.getElementById('forfeitBtn').style.display = 'none';
+      document.getElementById('drawBtn').style.display = 'none';
     } else if (!gameOver && currentPlayer === COLORS.black) {
       gameOver = true;
       gameOverPrompts.classList.add('show');
       gameOverMessage.textContent = 'Black player has forfeited! Red wins!';
       gameOverMessage.classList.add('show');
       document.getElementById('playAgainPrompt').style.display = 'flex';
+      document.getElementById('forfeitBtn').style.display = 'none';
+      document.getElementById('drawBtn').style.display = 'none';
     }
   });
 
@@ -134,8 +138,7 @@ function create() {
       gameOverPrompts.classList.add('show');
       gameOverMessage.classList.add('show');
       drawBtn.textContent = 'Accept Draw';
-      declineDrawBtn.style.display = 'block';
-
+      declineDrawBtn.style.display = 'flex';
     } else {
       // Accept Draw (second click)
       gameOver = true;
@@ -327,6 +330,7 @@ function checkGameOver() {
 
   if (redPieces.length === 0) {
     gameOver = true;
+    const gameOverPrompts = document.getElementById('gameOverPrompts')
     const gameOverMessage = document.getElementById('gameOverMessage');
     gameOverPrompts.classList.add('show');
     gameOverMessage.textContent = 'All red pieces captured! Black wins!';
@@ -336,6 +340,7 @@ function checkGameOver() {
     document.getElementById('forfeitBtn').style.display = 'none';
   } else if (blackPieces.length === 0) {
     gameOver = true;
+    const gameOverPrompts = document.getElementById('gameOverPrompts')
     const gameOverMessage = document.getElementById('gameOverMessage');
     gameOverPrompts.classList.add('show');
     gameOverMessage.textContent = 'All black pieces captured! Red wins!';
@@ -364,6 +369,7 @@ function endTurn() {
 
   // reset draw offer if it was made by the current player
   if (drawOffered && drawOfferedBy === currentPlayer) {
+    const gameOverPrompts = document.getElementById('gameOverPrompts');
     const gameOverMessage = document.getElementById('gameOverMessage');
     const drawBtn = document.getElementById('drawBtn');
     const declineDrawBtn = document.getElementById('declineDrawBtn');
