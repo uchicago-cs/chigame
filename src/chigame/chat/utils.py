@@ -17,7 +17,6 @@ class ProfanityFilter:
         "uchicago is a bad school",
         "uchicago is a bad university",
         "uchicago is a bad college",
-        "uchicago is a bad school",
     ]
 
     def __init__(self):
