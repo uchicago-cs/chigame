@@ -2,6 +2,7 @@
 
 {% block content %}
   <style>
+    /* Base layout for chat container */
     .chat-container {
       display: flex;
       flex-direction: column;
@@ -11,9 +12,25 @@
       border-radius: 8px;
     }
 
+    /* Layout modes: centered or floating */
     .centered-chat {
       max-width: 600px;
       margin: 0 auto;
+    }
+
+    .floating-chat {
+      position: fixed;
+      bottom: 0;
+      right: 50px;
+      width: 350px;
+      z-index: 1050;
+      background: white;
+      border-radius: 8px 8px 0 0;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .collapsed-chat #chat-body {
+      display: none !important;
     }
 
     #chat-body {
@@ -27,25 +44,8 @@
       flex-grow: 1;
       overflow-y: auto;
     }
-
-    .floating-chat {
-      position: fixed;
-      bottom: 0;
-      right: 50px;
-      width: 350px;
-      z-index: 1050;
-      background: white;
-      border: 1px solid #ddd;
-      border-radius: 8px 8px 0 0;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-    }
-
-    .collapsed-chat #chat-body {
-      display: none !important;
-    }
   </style>
-  <div id="chatContainer"
-       class="chat-container centered-chat mx-auto border rounded p-0 d-flex flex-column">
+  <div id="chatContainer" class="chat-container centered-chat">
     {% include "chat/components/_header.html" %}
     <div id="chat-body" class="d-flex flex-column flex-grow-1 overflow-hidden">
       {% include "chat/components/_messages.html" %}

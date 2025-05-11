@@ -70,7 +70,7 @@
 </style>
 <div id="message-container"
      class="chat-messages-scroll flex-grow-1 overflow-auto p-3 bg-light d-flex flex-column">
-  <div id="message-container" class="d-flex flex-column h-100">
+  <div class="d-flex flex-column h-100">
     {% if messages %}
       {% for message in messages %}
         <div class="mb-3 {% if message.user == request.user %}align-self-end{% else %}align-self-start{% endif %}">

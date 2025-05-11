@@ -71,14 +71,13 @@
     messageBubble.appendChild(timestamp);
     messageContainer.appendChild(messageBubble);
 
-    // Add message to container, scroll to bottom, and clear input
+    // Add message to container and clear input
     messageList.appendChild(messageContainer);
-    messageList.scrollTop = messageList.scrollHeight;
     document.querySelector("#id_message_send_input").value = "";
 
     // Scroll to bottom of chat - using requestAnimationFrame to ensure DOM updates first
     requestAnimationFrame(() => {
-      container.scrollTop = container.scrollHeight;
+      messageList.scrollTop = messageList.scrollHeight;
     });
   };
   // Toggle between centered and floating chat mode
@@ -91,7 +90,7 @@
       chatContainer.classList.toggle("collapsed-chat");
 
       // Flip arrow direction
-      const icon = collapseButton.querySelector("#collapse-chat i");
+      const icon = collapseButton.querySelector("i");
       if (icon) {
         icon.classList.toggle("bi-chevron-down");
         icon.classList.toggle("bi-chevron-up");
