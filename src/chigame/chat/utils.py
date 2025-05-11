@@ -11,7 +11,7 @@ class ProfanityFilter:
 
     # a list of profane words
     # this list should be updated with new profane words as they are discovered
-    profane_words = [
+    profanity_list = [
         "uchicago sucks",
         "uchicago is a bad school",
         "uchicago is a bad university",
@@ -37,5 +37,16 @@ class ProfanityFilter:
             bool: True if the message contains any profane words, False otherwise.
         """
         return bool(self.pattern.search(message))
-            
+
+    def censor_message(self, message):
+        """
+        Censor the message from profane words.
+
+        Args:
+            message (str): The message to censor.
+
+        Returns:
+            str: The censored message.
+        """
+        return self.pattern.sub("*" * len(message), message)
     
