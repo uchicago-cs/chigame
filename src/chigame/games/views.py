@@ -26,7 +26,7 @@ from django.views.generic.edit import FormMixin
 from chigame.users.models import User
 
 from .filters import LobbyFilter
-from .forms import GameForm, LobbyForm, ReviewForm
+from .forms import GameForm, LobbyForm, ReviewForm, InteractiveFictionForm
 from .models import Chat, Game, GameList, Lobby, Match, Player, Review, Tournament
 from .simulation_utils import TournamentSimulator, run_complete_tournament_simulation
 from .tables import LobbyTable
@@ -396,8 +396,9 @@ def search_results(request):
 
 
 # =============== Interactive Fiction Views ===============
+
 class InteractiveFictionView(TemplateView):
-    template_name = "games/game_detail.html"
+    template_name = "games/interactive-fiction/IF_game_create.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -415,6 +416,18 @@ class InteractiveFictionView(TemplateView):
             file_url = f"/media/{uploaded_file}"
             context["uploaded_file_url"] = file_url
         return context
+    
+class IFGameCreateView(CreateView):
+    model = Game
+    form_class = InteractiveFictionForm  # The form that restricts to Interactive Fiction fields
+    template_name = '/games/interactive-fiction/IF_game_create.html'  # The template where the form will be rendered
+    success_url = reverse_lazy('game_list')  # Redirect to a list or detail view after successful submission
+
+    def form_valid(self, form):
+        # Optionally, modify the form data or handle logic before saving
+        # Example: If you want to set a default value for game_type when creating Interactive Fiction games
+        form.instance.game_type = 'IF'  # Automatically assign the game type as Interactive Fiction
+        return super().form_valid(form)
 
 
 class UploadFileView(View):

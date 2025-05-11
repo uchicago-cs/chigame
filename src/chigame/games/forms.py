@@ -20,6 +20,15 @@ class GameForm(forms.ModelForm):
             "image": forms.Textarea(attrs={"cols": 80, "rows": 1}),
         }
 
+class InteractiveFictionForm(forms.ModelForm):
+    class Meta:
+        model = Game
+        fields = ['name', 'description', 'categories', 'mechanics']
+        widgets = {
+            "name": forms.TextInput,
+            "image": forms.Textarea(attrs={"cols": 80, "rows": 1}),
+        }
+
 
 class LobbyForm(forms.ModelForm):
     class Meta:

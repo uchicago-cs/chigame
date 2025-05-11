@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}
+  Interactive Fiction Game
+{% endblock title %}
+
+{% block content %}
+  <h1>
+    Create Interactive Fiction Game
+  </h1>
+
+  <!-- Interactive Fiction Game Form -->
+  <form method="post" enctype="multipart/form-data" id="game_form">
+    {% csrf_token %}
+    
+    <!-- Game Name -->
+    <div>
+      <label for="id_name">Game Name:</label>
+      <input type="text" name="name" id="id_name" value="{{ form.name.value }}" required>
+    </div>
+    <br />
+
+    <!-- Game Description -->
+    <div>
+      <label for="id_description">Description:</label>
+      <textarea name="description" id="id_description" required>{{ form.description.value }}</textarea>
+    </div>
+    <br />
+
+
+        <!-- Game Category Dropdown -->
+        <div>
+            <label for="id_categories">{{ form.categories.label }}</label>
+            <select name="categories" id="id_categories" multiple style="width: 100%; height: 150px; overflow-y: auto;">
+                {% for category in form.categories.field.queryset %}
+                    <option value="{{ category.id }}" {% if category in form.categories.value %}selected{% endif %}>
+                        {{ category.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <br />
+
+        <!-- Game Mechanics Dropdown -->
+        <div>
+            <label for="id_mechanics">{{ form.mechanics.label }}</label>
+            <select name="mechanics" id="id_mechanics" multiple style="width: 100%; height: 150px; overflow-y: auto;">
+                {% for mechanic in form.mechanics.field.queryset %}
+                    <option value="{{ mechanic.id }}" {% if mechanic in form.mechanics.value %}selected{% endif %}>
+                        {{ mechanic.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <br />
+
+    <!-- Upload HTML File -->
+    {% if game.pk == 9999 %}
+        <hr />
+        <h3>Upload a File</h3>
+        <form method="post"
+              action="{% url 'upload-file' pk=game.pk %}"
+              enctype="multipart/form-data">
+          {% csrf_token %}
+          <input type="file" id="myFile" name="uploaded_file" />
+          <input type="submit" class="btn btn-primary" value="Upload" />
+        </form>
+        <h3>Publish Story</h3>
+        <a href="{{ uploaded_file_url }}"
+           target="_blank"
+           class="btn btn-success">Play Uploaded Game</a>
+    {% endif %}
+    
+    <!-- Optional: A preview for uploaded HTML -->
+    {% if uploaded_file_url %}
+      <div>
+        <label>Uploaded HTML file:</label>
+        <a href="{{ uploaded_file_url }}" target="_blank">View Uploaded Game</a>
+      </div>
+      <br />
+    {% endif %}
+
+    <button type="submit">Save</button>
+  </form>
+
+{% endblock content %}
