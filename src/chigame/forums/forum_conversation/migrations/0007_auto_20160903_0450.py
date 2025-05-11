@@ -7,20 +7,35 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('forum_conversation', '0006_post_enable_signature'),
+        ("forum_conversation", "0006_post_enable_signature"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='topic',
-            name='first_post',
-            field=models.ForeignKey(blank=True, editable=False, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to='forum_conversation.Post', verbose_name='Last post'),
+            model_name="topic",
+            name="first_post",
+            field=models.ForeignKey(
+                blank=True,
+                editable=False,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="+",
+                to="forum_conversation.Post",
+                verbose_name="Last post",
+            ),
         ),
         migrations.AddField(
-            model_name='topic',
-            name='last_post',
-            field=models.ForeignKey(blank=True, editable=False, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to='forum_conversation.Post', verbose_name='Last post'),
+            model_name="topic",
+            name="last_post",
+            field=models.ForeignKey(
+                blank=True,
+                editable=False,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="+",
+                to="forum_conversation.Post",
+                verbose_name="Last post",
+            ),
         ),
     ]

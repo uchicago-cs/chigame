@@ -7,20 +7,27 @@
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
     <!-- link css file -->
     <link rel="stylesheet" href="css/style.css" />
+    <!-- imported fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap"
+          rel="stylesheet" />
   </head>
   <body>
     <!-- linking to game.js -->
     <script src="game.js"></script>
-    <div class="main-content">
-      <div class="main-left" id="game"></div>
-      <div class="main-right">
-        <h1>Game Rules</h1>
-        <!-- Linked to wiki -->
+    <nav class="navbar">
+      <h1>CHIGAME</h1>
+      <!-- add buttons to this div -->
+      <div class="nav-btns">
         <button class="btn"
                 onclick="window.open('https://github.com/uchicago-cs/chigame/wiki/Adding-Games-~-Checkers-Rules', '_blank')">
-          Read More
+          Read Rules
         </button>
       </div>
+    </nav>
+    <div class="main-content">
+      <div id="game"></div>
     </div>
   </body>
 </html>
