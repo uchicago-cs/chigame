@@ -1,8 +1,7 @@
 from django.urls import path
 
 from . import views
-from .views import LobbyCreateView, UploadFileView, InteractiveFictionView
-
+from .views import InteractiveFictionView, LobbyCreateView, UploadFileView
 
 urlpatterns = [
     # lobbies
@@ -29,7 +28,6 @@ urlpatterns = [
     path("", views.GameListView.as_view(), name="game-list"),
     path("create/", views.GameCreateView.as_view(), name="game-create"),
     path("<int:pk>/edit", views.GameEditView.as_view(), name="game-edit"),
-
     path("bgg_search_by_name/", views.bgg_search_by_name, name="bgg_search_by_name"),
     path("search/", views.search_results, name="game-search-results"),
     path("<int:pk>/reviews/", views.ReviewListView.as_view(), name="game-review-list"),

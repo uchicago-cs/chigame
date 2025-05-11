@@ -63,7 +63,7 @@ class GameDetailView(LoginRequiredMixin, FormMixin, DetailView):
     context_object_name = "game"
     form_class = ReviewForm
 
-    #for twine files, redirect to different IF view
+    # for twine files, redirect to different IF view
     def dispatch(self, request, *args, **kwargs):
         self.object = self.get_object()
         if self.object.twine_file.name.endswith(".html"):
@@ -416,6 +416,7 @@ class InteractiveFictionView(TemplateView):
             context["uploaded_file_url"] = game.twine_file.url  # use actual uploaded Twine file
 
         return context
+
 
 class UploadFileView(View):
     def post(self, request, pk=None):
