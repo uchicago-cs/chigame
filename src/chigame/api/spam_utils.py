@@ -15,7 +15,9 @@ BANNED_WORDS = {
 }
 
 
-def is_spam(content: str) -> bool:
+def is_spam(content: str | None) -> bool:
+    if not content:
+        return False  # Consider empty or None content as non-spam
     content_lower = content.lower()
 
     # Rule 1: check for banned phrases
