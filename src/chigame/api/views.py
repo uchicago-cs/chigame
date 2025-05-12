@@ -34,6 +34,13 @@ def get_user(lookup_value):
 
 
 class GameListView(generics.ListCreateAPIView):
+    """
+    API endpoint that returns a paginated list of games.
+
+    Pagination:
+    - Page size: 10
+    - Uses DRF's PageNumberPagination
+    """
     queryset = Game.objects.all()
     serializer_class = GameSerializer
     filter_backends = (DjangoFilterBackend,)  # Enable DjangoFilterBackend

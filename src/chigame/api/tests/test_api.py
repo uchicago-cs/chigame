@@ -192,6 +192,24 @@ class GameTests(APITestCase):
     #     self.check_equal(game2, response.data[1])
     #     self.check_equal(game3, response.data[2])
 
+    def test_game_list_pagination_metadata(self):
+        """
+        Ensure paginated metadata is returned for the /api/games/ endpoint.
+        """
+        for _ in range(15):
+            GameFactory()
+
+        url = reverse("api-game-list")
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("count", response.data)
+        self.assertIn("next", response.data)
+        self.assertIn("previous", response.data)
+        self.assertIn("results", response.data)
+        self.assertLessEqual(len(response.data["results"]), 10)
+
+
 
 class ChatTests(APITestCase):
     def test_create_message(self):
