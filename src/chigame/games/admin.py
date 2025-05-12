@@ -1,7 +1,7 @@
 from django.apps import apps
 from django.contrib import admin
 
-from .models import Game, Lobby, Match, MatchProposal, Player
+from .models import Game, GameList, Lobby, Match, MatchProposal, Player
 
 
 @admin.register(Game)
@@ -29,6 +29,14 @@ class PlayerAdmin(admin.ModelAdmin):
 @admin.register(MatchProposal)
 class MatchProposalAdmin(admin.ModelAdmin):
     pass
+
+
+# Register GameList model
+@admin.register(GameList)
+class GameListAdmin(admin.ModelAdmin):
+    list_display = ("name", "created_by", "created_at")
+    list_filter = ("created_by",)
+    search_fields = ("name__icontains",)
 
 
 # Tournaments

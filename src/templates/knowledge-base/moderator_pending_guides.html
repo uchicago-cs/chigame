@@ -1,0 +1,25 @@
+{% extends "knowledge-base/base.html" %}
+
+{% block page-content %}
+  <h1>Pending Guides</h1>
+  <form method="get">
+    <select name="sort">
+      <option value="">Sort by: Most Recent Update</option>
+      <option value="old" {% if request.GET.sort == "old" %}selected{% endif %}>Oldest Update</option>
+    </select>
+    <button type="submit">Search</button>
+  </form>
+  <ul>
+    {% for guide in pendingGuides %}
+      <li>
+        <strong>Guide for {{ guide.game_id }}</strong>
+        <br />
+        <p>Contributed by: {{ guide.author }}</p>
+        <p>Date uploaded: {{ guide.recent_upload }}</p>
+        <a href="#">Review</a>
+      </li>
+    {% empty %}
+      <li>No guides pending for review.</li>
+    {% endfor %}
+  </ul>
+{% endblock page-content %}
