@@ -47,7 +47,7 @@ class GameListView(ListView):
         queryset = (
             super()
             .get_queryset()
-            .annotate(avg_rating=Avg("review__rating"), popularity=Count("review__is_public"))
+            .annotate(avg_rating=Avg("reviews__rating"), popularity=Count("reviews__is_public"))
             .annotate(rating_percentage=ExpressionWrapper((F("avg_rating") / 5) * 100, output_field=FloatField()))
         )
         sort = self.request.GET.get("sort_by", "name-asc")
@@ -77,6 +77,8 @@ class GameDetailView(LoginRequiredMixin, FormMixin, DetailView):
         context = super().get_context_data(**kwargs)
         context["form"] = self.get_form()
         context["reviews"] = Review.objects.filter(game=self.object)
+        context["popularity"] = self.object.reviews.count()
+        context["avg_rating"] = self.object.reviews.filter(is_public=True).aggregate(Avg("rating"))["rating__avg"]
         # Include the user's GameLists: default Favorites plus others
         if self.request.user.is_authenticated:
             favorites_list, _ = GameList.objects.get_or_create(name="Favorites", created_by=self.request.user)
