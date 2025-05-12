@@ -382,6 +382,7 @@ function endTurn() {
     gameOverPrompts.classList.remove('show');
     drawBtn.textContent = 'Offer Draw';
     declineDrawBtn.style.display = 'none';
+  }
 }
 
 // Retrieves a 2D array representation of the board state where 0 are unoccupied
@@ -422,4 +423,4 @@ function sendBoardToServer(boardState) {
     },
     body: JSON.stringify({ board: boardState }),
   });
-}}
+}
