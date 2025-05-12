@@ -10,7 +10,7 @@ def chatPage(request):
     """
     if not request.user.is_authenticated:
         return redirect("login-user")
-    
+
     # if you wanted to implement chats loaded from db (stored) you would implement some sort of arg here
     # you would also add, like in the chat app, messages fetched from that chat
 
