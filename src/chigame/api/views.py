@@ -4,7 +4,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, status
 from rest_framework.exceptions import ValidationError
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -82,6 +82,10 @@ class LobbyListView(generics.ListCreateAPIView):
     queryset = Lobby.objects.all()
     serializer_class = LobbySerializer
     pagination_class = PageNumberPagination
+    permission_classes = [IsAuthenticatedOrReadOnly]  # similar to GameListView
+
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user)
 
 
 class LobbyDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -119,6 +123,7 @@ class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
 class MessageView(generics.CreateAPIView):
     queryset = Message.objects.all()
     serializer_class = MessageSerializer
+    permission_classes = [IsAuthenticated]
 
     def perform_create(self, serializer):
         content = serializer.validated_data.get("content", "")
@@ -164,6 +169,8 @@ class UserGroupsView(generics.ListAPIView):
 
 
 class MessageFeedView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def post(self, request, *args, **kwargs):
         # Get data from the frontend
         token_id = request.data.get("token_id")

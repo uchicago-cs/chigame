@@ -821,3 +821,86 @@ class SpamFilterTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("spam", str(response.data).lower())
         self.assertEqual(Review.objects.count(), 0)
+
+
+class AccessControlTests(APITestCase):
+    def setUp(self):
+        self.user = UserFactory()
+        self.client.force_authenticate(user=self.user)
+        self.game = GameFactory()
+
+    def test_authenticated_user_can_post_lobby(self):
+        url = reverse("api-lobby-list")
+        data = {
+            "game": self.game.id,
+            "name": "New Lobby",
+            "min_players": 2,
+            "max_players": 6,
+            "members": [self.user.id],
+        }
+        response = self.client.post(url, data, format="json")
+
+        print(response.data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_unauthenticated_user_cannot_post_lobby(self):
+        self.client.logout()
+        url = reverse("api-lobby-list")
+        data = {
+            "game": self.game.id,
+            "name": "Fail Lobby",
+            "min_players": 2,
+            "max_players": 6,
+        }
+        response = self.client.post(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_unauthenticated_user_cannot_post_game(self):
+        self.client.logout()
+        url = reverse("api-game-list")
+        data = {"name": "Uno", "max_players": 4}
+        response = self.client.post(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_authenticated_user_can_post_message(self):
+        tournament = TournamentFactory(game=self.game)
+        # chat = ChatFactory(tournament=tournament)
+        url = reverse("api-chat-list")
+        data = {
+            "sender": self.user.email,
+            "tournament": tournament.id,
+            "content": "Hello from an authenticated user",
+            "update_on": None,
+        }
+        response = self.client.post(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_unauthenticated_user_cannot_post_message(self):
+        self.client.logout()
+        tournament = TournamentFactory(game=self.game)
+        # chat = ChatFactory(tournament=tournament)
+        url = reverse("api-chat-list")
+        data = {
+            "tournament": tournament.id,
+            "content": "This should fail",
+            "update_on": None,
+        }
+        response = self.client.post(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_authenticated_user_can_fetch_message_feed(self):
+        tournament = TournamentFactory(game=self.game)
+        ChatFactory(tournament=tournament)
+        url = reverse("api-chat-detail")
+        data = {"token_id": 0, "tournament": tournament.id}
+        response = self.client.post(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_unauthenticated_user_cannot_fetch_message_feed(self):
+        self.client.logout()
+        tournament = TournamentFactory(game=self.game)
+        ChatFactory(tournament=tournament)
+        url = reverse("api-chat-detail")
+        data = {"token_id": 0, "tournament": tournament.id}
+        response = self.client.post(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
