@@ -8,6 +8,7 @@ from chigame.users.views import (
     cancel_friend_invitation,
     decline_friend_invitation,
     friend_list_view,
+    name_update_view,
     notification_detail,
     notification_search_results,
     remove_friend,
@@ -18,7 +19,7 @@ from chigame.users.views import (
     user_profile_detail_view,
     user_redirect_view,
     user_search_results,
-    user_update_view,
+    username_update_view,
     view_bookmarked_notifications,
 )
 
@@ -27,7 +28,8 @@ from . import views
 app_name = "users"
 urlpatterns = [
     path("~redirect/", view=user_redirect_view, name="redirect"),
-    path("~update/", view=user_update_view, name="update"),
+    path("~update-name/", view=name_update_view, name="update-name"),
+    path("~update-username/", view=username_update_view, name="update-username"),
     path("<int:pk>/", view=user_detail_view, name="detail"),
     path("profile/<int:pk>/", view=user_profile_detail_view, name="user-profile"),
     path("add_friend/<int:pk>", view=send_friend_invitation, name="add-friend"),
