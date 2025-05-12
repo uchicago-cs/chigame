@@ -32,17 +32,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
             return None
 
     @database_sync_to_async
-    def save_message(self, chat_id, user_id, message):
-        chat = LiveChat.objects.get(id=chat_id)
-        user = User.objects.get(id=user_id)
-
-        # Save the message to the database
-        LiveChatMessage.objects.create(live_chat=chat, user=user, content=message)
-
-        # Return the display name (username or email)
-        return user.username or user.email
-
-    @database_sync_to_async
     def check_user_in_chat(self, user, chat):
         return chat.users.filter(id=user.id).exists()
 
