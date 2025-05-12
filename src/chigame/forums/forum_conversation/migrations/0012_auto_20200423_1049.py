@@ -6,15 +6,18 @@ import machina.models.fields
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('forum_conversation', '0011_remove_post_poster_ip'),
+        ("forum_conversation", "0011_remove_post_poster_ip"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='post',
-            name='content',
-            field=machina.models.fields.MarkupTextField(no_rendered_field=True, validators=[machina.core.validators.MarkupMaxLengthValidator(None)], verbose_name='Content'),
+            model_name="post",
+            name="content",
+            field=machina.models.fields.MarkupTextField(
+                no_rendered_field=True,
+                validators=[machina.core.validators.MarkupMaxLengthValidator(None)],
+                verbose_name="Content",
+            ),
         ),
     ]

@@ -16,6 +16,11 @@
     <meta name="description" content="ChiGame" />
     <meta name="author" content="University of Chicago" />
     <link rel="icon" href="{% static 'images/favicons/chigame.ico' %}" />
+    <!-- Carousel: Swiper CSS -->
+    <link rel="stylesheet"
+          href="https://unpkg.com/swiper/swiper-bundle.min.css" />
+    <!-- Carousel: Swiper JS -->
+    <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
     {% block css %}
       <!-- Latest compiled and minified Bootstrap CSS -->
       <link rel="stylesheet"
@@ -32,6 +37,13 @@
       <link href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/themes/ui-lightness/jquery-ui.css"
             rel="stylesheet"
             type="text/css" />
+      <!-- CSS for Footer and Navbar -->
+      <link href="{% static 'css/base.css' %}" rel="stylesheet" />
+      <!-- Google Fonts -->
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+      <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&display=swap"
+            rel="stylesheet" />
     {% endblock css %}
     <!-- Le javascript
     ================================================== -->
@@ -46,13 +58,14 @@
               crossorigin="anonymous"
               referrerpolicy="no-referrer"></script>
       <!-- Your stuff: Third-party javascript libraries go here -->
+      <!-- SwiperJS CSS -->
       <!-- place project specific Javascript in this file -->
       <script defer src="{% static 'js/project.js' %}"></script>
       <script src= "https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.js"></script>
       <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.js"></script>
     {% endblock javascript %}
   </head>
-  <body>
+  <body class="d-flex flex-column">
     <div class="mb-1">
       <nav class="navbar navbar-expand-md navbar-light bg-light">
         <div class="container-fluid">
@@ -68,7 +81,7 @@
           <img class="navbar-logo img-fluid align-top"
                src="{% static 'images/logos/logo.png' %}"
                alt="ChiGame Logo" />
-          <a class="navbar-brand" href="{% url 'home' %}">ChiGame</a>
+          <a class="navbar-brand chigame-text" href="{% url 'home' %}">ChiGame</a>
           <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav mr-auto">
               <li class="nav-item active">
@@ -82,6 +95,9 @@
               </li>
               <li class="nav-item">
                 <a class="nav-link" href="{% url 'lobby-list' %}">Lobbies</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'knowledge-base' %}">Knowledge Base</a>
               </li>
               {% if request.user.is_authenticated %}
                 <li class="nav-item">
@@ -182,6 +198,42 @@
         <p>Coming soon!</p>
       {% endblock content %}
     </div>
+    <footer class="mt-auto">
+      <div class="d-flex flex-row">
+        <div class="logo-text me-auto d-flex flex-column justify-content-between">
+          <div class="d-flex flex-row">
+            <img class="navbar-logo img-fluid align-top"
+                 src="{% static 'images/logos/logo.png' %}"
+                 alt="ChiGame Logo" />
+            <span class="d-flex flex-column justify-content-around"><span class="chigame-text">Chigame</span></span>
+            <span class="d-flex flex-column justify-content-around"><a class="nav-link social-media-icons"
+   href="https://github.com/uchicago-cs/chigame"><i class="bi bi-github"></i></a></span>
+          </div>
+        </div>
+        <ul class="navbar-nav flex-column footer-link-list one">
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'home' %}">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'about' %}">About</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'game-list' %}">Games</a>
+          </li>
+        </ul>
+        <ul class="navbar-nav flex-column footer-link-list two">
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'lobby-list' %}">Lobbies</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'tournament-list' %}">Tournaments</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'forum:index' %}">Forums</a>
+          </li>
+        </ul>
+      </div>
+    </footer>
     <!-- /container -->
     {% block modal %}
     {% endblock modal %}

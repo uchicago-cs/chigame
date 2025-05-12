@@ -1,0 +1,47 @@
+{% extends "knowledge-base/base.html" %}
+
+{% block page-content %}
+  <h1>Guide List</h1>
+  <form method="get">
+    <input type="text"
+           name="q"
+           value="{{ query }}"
+           placeholder="Search for a Guide" />
+    <select name="category">
+      <option value="">All Categories</option>
+      {% for cat in categories %}
+        <option value="{{ cat }}"
+                {% if request.GET.category == cat.name %}selected{% endif %}>{{ cat }}</option>
+      {% endfor %}
+    </select>
+    <select name="sort">
+      <option value="">Sort by: Most Recent Update</option>
+      <option value="az" {% if request.GET.sort == "az" %}selected{% endif %}>Game Name A-Z</option>
+      <option value="za" {% if request.GET.sort == "za" %}selected{% endif %}>Game Name Z-A</option>
+      <option value="old" {% if request.GET.sort == "old" %}selected{% endif %}>Oldest Update</option>
+    </select>
+    <button type="submit">Search</button>
+  </form>
+  <!-- Clear Search Button -->
+  <a href="{% url 'knowledge-base' %}">Clear Search</a>
+  <div class="grid-container">
+    {% for guide in guides %}
+      <div class="game-card">
+        <a href="#">Guide for {{ guide.game_id }}</a>
+        <!-- should replace the link with the guide details link in the issue on guide page-->
+      </div>
+    {% empty %}
+      <p>No guides found.</p>
+    {% endfor %}
+  </div>
+  <a href="{% url 'knowledge-base-guide-upload' %}">Upload a Guide</a>
+  <!-- should replace this link with the "upload guide" link -->
+  <br />
+  {% if has_guides %}
+    <a href="{% url 'contributor-manage-guide' %}">Manage My Guides</a>
+  {% endif %}
+  <!-- should replace this link with the "manage my guide" link -->
+  {% if not user.is_authenticated %}
+    <p>Note: If you have contributed a guide and wish to check update, please log in first.</p>
+  {% endif %}
+{% endblock page-content %}

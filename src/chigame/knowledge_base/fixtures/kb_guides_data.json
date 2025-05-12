@@ -1,0 +1,98 @@
+[
+{
+    "model": "knowledge_base.guide",
+    "pk": 1,
+    "fields": {
+        "author": 4,
+        "game_id": 1,
+        "content": "# Welcome to the Markdown Demo\r\n\r\nAlready accepted and published. Made by Alice for Chess.\r\nThis is a paragraph with **bold** and _italic_ text.\r\n\r\n## Features\r\n\r\n- Bullet points\r\n- `inline code`\r\n- [A link](https://example.com)\r\n\r\n> Blockquote example\r\n\r\n```python\r\n# Code block example\r\ndef hello():\r\n    print(\"Hello, world!\")",
+        "recent_upload": "2025-05-06T02:38:31.211Z",
+        "status": 1,
+        "likes": [],
+        "favorites": []
+    }
+},
+{
+    "model": "knowledge_base.guide",
+    "pk": 2,
+    "fields": {
+        "author": 1,
+        "game_id": 2,
+        "content": "# Welcome to the Markdown Demo\r\n\r\nBy Admin and for Go Game. Accepted and Published.\r\nLiked by alex, sam; favorited by admin.\r\nThis is a paragraph with **bold** and _italic_ text.\r\n\r\n## Features\r\n\r\n- Bullet points\r\n- `inline code`\r\n- [A link](https://example.com)\r\n\r\n> Blockquote example\r\n\r\n```python\r\n# Code block example\r\ndef hello():\r\n    print(\"Hello, world!\")",
+        "recent_upload": "2025-05-06T02:41:17.084Z",
+        "status": 1,
+        "likes": [
+            2,
+            3
+        ],
+        "favorites": [
+            1
+        ]
+    }
+},
+{
+    "model": "knowledge_base.guide",
+    "pk": 3,
+    "fields": {
+        "author": 3,
+        "game_id": 1,
+        "content": "# Welcome to the Markdown Demo\r\n\r\nThis is a paragraph with **bold** and _italic_ text.\r\n\r\n## Features\r\n\r\n- Bullet points\r\n- `inline code`\r\n- [A link](https://example.com)\r\n\r\n> Blockquote example\r\n\r\n```python\r\n# Code block example\r\ndef hello():\r\n    print(\"Hello, world!\")",
+        "recent_upload": "2025-05-06T02:42:06.557Z",
+        "status": 1,
+        "likes": [],
+        "favorites": []
+    }
+},
+{
+    "model": "knowledge_base.guide",
+    "pk": 4,
+    "fields": {
+        "author": 4,
+        "game_id": 3,
+        "content": "# Welcome to the Markdown Demo\r\n\r\nBy Alice, for Game A. Pending.\r\nThis is a paragraph with **bold** and _italic_ text.\r\n\r\n## Features\r\n\r\n- Bullet points\r\n- `inline code`\r\n- [A link](https://example.com)\r\n\r\n> Blockquote example\r\n\r\n```python\r\n# Code block example\r\ndef hello():\r\n    print(\"Hello, world!\")",
+        "recent_upload": "2025-05-06T02:43:18.990Z",
+        "status": 0,
+        "likes": [],
+        "favorites": []
+    }
+},
+{
+    "model": "knowledge_base.guide",
+    "pk": 5,
+    "fields": {
+        "author": 2,
+        "game_id": 2,
+        "content": "# Welcome to the Markdown Demo\r\n\r\nBy Alex, for Go Game. Pending.\r\nThis is a paragraph with **bold** and _italic_ text.\r\n\r\n## Features\r\n\r\n- Bullet points\r\n- `inline code`\r\n- [A link](https://example.com)\r\n\r\n> Blockquote example\r\n\r\n```python\r\n# Code block example\r\ndef hello():\r\n    print(\"Hello, world!\")",
+        "recent_upload": "2025-05-06T02:43:56.410Z",
+        "status": 0,
+        "likes": [],
+        "favorites": []
+    }
+},
+{
+    "model": "knowledge_base.guide",
+    "pk": 6,
+    "fields": {
+        "author": 3,
+        "game_id": 2,
+        "content": "# Welcome to the Markdown Demo\r\n\r\nBy Sam, for Go Game. Requested Change.\r\nThis is a paragraph with **bold** and _italic_ text.\r\n\r\n## Features\r\n\r\n- Bullet points\r\n- `inline code`\r\n- [A link](https://example.com)\r\n\r\n> Blockquote example\r\n\r\n```python\r\n# Code block example\r\ndef hello():\r\n    print(\"Hello, world!\")",
+        "recent_upload": "2025-05-06T02:45:39.451Z",
+        "status": 3,
+        "likes": [],
+        "favorites": []
+    }
+},
+{
+    "model": "knowledge_base.guide",
+    "pk": 7,
+    "fields": {
+        "author": 3,
+        "game_id": 3,
+        "content": "# Welcome to the Markdown Demo\r\n\r\nBy Sam, for Game A. Rejected.\r\nThis is a paragraph with **bold** and _italic_ text.\r\n\r\n## Features\r\n\r\n- Bullet points\r\n- `inline code`\r\n- [A link](https://example.com)\r\n\r\n> Blockquote example\r\n\r\n```python\r\n# Code block example\r\ndef hello():\r\n    print(\"Hello, world!\")",
+        "recent_upload": "2025-05-06T02:47:51.449Z",
+        "status": 2,
+        "likes": [],
+        "favorites": []
+    }
+}
+]

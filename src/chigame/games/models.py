@@ -48,6 +48,9 @@ class Game(models.Model):
 
     # ================ OTHER ================
     BGG_id = models.PositiveIntegerField(null=True, blank=True)  # BoardGameGeek ID
+    published_guide_id = models.ForeignKey(
+        "knowledge_base.Guide", on_delete=models.CASCADE, null=True, blank=True
+    )  # Knowledge Base Guide ID
 
     # ================ VALIDATON ================
     def clean(self):
@@ -672,7 +675,7 @@ class Review(models.Model):
         max_digits=3, decimal_places=2, blank=True, null=True, validators=[MinValueValidator(1), MaxValueValidator(5)]
     )  # the ratings will range from 1-5 with one being a low rating and 5 being a high rating
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    game = models.ForeignKey(Game, on_delete=models.CASCADE)
+    game = models.ForeignKey(Game, on_delete=models.CASCADE, related_name="reviews")
     is_public = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -688,7 +691,6 @@ class Review(models.Model):
         super().save(*args, **kwargs)
 
 
-# Add GameList model for user-defined game collections
 class GameList(models.Model):
     """
     A collection of games defined by users.
