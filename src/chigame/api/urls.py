@@ -1,4 +1,5 @@
 from django.urls import include, path
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from . import views
 
@@ -35,10 +36,16 @@ group_patterns = [
     path("<int:pk>/members/", views.GroupMembersView.as_view(), name="api-group-members"),
 ]
 
+login_patterns = [
+    path("token/", TokenObtainPairView.as_view(), name="token-obtain-pair"),
+    path("token/refresh/", TokenRefreshView.as_view(), name="token-refresh"),
+]
+
 urlpatterns = [
     path("games/", include(game_patterns)),
     path("lobbies/", include(lobby_patterns)),
     path("users/", include(user_patterns)),
     path("tournaments/", include(tournament_patterns)),
     path("groups/", include(group_patterns)),
+    path("login/", include(login_patterns)),
 ]
