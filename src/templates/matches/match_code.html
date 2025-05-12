@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <div class="container mt-5">
+    <h2>Match Created!</h2>
+    <p>
+      <strong>Lobby Code:</strong> {{ lobby.join_code }}
+    </p>
+    <p>This code will let invited members to join your match</p>
+    <a href="{% url 'game-detail' pk=lobby.game.pk %}"
+       class="btn btn-primary mt-3">Back to Game Page</a>
+  </div>
+{% endblock content %}

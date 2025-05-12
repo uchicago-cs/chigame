@@ -32,6 +32,7 @@ urlpatterns = [
     # matches
     path("<int:pk>/match/create/", views.MatchCreateView.as_view(), name="match-create"),
     path("<int:pk>/match/join/", views.join_match, name="match-join"),
+    path("lobby/<int:pk>/code/", views.MatchCodeView.as_view(), name="match-code"),
     # tournaments
     path("tournaments/", views.TournamentListView.as_view(), name="tournament-list"),
     path("tournaments/<int:pk>/", views.TournamentDetailView.as_view(), name="tournament-detail"),
