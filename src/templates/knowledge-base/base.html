@@ -9,6 +9,9 @@
   {{ block.super }}
   <link href="{% static 'css/knowledge-base-styles.css' %}" rel="stylesheet" />
 {% endblock css %}
+{% block javascript %}
+  {{ block.super }}
+{% endblock javascript %}
 {% block content %}
   <div class="knowledge-base container mt-4">
     <div class="nav w-100 bg-light border rounded rounded-lg d-flex flex-row justify-content-between p-2 px-4">
@@ -22,7 +25,7 @@
           </a>
         {% endif %}
         <!--
-        <a href="{% url 'knowledge-base-contributor' %}">
+        <a href="{% url 'contributor-manage-guide' %}">
           <p class="mb-0">Contributor View</p>
         </a> -->
       </div>
