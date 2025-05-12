@@ -49,6 +49,9 @@ let drawOfferedBy = null;
 function preload() { }
 
 function create() {
+  // Store reference to the scene
+  const scene = this;
+
   drawBoard(this);
   populatePieces(this);
 
@@ -57,16 +60,51 @@ function create() {
   const drawBtn = document.getElementById('drawBtn');
   const declineDrawBtn = document.getElementById('declineDrawBtn');
   const gameOverMessage = document.getElementById('gameOverMessage');
+  const playAgainPrompt = document.getElementById('playAgainPrompt');
+  const playAgainYes = document.getElementById('playAgainYes');
+  const playAgainNo = document.getElementById('playAgainNo');
+
+  function resetGame() {
+    // Clear all pieces
+    pieces.forEach(piece => piece.sprite.destroy());
+    pieces = [];
+
+    // Reset game state
+    gameOver = false;
+    selectedPiece = null;
+    currentPlayer = COLORS.red;
+    drawOffered = false;
+    drawOfferedBy = null;
+
+    // Reset UI
+    gameOverMessage.textContent = '';
+    gameOverMessage.classList.remove('show');
+    playAgainPrompt.style.display = 'none';
+    drawBtn.style.display = 'block';
+    drawBtn.textContent = 'Offer Draw';
+    forfeitBtn.style.display = 'block';
+    declineDrawBtn.style.display = 'none';
+
+    // Repopulate the board using the stored scene reference
+    populatePieces(scene);
+  }
+
+  playAgainYes.addEventListener('click', resetGame);
+  playAgainNo.addEventListener('click', () => {
+    playAgainPrompt.style.display = 'none';
+  });
 
   forfeitBtn.addEventListener('click', () => {
     if (!gameOver && currentPlayer === COLORS.red) {
       gameOver = true;
       gameOverMessage.textContent = 'Red player has forfeited! Black wins!';
       gameOverMessage.classList.add('show');
+      document.getElementById('playAgainPrompt').style.display = 'block';
     } else if (!gameOver && currentPlayer === COLORS.black) {
       gameOver = true;
       gameOverMessage.textContent = 'Black player has forfeited! Red wins!';
       gameOverMessage.classList.add('show');
+      document.getElementById('playAgainPrompt').style.display = 'block';
     }
   });
 
@@ -102,6 +140,7 @@ function create() {
       drawBtn.style.display = 'none';
       declineDrawBtn.style.display = 'none';
       forfeitBtn.style.display = 'none';
+      document.getElementById('playAgainPrompt').style.display = 'block';
     }
   });
 
@@ -263,6 +302,9 @@ function movePiece(piece, moveX, moveY) {
     if (captured) {
       captured.sprite.destroy(); // delete the sprite (remove from display state)
       pieces = pieces.filter((p) => p !== captured); // remove it from the array (game state)
+
+      // Check for game over after capturing a piece
+      checkGameOver();
     }
   }
 
@@ -273,6 +315,30 @@ function movePiece(piece, moveX, moveY) {
   piece.sprite.y = MARGIN + piece.y * TILE_SIZE + TILE_SIZE / 2;
 
   console.log("Current board state:", getBoardState());
+}
+
+// Check if the game is over due to all pieces of one color being captured
+function checkGameOver() {
+  const redPieces = pieces.filter(p => p.color === COLORS.red);
+  const blackPieces = pieces.filter(p => p.color === COLORS.black);
+
+  if (redPieces.length === 0) {
+    gameOver = true;
+    const gameOverMessage = document.getElementById('gameOverMessage');
+    gameOverMessage.textContent = 'All red pieces captured! Black wins!';
+    gameOverMessage.classList.add('show');
+    document.getElementById('playAgainPrompt').style.display = 'block';
+    document.getElementById('drawBtn').style.display = 'none';
+    document.getElementById('forfeitBtn').style.display = 'none';
+  } else if (blackPieces.length === 0) {
+    gameOver = true;
+    const gameOverMessage = document.getElementById('gameOverMessage');
+    gameOverMessage.textContent = 'All black pieces captured! Red wins!';
+    gameOverMessage.classList.add('show');
+    document.getElementById('playAgainPrompt').style.display = 'block';
+    document.getElementById('drawBtn').style.display = 'none';
+    document.getElementById('forfeitBtn').style.display = 'none';
+  }
 }
 
 // helper function to get the piece
@@ -352,6 +418,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   settingsButton.addEventListener('click', () => {
     settingsMenu.classList.toggle('active');
+    settingsMenu.classList.toggle('hidden');
   });
 });
 
