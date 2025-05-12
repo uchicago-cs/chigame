@@ -76,7 +76,13 @@ def GuideDetailView(request, pk):
 # Contributors
 @login_required
 def ContributorMdUpload(request, pk=None):
-    # if it's reupload, we will retrieve the guide and edit fixed_game to
+    if pk:
+        guide = get_object_or_404(Guide, pk=pk)
+    else:
+        guide = None
+
+    # if it's reupload, we will make the game field read-only on the form
+    fixed_game = guide.game_id if guide else None
     # make the game field appear read-only on the form
     if pk:
         guide = get_object_or_404(Guide, pk=pk)
