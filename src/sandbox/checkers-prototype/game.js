@@ -422,4 +422,4 @@ function sendBoardToServer(boardState) {
     },
     body: JSON.stringify({ board: boardState }),
   });
-}
+}}
