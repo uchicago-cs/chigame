@@ -31,26 +31,54 @@ class ChatConsumer(AsyncWebsocketConsumer):
         except LiveChat.DoesNotExist:
             return None
 
+    @database_sync_to_async
+    def check_user_in_chat(self, user, chat):
+        return chat.users.filter(id=user.id).exists()
+
     async def connect(self):
         """
         Connects to the chat room and adds the user who is connecting to the chat room to the group.
         """
         # Get chat_id from URL parameters
         self.chat_id = self.scope["url_route"]["kwargs"]["chat_id"]
-        self.live_chat = await self.get_live_chat(self.chat_id)
-
-        if not self.live_chat:
-            await self.close()
-            return
-
         self.room_name = f"chat_{self.chat_id}"
-        self.roomGroupName = f"group_chat_{self.room_name}"
+        self.room_group_name = f"group_chat_{self.room_name}"
 
-        await self.channel_layer.group_add(self.roomGroupName, self.channel_name)
+        # Get the authenticated user
+        self.user = self.scope["user"]
+
+        # Accept the connection first so we can send error messages
         await self.accept()
 
+        # Check if user is authenticated
+        if not self.user.is_authenticated:
+            await self.send(
+                text_data=json.dumps({"type": "error", "message": "You must be logged in to join this chat"})
+            )
+            await self.close(code=4001)
+            return
+
+        # Get the chat and check if it exists
+        self.live_chat = await self.get_live_chat(self.chat_id)
+        if not self.live_chat:
+            await self.send(text_data=json.dumps({"type": "error", "message": "Chat room does not exist"}))
+            await self.close(code=4002)
+            return
+
+        # Check if user is a member of the chat
+        is_member = await self.check_user_in_chat(self.user, self.live_chat)
+        if not is_member:
+            await self.send(text_data=json.dumps({"type": "error", "message": "You are not a member of this chat"}))
+            await self.close(code=4003)
+            return
+
+        # Only add to group if all checks pass
+        await self.channel_layer.group_add(self.room_group_name, self.channel_name)
+
     async def disconnect(self, close_code):
-        await self.channel_layer.group_discard(self.roomGroupName, self.channel_name)
+        # Safely handle disconnect even if connection was never fully established
+        if hasattr(self, "room_group_name"):
+            await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
 
     @database_sync_to_async
     def save_message(self, chat_id, user_id, message):
@@ -87,7 +115,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         username = await self.save_message(self.chat_id, user_id, message)
 
         await self.channel_layer.group_send(
-            self.roomGroupName,
+            self.room_group_name,
             {
                 "type": "sendMessage",
                 "message": message,
