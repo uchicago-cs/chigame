@@ -1,0 +1,41 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Chigame Checkers</title>
+    <!-- using a CDN for now -->
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+    <!-- link css file -->
+    <link rel="stylesheet"
+          href="{% static 'checkers-prototype/css/style.css' %}" />
+    <!-- imported fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap"
+          rel="stylesheet" />
+    <script>
+      const GAME_ID = Number("{{ game_id }}");
+      const PLAYER_ID = Number("{{ player_id }}");
+      let TURN_NUMBER = Number("{{ turn_number }}");
+    </script>
+    <!-- linking to game.js -->
+    <script src="{% static 'checkers-prototype/game.js' %}"></script>
+  </head>
+  <body>
+    <nav class="navbar">
+      <h1>CHIGAME</h1>
+      <!-- add buttons to this div -->
+      <div class="nav-btns">
+        <button class="btn"
+                onclick="window.open('https://github.com/uchicago-cs/chigame/wiki/Adding-Games-~-Checkers-Rules', '_blank')">
+          Read Rules
+        </button>
+      </div>
+    </nav>
+    <div class="main-content">
+      <div id="game"></div>
+    </div>
+  </body>
+</html>

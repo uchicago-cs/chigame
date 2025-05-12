@@ -44,4 +44,6 @@ urlpatterns = [
     path("tournaments/archived/", views.TournamentArchivedListView.as_view(), name="tournament-archived"),
     # placeholder game
     path("lobby/<int:pk>/coinflip", views.coin_flip_game, name="placeholder-game"),
+    # checkers
+    path("checkers/<int:pk>/", views.checkers_game_view, name="checkers-game"),
 ]

@@ -27,7 +27,7 @@ from chigame.users.models import User
 
 from .filters import LobbyFilter
 from .forms import GameForm, LobbyForm, ReviewForm
-from .models import Chat, Game, GameList, Lobby, Match, Player, Review, Tournament
+from .models import Chat, Checkers, CheckersTurn, Game, GameList, Lobby, Match, Player, Review, Tournament
 from .simulation_utils import TournamentSimulator, run_complete_tournament_simulation
 from .tables import LobbyTable
 
@@ -1163,3 +1163,13 @@ def remove_from_gamelist(request, pk, list_pk):
     game_list = get_object_or_404(GameList, pk=list_pk, created_by=request.user)
     game_list.games.remove(game)
     return redirect("game-detail", pk=pk)
+
+
+def checkers_game_view(request, pk):
+    game = get_object_or_404(Checkers, id=pk)
+    player = request.user  # You can refine this based on player_1/player_2 logic
+    turn_number = CheckersTurn.objects.filter(game=game).count() + 1
+
+    return render(
+        request, "games/game_checkers.html", {"game_id": game.id, "player_id": player.id, "turn_number": turn_number}
+    )
