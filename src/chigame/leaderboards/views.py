@@ -1,10 +1,10 @@
 from django.shortcuts import render, get_object_or_404
 from chigame.games.models import Game
-from chigame.leaderboard.models import Leaderboard, LeaderboardEntry
+from chigame.leaderboards.models import Leaderboard, LeaderboardEntry
 
 def leaderboard_view(request, game_id):
     game = get_object_or_404(Game, id=game_id)
-    leaderboard = game.leaderboards.first()  # For now, pick the first leaderboard
+    leaderboard = game.leaderboards.first()  
 
     if not leaderboard:
         return render(request, "leaderboards/empty.html", {"game": game})
