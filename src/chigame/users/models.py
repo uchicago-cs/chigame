@@ -78,7 +78,6 @@ class UserProfile(models.Model):
     """
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    display_name = models.TextField()
     bio = models.TextField(blank=True)
     date_joined = models.DateTimeField(auto_now_add=True)
 
