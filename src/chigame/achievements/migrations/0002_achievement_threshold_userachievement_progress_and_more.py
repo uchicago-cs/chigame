@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("games", "0028_remove_livechatmessage_live_chat_id_and_more"),
         ("achievements", "0001_initial"),
