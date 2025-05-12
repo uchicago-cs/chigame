@@ -1,57 +1,173 @@
+.knowledge-base.container {
+  max-width: 1000px;
+}
+
 .knowledge-base .nav a {
   color: gray;
   text-decoration: none;
+}
+
+.knowledge-base .nav {
+  margin-bottom: 20px;
 }
 
 .knowledge-base .page-content {
   padding: 10px;
 }
 
-.uploaded-guides-box{
-    background: dimgray;
+/* In Contributor Manage Guide Page */
+.contributor-title {
+  padding-bottom: 10px;
+}
+
+/* a {
+  color: #7F1616;
+} */
+
+
+#contributor-manage-guide {
     width: 95%;
     height: fit-content;
-    display: flex;
+    margin: 20px 0;
+    border-collapse: collapse;
+    border: 1px solid black;
 }
 
-.uploaded-guides-column{
-    background:white;
-    height: 100%;
-    display: inline-table;
-}
-
-.column-header{
-    background:grey;
-    justify-content: center;
+#contributor-manage-guide th{
+    background: #BFBFBF;
+    text-align: left;
     font-size: large;
-    width: 100%;
-    border-top: 2px solid black;
-    border-bottom: 2px solid black;
-    padding:10px
+    padding:15px
 }
 
-.column-entry-box{
+#contributor-manage-guide td{
+    border-top: 1px solid black;
     border-bottom: 1px solid black;
-}
-
-.guide-entry{
-    font-size: medium;
     padding: 10px;
-    border-bottom: 1px solid black;
+    text-align: left;
+    font-size: medium;
 }
 
-.contributor-title {
-  padding-bottom: 3vh;
+
+a.upload-button {
+  display: inline-block;
+  background-color: #800000;
+  color: white;
+  padding: 5px 10px;
+  text-decoration: none;
+  border-radius: 5px;
+  box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.3);
+  font-weight: bold;
+  font-size: medium;
 }
-.guides-col-width {
-  width: 25%;
+
+a.upload-button:hover {
+  background-color: #A00000;
+  cursor: pointer;
+  box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.4);
 }
-.guides-col-wide {
-  width: 50%;
+
+a.upload-button:active {
+  background-color: #600000;
+  box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
 }
-.border-left-black {
-  border-left: 2px solid black;
+
+
+/* In FeedbackDetail Page */
+
+.feedback-container {
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px; /* Add some space below the feedback block */
 }
-.border-right-black {
-  border-right: 2px solid black;
+
+.feedback-title {
+  font-size: 1.5em;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.guide-id {
+  font-size: 0.8em;
+  color: #777;
+  margin-left: 5px;
+}
+
+
+.feedback-status {
+  margin-bottom: 8px;
+  color: #555;
+}
+
+.feedback-comment {
+  margin-bottom: 15px;
+}
+
+.bold-label {
+  font-weight: bold;
+  margin-right: 5px;
+  color: #333;
+}
+
+.comment-text {
+  line-height: 1.6;
+  color: #666;
+}
+
+.empty-comment {
+  font-style: italic;
+  color: #999;
+}
+
+.feedback-reviewer {
+  font-style: italic;
+  color: #777;
+}
+
+.maroon {
+  color: #7F1616;
+}
+
+
+
+/* This is added for backend viewer landing page. Pls replace this when styling
+ in front end. */
+ .grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  padding: 20px;
+}
+.game-card {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 12px;
+  background-color: #f9f9f9;
+  text-align: center;
+  transition: box-shadow 0.2s ease;
+}
+.game-card:hover {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+/* This is added for backend viewer landing page. Pls replace this when styling
+ in front end. */
+ .grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  padding: 20px;
+}
+.game-card {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 12px;
+  background-color: #f9f9f9;
+  text-align: center;
+  transition: box-shadow 0.2s ease;
+}
+.game-card:hover {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }

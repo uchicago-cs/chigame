@@ -1,0 +1,43 @@
+{% extends "knowledge-base/base.html" %}
+
+{% load static %}
+
+<link rel="stylesheet" href="{% static 'css/knowledge-base-styles.css' %}" />
+{% block page-content %}
+  <h1 class="contributor-title">Manage My Guides</h1>
+  <a href="{% url 'knowledge-base-guide-upload' %}" class="upload-button">Create New Guide</a>
+  <table id="contributor-manage-guide">
+    <thead>
+      <tr>
+        <th>Your Guides</th>
+        <th>Unique ID</th>
+        <th>Upload Time</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for guide in guides %}
+        <tr>
+          <td>
+            Guide for {{ guide.game_id }}
+            <a href="{% url 'download-guide' guide.pk %}" class="maroon">[Download]</a>
+          </td>
+          <td>{{ guide.pk }}</td>
+          <td>Last Upload: {{ guide.recent_upload }}</td>
+          <td>
+            {{ guide.get_status_display }} &nbsp;
+            {% if guide.status != 0 %}
+              <a href="{% url 'feedback-detail' guide.latest_feedback.pk %}"
+                 class="maroon">View Details</a> &nbsp;
+            {% endif %}
+            {% if guide.status == 3 %}
+              <a href="{% url 'knowledge-base-guide-reupload' guide.pk %}"
+                 class="upload-button">Resubmit</a>
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+      {% if not guides %}<td colspan="4">No guides found.</td>{% endif %}
+    </tbody>
+  </table>
+{% endblock page-content %}
