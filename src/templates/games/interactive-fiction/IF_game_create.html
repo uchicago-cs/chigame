@@ -18,21 +18,45 @@
              required />
     </div>
     <br />
+        <div>
+      <label for="id_author">Author Name</label>
+      <input
+        type="text"
+        name="author"
+        id="id_author"
+        value="{{ form.author.value }}"
+        required
+      />
+    </div>
+    <br>
     <!-- Game Description -->
     <div>
       <label for="id_description">Description:</label>
       <textarea name="description" id="id_description" required>{{ form.description.value }}</textarea>
     </div>
     <br />
-    <!-- Suggested Age -->
+        <div>
+      <label for="id_genre">Genre</label>
+      <select name="genre" id="id_genre">
+        {% for genre in form.genre.field.queryset %}
+          <option
+            value="{{ genre.pk }}"
+            {% if genre.pk|stringformat:"s" in form.genre.value %}selected{% endif %}
+          >
+            {{ genre.name }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+    <br>
     <div>
-      <label for="id_suggested_age">Suggested Age:</label>
-      <br />
-      <input type="number"
-             name="suggested_age"
-             id="id_suggested_age"
-             value="{{ form.suggested_age.value }}"
-             placeholder="Suggested Age" />
+      <label for="id_content_warnings">Content Warnings</label>
+      <input
+        type="text"
+        name="content_warnings"
+        id="id_content_warnings"
+        value="{{ form.content_warnings.value }}"
+      />
     </div>
     <br />
     <!-- Rules -->
@@ -79,21 +103,26 @@
     <br />
     <!-- Game Category Dropdown -->
     <div>
-      <label for="id_categories">Categories:</label>
-      id="id_categories"
-      multiple
-      style="width: 100%;
-      height: 150px;
-      overflow-y: auto">
-      {% for category in form.fields.categories.queryset %}
-        {% with category_id=category.id|stringformat:"s" %}
-          {% if category_id in form.categories.value|stringformat:"s" %}
-            <option value="{{ category.id }}" selected>{{ category.name }}</option>
-          {% else %}
-            <option value="{{ category.id }}">{{ category.name }}</option>
-          {% endif %}
-        {% endwith %}
-      {% endfor %}
+      <label for="id_allow_comments">
+        <input
+          type="checkbox"
+          name="allow_comments"
+          id="id_allow_comments"
+          {% if form.allow_comments.value %}checked{% endif %}
+        />
+        Allow Comments
+      </label>
+    </div>
+    <div>
+      <label for="id_enable_ratings">
+        <input
+          type="checkbox"
+          name="enable_ratings"
+          id="id_enable_ratings"
+          {% if form.enable_ratings.value %}checked{% endif %}
+        />
+        Enable Ratings
+      </label>
     </div>
     <br />
     <!-- Upload HTML File -->
