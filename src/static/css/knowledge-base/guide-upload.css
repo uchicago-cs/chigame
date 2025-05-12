@@ -6,6 +6,7 @@
 
 .form-container {
   max-width: 650px;
+  min-width: 400px;
   margin: 2rem;
   padding: 3rem;
   /* From TailwindUI */
@@ -57,7 +58,8 @@
 
 .form-container .file-upload .current-file {
   text-align: center;
-  font-weight: 400;
+  width: 200px;
+  margin: auto auto;
 }
 
 .form-container .psuedo-icon {
@@ -70,7 +72,7 @@
 .form-container button {
   float: right;
   /* Also from TailwindUI */
-  background-color: oklch(58.5% 0.233 277.117);
+  background-color: #0d6efd;
   border: none;
   padding: 10px 16px;
   color: #EDEDED;
@@ -80,6 +82,6 @@
 }
 
 .form-container button:hover {
-  box-shadow: 0 0 0 1px white, oklch(58.5% 0.233 277.117) 0px 0px 0px 4px;
+  box-shadow: 0 0 0 1px white, #0d6efd 0px 0px 0px 4px;
   transition: 100ms;
 }
