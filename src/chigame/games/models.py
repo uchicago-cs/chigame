@@ -54,6 +54,7 @@ class Game(models.Model):
     published_guide_id = models.ForeignKey(
         "knowledge_base.Guide", on_delete=models.CASCADE, null=True, blank=True
     )  # Knowledge Base Guide ID
+    users = models.ManyToManyField(User, related_name="games", blank=True)
 
     # ================ VALIDATON ================
     def clean(self):
@@ -173,7 +174,7 @@ class Lobby(models.Model):
     time_constraint = models.PositiveIntegerField(default=300)
     lobby_created = models.DateTimeField(default=timezone.now)
 
-    # ================ VALIDATON ================
+    # ================ VALIDATION ================
     def clean(self):
         # Ensures min_players is not greater than max_players
         if self.min_players > self.max_players:
@@ -194,6 +195,13 @@ class Match(models.Model):
     lobby = models.OneToOneField(Lobby, on_delete=models.CASCADE)
     date_played = models.DateTimeField()
     players = models.ManyToManyField(User, through="Player")
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        # Ensure that all players in the match are registered for the game
+        for player in self.players.all():
+            self.game.users.add(player)
+        self.game.save()
 
 
 class Player(models.Model):
