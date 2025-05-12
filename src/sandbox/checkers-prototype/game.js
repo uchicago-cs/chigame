@@ -416,5 +416,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   settingsButton.addEventListener('click', () => {
     settingsMenu.classList.toggle('active');
+    settingsMenu.classList.toggle('hidden');
   });
 });
