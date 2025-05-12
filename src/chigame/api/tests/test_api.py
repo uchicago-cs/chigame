@@ -885,7 +885,7 @@ class AccessControlTests(APITestCase):
 
     def test_authenticated_user_can_post_message(self):
         tournament = TournamentFactory(game=self.game)
-        # chat = ChatFactory(tournament=tournament)
+        chat = ChatFactory(tournament=tournament)  # noqa: F841
         url = reverse("api-chat-list")
         data = {
             "sender": self.user.email,
