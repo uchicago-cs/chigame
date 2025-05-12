@@ -1,5 +1,7 @@
 # from django.shortcuts import render
-from django.shortcuts import get_object_or_404
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.shortcuts import get_object_or_404, redirect
+from django.views import View
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, status
 from rest_framework.pagination import PageNumberPagination
@@ -149,6 +151,26 @@ class UserGroupsView(generics.ListAPIView):
         user_id = get_user(lookup_value).id
         groups = Group.objects.filter(members__pk=user_id)
         return groups
+
+
+class GroupJoinView(LoginRequiredMixin, View):
+    def post(self, request, group_id):
+        group = get_object_or_404(Group, id=group_id)
+        user = request.user
+
+        if user not in group.members.all():
+            group.members.add(user)
+        return redirect("api-group-detail", pk=group_id)
+
+
+class GroupLeaveView(LoginRequiredMixin, View):
+    def post(self, request, group_id):
+        group = get_object_or_404(Group, id=group_id)
+        user = request.user
+
+        if user in group.members.all():
+            group.members.remove(user)
+        return redirect("api-group-detail", pk=group_id)
 
 
 class MessageFeedView(APIView):
