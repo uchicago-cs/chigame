@@ -44,7 +44,7 @@ let drawOfferedBy = null;
 // ----------------------------------------------------------------------------
 
 // ---INIT FUNCTIONS-----------------------------------------------------------
-function preload() {}
+function preload() { }
 
 function create() {
   // Store reference to the scene
@@ -159,7 +159,7 @@ function create() {
   });
 }
 
-function update() {}
+function update() { }
 // ----------------------------------------------------------------------------
 
 // Draw the game board
@@ -321,6 +321,8 @@ function movePiece(piece, moveX, moveY) {
   piece.y = moveY;
   piece.sprite.x = MARGIN + piece.x * TILE_SIZE + TILE_SIZE / 2;
   piece.sprite.y = MARGIN + piece.y * TILE_SIZE + TILE_SIZE / 2;
+
+  console.log("Current board state:", getBoardState());
 }
 
 // Check if the game is over due to all pieces of one color being captured
@@ -380,5 +382,44 @@ function endTurn() {
     gameOverPrompts.classList.remove('show');
     drawBtn.textContent = 'Offer Draw';
     declineDrawBtn.style.display = 'none';
+}
+
+// Retrieves a 2D array representation of the board state where 0 are unoccupied
+// positions, 1 are red pieces, 2 are black pieces
+function getBoardState() {
+  const board = [];
+  for (let row = 0; row < BOARD_SIZE; row++) {
+    const newRow = [];
+    for (let col = 0; col < BOARD_SIZE; col++) {
+      newRow.push(0);
+    }
+    board.push(newRow);
   }
+
+  for (const piece of pieces) {
+    const col = piece.x;
+    const row = piece.y;
+
+    if (row >= 0 && row < BOARD_SIZE && col >= 0 && col < BOARD_SIZE) {
+      if (piece.color == COLORS.red) {
+        board[row][col] = 1; // Red piece
+      } else {
+        board[row][col] = 2; // Black piece
+      }
+    }
+  }
+
+  return board;
+}
+
+
+function sendBoardToServer(boardState) {
+  fetch('/api/board-state/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': getCSRFToken(),
+    },
+    body: JSON.stringify({ board: boardState }),
+  });
 }
