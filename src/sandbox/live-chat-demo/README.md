@@ -14,12 +14,12 @@ If you'd like to better understand how the `/chat` app works, this is a good pla
 
 `index` - The main page for the chat.
 
-## How to Demo
+## How to Run/Demo
 
-1. `python manage.py runserver`
+1. `python manage.py runserver` - Run the development server
 
-2. Open `http://localhost:8000/`
+2. Open `http://localhost:8000/` - Open the main page
 
-3. Open multiple tabs
+3. Open multiple tabs to test the chat
 
-4. Send messages from one tab and see them in the other tabs.
+4. Send a message to the chat from one tab and see it in the other tabs (or vice versa)
