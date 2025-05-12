@@ -108,9 +108,6 @@ class FriendInvitation(models.Model):
     objects = FriendInvitationManager()
     is_deleted = models.BooleanField(default=False)
 
-    class Meta:
-        unique_together = ("sender", "receiver")
-
     def accept_invitation(self):
         """
         Accept a friend invitation.
