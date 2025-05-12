@@ -125,8 +125,8 @@ class MessageView(generics.CreateAPIView):
         if is_spam(content):
             raise ValidationError("Your message appears to be spam.")
 
-        # serializer.save()
-        serializer.save(sender=self.request.user)
+        serializer.save()
+        # serializer.save(sender=self.request.user)
 
 
 # Need Livechat in order to use this endpoint
