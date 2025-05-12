@@ -1,5 +1,8 @@
 {% extends "base.html" %}
 
+{% block js %}
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2/dist/umd/popper.min.js"></script>
+{% endblock js %}
 {% block title %}
   {{ game.name }} Details
 {% endblock title %}
@@ -19,6 +22,8 @@
         players
       </h4>
       <h4>Complexity: {{ game.complexity }}/5</h4>
+      <h4>Average Rating: {{ avg_rating|floatformat:2|default:"N/A" }}</h4>
+      <h4>Number of Reviews: {{ popularity|default:0 }}</h4>
       {% for category in game.category.all %}
         <a href="#"><span class="badge rounded-pill text-bg-primary">{{ category }}</span></a>
       {% endfor %}
@@ -28,13 +33,34 @@
       <div class="btn-group btn-group-lg mt-3">
         <a href="#" class="btn btn-outline-primary">Join a Match</a>
         <a href="#" class="btn btn-outline-primary">Create a Match</a>
-        {% if user.is_authenticated and favorites_list is not none %}
+        {% if user.is_authenticated %}
           {% if game in favorites_list.games.all %}
             <a href="{% url 'remove-from-favorites' pk=game.pk %}"
                class="btn btn-outline-warning">Remove from Favorites</a>
           {% else %}
             <a href="{% url 'add-to-favorites' pk=game.pk %}"
                class="btn btn-outline-success">Add to Favorites</a>
+          {% endif %}
+          {% if game_lists %}
+            <div class="btn-group ms-2">
+              <button class="btn btn-outline-primary dropdown-toggle"
+                      type="button"
+                      data-bs-toggle="dropdown"
+                      aria-expanded="false">Other Lists</button>
+              <ul class="dropdown-menu">
+                {% for glist in game_lists %}
+                  <li>
+                    {% if game in glist.games.all %}
+                      <a class="dropdown-item"
+                         href="{% url 'remove-from-gamelist' game.pk glist.pk %}">Remove from {{ glist.name }}</a>
+                    {% else %}
+                      <a class="dropdown-item"
+                         href="{% url 'add-to-gamelist' game.pk glist.pk %}">Add to {{ glist.name }}</a>
+                    {% endif %}
+                  </li>
+                {% endfor %}
+              </ul>
+            </div>
           {% endif %}
         {% endif %}
       </div>
@@ -99,6 +125,22 @@
             {{ form.as_p }}
             <button type="submit" class="btn btn-primary">Submit Review</button>
           </form>
+          {% if game.pk == 9999 %}
+            {# for interactive fiction games #}
+            <hr />
+            <h3>Upload a File</h3>
+            <form method="post"
+                  action="{% url 'upload-file' pk=game.pk %}"
+                  enctype="multipart/form-data">
+              {% csrf_token %}
+              <input type="file" id="myFile" name="uploaded_file" />
+              <input type="submit" class="btn btn-primary" value="Upload" />
+            </form>
+            <h3>Uploaded Story</h3>
+            <a href="{{ uploaded_file_url }}"
+               target="_blank"
+               class="btn btn-success">Play Uploaded Game</a>
+          {% endif %}
         </div>
         <a href="{% url 'game-review-list' pk=game.pk %}">See All Reviews for {{ game.name }}</a>
       </div>

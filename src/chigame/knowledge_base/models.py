@@ -52,7 +52,7 @@ class Guide(models.Model):
 # ReviewFeedback objects)
 class ReviewFeedback(models.Model):
     reviewer = models.ForeignKey(
-        User, on_delete=models.CASCADE
+        User, on_delete=models.CASCADE, limit_choices_to={"moderator": True}
     )  # assume we delete this feedback if the reviewer deletes account
     comment = models.TextField(blank=True, null=True)
     guide_id = models.ForeignKey(Guide, on_delete=models.CASCADE)
