@@ -1,0 +1,32 @@
+{% extends "knowledge-base/base.html" %}
+
+{% block page-content %}
+  <h1>Review Guide: {{ guide.game_id.name }}</h1>
+  <p>
+    <strong>Author:</strong> {{ guide.author.username|default:guide.author.email }}
+  </p>
+  <p>
+    <strong>Date Uploaded:</strong> {{ guide.recent_upload|date:"Y-m-d H:i" }}
+  </p>
+  <hr />
+  <div class="mb-4">
+    <h4>Guide Content</h4>
+    <div class="border p-3 bg-light min-h-200">{{ html_content|safe }}</div>
+  </div>
+  <form method="post" class="mb-3">
+    {% csrf_token %}
+    <div class="mb-3">
+      <label for="feedback" class="form-label">Feedback to Contributor</label>
+      <textarea class="form-control" id="feedback" name="feedback" rows="3">{{ feedback }}</textarea>
+    </div>
+    <div class="d-flex gap-2">
+      <button type="submit" name="action" value="accept" class="btn btn-success">Accept</button>
+      <button type="submit" name="action" value="reject" class="btn btn-danger">Reject</button>
+      <button type="submit"
+              name="action"
+              value="request_changes"
+              class="btn btn-warning">Request Changes</button>
+    </div>
+  </form>
+  {% if message %}<div class="alert alert-info mt-3">{{ message }}</div>{% endif %}
+{% endblock page-content %}

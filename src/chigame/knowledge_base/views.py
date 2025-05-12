@@ -1,4 +1,5 @@
 # Keep model imports for now, as it will be required for WIP features
+import markdown
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
@@ -6,6 +7,7 @@ from django.db.models import CharField, F, Q, Value
 from django.db.models.functions import Concat
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.safestring import mark_safe
 from django.views.generic import DetailView, ListView
 
 from chigame.games.models import Category, Game
@@ -187,3 +189,45 @@ class ModeratorGuidesPending(LoginRequiredMixin, UserPassesTestMixin, ListView):
     # this makes sure only moderators can access this page
     def test_func(self):
         return self.request.user.moderator
+
+
+class ReviewPendingGuideView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
+    model = Guide
+    template_name = "knowledge-base/moderator_review_guide.html"
+    context_object_name = "guide"
+
+    def test_func(self):
+        return self.request.user.moderator
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        guide = self.get_object()
+        context["html_content"] = mark_safe(markdown.markdown(guide.content, extensions=["fenced_code", "tables"]))
+        context["feedback"] = ""
+        context["message"] = ""
+        return context
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        feedback = request.POST.get("feedback", "")
+        action = request.POST.get("action")
+        message = ""
+        if action in ["accept", "reject", "request_changes"]:
+            status_map = {
+                "accept": Guide.GuideStatus.ACCEPTED,
+                "reject": Guide.GuideStatus.REJECTED,
+                "request_changes": Guide.GuideStatus.REQUESTED_CHANGE,
+            }
+            self.object.status = status_map[action]
+            self.object.save()
+            ReviewFeedback.objects.create(
+                reviewer=request.user,
+                guide_id=self.object,
+                status=status_map[action],
+                comment=feedback,
+            )
+            message = f"Guide has been {action.replace('_', ' ')}."
+        context = self.get_context_data(object=self.object)
+        context["feedback"] = feedback
+        context["message"] = message
+        return self.render_to_response(context)
