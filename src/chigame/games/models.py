@@ -84,6 +84,18 @@ class Game(models.Model):
         return self.name
 
 
+class InteractiveFictionGame(Game):
+    """
+    A model for Interactive Fiction games, extending the base Game model.
+    Includes content warnings and reuses the same image system.
+    """
+
+    content_warning = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return f"Interactive Fiction: {self.name}"
+
+
 class Person(models.Model):
     """
     A person associated with a game, such as a designer or artist.
