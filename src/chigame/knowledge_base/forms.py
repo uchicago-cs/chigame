@@ -6,7 +6,7 @@ from .models import Game
 
 class MarkdownUploadForm(forms.Form):
     game = forms.ModelChoiceField(queryset=Game.objects.all())
-    file = forms.FileField()
+    file = forms.FileField(label="Markdown File:")
 
     def __init__(self, *args, fixed_game=None, **kwargs):
         super().__init__(*args, **kwargs)
