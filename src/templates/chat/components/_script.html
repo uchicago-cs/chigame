@@ -32,6 +32,13 @@
     );
   };
 
+  /**
+   * This function is called when a message is received from the server.
+   * It creates a new div element with the message and appends it to the chat container.
+   * It also scrolls to the bottom of the chat container.
+   *
+   * @param {MessageEvent} e - The message event.
+   */
   chatSocket.onmessage = function(e) {
     const data = JSON.parse(e.data);
     var div = document.createElement("div");
