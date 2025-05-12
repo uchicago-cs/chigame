@@ -1,6 +1,6 @@
 import random
-import factory
 
+import factory
 from django.utils import timezone
 from factory import Faker, Iterator, LazyAttribute, LazyFunction, Sequence, SubFactory, post_generation
 from factory.django import DjangoModelFactory
