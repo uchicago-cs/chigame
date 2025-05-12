@@ -200,6 +200,17 @@ def join_match(request, pk):
         lobby_code = request.POST.get("lobby_code", "").strip().upper()
         try:
             lobby = Lobby.objects.get(join_code=lobby_code)
+
+            # Check if the user was invited
+            if request.user not in lobby.members.all():
+                messages.error(request, "You were not invited to this match.")
+                return render(request, "matches/match_join.html", {"game": game})
+
+            # Check if the match is already full
+            if lobby.match_status == 2:
+                messages.error(request, "This match is already full.")
+                return render(request, "matches/match_join.html", {"game": game})
+
             lobby.members.add(request.user)
             if lobby.members.all().count() == lobby.max_players:
                 lobby.match_status = 2
