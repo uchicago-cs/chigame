@@ -35,9 +35,10 @@ class UserAchievement(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     achievement = models.ForeignKey(Achievement, on_delete=models.CASCADE)
     pinned = models.BooleanField(default=False)
-    date_earned = models.DateTimeField()
+    date_earned = models.DateTimeField(null=True, blank=True)
+    last_updated = models.DateTimeField(auto_now=True)
     progress = models.FloatField(null=True, blank=True, default=1)
-    # progress can be updated as user makes progress on an achievement with a threshold
+    # progress can be updated if achievement has a threshold
 
     class Meta:
         unique_together = ("user", "achievement")
