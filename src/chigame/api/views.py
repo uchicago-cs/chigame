@@ -1,4 +1,3 @@
-# from django.shortcuts import render
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
@@ -35,6 +34,14 @@ def get_user(lookup_value):
 
 
 class GameListView(generics.ListCreateAPIView):
+    """
+    API endpoint that returns a paginated list of games.
+
+    Pagination:
+    - Page size: 10
+    - Uses DRF's PageNumberPagination
+    """
+
     queryset = Game.objects.all()
     serializer_class = GameSerializer
     filter_backends = (DjangoFilterBackend,)  # Enable DjangoFilterBackend
@@ -188,3 +195,21 @@ class ReviewCreateView(generics.CreateAPIView):
         game_id = self.kwargs["pk"]
         user = get_object_or_404(User, pk=user_id)
         serializer.save(user=user, game_id=game_id)
+
+
+class ReviewDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
+
+    def perform_destroy(self, instance):
+        if instance.user != self.request.user:
+            raise PermissionDenied("You do not have permission to delete this review.")
+        instance.delete()
+
+    def perform_update(self, serializer):
+        user_id = self.request.data.get("user")
+        user = get_object_or_404(User, pk=user_id)
+
+        if user != self.request.user:
+            raise PermissionDenied("You do not have permission to edit this review.")
+        serializer.save()
