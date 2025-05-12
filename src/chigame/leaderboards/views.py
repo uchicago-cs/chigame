@@ -13,7 +13,7 @@ def leaderboard_view(request, game_id):
 
     entries = (
         LeaderboardEntry.objects.filter(leaderboard=leaderboard)
-        .select_related("user", "user__region")
+        # .select_related("user", "user__region")
         .order_by("rank")
     )
 
