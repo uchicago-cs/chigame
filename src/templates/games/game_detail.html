@@ -95,6 +95,12 @@
           </p>
         {% endif %}
         <p>{{ game.description|linebreaksbr }}</p>
+        {% if uploaded_file_url %}
+          <h3>Play Twine Game</h3>
+          <a href="{{ uploaded_file_url }}"
+             target="_blank"
+             class="btn btn-success">Open Game in New Tab</a>
+        {% endif %}
         <h3 id="player-description">Players</h3>
         <p>
           {% if game.min_players == game.max_players %}

@@ -1,7 +1,7 @@
 from django.urls import path
 
 from . import views
-from .views import LobbyCreateView, UploadFileView
+from .views import InteractiveFictionView, LobbyCreateView, UploadFileView
 
 urlpatterns = [
     # lobbies
@@ -25,18 +25,16 @@ urlpatterns = [
     path("<int:pk>/gamelists/<int:list_pk>/add/", views.add_to_gamelist, name="add-to-gamelist"),
     path("<int:pk>/gamelists/<int:list_pk>/remove/", views.remove_from_gamelist, name="remove-from-gamelist"),
     # games
-    path("interactive-fiction/", views.InteractiveFictionView.as_view(), name="interactive-fiction"),
-    path("games/<int:pk>/upload/", UploadFileView.as_view(), name="upload-file"),
     path("", views.GameListView.as_view(), name="game-list"),
     path("create/", views.GameCreateView.as_view(), name="game-create"),
     path("<int:pk>/edit", views.GameEditView.as_view(), name="game-edit"),
-    path("<int:pk>/", views.GameDetailView.as_view(), name="game-detail"),
     path("bgg_search_by_name/", views.bgg_search_by_name, name="bgg_search_by_name"),
     path("search/", views.search_results, name="game-search-results"),
     path("<int:pk>/reviews/", views.ReviewListView.as_view(), name="game-review-list"),
     # interactive fiction
     path("interactive-fiction/", views.InteractiveFictionView.as_view(), name="interactive-fiction"),
-    path("games/<int:pk>/upload/", UploadFileView.as_view(), name="upload-file"),
+    path("<int:pk>/upload/", UploadFileView.as_view(), name="upload-file"),
+    path("if-game/<int:pk>/", InteractiveFictionView.as_view(), name="interactive-fiction-detail"),
     # tournaments
     path("tournaments/", views.TournamentListView.as_view(), name="tournament-list"),
     path("tournaments/<int:pk>/", views.TournamentDetailView.as_view(), name="tournament-detail"),
@@ -46,4 +44,5 @@ urlpatterns = [
     path("tournaments/archived/", views.TournamentArchivedListView.as_view(), name="tournament-archived"),
     # placeholder game
     path("lobby/<int:pk>/coinflip", views.coin_flip_game, name="placeholder-game"),
+    path("<int:pk>/", views.GameDetailView.as_view(), name="game-detail"),
 ]
