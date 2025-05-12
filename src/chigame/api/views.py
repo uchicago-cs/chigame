@@ -125,8 +125,7 @@ class MessageView(generics.CreateAPIView):
         if is_spam(content):
             raise ValidationError("Your message appears to be spam.")
 
-        # serializer.save()
-        serializer.save(sender=self.request.user)
+        serializer.save()
 
 
 # Need Livechat in order to use this endpoint
@@ -201,12 +200,10 @@ class ReviewCreateView(generics.CreateAPIView):
         if is_spam(review_text):
             raise ValidationError("Your review appears to be spam. Please revise your content.")
 
-        # user_id = self.request.data.get("user")
+        user_id = self.request.data.get("user")
         game_id = self.kwargs["pk"]
-        # user = get_object_or_404(User, pk=user_id)
-        # serializer.save(user=user, game_id=game_id)
-
-        serializer.save(user=self.request.user, game_id=game_id)
+        user = get_object_or_404(User, pk=user_id)
+        serializer.save(user=user, game_id=game_id)
 
 
 class ReviewDetailView(generics.RetrieveUpdateDestroyAPIView):
