@@ -408,3 +408,13 @@ function sendBoardToServer(boardState) {
     body: JSON.stringify({ board: boardState }),
   });
 }
+
+// Event Listener for Settings Menu
+document.addEventListener('DOMContentLoaded', () => {
+  const settingsButton = document.getElementById('settings-button');
+  const settingsMenu = document.getElementById('settings-menu');
+
+  settingsButton.addEventListener('click', () => {
+    settingsMenu.classList.toggle('active');
+  });
+});
