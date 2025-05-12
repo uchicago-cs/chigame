@@ -613,6 +613,7 @@ def act_on_inbox_notification(request, pk, action):
             notification.mark_as_deleted()
         elif action == "move_to_inbox":
             notification.mark_as_unread()
+            messages.success(request, "Notification restored to inbox.")
     except Notification.DoesNotExist:
         messages.error(request, "Something went wrong. This notification does not exist")
     return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
