@@ -210,7 +210,6 @@ class GameTests(APITestCase):
         self.assertLessEqual(len(response.data["results"]), 10)
 
 
-
 class ChatTests(APITestCase):
     def test_create_message(self):
         self.user1 = UserFactory()

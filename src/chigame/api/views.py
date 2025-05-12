@@ -41,6 +41,7 @@ class GameListView(generics.ListCreateAPIView):
     - Page size: 10
     - Uses DRF's PageNumberPagination
     """
+
     queryset = Game.objects.all()
     serializer_class = GameSerializer
     filter_backends = (DjangoFilterBackend,)  # Enable DjangoFilterBackend
