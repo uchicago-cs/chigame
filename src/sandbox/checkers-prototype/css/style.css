@@ -36,6 +36,7 @@ canvas {
 .nav-btns {
     display: flex;
     justify-content: flex-end;
+    align-items: center;
     gap: 1.5rem;
 }
 
@@ -66,4 +67,40 @@ canvas {
 .btn:hover {
     box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
     transform: translateY(2px);
+}
+
+.btn:hover {
+    opacity: 0.8;
+}
+
+.game-controls {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    margin: 0;
+}
+
+.game-over-message {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: "Outfit", sans-serif;
+    font-size: 24px;
+    color: rgb(138, 90, 68);
+    text-align: center;
+    display: none;
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+}
+
+.game-over-message.show {
+    display: block;
+}
+
+#declineDrawBtn {
+    display: none;
 }
