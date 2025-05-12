@@ -1,4 +1,5 @@
 from django.shortcuts import get_object_or_404, render
+
 from chigame.games.models import Game
 from chigame.leaderboards.models import LeaderboardEntry
 
