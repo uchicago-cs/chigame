@@ -34,7 +34,7 @@
       <p>No guides found.</p>
     {% endfor %}
   </div>
-  <a href="#">Upload a Guide</a>
+  <a href="{% url 'knowledge-base-guide-upload' %}">Upload a Guide</a>
   <!-- should replace this link with the "upload guide" link -->
   <br />
   {% if has_guides %}
