@@ -63,6 +63,13 @@ class GameDetailView(LoginRequiredMixin, FormMixin, DetailView):
     context_object_name = "game"
     form_class = ReviewForm
 
+    # for twine files, redirect to different IF view
+    def dispatch(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if self.object.twine_file.name.endswith(".html"):
+            return redirect("interactive-fiction-detail", pk=self.object.pk)
+        return super().dispatch(request, *args, **kwargs)
+
     def get_success_url(self):
         return reverse("game-detail", kwargs={"pk": self.object.pk})
 
@@ -398,19 +405,13 @@ class InteractiveFictionView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # creates a fake game object
-        fake_game = Game(
-            pk=9999,
-            name="Interactive Fiction Adventure",
-            description="Embark on an interactive text-based journey!",
-        )
-        context["game"] = fake_game
+        game = get_object_or_404(Game, pk=kwargs["pk"])
 
-        # check if there is an uploaded IF file
-        uploaded_file = self.request.session.get("uploaded_interactive_file")
-        if uploaded_file:
-            file_url = f"/media/{uploaded_file}"
-            context["uploaded_file_url"] = file_url
+        context["game"] = game
+
+        if game.twine_file:
+            context["uploaded_file_url"] = game.twine_file.url  # use actual uploaded Twine file
+
         return context
 
 
@@ -429,21 +430,26 @@ class IFGameCreateView(UserPassesTestMixin, CreateView):
 
 
 class UploadFileView(View):
-    def post(self, request, pk):
+    def post(self, request, pk=None):
         uploaded_file = request.FILES.get("uploaded_file")
 
         if uploaded_file:
-            upload_path = os.path.join(settings.MEDIA_ROOT, "interactive_uploads")
-            os.makedirs(upload_path, exist_ok=True)
-
-            fs = FileSystemStorage(location=upload_path)
+            # Save the file to twine_games/
+            fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, "twine_games"))
             safe_filename = uploaded_file.name.replace(" ", "_")
-            fs.save(safe_filename, uploaded_file)
+            filename = fs.save(safe_filename, uploaded_file)
 
-            request.session["uploaded_interactive_file"] = f"interactive_uploads/{safe_filename}"
+            # Create a basic Game instance
+            game = Game.objects.create(
+                name=uploaded_file.name.replace(".html", ""),
+                description="Uploaded Twine game",
+                min_players=1,
+                max_players=1,
+                twine_file=f"twine_games/{filename}",
+            )
 
-            messages.success(request, "File uploaded successfully!")
-            return redirect("interactive-fiction")
+            messages.success(request, f"Game '{game.name}' uploaded successfully!")
+            return redirect("game-detail", pk=game.pk)
 
         messages.error(request, "No file selected.")
         return redirect("interactive-fiction")

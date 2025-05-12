@@ -31,6 +31,9 @@ class Game(models.Model):
     min_players = models.PositiveIntegerField()
     max_players = models.PositiveIntegerField()
 
+    # interactive fiction  - twine file
+    twine_file = models.FileField(upload_to="twine_games/", null=True, blank=True)
+
     suggested_age = models.PositiveSmallIntegerField(
         null=True, blank=True
     )  # Minimum recommendable age. For example, 8+ would be stored as 8.
