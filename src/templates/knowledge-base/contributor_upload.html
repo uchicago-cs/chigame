@@ -2,6 +2,10 @@
 
 {% load static %}
 
+{% block javascript %}
+  {{ block.super }}
+  <script src="{% static 'js/knowledge-base/markdown-upload.js' %}"></script>
+{% endblock javascript %}
 {% block css %}
   {{ block.super }}
   <link href="{% static 'css/knowledge-base/guide-upload.css' %}"
@@ -24,6 +28,7 @@
         <label class="file-upload" for="id_file">
           <p class="psuedo-icon">↑</p>
           Click upload a file, or drag and drop
+          <p class="current-file">No file yet.</p>
         </label>
         <button type="submit">
           {% if guide %}

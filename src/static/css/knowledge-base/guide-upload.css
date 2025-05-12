@@ -55,6 +55,11 @@
   padding-bottom: 36px;
 }
 
+.form-container .file-upload .current-file {
+  text-align: center;
+  font-weight: 400;
+}
+
 .form-container .psuedo-icon {
   font-size: 28px;
   text-align: center;
