@@ -3,7 +3,7 @@ import random
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
-from django.db import models
+from django.db import models, transaction
 from django.utils import timezone
 
 from chigame.users.models import Group, Notification, User
@@ -705,3 +705,105 @@ class GameList(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.created_by})"
+
+
+class GameQueue(models.Model):
+    """
+    A queue of games to be played by the user.
+    """
+
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="game_queue")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username}'s Queue"
+
+    def add_game(self, game):
+        """
+        Add a game to the end of this user's queue.
+        """
+        max_pos = self.entries.aggregate(models.Max("position"))["position__max"] or 0
+        return GameQueueEntry.objects.create(queue=self, game=game, position=max_pos + 1)
+
+    def remove_game(self, game):
+        """
+        Remove a game from the queue and re-order the remaining entries.
+        """
+        entry = self.entries.filter(game=game).first()
+        if entry:
+            entry.delete()
+            for i, e in enumerate(self.entries.order_by("position"), start=1):
+                e.position = i
+                e.save()
+
+    def get_next_game(self):
+        """
+        Return the next game in queue (or None if the queue is empty).
+        """
+        entry = self.entries.order_by("position").first()
+        return entry.game if entry else None
+
+    def _reindex_range(self, start, end, delta):
+        """
+        Helper function to shift all entries within [start, end] by delta.
+        """
+        self.entries.filter(position__gte=start, position__lte=end).update(position=models.F("position") + delta)
+
+    def move_game(self, game, new_position):
+        """
+        Move the given game to new_position
+        """
+        entry = self.entries.get(game=game)
+        old_position = entry.position
+        max_pos = self.entries.aggregate(max=models.Max("position"))["max"] or 0
+
+        new_position = max(1, min(new_position, max_pos))
+
+        if new_position == old_position:
+            return entry
+
+        # Using atomic transactions becuase if one reindexing fails we dont want the others to succeed
+        with transaction.atomic():
+            if new_position < old_position:
+                # shift everything between new_position and old_position-1 down by 1
+                self._reindex_range(new_position, old_position - 1, +1)
+            else:
+                # shift everything between old_position+1 and new_position up by 1
+                self._reindex_range(old_position + 1, new_position, -1)
+
+            entry.position = new_position
+            entry.save()
+
+        return entry
+
+    def duplicate_game(self, game):
+        """
+        Insert a duplicate of `game` immediately after the original.
+        """
+        entry = self.entries.get(game=game)
+        insert_at = entry.position + 1
+
+        with transaction.atomic():
+            # bump everyone  back one slot
+            self._reindex_range(insert_at, self.entries.aggregate(max=models.Max("position"))["max"], +1)
+
+            # create duplicate entry
+            dup = GameQueueEntry.objects.create(queue=self, game=game, position=insert_at)
+
+        return dup
+
+
+class GameQueueEntry(models.Model):
+    """
+    Represents a single entry in a GameQueue, keeping track of order.
+    """
+
+    queue = models.ForeignKey(GameQueue, on_delete=models.CASCADE, related_name="entries")
+    game = models.ForeignKey(Game, on_delete=models.CASCADE)
+    position = models.PositiveIntegerField()
+
+    class Meta:
+        ordering = ["position"]
+
+    def __str__(self):
+        return f"{self.game.name} (pos {self.position})"
