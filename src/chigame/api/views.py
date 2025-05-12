@@ -17,6 +17,7 @@ from chigame.api.serializers import (
     MessageFeedSerializer,
     MessageSerializer,
     ReviewSerializer,
+    UserAchievementSerializer,
     UserSerializer,
 )
 from chigame.games.models import Game, Lobby, Message, Review
@@ -213,3 +214,12 @@ class ReviewDetailView(generics.RetrieveUpdateDestroyAPIView):
         if user != self.request.user:
             raise PermissionDenied("You do not have permission to edit this review.")
         serializer.save()
+
+
+class UserAchievementCreateView(generics.CreateAPIView):
+    serializer_class = UserAchievementSerializer
+
+    def perform_create(self, serializer):
+        game_id = self.kwargs["game_id"]
+        achievement_id = self.kwargs["pk"]
+        serializer.save(game_id=game_id, achievement_id=achievement_id)
