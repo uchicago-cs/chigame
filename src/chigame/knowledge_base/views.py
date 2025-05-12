@@ -4,15 +4,17 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
 from django.db.models import CharField, F, Q, Value
 from django.db.models.functions import Concat
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.views.generic import ListView
+from django.views.generic import DetailView, ListView
 
 from chigame.games.models import Category, Game
 
 from .forms import MarkdownUploadForm
-from .models import Guide
+from .models import Guide, ReviewFeedback
 
 
+# Viewers
 class DefaultView(ListView):
     model = Guide
     template_name = "knowledge-base/landing.html"
@@ -71,35 +73,7 @@ def GuideDetailView(request, pk):
     return render(request, "knowledge-base/guide_detail.html", context)
 
 
-class ModeratorGuidesPending(LoginRequiredMixin, UserPassesTestMixin, ListView):
-    model = Guide
-    template_name = "knowledge-base/moderator_pending_guides.html"
-    context_object_name = "pendingGuides"
-
-    def get_queryset(self):
-        queryset = Guide.objects.filter(status=0)
-
-        # for sorting
-        sort = self.request.GET.get("sort")
-        if sort == "old":
-            queryset = queryset.order_by("recent_upload")
-        else:  # default: newest first
-            queryset = queryset.order_by("-recent_upload")
-
-        return queryset
-
-    # called when UserPassesTestMixin
-    # this makes sure only moderators can access this page
-    def test_func(self):
-        return self.request.user.moderator
-
-
-@login_required
-def ContributorView(request):
-    context = {}
-    return render(request, "knowledge-base/contributor.html", context)
-
-
+# Contributors
 @login_required
 def ContributorMdUpload(request, pk=None):
     if pk:
@@ -147,3 +121,69 @@ def ContributorMdUpload(request, pk=None):
 
     context = {"form": form, "guide": pk}
     return render(request, "knowledge-base/contributor_upload.html", context)
+
+
+class ContributorManageGuide(LoginRequiredMixin, ListView):
+    model = Guide
+    template_name = "knowledge-base/contributor_manage_guide.html"
+    context_object_name = "guides"
+
+    def get_queryset(self):
+        guides = self.request.user.authored_guides.all()
+
+        for guide in guides:
+            guide.latest_feedback = None
+            if guide.status != 0:
+                latest_feedback = guide.feedbacks.all().order_by("-timestamp").first()
+                guide.latest_feedback = latest_feedback
+
+        return guides
+
+
+@login_required
+def DownloadGuide(request, pk):
+    guide = get_object_or_404(Guide, pk=pk)
+    if guide.author != request.user:
+        raise PermissionDenied
+    content = guide.content  # Assuming this is already Markdown or close to it
+
+    filename = f"guide_{guide.pk}.md"
+    response = HttpResponse(content, content_type="text/markdown")
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+    return response
+
+
+class FeedbackDetail(LoginRequiredMixin, DetailView):
+    model = ReviewFeedback
+    template_name = "knowledge-base/feedback_detail.html"
+    context_object_name = "feedback"
+
+    def get_object(self, queryset=None):
+        feedback = super().get_object(queryset)
+        if feedback.guide_id.author != self.request.user:
+            raise PermissionDenied
+        return feedback
+
+
+# Moderators
+class ModeratorGuidesPending(LoginRequiredMixin, UserPassesTestMixin, ListView):
+    model = Guide
+    template_name = "knowledge-base/moderator_pending_guides.html"
+    context_object_name = "pendingGuides"
+
+    def get_queryset(self):
+        queryset = Guide.objects.filter(status=0)
+
+        # for sorting
+        sort = self.request.GET.get("sort")
+        if sort == "old":
+            queryset = queryset.order_by("recent_upload")
+        else:  # default: newest first
+            queryset = queryset.order_by("-recent_upload")
+
+        return queryset
+
+    # called when UserPassesTestMixin
+    # this makes sure only moderators can access this page
+    def test_func(self):
+        return self.request.user.moderator

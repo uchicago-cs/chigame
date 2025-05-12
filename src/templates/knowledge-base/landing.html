@@ -37,7 +37,9 @@
   <a href="{% url 'knowledge-base-guide-upload' %}">Upload a Guide</a>
   <!-- should replace this link with the "upload guide" link -->
   <br />
-  {% if has_guides %}<a href="#">Manage My Guides</a>{% endif %}
+  {% if has_guides %}
+    <a href="{% url 'contributor-manage-guide' %}">Manage My Guides</a>
+  {% endif %}
   <!-- should replace this link with the "manage my guide" link -->
   {% if not user.is_authenticated %}
     <p>Note: If you have contributed a guide and wish to check update, please log in first.</p>
