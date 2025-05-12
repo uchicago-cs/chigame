@@ -37,6 +37,9 @@ let currentPlayer = COLORS.red; // red starts first
 const RADIUS_SCALE_FACTOR = 2.5;
 // selected piece highlight stroke width
 const HIGHLIGHT_SIZE = 3;
+let gameOver = false;
+let drawOffered = false;
+let drawOfferedBy = null;
 
 // ----------------------------------------------------------------------------
 
@@ -46,6 +49,65 @@ function preload() {}
 function create() {
   drawBoard(this);
   populatePieces(this);
+
+  // Set up forfeit and draw buttons
+  const forfeitBtn = document.getElementById('forfeitBtn');
+  const drawBtn = document.getElementById('drawBtn');
+  const declineDrawBtn = document.getElementById('declineDrawBtn');
+  const gameOverMessage = document.getElementById('gameOverMessage');
+
+  forfeitBtn.addEventListener('click', () => {
+    if (!gameOver && currentPlayer === COLORS.red) {
+      gameOver = true;
+      gameOverMessage.textContent = 'Red player has forfeited! Black wins!';
+      gameOverMessage.classList.add('show');
+    } else if (!gameOver && currentPlayer === COLORS.black) {
+      gameOver = true;
+      gameOverMessage.textContent = 'Black player has forfeited! Red wins!';
+      gameOverMessage.classList.add('show');
+    }
+  });
+
+  function resetDrawOffer() {
+    drawOffered = false;
+    drawOfferedBy = null;
+    gameOverMessage.textContent = '';
+    gameOverMessage.classList.remove('show');
+    drawBtn.textContent = 'Offer Draw';
+    declineDrawBtn.style.display = 'none';
+  }
+
+  drawBtn.addEventListener('click', () => {
+    if (gameOver) return;
+
+    if (!drawOffered) {
+      drawOffered = true;
+      drawOfferedBy = currentPlayer;
+      if (currentPlayer === COLORS.red) {
+        gameOverMessage.textContent = 'Red player has offered a draw. Black player, please accept or decline.';
+      } else {
+        gameOverMessage.textContent = 'Black player has offered a draw. Red player, please accept or decline.';
+      }
+      gameOverMessage.classList.add('show');
+      drawBtn.textContent = 'Accept Draw';
+      declineDrawBtn.style.display = 'block';
+
+    } else {
+      // Accept Draw (second click)
+      gameOver = true;
+      gameOverMessage.textContent = 'Draw accepted! Game over!';
+      gameOverMessage.classList.add('show');
+      drawBtn.style.display = 'none';
+      declineDrawBtn.style.display = 'none';
+      forfeitBtn.style.display = 'none';
+    }
+  });
+
+  declineDrawBtn.addEventListener('click', () => {
+    if (drawOffered) {
+      resetDrawOffer();
+    }
+  });
 }
 
 function update() {}
@@ -76,8 +138,8 @@ function drawBoard(scene) {
 
       // listens for clicks on tiles
       tile.on('pointerdown', () => {
-        // does nothing if no pieces were selected
-        if (!selectedPiece) return;
+        // does nothing if no pieces were selected or game is over
+        if (!selectedPiece || gameOver) return;
 
         // see if there are any pieces at the selected square
         const targetPiece = getPiece(x, y);
@@ -113,6 +175,9 @@ function createPiece(x, y, color, scene) {
   // make the piece clickable
   piece.sprite.setInteractive();
   piece.sprite.on('pointerdown', () => {
+    // don't allow piece selection if game is over
+    if (gameOver) return;
+
     // deselect and remove highlight if click a selected piece
     if (selectedPiece === piece) {
       selectedPiece.sprite.setStrokeStyle();
@@ -124,7 +189,7 @@ function createPiece(x, y, color, scene) {
       if (selectedPiece) {
         selectedPiece.sprite.setStrokeStyle();
       }
-      // highligt the current piece that is being selected and set them as 'selectedPiece'
+      // highlight the current piece that is being selected and set them as 'selectedPiece'
       selectedPiece = piece;
       piece.sprite.setStrokeStyle(HIGHLIGHT_SIZE, COLORS.white);
     }
@@ -176,14 +241,13 @@ function isValidMove(piece, moveX, moveY) {
   if (Math.abs(dx) === 2 && dy === 2 * direction) {
     // get the piece that was jumped over
     const captured = getPiece(piece.x + dx / 2, piece.y + dy / 2);
-    // make sure there exists a piece that was jumped over, and it most be an opposing piece
+    // make sure there exists a piece that was jumped over, and it must be an opposing piece
     return (
-      captured && captured.color !== piece.color // must be an opponent piece
+      captured && captured.color !== piece.color
     );
   }
 
   // return false if it's not a normal or jump move
-  // (meaning the move is not a diagonal move of 1 or 2 steps)
   return false;
 }
 
@@ -201,10 +265,8 @@ function movePiece(piece, moveX, moveY) {
   }
 
   // Move the piece
-  // update the game state
   piece.x = moveX;
   piece.y = moveY;
-  // update the display state
   piece.sprite.x = MARGIN + piece.x * TILE_SIZE + TILE_SIZE / 2;
   piece.sprite.y = MARGIN + piece.y * TILE_SIZE + TILE_SIZE / 2;
 }
@@ -221,6 +283,20 @@ function endTurn() {
     selectedPiece.sprite.setStrokeStyle();
   }
   selectedPiece = null;
+
   // switch between red and black player turn
   currentPlayer = currentPlayer === COLORS.red ? COLORS.black : COLORS.red;
+
+  // reset draw offer if it was made by the current player
+  if (drawOffered && drawOfferedBy === currentPlayer) {
+    const gameOverMessage = document.getElementById('gameOverMessage');
+    const drawBtn = document.getElementById('drawBtn');
+    const declineDrawBtn = document.getElementById('declineDrawBtn');
+    drawOffered = false;
+    drawOfferedBy = null;
+    gameOverMessage.textContent = '';
+    gameOverMessage.classList.remove('show');
+    drawBtn.textContent = 'Offer Draw';
+    declineDrawBtn.style.display = 'none';
+  }
 }
