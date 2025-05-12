@@ -11,11 +11,7 @@ def leaderboard_view(request, game_id):
     if not leaderboard:
         return render(request, "leaderboards/empty.html", {"game": game})
 
-    entries = (
-        LeaderboardEntry.objects.filter(leaderboard=leaderboard)
-        .select_related("user", "user__region")
-        .order_by("rank")
-    )
+    entries = LeaderboardEntry.objects.filter(leaderboard=leaderboard).select_related("user").order_by("rank")
 
     return render(
         request, "leaderboards/leaderboard.html", {"game": game, "leaderboard": leaderboard, "entries": entries}
