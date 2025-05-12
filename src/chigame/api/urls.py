@@ -10,7 +10,7 @@ game_patterns = [
     path("<int:pk>/reviews/", views.GameReviewListView.as_view(), name="api-game-reviews"),
     path("<int:pk>/reviews/create/", views.ReviewCreateView.as_view(), name="api-game-review-create"),
     path("<int:game_id>/reviews/<int:pk>/", views.ReviewDetailView.as_view(), name="api-game-review-detail"),
-    path("<int:pk>/achievements/create/", views.AchievementCreateView.as_view(), name="api-game-achievement-create"),
+    path("<int:pk>/achievements/", views.AchievementListView.as_view(), name="api-game-achievements"),
 ]
 
 lobby_patterns = [

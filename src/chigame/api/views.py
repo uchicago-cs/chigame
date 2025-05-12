@@ -7,6 +7,7 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from chigame.achievements.models import Achievement
 from chigame.api.filters import GameFilter
 from chigame.api.serializers import (
     AchievementSerializer,
@@ -216,9 +217,9 @@ class ReviewDetailView(generics.RetrieveUpdateDestroyAPIView):
         serializer.save()
 
 
-class AchievementCreateView(generics.CreateAPIView):
+class AchievementListView(generics.ListAPIView):
     serializer_class = AchievementSerializer
 
-    def perform_create(self, serializer):
+    def get_queryset(self):
         game_id = self.kwargs["pk"]
-        serializer.save(game_id=game_id)
+        return Achievement.objects.filter(game__id=game_id)
