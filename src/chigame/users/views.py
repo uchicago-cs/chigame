@@ -4,11 +4,13 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models import Q
-from django.http import Http404, HttpResponseNotFound
+from django.http import Http404, HttpResponse, HttpResponseNotFound
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.http import require_POST
 from django.views.generic import DetailView, RedirectView, UpdateView
 
 from chigame.games.models import Lobby, Player, Tournament
@@ -184,10 +186,14 @@ def user_profile_detail_view(request, pk):
         is_friend = target_user.friends.filter(pk=request.user.pk).exists()
         if not is_friend:
             curr_user = request.user
-            friendship_request = FriendInvitation.objects.filter(
-                Q(sender=target_user, receiver=curr_user, is_deleted=False)
-                | Q(sender=curr_user, receiver=target_user, is_deleted=False)
-            ).first()
+            friendship_request = (
+                FriendInvitation.objects.filter(
+                    Q(sender=target_user, receiver=curr_user, is_deleted=False)
+                    | Q(sender=curr_user, receiver=target_user, is_deleted=False)
+                )
+                .order_by("-timestamp")
+                .first()
+            )
 
     # provide frontend profile + friendship status
     context = {"object": profile, "is_friend": is_friend, "friendship_request": friendship_request}
@@ -671,6 +677,7 @@ def view_bookmarked_notifications(request, pk):
         return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
 
 
+
 @login_required
 def upload_profile_photo(request):
     if request.method == "POST" and request.FILES.get("photo"):
@@ -679,3 +686,17 @@ def upload_profile_photo(request):
         profile.save()
         messages.success(request, "Profile photo updated.")
     return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
+
+@csrf_protect
+@require_POST
+def move_notification(request, pk):
+    notification = get_object_or_404(Notification, pk=pk, receiver=request.user)
+    category = request.POST.get("category")
+
+    valid_categories = dict(Notification.CATEGORY_CHOICES).keys()
+    if category in valid_categories:
+        notification.category = category
+        notification.save()
+        return HttpResponse(status=204)
+
+    return HttpResponse(status=400)
