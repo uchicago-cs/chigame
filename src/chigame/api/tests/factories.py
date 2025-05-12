@@ -20,7 +20,7 @@ class MechanicFactory(DjangoModelFactory):
     class Meta:
         model = Mechanic
 
-    name = Faker("word")
+    name = factory.Sequence(lambda n: f"Mechanic {n}")
     description = Faker("text", max_nb_chars=200)
 
 
