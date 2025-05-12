@@ -7,8 +7,10 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from chigame.achievements.models import Achievement
 from chigame.api.filters import GameFilter
 from chigame.api.serializers import (
+    AchievementSerializer,
     CategorySerializer,
     GameSerializer,
     GroupSerializer,
@@ -213,3 +215,11 @@ class ReviewDetailView(generics.RetrieveUpdateDestroyAPIView):
         if user != self.request.user:
             raise PermissionDenied("You do not have permission to edit this review.")
         serializer.save()
+
+
+class AchievementListView(generics.ListAPIView):
+    serializer_class = AchievementSerializer
+
+    def get_queryset(self):
+        game_id = self.kwargs["pk"]
+        return Achievement.objects.filter(game__id=game_id)
