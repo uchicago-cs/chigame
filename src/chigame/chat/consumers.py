@@ -13,49 +13,28 @@ class ChatConsumer(AsyncWebsocketConsumer):
     ChatConsumer is a WebSocket consumer that handles chat functionality.
     It allows users to connect to a chat room and send messages to other users
     in the room.
-
-    Integration with Database Models:
-    - LiveChat: Each WebSocket connection will be associated with a LiveChat
-      instance identified by its unique channel name. The consumer will use the
-      LiveChat's ID to route messages to the correct chat room.
-
-    - LiveChatUser: When a user connects to a chat room, the system will check
-      if there's an existing LiveChatUser record. If not, it will create one to
-      track user participation in the chat. This allows tracking which users are
-      in which chats.
-
-    - LiveChatMessage: When a user sends a message through the WebSocket, the
-      consumer will create a new LiveChatMessage record in the database, storing
-      the message content, sender (User), timestamp, and the associated LiveChat.
-      This provides message persistence and history.
-
-    Message Flow:
-    1. Client connects to WebSocket with chat ID in URL
-    2. Consumer looks up corresponding LiveChat
-    3. User is added to chat room group
-    4. Messages sent to the group are persisted in LiveChatMessage
-    5. New messages are broadcast to all connected clients in the same chat room
     """
 
     @database_sync_to_async
     def get_live_chat(self, chat_id):
+        """
+        Gets the live chat from the database.
+
+        Args:
+            chat_id (int): The ID of the chat.
+
+        Returns:
+            LiveChat: The live chat object.
+        """
         try:
             return LiveChat.objects.get(id=chat_id)
         except LiveChat.DoesNotExist:
             return None
 
-    @database_sync_to_async
-    def save_message(self, chat_id, user_id, message):
-        chat = LiveChat.objects.get(id=chat_id)
-        user = User.objects.get(id=user_id)
-
-        # Save the message to the database
-        LiveChatMessage.objects.create(live_chat=chat, user=user, content=message)
-
-        # Return the display name (username or email)
-        return user.username or user.email
-
     async def connect(self):
+        """
+        Connects to the chat room and adds the user who is connecting to the chat room to the group.
+        """
         # Get chat_id from URL parameters
         self.chat_id = self.scope["url_route"]["kwargs"]["chat_id"]
         self.live_chat = await self.get_live_chat(self.chat_id)
@@ -73,12 +52,38 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def disconnect(self, close_code):
         await self.channel_layer.group_discard(self.roomGroupName, self.channel_name)
 
+    @database_sync_to_async
+    def save_message(self, chat_id, user_id, message):
+        """
+        Saves the message to the database. This is called when a message is received from the client.
+
+        Args:
+            chat_id (int): The ID of the chat.
+            user_id (int): The ID of the user.
+            message (str): The message to save.
+        """
+        chat = LiveChat.objects.get(id=chat_id)
+        user = User.objects.get(id=user_id)
+
+        # Save the message to the database
+        LiveChatMessage.objects.create(live_chat=chat, user=user, content=message)
+
+        # Return the display name (username or email)
+        return user.username or user.email
+
     async def receive(self, text_data):
+        """
+        Receives messages from the client, saves them to the database once,
+        and broadcasts to all connected clients.
+
+        Args:
+            text_data (str): The message data received from the client.
+        """
         text_data_json = json.loads(text_data)
         message = text_data_json["message"]
         user_id = text_data_json["user_id"]
 
-        # Save message and get username
+        # Save message to database once when first received from client
         username = await self.save_message(self.chat_id, user_id, message)
 
         await self.channel_layer.group_send(
@@ -92,9 +97,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
         )
 
     async def sendMessage(self, event):
+        """
+        Broadcasts received messages to clients without saving to database again.
+        The message has already been saved once when initially received.
+
+        Args:
+            event (dict): The event data containing message details.
+        """
         message = event["message"]
         user_id = event["user_id"]
         username = event.get("username", "")
+
         await self.send(
             text_data=json.dumps(
                 {
