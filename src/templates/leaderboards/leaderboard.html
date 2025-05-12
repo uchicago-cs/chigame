@@ -1,0 +1,21 @@
+<h1>{{ leaderboard.name }}</h1>
+<p>{{ leaderboard.description }}</p>
+
+<table>
+    <thead>
+        <tr>
+            <th>Rank</th>
+            <th>Player</th>
+            <th>Region</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for entry in entries %}
+        <tr>
+            <td>{{ entry.rank }}</td>
+            <td>{{ entry.user.display_name }}</td>
+            <td>{{ entry.user.region }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
