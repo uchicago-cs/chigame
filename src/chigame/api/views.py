@@ -102,6 +102,14 @@ class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
         return get_user(lookup_value)
 
 
+# Custom permission class for authentification
+class IsAuthenticatedOrReadOnly(generics.BasePermission):
+    def has_permission(self, request, view):
+        if request.method in ["GET", "HEAD", "OPTIONS"]:
+            return True
+        return request.user and request.user.is_authenticated
+
+
 class MessageView(generics.CreateAPIView):
     queryset = Message.objects.all()
     serializer_class = MessageSerializer
@@ -111,6 +119,11 @@ class GroupListView(generics.ListCreateAPIView):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
     pagination_class = PageNumberPagination
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def perform_create(self, serializer):
+        group = serializer.save(created_by=self.request.user)
+        group.members.add(self.request.user)
 
 
 class GroupDetailView(generics.RetrieveUpdateDestroyAPIView):

@@ -84,7 +84,8 @@ class MessageSerializer(serializers.ModelSerializer):
 class GroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = Group
-        fields = "__all__"
+        fields = ["id", "name", "description", "members", "group_admin_permissions"]
+        read_only_fields = ["created_by", "date_created"]
 
 
 class MessageFeedSerializer(serializers.ModelSerializer):
