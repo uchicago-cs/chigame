@@ -36,7 +36,6 @@ export default {
 </script>
 
 <style>
-/* You can move any shared app-level styles here if needed */
 body {
   margin: 0;
   font-family: Arial, sans-serif;
