@@ -1,0 +1,42 @@
+{% extends "knowledge-base/base.html" %}
+
+{% load static %}
+
+{% block javascript %}
+  {{ block.super }}
+  <script src="{% static 'js/knowledge-base/markdown-upload.js' %}"></script>
+{% endblock javascript %}
+{% block css %}
+  {{ block.super }}
+  <link href="{% static 'css/knowledge-base/guide-upload.css' %}"
+        rel="stylesheet" />
+{% endblock css %}
+{% block page-content %}
+  <h2>
+    {% if guide %}
+      Reupload
+    {% else %}
+      Upload
+    {% endif %}
+    Guide
+  </h2>
+  <div class="form-float-container">
+    <div class="form-container">
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <label class="file-upload" for="id_file">
+          <p class="psuedo-icon">↑</p>
+          <p class="current-file">Click to upload a file, or drag and drop.</p>
+        </label>
+        <button type="submit">
+          {% if guide %}
+            Update <span class="icon">→</span>
+          {% else %}
+            Upload <span class="icon">→</span>
+          {% endif %}
+        </button>
+      </form>
+    </div>
+  </div>
+{% endblock page-content %}

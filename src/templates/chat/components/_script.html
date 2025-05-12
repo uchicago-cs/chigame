@@ -1,0 +1,88 @@
+<script>
+  const protocol = window.location.protocol === "https:" ? "wss://" : "ws://";
+  const chatId = "{{ chat.id }}";
+  const chatSocket = new WebSocket(
+    protocol + window.location.host + "/ws/chat/" + chatId + "/"
+  );
+
+  chatSocket.onopen = function(e) {
+    console.log("Connected to chat room:", chatId);
+  };
+
+  chatSocket.onclose = function(e) {
+    console.log("Disconnected from chat room:", chatId);
+  };
+
+  document.querySelector("#id_message_send_input").focus();
+  document.querySelector("#id_message_send_input").onkeyup = function(e) {
+    if (e.key === "Enter") {
+      document.querySelector("#id_message_send_button").click();
+    }
+  };
+
+  document.querySelector("#id_message_send_button").onclick = function(e) {
+    var messageInput = document.querySelector("#id_message_send_input").value;
+    if (messageInput.trim() === "") return;
+
+    chatSocket.send(
+      JSON.stringify({
+        message: messageInput,
+        user_id: "{{ request.user.id }}",
+      })
+    );
+  };
+
+  /**
+   * This function is called when a message is received from the server.
+   * It creates a new div element with the message and appends it to the chat container.
+   * It also scrolls to the bottom of the chat container.
+   *
+   * @param {MessageEvent} e - The message event.
+   */
+  chatSocket.onmessage = function(e) {
+    const data = JSON.parse(e.data);
+
+    // Create message container
+    const messageContainer = document.createElement("div");
+    messageContainer.className = "mb-3 align-self-end";
+
+    // Create message bubble
+    const messageBubble = document.createElement("div");
+    messageBubble.className = "bg-success-subtle rounded p-2 shadow-sm";
+    messageBubble.style.maxWidth = "80%";
+
+    // Create message sender
+    const sender = document.createElement("div");
+    sender.className = "fw-bold small text-danger";
+    sender.textContent = data.username;
+
+    // Create message content
+    const content = document.createElement("div");
+    content.className = "mt-1";
+    content.textContent = data.message;
+
+    // Create message timestamp
+    const timestamp = document.createElement("div");
+    timestamp.className = "text-end text-muted small mt-1";
+    timestamp.textContent = new Date().toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+
+    // Assemble message
+    messageBubble.appendChild(sender);
+    messageBubble.appendChild(content);
+    messageBubble.appendChild(timestamp);
+    messageContainer.appendChild(messageBubble);
+
+    // Clear input and add message to container
+    document.querySelector("#id_message_send_input").value = "";
+    document.querySelector(".bg-light.flex-grow-1 .d-flex.flex-column").appendChild(messageContainer);
+
+    // Scroll to bottom of chat - using requestAnimationFrame to ensure DOM updates first
+    requestAnimationFrame(() => {
+      const container = document.querySelector(".bg-light.flex-grow-1");
+      container.scrollTop = container.scrollHeight;
+    });
+  };
+</script>
