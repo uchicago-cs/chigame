@@ -94,13 +94,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
             bool: True if user is within rate limit, False otherwise.
         """
         cache_key = f"{RATE_LIMIT_KEY_PREFIX}{user_id}"
-        message_count = cache.get(cache_key, 0)
         
-        if message_count >= MESSAGES_PER_SECOND:
-            return False
-            
-        # Increment message count and set expiry to 1 second
-        cache.set(cache_key, message_count + 1, 1)
+        # Initialize the cache key if it does not exist
+        if not cache.add(cache_key, 0, 1):
+            # Atomically increment the message count
+            if cache.incr(cache_key) > MESSAGES_PER_SECOND:
+                return False
+        
         return True
 
     async def save_message(self, chat_id, user_id, message):
