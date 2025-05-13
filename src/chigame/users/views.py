@@ -4,11 +4,13 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models import Q
-from django.http import Http404, HttpResponseNotFound
+from django.http import Http404, HttpResponse, HttpResponseNotFound
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.http import require_POST
 from django.views.generic import DetailView, RedirectView, UpdateView
 
 from chigame.games.models import Lobby, Player, Tournament
@@ -40,9 +42,8 @@ class UserDetailView(LoginRequiredMixin, DetailView):
 user_detail_view = UserDetailView.as_view()
 
 
-class UserUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+class BaseUserUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     model = User
-    fields = ["name"]
     success_message = _("Information successfully updated")
 
     def get_success_url(self):
@@ -53,7 +54,16 @@ class UserUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         return self.request.user
 
 
-user_update_view = UserUpdateView.as_view()
+class NameUpdateView(BaseUserUpdateView):
+    fields = ["name"]
+
+
+class UsernameUpdateView(BaseUserUpdateView):
+    fields = ["username"]
+
+
+name_update_view = NameUpdateView.as_view()
+username_update_view = UsernameUpdateView.as_view()
 
 
 class UserRedirectView(LoginRequiredMixin, RedirectView):
@@ -164,7 +174,7 @@ def user_profile_detail_view(request, pk):
     if request.user.is_authenticated and request.user.pk == pk:
         # if user is accessing their own profile, create a profile if it doesn't exist
         profile = UserProfile.get_or_create_profile(request.user)
-        return render(request, "users/userprofile_detail.html", {"object": profile})
+        return render(request, "users/userprofile_detail.html", {"profile": profile})
     else:
         # fetch another user's profile
         try:
@@ -184,13 +194,17 @@ def user_profile_detail_view(request, pk):
         is_friend = target_user.friends.filter(pk=request.user.pk).exists()
         if not is_friend:
             curr_user = request.user
-            friendship_request = FriendInvitation.objects.filter(
-                Q(sender=target_user, receiver=curr_user, is_deleted=False)
-                | Q(sender=curr_user, receiver=target_user, is_deleted=False)
-            ).first()
+            friendship_request = (
+                FriendInvitation.objects.filter(
+                    Q(sender=target_user, receiver=curr_user, is_deleted=False)
+                    | Q(sender=curr_user, receiver=target_user, is_deleted=False)
+                )
+                .order_by("-timestamp")
+                .first()
+            )
 
     # provide frontend profile + friendship status
-    context = {"object": profile, "is_friend": is_friend, "friendship_request": friendship_request}
+    context = {"profile": profile, "is_friend": is_friend, "friendship_request": friendship_request}
     return render(request, "users/userprofile_detail.html", context=context)
 
 
@@ -632,3 +646,63 @@ def bulk_inbox(request):
                 notification = Notification.objects.get(pk=pk)
                 notification.mark_as_read()
     return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
+
+
+@login_required
+def bookmark_notification(request, pk):
+    try:
+        notification = Notification.objects.get(pk=pk)
+        if notification.receiver != request.user:
+            messages.error(request, "This notification is not yours. You can not bookmark it.")
+        else:
+            notification.bookmarked = not notification.bookmarked
+            notification.save()
+            status_msg = "Bookmarked" if notification.bookmarked else "Un-bookmarked"
+            messages.success(request, f"Notification {status_msg.lower()}.")
+    except Notification.DoesNotExist:
+        messages.error(request, "Notification does not exist.")
+
+    return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
+
+
+@login_required
+def view_bookmarked_notifications(request, pk):
+    user = request.user
+    notifications = Notification.objects.filter_by_receiver(user).filter(bookmarked=True)
+    default_notification_messages = Notification.DEFAULT_MESSAGES
+    context = {
+        "pk": pk,
+        "user": user,
+        "notifications": notifications,
+        "default_notification_messages": default_notification_messages,
+    }
+    if pk == user.id:
+        return render(request, "users/bookmarked_notifications.html", context)
+    else:
+        messages.error(request, "Not your inbox")
+        return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
+
+
+@login_required
+def upload_profile_photo(request):
+    if request.method == "POST" and request.FILES.get("photo"):
+        profile = UserProfile.get_or_create_profile(request.user)
+        profile.profile_photo = request.FILES["photo"]
+        profile.save()
+        messages.success(request, "Profile photo updated.")
+    return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
+
+
+@csrf_protect
+@require_POST
+def move_notification(request, pk):
+    notification = get_object_or_404(Notification, pk=pk, receiver=request.user)
+    category = request.POST.get("category")
+
+    valid_categories = dict(Notification.CATEGORY_CHOICES).keys()
+    if category in valid_categories:
+        notification.category = category
+        notification.save()
+        return HttpResponse(status=204)
+
+    return HttpResponse(status=400)

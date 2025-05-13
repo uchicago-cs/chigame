@@ -3,21 +3,25 @@ from django.urls import path
 from chigame.users.views import (
     accept_friend_invitation,
     act_on_inbox_notification,
+    bookmark_notification,
     bulk_inbox,
     cancel_friend_invitation,
     decline_friend_invitation,
     friend_list_view,
+    name_update_view,
     notification_detail,
     notification_search_results,
     remove_friend,
     send_friend_invitation,
+    upload_profile_photo,
     user_detail_view,
     user_inbox_view,
     user_list,
     user_profile_detail_view,
     user_redirect_view,
     user_search_results,
-    user_update_view,
+    username_update_view,
+    view_bookmarked_notifications,
 )
 
 from . import views
@@ -25,7 +29,8 @@ from . import views
 app_name = "users"
 urlpatterns = [
     path("~redirect/", view=user_redirect_view, name="redirect"),
-    path("~update/", view=user_update_view, name="update"),
+    path("~update-name/", view=name_update_view, name="update-name"),
+    path("~update-username/", view=username_update_view, name="update-username"),
     path("<int:pk>/", view=user_detail_view, name="detail"),
     path("profile/<int:pk>/", view=user_profile_detail_view, name="user-profile"),
     path("add_friend/<int:pk>", view=send_friend_invitation, name="add-friend"),
@@ -48,4 +53,8 @@ urlpatterns = [
         name="act-on-inbox-notification",
     ),
     path("bulk-action/", view=bulk_inbox, name="bulk-inbox"),
+    path("notifications/<int:pk>/bookmark/", view=bookmark_notification, name="bookmark-notification"),
+    path("notifications/<int:pk>/bookmarked/", view=view_bookmarked_notifications, name="bookmarked-notifications"),
+    path("upload-photo/", upload_profile_photo, name="upload-photo"),
+    path("notifications/<int:pk>/move/", views.move_notification, name="move-notification"),
 ]
