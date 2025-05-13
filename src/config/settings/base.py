@@ -233,6 +233,7 @@ TEMPLATES = [
                 "chigame.users.context_processors.allauth_settings",
                 # https://django-machina.readthedocs.io/en/latest/getting_started.html#django-settings
                 "machina.core.context_processors.metadata",
+                "chigame.users.context_processors.user_notifications",
             ],
             "loaders": [
                 # https://django-machina.readthedocs.io/en/latest/getting_started.html#django-settings
@@ -322,7 +323,7 @@ ACCOUNT_USERNAME_REQUIRED = False
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
-ACCOUNT_EMAIL_VERIFICATION = "mandatory"
+ACCOUNT_EMAIL_VERIFICATION = "none"
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
 ACCOUNT_ADAPTER = "chigame.users.adapters.AccountAdapter"
 # https://django-allauth.readthedocs.io/en/latest/forms.html
