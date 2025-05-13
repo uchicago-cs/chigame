@@ -28,6 +28,7 @@ let word = "";
 let guessedWordCount = 0;
 let allowedWords = [];
 let gameOver = false;
+const url = "https://api.dictionaryapi.dev/api/v2/entries/en/";
 
 //color constants
 const COLOR_CORRECT = "rgb(83, 141, 78)";
@@ -169,8 +170,28 @@ function getTileColor(letter, index) {
     return COLOR_OFF;
 }
 
+//Check if Word is a Valid Word
+async function isValidWord(word) {
+    const word_url = url + word;
+    try {
+        const response = await fetch(word_url);
+
+        if (response.status === 404) {
+            showNotification(`"${word}" Is Not a Valid Word.`);
+            return false;
+        }
+
+        const json = await response.json();
+        console.log("Dictionary API response:", json);
+        return true;
+    } catch (error) {
+        console.error("Error checking word:", error.message);
+        return false;
+    }
+}
+
 //Handles running the submission of each word
-function handleSubmitWord() {
+async function handleSubmitWord() {
     if (gameOver) {
         return;
     }
@@ -183,8 +204,8 @@ function handleSubmitWord() {
 
     const currentWord = currentWordArr.join("").toLowerCase();
 
-    if (!allowedWords.includes(currentWord)) {
-        window.alert("Word is not recognised!");
+    const valid = await isValidWord(currentWord);
+    if (!valid) {
         return;
     }
 
