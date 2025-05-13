@@ -31,8 +31,12 @@ class ProfanityFilter:
             self.profanity_list = []
 
         # Create the regex pattern
-        escaped_words = [re.escape(word) for word in self.profanity_list]
-        self.pattern = re.compile(r"\b(" + "|".join(escaped_words) + r")\b", re.IGNORECASE)
+        if not self.profanity_list:
+            # If the list is empty, compile a regex pattern that matches nothing
+            self.pattern = re.compile(r"$^")
+        else:
+            escaped_words = [re.escape(word) for word in self.profanity_list]
+            self.pattern = re.compile(r"\b(" + "|".join(escaped_words) + r")\b", re.IGNORECASE)
 
     def contains_profanity(self, message):
         """
