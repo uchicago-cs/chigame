@@ -28,6 +28,7 @@ urlpatterns = [
     path("forums/", include("chigame.forums.base.urls")),
     # Knowledge-base URLs
     path("knowledge-base/", include("chigame.knowledge_base.urls")),
+    path("leaderboards/", include("chigame.leaderboards.urls")),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 
