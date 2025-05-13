@@ -891,14 +891,14 @@ class AccessControlTests(APITestCase):
             "max_players": 6,
         }
         response = self.client.post(url, data, format="json")
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_unauthenticated_user_cannot_post_game(self):
         self.client.logout()
         url = reverse("api-game-list")
         data = {"name": "Uno", "max_players": 4}
         response = self.client.post(url, data, format="json")
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_authenticated_user_can_post_message(self):
         tournament = TournamentFactory(game=self.game)
@@ -924,7 +924,7 @@ class AccessControlTests(APITestCase):
             "update_on": None,
         }
         response = self.client.post(url, data, format="json")
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_authenticated_user_can_fetch_message_feed(self):
         tournament = TournamentFactory(game=self.game)
@@ -941,4 +941,4 @@ class AccessControlTests(APITestCase):
         url = reverse("api-chat-detail")
         data = {"token_id": 0, "tournament": tournament.id}
         response = self.client.post(url, data, format="json")
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
