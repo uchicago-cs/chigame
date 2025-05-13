@@ -1,9 +1,9 @@
+import asyncio
 import json
 
 from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
 from django.core.cache import cache
-import asyncio
 
 from chigame.users.models import User
 
