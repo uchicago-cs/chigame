@@ -16,10 +16,12 @@ from chigame.api.serializers import (
     MechanicSerializer,
     MessageFeedSerializer,
     MessageSerializer,
+    MetricScoreSerializer,
     ReviewSerializer,
     UserSerializer,
 )
 from chigame.games.models import Game, Lobby, Message, Review
+from chigame.leaderboards.models import LeaderboardEntry, Match, Metric, MetricScore
 from chigame.users.models import Group, User
 
 
@@ -205,3 +207,60 @@ class ReviewDetailView(generics.RetrieveUpdateDestroyAPIView):
         if user != self.request.user:
             raise PermissionDenied("You do not have permission to edit this review.")
         serializer.save()
+
+
+class MetricScoreView(generics.ListCreateAPIView):
+    """
+    View to handle MetricScore creation and retrieval.
+    """
+
+    serializer_class = MetricScoreSerializer
+
+    def get_queryset(self):
+        game_id = self.kwargs["game_id"]
+        print(f"Game ID: {game_id}")
+        return MetricScore.objects.filter(metric__game=game_id)
+
+    def post(self, request, game_id):
+        # authenticated user
+        user = request.user
+
+        # validate the game exists
+        game = get_object_or_404(Game, id=game_id)
+
+        # pass the request data to the serializer
+        serializer = MetricScoreSerializer(data=request.data, context={"request": request})
+        if serializer.is_valid():
+            # extracta obejcts from validated data
+            metric_id = serializer.validated_data.pop("metric_id")
+            match_id = serializer.validated_data.pop("match_id")
+            # get the metric and match objects
+            metric = get_object_or_404(Metric, id=metric_id, game=game)
+            match = get_object_or_404(Match, id=match_id, game=game)
+
+            # Find or create the LeaderboardEntry for the user and metric's leaderboard
+            leaderboard = metric.game.leaderboards.first()
+            if not leaderboard:
+                return Response({"error": "No leaderboard found for this game."}, status=status.HTTP_400_BAD_REQUEST)
+            # Create or get the LeaderboardEntry for the user
+            leaderboard_entry, created = LeaderboardEntry.objects.get_or_create(
+                leaderboard=leaderboard,  # Assuming one leaderboard per game
+                user=user,
+                defaults={"rank": 0},  # Default rank; this can be updated later
+            )
+
+            # Save the MetricScore object
+            metric_score = MetricScore.objects.create(
+                score=serializer.validated_data["score"],
+                user=user,
+                metric=metric,
+                match=match,
+                leaderboard_entry=leaderboard_entry,
+            )
+
+            # Return the created MetricScore
+            response_serializer = MetricScoreSerializer(metric_score)
+            return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+
+        # If the serializer is invalid, return the errors
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

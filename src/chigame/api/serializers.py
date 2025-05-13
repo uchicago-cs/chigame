@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from chigame.games.models import Category, Chat, Game, Lobby, Mechanic, Message, Review, Tournament, User
+from chigame.leaderboards.models import MetricScore
 from chigame.users.models import Group
 
 
@@ -102,3 +103,18 @@ class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
         fields = ["id", "user", "title", "rating", "review", "is_public", "created_at"]
+
+
+class MetricScoreSerializer(serializers.ModelSerializer):
+    metric_id = serializers.IntegerField(write_only=True)
+    match_id = serializers.IntegerField(write_only=True)
+
+    class Meta:
+        model = MetricScore
+        fields = ["id", "score", "user", "metric", "match", "leaderboard_entry", "metric_id", "match_id"]
+        read_only_fields = ["id", "user", "metric", "match", "leaderboard_entry"]
+
+    def validate_score(self, value):
+        if value < 0:
+            raise serializers.ValidationError("Score must be a positive integer.")
+        return value
