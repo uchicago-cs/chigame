@@ -198,18 +198,17 @@
                         aria-labelledby="notification-btn">
                       {% if header_notifications %}
                         {% for n in header_notifications %}
-                          <li class="dropdown-item" id="notification-{{ n.id }}">
+                          <a href="{% url 'users:notification-detail' n.pk %}" class="dropdown-item text-reset text-decoration-none" id="notification-{{ n.id }}">
                             <div class="d-flex justify-content-between align-items-start">
                               <div>
-                                <strong>{{ n.message|default:"You have a new notification" }}</strong>
-                                <br />
+                                <strong>{{ n.message|default:"You have a new notification" }}</strong><br />
                                 <small class="text-muted">{{ n.last_sent|timesince }} ago</small>
                               </div>
                               <button class="btn-close btn-sm ms-2"
                                       title="Dismiss"
-                                      onclick="dismissNotification({{ n.id }})"></button>
+                                      onclick="event.preventDefault(); dismissNotification({{ n.id }})"></button>
                             </div>
-                          </li>
+                          </a>
                         {% endfor %}
                       {% else %}
                         <li class="dropdown-item text-muted">No new notifications</li>
