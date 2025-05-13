@@ -5,11 +5,7 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
     dependencies = [
-<<<<<<< HEAD
         ("games", "0029_merge_20250505_2335"),
-=======
-        ("games", "0029_interactivefictiongame"),
->>>>>>> dev
         ("games", "0029_merge_20250507_1534"),
     ]
 
