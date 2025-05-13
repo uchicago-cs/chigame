@@ -13,7 +13,6 @@ from .models import LiveChat, LiveChatMessage
 MESSAGES_PER_SECOND = 1  # Maximum messages allowed per second
 RATE_LIMIT_KEY_PREFIX = "chat_rate_limit:"
 
-
 class ChatConsumer(AsyncWebsocketConsumer):
     """
     ChatConsumer is a WebSocket consumer that handles chat functionality.
