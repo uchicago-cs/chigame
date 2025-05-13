@@ -13,6 +13,7 @@ def chat(request, chat_id):
 
     return render(request, "chat/index.html", {"chat": chat, "messages": messages})
 
+
 def live_chat_list(request):
     chats = LiveChat.objects.all()
     return render(request, "chat/live-chat-list.html", {"chats": chats})

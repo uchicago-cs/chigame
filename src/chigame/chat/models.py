@@ -10,7 +10,7 @@ class LiveChat(models.Model):
 
     name = models.TextField(null=False)
     users: models.ManyToManyField = models.ManyToManyField(User, through="LiveChatUser", related_name="live_chats")
-    public = models.BooleanField(default=False) # defined for global chats
+    public = models.BooleanField(default=False)  # defined for global chats
 
     def __str__(self):
         return f"LiveChat with name:'{self.name}'"
