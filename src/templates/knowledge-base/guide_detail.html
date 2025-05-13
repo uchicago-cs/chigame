@@ -12,6 +12,13 @@
       <p>Categories:</p>
       {% for category in guide.game_id.categories.all %}<span>"{{ category.name }}"</span>{% endfor %}
       {% if not guide.game_id.categories.exists %}<span>N/A</span>{% endif %}
+      <a href="{% url 'game-detail' guide.game_id.pk %}">Go to Game</a>
+      <p>
+        Content:
+        {{ guide.content }}
+      </p>
+      <p>Likes: {{ guide.likes.count }}</p>
+      <p>Favorites: {{ guide.favorites.count }}</p>
     {% else %}
       <h2>Guide Detail Page</h2>
       This guide object is NOT published. If you are looking for a guide for game
@@ -19,11 +26,4 @@
       <a href="{% url 'knowledge-base' %}">knowledge base landing page</a>.
     {% endif %}
   </p>
-  <a href="{% url 'game-detail' guide.game_id.pk %}">Go to Game</a>
-  <p>
-    Content:
-    {{ guide.content }}
-  </p>
-  <p>Likes: {{ guide.likes.count }}</p>
-  <p>Favorites: {{ guide.favorites.count }}</p>
 {% endblock page-content %}
