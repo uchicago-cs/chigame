@@ -3,6 +3,7 @@ Utilities for the chat app. Includes profanity filtering.
 """
 
 import re
+import os
 
 
 class ProfanityFilter:
@@ -10,20 +11,25 @@ class ProfanityFilter:
     A simple class that allows for filtering of profanity and censoring of messages.
     """
 
-    # a list of profane words
-    # this list should be updated with new profane words as they are discovered
-    profanity_list = [
-        "uchicago sucks",
-        "uchicago is a bad school",
-        "uchicago is a bad university",
-        "uchicago is a bad college",
-    ]
-
     def __init__(self):
         """
         Initialize the profanity filter.
         """
-        escaped_words = [re.escape(word) for word in self.profanity_list]  # create the regex patterns
+        # Get the directory where this file is located
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        profanity_file = os.path.join(current_dir, "PROFANE_WORDS.txt")
+        
+        # Read profane words from file
+        try:
+            with open(profanity_file, 'r') as f:
+                profanity_text = f.read().strip()
+                self.profanity_list = [word.strip() for word in profanity_text.split(',')]
+        except FileNotFoundError:
+            print(f"Warning: Profanity file not found at {profanity_file}")
+            self.profanity_list = []
+        
+        # Create the regex pattern
+        escaped_words = [re.escape(word) for word in self.profanity_list]
         self.pattern = re.compile(r"\b(" + "|".join(escaped_words) + r")\b", re.IGNORECASE)
 
     def contains_profanity(self, message):
