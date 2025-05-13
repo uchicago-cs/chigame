@@ -12,6 +12,7 @@ from chigame.users.views import (
     notification_search_results,
     remove_friend,
     send_friend_invitation,
+    upload_profile_photo,
     user_detail_view,
     user_inbox_view,
     user_list,
@@ -52,5 +53,6 @@ urlpatterns = [
     path("bulk-action/", view=bulk_inbox, name="bulk-inbox"),
     path("notifications/<int:pk>/bookmark/", view=bookmark_notification, name="bookmark-notification"),
     path("notifications/<int:pk>/bookmarked/", view=view_bookmarked_notifications, name="bookmarked-notifications"),
+    path("upload-photo/", upload_profile_photo, name="upload-photo"),
     path("notifications/<int:pk>/move/", views.move_notification, name="move-notification"),
 ]
