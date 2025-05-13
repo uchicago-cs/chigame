@@ -1,10 +1,9 @@
-<!-- Context Menu -->
 <div id="contextMenu" class="context-menu">
   <div class="small text-muted mb-1" id="replyPreview"></div>
-  <button class="btn btn-sm btn-light w-100" onclick="deleteMessage()">Pinning Messages</button>
-  <button class="btn btn-sm btn-light w-100" onclick="replyToMessage()">Reply</button>
-  <button class="btn btn-sm btn-light w-100" onclick="deleteMessage()">Edit Message</button>
-  <button class="btn btn-sm btn-danger w-100" onclick="deleteMessage()">Delete</button>
+  <button class="btn btn-sm btn-light w-100" onclick="deleteMessage()" title="Pinning Messages">Pinning Messages</button>
+  <button class="btn btn-sm btn-light w-100" onclick="replyToMessage()" title="Reply">Reply</button>
+  <button class="btn btn-sm btn-light w-100" onclick="editMessage()" title="Edit Message">Edit Message</button>
+  <button class="btn btn-sm btn-danger w-100" onclick="deleteMessage()" title="Delete Message">Delete Message</button>
 </div>
 <script>
   let replyToMessageId = null;
@@ -34,18 +33,24 @@
 
   function hideContextMenu() {
     const contextMenu = document.getElementById('contextMenu');
+
     contextMenu.style.display = 'none';
     document.removeEventListener('click', hideContextMenu);
   }
 
+  /**
+   * Focuses on the message input field and hides the context menu.
+   */
   function replyToMessage() {
     const input = document.getElementById('id_message_send_input');
+
     input.focus();
     hideContextMenu();
   }
 
   /**
-   * Deletes a message on the frontend.
+   * Performs an eager delete of a message by removing the message from the DOM
+   * and then sending a GET request to the delete-message endpoint.
    */
   function deleteMessage() {
     const messageId = replyToMessageId;
