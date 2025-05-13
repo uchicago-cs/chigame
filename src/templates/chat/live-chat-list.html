@@ -1,15 +1,50 @@
 {% extends "base.html" %}
 
 {% block content %}
-  <input type="text" id="search-input" placeholder="Search...">
   <div class="container">
-  <h1>Live Chats</h1>
-  <ul>
-    {% for chat in chats %}
-      <li class="list-group-item">
-        <a href="{% url 'chat-page' chat.id %}">{{ chat.name }}</a>
-      </li>
-    {% endfor %}
-  </ul>
+    <h1>Live Chats</h1>
+    <div class="search-container mb-3">
+      <input type="text"
+             id="search-input"
+             class="form-control"
+             placeholder="Search public chats..."
+             value="{{ request.GET.q|default:'' }}" />
+    </div>
+    <ul class="list-group">
+      {% for chat in chats %}
+        <li class="list-group-item">
+          <a href="{% url 'chat-page' chat.id %}">{{ chat.name }}</a>
+        </li>
+      {% endfor %}
+    </ul>
   </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const searchInput = document.getElementById('search-input');
+
+      searchInput.addEventListener('input', function() {
+        const searchQuery = this.value.trim();
+        const currentUrl = new URL(window.location.href);
+
+        if (searchQuery) {
+          currentUrl.searchParams.set('q', searchQuery);
+        } else {
+          currentUrl.searchParams.delete('q');
+        }
+
+        window.history.pushState({}, '', currentUrl);
+
+        // Filter the chat list
+        const chatItems = document.querySelectorAll('.list-group-item');
+        chatItems.forEach(item => {
+          const chatName = item.textContent.toLowerCase();
+          if (chatName.includes(searchQuery.toLowerCase())) {
+            item.style.display = '';
+          } else {
+            item.style.display = 'none';
+          }
+        });
+      });
+    });
+  </script>
 {% endblock content %}
