@@ -53,4 +53,5 @@ urlpatterns = [
     path("notifications/<int:pk>/bookmark/", view=bookmark_notification, name="bookmark-notification"),
     path("notifications/<int:pk>/bookmarked/", view=view_bookmarked_notifications, name="bookmarked-notifications"),
     path("notifications/<int:pk>/move/", views.move_notification, name="move-notification"),
+    path("inbox/<int:pk>/<str:category>/", views.user_inbox_view, name="user-inbox-category"),
 ]
