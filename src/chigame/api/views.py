@@ -220,6 +220,14 @@ class UserAchievementCreateView(generics.CreateAPIView):
     serializer_class = UserAchievementSerializer
 
     def perform_create(self, serializer):
-        game_id = self.kwargs["game_id"]
         achievement_id = self.kwargs["pk"]
-        serializer.save(game_id=game_id, achievement_id=achievement_id)
+        serializer.save(achievement_id=achievement_id)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+
+        return Response(
+            {"message": "Achievement assigned to user!", "data": serializer.data}, status=status.HTTP_201_CREATED
+        )
