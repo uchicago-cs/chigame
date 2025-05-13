@@ -5,6 +5,9 @@ Utilities for the chat app. Includes profanity filtering.
 import re
 import os
 
+# this is the path to the file containing profane words
+PATH_TO_PROFANITY_FILE = os.path.join(os.path.dirname(__file__), "PROFANITY.txt")
+
 
 class ProfanityFilter:
     """
@@ -13,13 +16,13 @@ class ProfanityFilter:
 
     def __init__(self):
         """
-        Initialize the profanity filter.
+        Initialize the profanity filter from a comma separated file containing profane words.
         """
         # Get the directory where this file is located
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        profanity_file = os.path.join(current_dir, "PROFANITY.txt")
+        profanity_file = PATH_TO_PROFANITY_FILE
         
-        # Read profane words from file
+        # Read profane words from file (comma separated)
         try:
             with open(profanity_file, 'r') as f:
                 profanity_text = f.read().strip()
