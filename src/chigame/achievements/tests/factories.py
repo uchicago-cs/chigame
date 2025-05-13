@@ -2,8 +2,8 @@ import factory
 from factory.django import DjangoModelFactory
 
 from chigame.achievements.models import Achievement, User, UserAchievement
-from chigame.api.tests.factories import GameFactory
-
+from chigame.api.tests.factories import GameFactory, LobbyFactory, UserFactory
+from chigame.games.models import Match
 
 # General user factory
 class UserFactory(DjangoModelFactory):
@@ -36,3 +36,25 @@ class UserAchievementFactory(DjangoModelFactory):
     pinned = factory.Faker("boolean")
     date_earned = factory.Faker("date_time_this_year")
     progress = factory.Faker("random_number", digits=2)  # Random number for progress
+
+class MatchFactory(DjangoModelFactory):
+    # This is pretty bad - theoretically, the lobby should determine the game and the players
+    class Meta:
+        model = Match
+
+    game = factory.SubFactory(GameFactory)
+    lobby = factory.SubFactory(LobbyFactory)
+    date_played = factory.Faker("date_time_this_decade")
+
+    @post_generation
+    def players(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            # Add players to the match
+            for player in extracted:
+                self.players.add(player)
+        else:
+            # Add
+            self.players.add(UserFactory())
