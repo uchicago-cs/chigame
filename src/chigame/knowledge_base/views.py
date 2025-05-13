@@ -226,7 +226,12 @@ class ReviewPendingGuideView(LoginRequiredMixin, UserPassesTestMixin, DetailView
                 status=status_map[action],
                 comment=feedback,
             )
-            message = f"Guide has been {action.replace('_', ' ')}."
+            if action == "accept":
+                message = "Guide accepted."
+            elif action == "reject":
+                message = "Guide rejected."
+            elif action == "request_changes":
+                message = "Changes requested."
         context = self.get_context_data(object=self.object)
         context["feedback"] = feedback
         context["message"] = message
