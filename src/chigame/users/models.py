@@ -80,6 +80,7 @@ class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     bio = models.TextField(blank=True)
     date_joined = models.DateTimeField(auto_now_add=True)
+    profile_photo = models.ImageField(upload_to="profile_photos/", blank=True, null=True)
 
     @classmethod
     def get_or_create_profile(cls, user: User) -> "UserProfile":
