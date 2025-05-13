@@ -5,6 +5,7 @@ from chigame.achievements.models import Achievement, User, UserAchievement
 from chigame.api.tests.factories import GameFactory, LobbyFactory, UserFactory
 from chigame.games.models import Match
 
+
 # General user factory
 class UserFactory(DjangoModelFactory):
     class Meta:
@@ -46,7 +47,7 @@ class MatchFactory(DjangoModelFactory):
     lobby = factory.SubFactory(LobbyFactory)
     date_played = factory.Faker("date_time_this_decade")
 
-    @post_generation
+    @factory.post_generation
     def players(self, create, extracted, **kwargs):
         if not create:
             return
