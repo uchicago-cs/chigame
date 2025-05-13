@@ -192,8 +192,8 @@
                   {% endif %}
                   </button>
                  <ul class="dropdown-menu dropdown-menu-end notifications-dropdown" aria-labelledby="notification-btn">
-                  {% if notifications %}
-                    {% for n in notifications %}
+                  {% if header_notifications %}
+                    {% for n in header_notifications %}
                       <li class="dropdown-item" id="notification-{{ n.id }}">
                         <div class="d-flex justify-content-between align-items-start">
                           <div>
