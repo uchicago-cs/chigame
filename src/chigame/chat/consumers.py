@@ -95,8 +95,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
         user = User.objects.get(id=user_id)
         reply_to = None
         if reply_to_id:
-            reply_to = LiveChatMessage.objects.get(id=reply_to_id)
-
+            try:
+                reply_to = LiveChatMessage.objects.get(id=reply_to_id)
+            except LiveChatMessage.DoesNotExist:
+                reply_to = None
         # Save the message to the database
         message_obj = LiveChatMessage.objects.create(live_chat=chat, user=user, content=message, reply_to=reply_to)
 
