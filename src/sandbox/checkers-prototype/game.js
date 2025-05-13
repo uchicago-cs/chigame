@@ -28,6 +28,8 @@ const COLORS = {
   black: 0x000000,
   red: 0xff0000,
   white: 0xffffff,
+  colorblind_blue: 0x1e88e5,
+  colorblind_orange: 0xffc107,
 };
 let pieces = [];
 let selectedPiece = null;
@@ -417,5 +419,36 @@ document.addEventListener('DOMContentLoaded', () => {
   settingsButton.addEventListener('click', () => {
     settingsMenu.classList.toggle('active');
     settingsMenu.classList.toggle('hidden');
+  });
+});
+
+// Function to change the color of all pieces
+function changePieceColor(newColorOne, newColorTwo) {
+  const firstPieceColor = pieces[0].color;
+  pieces.forEach((piece) => {
+    if (piece.color === firstPieceColor) {
+      piece.color = newColorOne;
+      piece.sprite.setFillStyle(newColorOne);
+    }
+    else {
+      piece.color = newColorTwo;
+      piece.sprite.setFillStyle(newColorTwo);
+    }
+  });
+}
+
+// Event listener for the toggle colorblind button
+document.addEventListener('DOMContentLoaded', () => {
+  const changeColorButton = document.getElementById('toggle-colorblind');
+  changeColorButton.addEventListener('click', () => {
+    const firstPieceColor = pieces[0].color;
+    // if the first piece is a default color, change to colorblind colors
+    if (firstPieceColor === COLORS.red || firstPieceColor === COLORS.black) {
+      changePieceColor(COLORS.colorblind_blue, COLORS.colorblind_orange);
+    }
+    // if the first piece is a colorblind color, change to default colors
+    else {
+      changePieceColor(COLORS.black, COLORS.red);
+    }
   });
 });
