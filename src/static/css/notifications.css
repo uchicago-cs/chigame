@@ -22,3 +22,7 @@
 .notification-container.read .badge {
   opacity: 0.7;
 }
+
+.icon-lg {
+    font-size: 1.2rem;
+}

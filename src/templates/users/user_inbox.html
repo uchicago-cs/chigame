@@ -45,25 +45,22 @@
                       <a href="{% url 'users:act-on-inbox-notification' notification.pk 'mark_unread' %}"
                          class="text-decoration-none text-primary"
                          title="Mark as Unread">
-                        <i class="bi bi-envelope" style="font-size: 1.2rem;"></i>
+                        <i class="bi bi-envelope icon-lg"></i>
                       </a>
                     {% else %}
                       <a href="{% url 'users:act-on-inbox-notification' notification.pk 'mark_read' %}"
                          class="text-decoration-none text-primary"
                          title="Mark as Read">
-                        <i class="bi bi-envelope-open" style="font-size: 1.2rem;"></i>
+                        <i class="bi bi-envelope-open icon-lg"></i>
                       </a>
                     {% endif %}
                     <a href="{% url 'users:act-on-inbox-notification' notification.pk 'delete' %}"
                        class="text-danger text-decoration-none"
                        title="Delete">
-                      <i class="bi bi-trash" style="font-size: 1.2rem;"></i>
+                      <i class="bi bi-trash icon-lg"></i>
                     </a>
-                    <a href="javascript:void(0);"
-                       onclick="openContextMenuFromButton(event, '{{ notification.id }}')"
-                       class="text-muted text-decoration-none"
-                       title="Move">
-                      <i class="bi bi-folder2-open" style="font-size: 1.2rem;"></i>
+                    <a href="#" onclick="openContextMenuFromButton(event, '{{ notification.id }}'); return false;" class="text-muted text-decoration-none" title="Move">
+                      <i class="bi bi-folder2-open"></i>
                     </a>
                   </div>
                 </li>
