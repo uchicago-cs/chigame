@@ -38,6 +38,7 @@ class UserAchievementFactory(DjangoModelFactory):
     date_earned = factory.Faker("date_time_this_year")
     progress = factory.Faker("random_number", digits=2)  # Random number for progress
 
+
 class MatchFactory(DjangoModelFactory):
     # This is pretty bad - theoretically, the lobby should determine the game and the players
     class Meta:
