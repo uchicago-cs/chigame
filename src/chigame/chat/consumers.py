@@ -101,7 +101,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         # Initialize the cache key if it does not exist
         if not cache.add(cache_key, 0, 1):
             # Atomically increment the message count
-            if cache.incr(cache_key) > MESSAGES_PER_SECOND:
+            if cache.incr(cache_key) >= MESSAGES_PER_SECOND:
                 return False
 
         return True
