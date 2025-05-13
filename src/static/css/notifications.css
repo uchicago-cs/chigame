@@ -6,6 +6,13 @@
   padding: 0.5rem;
 }
 
-.notifications-dropdown .dropdown-item {
-  white-space: normal;
+#notification-btn-wrapper button:hover {
+  background-color: rgba(0, 0, 0, 0.05); /* subtle light grey */
+  border-radius: 0.5rem; /* soft corners if needed */
+}
+
+#notification-btn-wrapper button {
+  background-color: transparent;
+  border: none;
+  padding: 0.5rem;
 }

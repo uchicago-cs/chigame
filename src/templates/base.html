@@ -179,18 +179,18 @@
                 </form>
               </li>
             </ul>
-            <ul class="navbar-nav ms-2">
+            <ul id="notification-btn-wrapper" class="navbar-nav ms-2">
             {% if request.user.is_authenticated %}
               <!-- Notifications -->
               <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle position-relative" href="#" id="notification-btn" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <button id="notification-btn" class="btn btn-outline-secondary position-relative dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                   <i class="bi bi-bell"></i>
                   {% if header_notifications|length > 0 %}
                     <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
                       {{ header_notifications|length }}
                     </span>
                   {% endif %}
-                </a>
+                  </button>
                  <ul class="dropdown-menu dropdown-menu-end notifications-dropdown" aria-labelledby="notification-btn">
                   {% if notifications %}
                     {% for n in notifications %}
