@@ -3,24 +3,23 @@
   <head>
     <meta charset="UTF-8" />
     <title>Chigame Checkers</title>
-    <!-- using a CDN for now -->
+    <!-- Phaser CDN -->
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
-    <!-- link css file -->
     <link rel="stylesheet" href="css/style.css" />
   </head>
   <body>
-    <!-- linking to game.js -->
-    <script src="game.js"></script>
     <div class="main-content">
       <div class="main-left" id="game"></div>
       <div class="main-right">
         <h1>Game Rules</h1>
-        <!-- Linked to wiki -->
-        <button class="btn"
-                onclick="window.open('https://github.com/uchicago-cs/chigame/wiki/Adding-Games-~-Checkers-Rules', '_blank')">
-          Read More
-        </button>
+        <button onclick="window.open('https://github.com/uchicago-cs/chigame/wiki/Adding-Games-~-Checkers-Rules', '_blank')">Read More</button>
+        <div style="margin-top:20px">
+          <button id="toggle-bot">Play vs Bot: ON</button>
+        </div>
       </div>
     </div>
+
+    <!-- only one include, after the #game div exists -->
+    <script src="game.js"></script>
   </body>
 </html>

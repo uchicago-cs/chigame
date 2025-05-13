@@ -41,11 +41,31 @@ const HIGHLIGHT_SIZE = 3;
 // ----------------------------------------------------------------------------
 
 // ---INIT FUNCTIONS-----------------------------------------------------------
+
+//BOT SETTINGS
+let vsEasyBot = true; //autoplay vs bot
+//let vsMediumBot = false; // dec for harder bot
+//let vsHardBot = false; //dec for hardest bot
+let currentTurn = 'white'; //start as white move
+
+
 function preload() {}
 
 function create() {
   drawBoard(this);
   populatePieces(this);
+  //Toggle bot
+  //get button
+  const botButton = document.getElementById('toggle-bot');
+  botButton.textContent = `Play vs Bot: ${vsEasyBot ? 'ON' : 'OFF'}`;
+  //toggle flag
+  botButton.addEventListener('click', () => {
+    vsEasyBot = !vsEasyBot;
+    botButton.textContent = `Play vs Bot: ${vsEasyBot ? 'ON' : 'OFF'}`;
+  });
+
+
+
 }
 
 function update() {}
@@ -87,7 +107,7 @@ function drawBoard(scene) {
         // move the piece and end the player turn
         if (!targetPiece && isValidMove(selectedPiece, x, y)) {
           movePiece(selectedPiece, x, y);
-          endTurn();
+          endTurn(scene);
         }
       });
     }
@@ -215,7 +235,7 @@ function getPiece(x, y) {
 }
 
 // end the turn
-function endTurn() {
+function endTurn(scene) {
   // remove the selected piece and its highlight
   if (selectedPiece) {
     selectedPiece.sprite.setStrokeStyle();
@@ -223,4 +243,75 @@ function endTurn() {
   selectedPiece = null;
   // switch between red and black player turn
   currentPlayer = currentPlayer === COLORS.red ? COLORS.black : COLORS.red;
+
+  //if we are playing bot and it is black turn(bot color) make bot move 
+  if (vsEasyBot && currentPlayer === COLORS.black){
+    //delay so it looks not so immediate
+    scene.time.delayedCall(300, easyBot, [scene], scene );
+  }
 }
+
+//return arr of legal moves for given player
+function getLegalMoves(color) {
+    //arr to store legal moves
+    const moves = [];
+    //moving up or down board?
+    const direction = color === COLORS.red ? -1 : 1;
+  
+    //loop thru pieces
+    pieces.forEach(piece => {
+      if (piece.color !== color) return; //return for other p;layer peices
+      // simple moves
+      [-1, 1].forEach(diagonal => { //try L and R diagonals
+        const col = piece.x + diagonal; //new col
+        const row = piece.y + direction; //new row
+        if ( //check if mvoe is valid 
+          col >= 0 && col < BOARD_SIZE && row >= 0 && row < BOARD_SIZE &&
+          !getPiece(col, row) && isValidMove(piece, col, row)) {
+          moves.push({ piece, x: col, y: row }); //add move to arr
+        }
+      });
+      // jump moves for captures
+      [-2, 2].forEach(jump => { 
+        const jump_col = piece.x + jump;
+        const jump_row = piece.y + 2 * direction;
+        if (
+          jump_col >= 0 && jump_col < BOARD_SIZE && jump_row >= 0 && jump_row < BOARD_SIZE &&
+          !getPiece(jump_col, jump_row) && isValidMove(piece, jump_col, jump_row)) {
+          moves.push({ piece, x: jump_col, y: jump_row });
+        }
+      });
+    });
+  
+    return moves;
+  }
+
+  
+  // Easy bot: pick a random legal move and play it
+function easyBot(scene) {
+    //get legal moves
+    //check if game over
+    //it not do a random legal move
+    const legalMoves = getLegalMoves(COLORS.black);
+    //if No legal moves
+    if (legalMoves.length === 0) {
+      console.log('Cant move');
+      return;
+    }
+    //get random move
+    const move = Phaser.Utils.Array.GetRandom(legalMoves);
+    //execute move
+    movePiece(move.piece, move.x, move.y);
+    // end bot's turn
+    endTurn(scene);
+  }
+
+//medium/prefer captures and centeral moves bot
+
+    //get legal moves
+    //find central/captures
+    //play capture or central move
+
+
+//hard //use strategy
+    //implement some algorithm to make the bot hard to beat
