@@ -231,12 +231,10 @@ def send_friend_invitation(request, pk):
     if curr_user.friends.filter(pk=other_user.pk).exists():
         messages.error(request, "You are already friends with this user")
         return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
-
     # if the current user is trying to send a friend request to themselves, return an error
     if curr_user.id == other_user.id:
         messages.error(request, "You can't send friendship invitation to yourself")
         return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
-
     # check if the friendship invitation already exists
     invitation, new = FriendInvitation.objects.filter(
         Q(sender=curr_user, receiver=other_user, is_deleted=False)
