@@ -18,6 +18,3 @@ urlpatterns = [
     path("upload", ContributorMdUpload, name="knowledge-base-guide-upload"),
     path("guides/<int:pk>/reupload", ContributorMdUpload, name="knowledge-base-guide-reupload"),
 ]
-
-# Eventually, we should add '!<slug:username>' the contribution path so we can
-# list all the guides associated with the current user
