@@ -43,7 +43,11 @@ let highlightedTiles = [];
 // ----------------------------------------------------------------------------
 
 // ---INIT FUNCTIONS-----------------------------------------------------------
-function preload() {}
+function preload() {
+  // load in the soundeffects
+  this.load.audio('slide', 'sfx/slide.mp3');
+  this.load.audio('hint', 'sfx/bling.mp3');
+}
 
 function create() {
   drawBoard(this);
@@ -52,6 +56,8 @@ function create() {
   // https://docs.phaser.io/api-documentation/namespace/input-keyboard-events#key_down
   // Listen for the 'h' key, give hint if pressed
   this.input.keyboard.on('keydown-H', () => {
+    // Play hint sound effect
+    this.sound.play('hint');
     giveHint();
   });
 }
@@ -218,6 +224,9 @@ function movePiece(piece, moveX, moveY) {
   // update the display state
   piece.sprite.x = MARGIN + piece.x * TILE_SIZE + TILE_SIZE / 2;
   piece.sprite.y = MARGIN + piece.y * TILE_SIZE + TILE_SIZE / 2;
+
+  // Play move sound effect
+  piece.sprite.scene.sound.play('slide');
 }
 
 // helper function to get the piece
