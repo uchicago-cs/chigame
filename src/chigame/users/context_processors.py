@@ -14,5 +14,5 @@ def user_notifications(request):
             .filter(receiver=request.user, visible=True)
             .order_by('-last_sent')
         )
-        return {"notifications": notifications}
+        return {"header_notifications": notifications}
     return {}
