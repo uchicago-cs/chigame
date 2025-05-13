@@ -94,6 +94,7 @@
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     padding: 8px;
     z-index: 1000;
+    display: none;
   }
 </style>
 <div id="message-container"
@@ -123,7 +124,7 @@
   </div>
 </div>
 <!-- Context Menu -->
-<div id="contextMenu" class="context-menu" style="display: none;">
+<div id="contextMenu" class="context-menu">
   <div class="small text-muted mb-1" id="replyPreview"></div>
   <button class="btn btn-sm btn-light w-100" onclick="replyToMessage()">Reply</button>
 </div>
