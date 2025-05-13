@@ -67,6 +67,34 @@
     padding: 20px;
     font-style: italic;
   }
+
+  .message-reply {
+    background-color: rgba(0, 0, 0, 0.05);
+    border-left: 3px solid #800000;
+    padding: 8px;
+    margin-bottom: 8px;
+    border-radius: 4px;
+    font-size: 0.9em;
+  }
+
+  .message-reply__sender {
+    color: #800000;
+    font-weight: bold;
+  }
+
+  .message-reply__content {
+    color: #666;
+  }
+
+  .context-menu {
+    position: fixed;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    padding: 8px;
+    z-index: 1000;
+  }
 </style>
 <div id="message-container"
      class="chat-messages-scroll flex-grow-1 overflow-auto p-3 bg-light d-flex flex-column">
@@ -78,8 +106,9 @@
              oncontextmenu="showContextMenu(event, {{ message.id }}, '{{ message.user.username }}', '{{ message.content }}'); return false;">
           <div class="{% if message.user == request.user %}bg-success-subtle{% else %}bg-white{% endif %} rounded p-2 shadow-sm">
             {% if message.reply_to %}
-              <div class="small text-muted border-start border-2 ps-2 mb-1">
-                Replying to {{ message.reply_to.user.username }}: {{ message.reply_to.content }}
+              <div class="message-reply">
+                <div class="message-reply__sender">{{ message.reply_to.user.username }}</div>
+                <div class="message-reply__content">{{ message.reply_to.content }}</div>
               </div>
             {% endif %}
             <div class="fw-bold small text-danger">{{ message.user.username }}</div>
@@ -94,10 +123,7 @@
   </div>
 </div>
 <!-- Context Menu -->
-<div id="contextMenu"
-     class="position-fixed bg-white border shadow-sm rounded p-2"
-     style="display: none;
-            z-index: 1000">
+<div id="contextMenu" class="context-menu" style="display: none;">
   <div class="small text-muted mb-1" id="replyPreview"></div>
   <button class="btn btn-sm btn-light w-100" onclick="replyToMessage()">Reply</button>
 </div>
