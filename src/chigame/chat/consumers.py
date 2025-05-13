@@ -1,5 +1,5 @@
 import json
-
+from django.core.cache import cache
 from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
 
@@ -7,6 +7,9 @@ from chigame.users.models import User
 
 from .models import LiveChat, LiveChatMessage
 
+# Rate limiting constants
+MESSAGES_PER_SECOND = 5  # Maximum messages allowed per second
+RATE_LIMIT_KEY_PREFIX = "chat_rate_limit:"
 
 class ChatConsumer(AsyncWebsocketConsumer):
     """
@@ -34,6 +37,26 @@ class ChatConsumer(AsyncWebsocketConsumer):
     @database_sync_to_async
     def check_user_in_chat(self, user, chat):
         return chat.users.filter(id=user.id).exists()
+
+    async def check_rate_limit(self, user_id):
+        """
+        Checks if the user has exceeded their message rate limit.
+        
+        Args:
+            user_id (int): The ID of the user.
+            
+        Returns:
+            bool: True if user is within rate limit, False otherwise.
+        """
+        cache_key = f"{RATE_LIMIT_KEY_PREFIX}{user_id}"
+        message_count = cache.get(cache_key, 0)
+        
+        if message_count >= MESSAGES_PER_SECOND:
+            return False
+            
+        # Increment message count and set expiry to 1 second
+        cache.set(cache_key, message_count + 1, 1)
+        return True
 
     async def connect(self):
         """
@@ -80,8 +103,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         if hasattr(self, "room_group_name"):
             await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
 
-    @database_sync_to_async
-    def save_message(self, chat_id, user_id, message):
+    async def save_message(self, chat_id, user_id, message):
         """
         Saves the message to the database. This is called when a message is received from the client.
 
@@ -89,15 +111,22 @@ class ChatConsumer(AsyncWebsocketConsumer):
             chat_id (int): The ID of the chat.
             user_id (int): The ID of the user.
             message (str): The message to save.
+            
+        Returns:
+            tuple: (username, bool) - The username and whether the message was saved.
         """
-        chat = LiveChat.objects.get(id=chat_id)
-        user = User.objects.get(id=user_id)
+        # Check rate limit first
+        if not await self.check_rate_limit(user_id):
+            return None, False
+            
+        chat = await database_sync_to_async(LiveChat.objects.get)(id=chat_id)
+        user = await database_sync_to_async(User.objects.get)(id=user_id)
 
         # Save the message to the database
-        LiveChatMessage.objects.create(live_chat=chat, user=user, content=message)
+        await database_sync_to_async(LiveChatMessage.objects.create)(live_chat=chat, user=user, content=message)
 
         # Return the display name (username or email)
-        return user.username or user.email
+        return user.username or user.email, True
 
     async def receive(self, text_data):
         """
@@ -112,7 +141,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
         user_id = text_data_json["user_id"]
 
         # Save message to database once when first received from client
-        username = await self.save_message(self.chat_id, user_id, message)
+        username, saved = await self.save_message(self.chat_id, user_id, message)
+        
+        if not saved:
+            # Send rate limit error to the user
+            await self.send(
+                text_data=json.dumps({
+                    "type": "error",
+                    "message": f"Rate limit exceeded. Maximum {MESSAGES_PER_SECOND} messages per second allowed."
+                })
+            )
+            return
 
         await self.channel_layer.group_send(
             self.room_group_name,
