@@ -129,6 +129,7 @@
                   <a id="log-in-link" class="nav-link" href="{% url 'account_login' %}">{% translate "Sign In" %}</a>
                 </li>
               {% endif %}
+              <div class="d-flex align-items-center">
               <li class="nav-item">
                 <!-- Dynamically update search bar landing page depending on query_type-->
                 <form id="search-bar"
@@ -176,7 +177,24 @@
                 </form>
               </li>
             </ul>
+            <ul class="navbar-nav ms-2">
+            {% if request.user.is_authenticated %}
+              <!-- Notifications -->
+              <li class="nav-item dropdown">
+                <button id="notification-btn" class="btn btn-outline-secondary position-relative me-2">
+                  <i class="bi bi-bell"></i>
+                  {% if notifications|length > 0 %}
+                  <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                    {{ notifications|length }}
+                  </span>
+                  {% endif %}
+                </button>
+              </li>
+              <!-- User profile / logout links -->
+            {% endif %}
+          </ul>
           </div>
+        </div>
         </div>
       </nav>
     </div>
