@@ -458,6 +458,7 @@ def user_inbox_view(request, pk, category=None):
         "notifications": notifications,
         "default_notification_messages": default_notification_messages,
         "active_category": category,
+        "category_choices": Notification.CATEGORY_CHOICES,
     }
 
     return render(request, "users/user_inbox.html", context)
