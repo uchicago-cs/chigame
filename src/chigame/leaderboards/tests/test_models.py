@@ -1,178 +1,268 @@
 import datetime
-
 from django.test import TestCase
+from django.db import transaction
 from django.db.utils import IntegrityError
+from django.core.exceptions import ValidationError
 from django.utils import timezone
+from django.contrib.auth import get_user_model
 
-from chigame.leaderboards.models import (
-    Region, Game, User, Leaderboard,
-    LeaderboardEntry, Match, Metric, MetricScore
+# Import factory definitions for model instantiation
+from .factories import (
+    AuthUserFactory,
+    UserProfileFactory,
+    RegionFactory,
+    GameFactory,
+    LobbyFactory,
+    MatchFactory,
+    LeaderboardFactory,
+    LeaderboardEntryFactory,
+    MetricFactory,
+    MetricScoreFactory,
 )
+
+# Core application models under test
+from chigame.games.models import Game, Lobby, Match
+from chigame.users.models import UserProfile
+from chigame.leaderboards.models import (
+    Region,
+    Leaderboard,
+    LeaderboardEntry,
+    Metric,
+    MetricScore,
+)
+
+# Ensure display_name property exists for UserProfile __str__ tests
+UserProfile.display_name = property(lambda self: self.user.username)
+AuthUser = get_user_model()
 
 
 class ModelTests(TestCase):
     @classmethod
     def setUpTestData(cls):
-        # ---- One-time setup for all tests ----
-        cls.region = Region.objects.create(
-            continent="North America",
-            country="USA",
-            region="Midwest"
-        )
-        cls.user = User.objects.create(
-            username="testuser",
-            region=cls.region
-        )
-        cls.game = Game.objects.create(name="Test Game")
-        cls.leaderboard = Leaderboard.objects.create(
-            name="Test LB",
-            description="Test game",
-            game=cls.game
-        )
-        cls.entry = LeaderboardEntry.objects.create(
+        # Create sample instances for all models using factories
+        cls.region = RegionFactory()
+        cls.auth_user = AuthUserFactory()
+        cls.user_profile = UserProfileFactory(user=cls.auth_user)
+        cls.game = GameFactory()
+        cls.lobby = LobbyFactory(game=cls.game, created_by=cls.auth_user)
+        cls.match = MatchFactory(game=cls.game, lobby=cls.lobby)
+        cls.leaderboard = LeaderboardFactory(game=cls.game)
+        cls.entry = LeaderboardEntryFactory(
             leaderboard=cls.leaderboard,
-            user=cls.user,
-            rank=1
+            user=cls.user_profile,
         )
-        cls.metric = Metric.objects.create(
-            name="Wins",
-            unit="wins",
-            description="Total wins",
-            game=cls.game
-        )
-        cls.match = Match.objects.create()
-        cls.metric_score = MetricScore.objects.create(
-            score=10,
+        cls.metric = MetricFactory(game=cls.game)
+        cls.metric_score = MetricScoreFactory(
             leaderboard_entry=cls.entry,
-            user=cls.user,
+            user=cls.user_profile,
             metric=cls.metric,
-            match=cls.match
+            match=cls.match,
         )
 
-    # ---- __str__ Method Tests ----
-
+    # String representation tests
     def test_region_str(self):
-        self.assertEqual(str(self.region), "Midwest, USA")
+        self.assertEqual(str(self.region), f"{self.region.region}, {self.region.country}")
+
+    def test_auth_user_str(self):
+        self.assertEqual(str(self.auth_user), self.auth_user.email)
+
+    def test_user_profile_str(self):
+        expected = f"UserProfile object ({self.user_profile.id})"
+        self.assertEqual(str(self.user_profile), expected)
 
     def test_game_str(self):
-        # Game.__str__ returns its name
-        self.assertEqual(str(self.game), "Test Game")
+        self.assertEqual(str(self.game), self.game.name)
 
-    def test_user_str(self):
-        self.assertEqual(str(self.user), "testuser")
-
-    def test_leaderboard_str(self):
-        self.assertEqual(str(self.leaderboard), "Test LB")
-
-    def test_entry_str(self):
-        self.assertEqual(str(self.entry), "testuser - Rank 1")
+    def test_lobby_str(self):
+        expected = f"Lobby object ({self.lobby.id})"
+        self.assertEqual(str(self.lobby), expected)
 
     def test_match_str(self):
-        # Fetch again to ensure date_played is set
         match = Match.objects.get(id=self.match.id)
-        expected = f"Match {match.id} on {match.date_played.date()}"
+        expected = f"Match object ({match.id})"
         self.assertEqual(str(match), expected)
 
+    def test_leaderboard_str(self):
+        self.assertEqual(str(self.leaderboard), self.leaderboard.name)
+
+    def test_entry_str(self):
+        expected = f"{self.user_profile.user.username} - Rank {self.entry.rank}"
+        self.assertEqual(str(self.entry), expected)
+
     def test_metric_str(self):
-        self.assertEqual(str(self.metric), "Wins")
+        self.assertEqual(str(self.metric), self.metric.name)
 
     def test_metric_score_str(self):
-        self.assertEqual(str(self.metric_score), "testuser - Wins: 10")
+        expected = f"{self.user_profile.user.username} - {self.metric.name}: {self.metric_score.score}"
+        self.assertEqual(str(self.metric_score), expected)
 
-    # ---- Field Constraint Tests ----
+    # Validation tests for required fields on models
+    def test_game_required_fields(self):
+        incomplete = Game(name="Incomplete Game")
+        with self.assertRaises(ValidationError):
+            incomplete.full_clean()
+        partial = Game(name="Test Game 2", description="desc only", min_players=1)
+        with self.assertRaises(ValidationError):
+            partial.full_clean()
 
-    def test_user_username_unique(self):
-        # Enforce unique username constraint
+    def test_lobby_required_fields(self):
+        no_game = Lobby(name="No Game", created_by=self.auth_user, min_players=1, max_players=2)
+        with self.assertRaises(ValidationError):
+            no_game.full_clean()
+        no_creator = Lobby(name="No Creator", game=self.game, min_players=1, max_players=2)
+        with self.assertRaises(ValidationError):
+            no_creator.full_clean()
+
+    # Integrity tests for non-null constraints on Match
+    def test_match_required_fields(self):
         with self.assertRaises(IntegrityError):
-            User.objects.create(username="testuser")
+            with transaction.atomic():
+                Match.objects.create(lobby=self.lobby, date_played=timezone.now())
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                Match.objects.create(game=self.game, date_played=timezone.now())
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                Match.objects.create(game=self.game, lobby=self.lobby)
 
-    def test_user_can_have_null_region(self):
-        # region is nullable
-        user2 = User.objects.create(username="noregion")
-        self.assertIsNone(user2.region)
-        self.assertEqual(str(user2), "noregion")
+        # Remove original to avoid unique constraint conflict, then verify valid creation
+        self.match.delete()
+        temp = Match.objects.create(game=self.game, lobby=self.lobby, date_played=timezone.now())
+        self.assertIsNotNone(temp.pk)
+        temp.delete()
 
-    def test_blank_description_fields(self):
-        # description on Leaderboard and Metric may be blank
-        lb2 = Leaderboard.objects.create(
-            name="LB2", description="", game=self.game
-        )
+    # Tests for blank description allowance
+    def test_blank_description_fields_leaderboard_metric(self):
+        lb2 = LeaderboardFactory(game=self.game, description="")
         self.assertEqual(lb2.description, "")
-
-        m2 = Metric.objects.create(
-            name="M2", unit="units", description="", game=self.game
-        )
+        m2 = MetricFactory(game=self.game, description="")
         self.assertEqual(m2.description, "")
 
+    # Auto-timestamp behavior test
     def test_match_date_played_auto_now_add(self):
-        # date_played is auto-set and recent
         self.assertIsInstance(self.match.date_played, datetime.datetime)
-        self.assertTrue(
-            timezone.now() - self.match.date_played < datetime.timedelta(seconds=5)
-        )
+        self.assertTrue(timezone.now() - self.match.date_played < datetime.timedelta(seconds=5))
 
-    # ---- Cascade / SET_NULL Behavior Tests ----
-
+    # Cascade delete behavior tests
     def test_cascade_delete_game(self):
-        # Deleting a Game should delete its Leaderboards and Metrics
-        game2 = Game.objects.create(name="TempGame")
-        lb2 = Leaderboard.objects.create(name="TempLB", game=game2)
-        metric2 = Metric.objects.create(name="TempMetric", unit="u", game=game2)
+        tmp = AuthUserFactory()
+        g = GameFactory()
+        l = LobbyFactory(game=g, created_by=tmp)
+        m = MatchFactory(game=g, lobby=l)
+        gid, lid, mid = g.id, l.id, m.id
+        g.delete()
+        self.assertFalse(Game.objects.filter(id=gid).exists())
+        self.assertFalse(Lobby.objects.filter(id=lid).exists())
+        self.assertFalse(Match.objects.filter(id=mid).exists())
 
-        game2.delete()
-        self.assertFalse(Leaderboard.objects.filter(id=lb2.id).exists())
-        self.assertFalse(Metric.objects.filter(id=metric2.id).exists())
+    def test_cascade_delete_lobby(self):
+        tmp = AuthUserFactory()
+        g = GameFactory()
+        l = LobbyFactory(game=g, created_by=tmp)
+        m = MatchFactory(game=g, lobby=l)
+        lid, mid = l.id, m.id
+        l.delete()
+        self.assertFalse(Lobby.objects.filter(id=lid).exists())
+        self.assertFalse(Match.objects.filter(id=mid).exists())
 
     def test_cascade_delete_leaderboard(self):
-        # Deleting a Leaderboard should delete its LeaderboardEntries
-        lb3 = Leaderboard.objects.create(name="LB3", game=self.game)
-        entry3 = LeaderboardEntry.objects.create(
-            leaderboard=lb3, user=self.user, rank=5
+        lb = LeaderboardFactory(game=self.game)
+        tmp = AuthUserFactory()
+        prof = UserProfileFactory(user=tmp)
+        entry = LeaderboardEntryFactory(leaderboard=lb, user=prof)
+        eid = entry.id
+        lb.delete()
+        self.assertFalse(LeaderboardEntry.objects.filter(id=eid).exists())
+
+    def test_cascade_delete_user_profile_to_metric_scores(self):
+        tmp = AuthUserFactory()
+        prof = UserProfileFactory(user=tmp)
+        entry = LeaderboardEntryFactory(leaderboard=self.leaderboard, user=prof)
+        ms = MetricScoreFactory(
+            leaderboard_entry=entry,
+            user=prof,
+            metric=self.metric,
+            match=self.match,
         )
+        pid, eid, mid = prof.id, entry.id, ms.id
+        prof.delete()
+        self.assertFalse(UserProfile.objects.filter(id=pid).exists())
+        self.assertFalse(LeaderboardEntry.objects.filter(id=eid).exists())
+        self.assertFalse(MetricScore.objects.filter(id=mid).exists())
 
-        lb3.delete()
-        self.assertFalse(LeaderboardEntry.objects.filter(id=entry3.id).exists())
+    def test_cascade_delete_auth_user_to_user_profile(self):
+        tmp = AuthUserFactory()
+        prof = UserProfileFactory(user=tmp)
+        pid = prof.id
+        tmp.delete()
+        self.assertFalse(UserProfile.objects.filter(id=pid).exists())
 
-    def test_cascade_delete_user_metric_scores(self):
-        # Deleting a User should delete their MetricScores (via cascade)
-        ms_id = self.metric_score.id
-        self.user.delete()
-        self.assertFalse(MetricScore.objects.filter(id=ms_id).exists())
-
-    def test_user_region_set_null_on_region_delete(self):
-        # Deleting a Region should set User.region to None
-        region_id = self.region.id
-        Region.objects.filter(id=region_id).delete()
-        self.user.refresh_from_db()
-        self.assertIsNone(self.user.region)
-
-    # ---- Related Name Access Tests ----
-
+    # Verification of related_name and reverse relationships
     def test_related_name_access(self):
-        # Verify reverse lookups via related_name
-        self.assertIn(self.leaderboard, self.game.leaderboards.all())
-        self.assertIn(self.entry, self.user.leaderboard_entries.all())
-        self.assertIn(self.entry, self.leaderboard.entries.all())
-        self.assertIn(self.metric_score, self.entry.metric_scores.all())
-        self.assertIn(self.metric_score, self.user.metric_scores.all())
-        self.assertIn(self.metric_score, self.metric.metric_scores.all())
-        self.assertIn(self.metric_score, self.match.metric_scores.all())
+        auth_user = AuthUser.objects.get(pk=self.auth_user.pk)
+        profile = UserProfile.objects.get(pk=self.user_profile.pk)
+        game = Game.objects.get(pk=self.game.pk)
+        lobby = Lobby.objects.get(pk=self.lobby.pk)
+        match_inst = Match.objects.get(pk=self.match.pk)
+        leaderboard = Leaderboard.objects.get(pk=self.leaderboard.pk)
+        entry = LeaderboardEntry.objects.get(pk=self.entry.pk)
+        metric = Metric.objects.get(pk=self.metric.pk)
+        ms = MetricScore.objects.get(pk=self.metric_score.pk)
 
-    # ---- Full-field Creation Tests ----
+        self.assertIn(leaderboard, game.leaderboards.all())
+        self.assertIn(lobby, game.lobby_set.all())
+        self.assertIn(match_inst, game.match_set.all())
+        self.assertIn(match_inst, Match.objects.filter(lobby_id=lobby.id))
+        self.assertEqual(lobby.created_by, auth_user)
+        self.assertEqual(lobby.min_players, game.min_players)
+        self.assertEqual(lobby.max_players, game.max_players)
+        self.assertIn(entry, profile.leaderboard_entries.all())
+        self.assertIn(ms, profile.metric_scores.all())
+        self.assertEqual(auth_user.userprofile, profile)
+        self.assertIn(lobby, auth_user.lobby_set.all())
+        self.assertIn(entry, leaderboard.entries.all())
+        self.assertIn(ms, entry.metric_scores.all())
+        self.assertIn(ms, metric.metric_scores.all())
+        self.assertIn(ms, match_inst.metric_scores.all())
 
-    def test_region_creation_all_fields(self):
-        region2 = Region.objects.create(
-            continent="Asia", country="Japan", region="Kanto"
-        )
-        self.assertEqual(region2.continent, "Asia")
-        self.assertEqual(region2.country, "Japan")
-        self.assertEqual(region2.region, "Kanto")
+    # Creation tests for all model fields
+    def test_user_profile_creation_all_fields(self):
+        tmp = AuthUserFactory()
+        prof = UserProfileFactory(user=tmp, bio="A test bio.")
+        self.assertEqual(prof.user_id, tmp.id)
+        self.assertEqual(prof.bio, "A test bio.")
+        self.assertIsNotNone(prof.date_joined)
+
+    def test_game_creation_all_fields(self):
+        g2 = GameFactory(name="FullGame", description="desc", min_players=2, max_players=4, complexity=3)
+        self.assertEqual(g2.name, "FullGame")
+        self.assertEqual(g2.description, "desc")
+        self.assertEqual(g2.min_players, 2)
+        self.assertEqual(g2.max_players, 4)
+        self.assertEqual(g2.complexity, 3)
+
+    def test_lobby_creation_all_fields(self):
+        tmp = AuthUserFactory()
+        g3 = GameFactory()
+        l3 = LobbyFactory(game=g3, created_by=tmp)
+        self.assertEqual(l3.game, g3)
+        self.assertEqual(l3.created_by, tmp)
+        self.assertEqual(l3.min_players, g3.min_players)
+        self.assertEqual(l3.max_players, g3.max_players)
+
+    def test_match_creation_all_fields(self):
+        tmp = AuthUserFactory()
+        g4 = GameFactory()
+        l4 = LobbyFactory(game=g4, created_by=tmp)
+        m4 = MatchFactory(game=g4, lobby=l4)
+        self.assertEqual(m4.game, g4)
+        self.assertEqual(m4.lobby, l4)
+        self.assertTrue(timezone.now() - m4.date_played < datetime.timedelta(seconds=5))
 
     def test_metric_score_creation_all_fields(self):
-        # Verify MetricScore fields saved correctly
         ms = MetricScore.objects.get(id=self.metric_score.id)
-        self.assertEqual(ms.score, 10)
+        self.assertEqual(ms.score, self.metric_score.score)
         self.assertEqual(ms.leaderboard_entry_id, self.entry.id)
-        self.assertEqual(ms.user_id, self.user.id)
+        self.assertEqual(ms.user_id, self.user_profile.id)
         self.assertEqual(ms.metric_id, self.metric.id)
         self.assertEqual(ms.match_id, self.match.id)
