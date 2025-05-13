@@ -39,6 +39,7 @@
             type="text/css" />
       <!-- CSS for Footer and Navbar -->
       <link href="{% static 'css/base.css' %}" rel="stylesheet" />
+      <link href="{% static 'css/notifications.css' %}" rel="stylesheet" />
       <!-- Google Fonts -->
       <link rel="preconnect" href="https://fonts.googleapis.com" />
       <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -53,8 +54,8 @@
     {% block javascript %}
       <!-- Bootstrap JS -->
       <script defer
-              src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/js/bootstrap.min.js"
-              integrity="sha512-1/RvZTcCDEUjY/CypiMz+iqqtaoQfAITmNSJY17Myp4Ms5mdxPS5UV7iOfdZoxcGhzFbOm6sntTKJppjvuhg4g=="
+              src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/js/bootstrap.bundle.min.js"
+              integrity="sha512-i9cEfJwUwViEPFKdC1enz4ZRGBj8YQo6QByFTF92YXHi7waCqyexvRD75S5NVTsSiTv7rKWqG9Y5eFxmRsOn0A=="
               crossorigin="anonymous"
               referrerpolicy="no-referrer"></script>
       <!-- Your stuff: Third-party javascript libraries go here -->
@@ -181,14 +182,32 @@
             {% if request.user.is_authenticated %}
               <!-- Notifications -->
               <li class="nav-item dropdown">
-                <button id="notification-btn" class="btn btn-outline-secondary position-relative me-2">
+                <a class="nav-link dropdown-toggle position-relative" href="#" id="notification-btn" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                   <i class="bi bi-bell"></i>
                   {% if notifications|length > 0 %}
-                  <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                    {{ notifications|length }}
-                  </span>
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                      {{ notifications|length }}
+                    </span>
                   {% endif %}
-                </button>
+                </a>
+                 <ul class="dropdown-menu dropdown-menu-end notifications-dropdown" aria-labelledby="notification-btn">
+                  {% if notifications %}
+                    {% for n in notifications %}
+                      <li class="dropdown-item">
+                        <div class="d-flex justify-content-between align-items-start">
+                          <div>
+                            <strong>{{ n.message|default:"You have a new notification" }}</strong><br>
+                            <small class="text-muted">{{ n.last_sent|timesince }} ago</small>
+                          </div>
+                          <button class="btn-close btn-sm ms-2" title="Dismiss"
+                                  onclick="dismissNotification({{ n.id }})"></button>
+                        </div>
+                      </li>
+                    {% endfor %}
+                  {% else %}
+                    <li class="dropdown-item text-muted">No new notifications</li>
+                  {% endif %}
+                </ul>
               </li>
               <!-- User profile / logout links -->
             {% endif %}
