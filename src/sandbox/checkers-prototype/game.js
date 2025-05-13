@@ -46,7 +46,7 @@ let drawOfferedBy = null;
 // ----------------------------------------------------------------------------
 
 // ---INIT FUNCTIONS-----------------------------------------------------------
-function preload() { }
+function preload() {}
 
 function create() {
   // Store reference to the scene
@@ -66,7 +66,7 @@ function create() {
 
   function resetGame() {
     // Clear all pieces
-    pieces.forEach(piece => piece.sprite.destroy());
+    pieces.forEach((piece) => piece.sprite.destroy());
     pieces = [];
 
     // Reset game state
@@ -124,14 +124,15 @@ function create() {
       drawOffered = true;
       drawOfferedBy = currentPlayer;
       if (currentPlayer === COLORS.red) {
-        gameOverMessage.textContent = 'Red player has offered a draw. Black player, please accept or decline.';
+        gameOverMessage.textContent =
+          'Red player has offered a draw. Black player, please accept or decline.';
       } else {
-        gameOverMessage.textContent = 'Black player has offered a draw. Red player, please accept or decline.';
+        gameOverMessage.textContent =
+          'Black player has offered a draw. Red player, please accept or decline.';
       }
       gameOverMessage.classList.add('show');
       drawBtn.textContent = 'Accept Draw';
       declineDrawBtn.style.display = 'block';
-
     } else {
       // Accept Draw (second click)
       gameOver = true;
@@ -151,7 +152,7 @@ function create() {
   });
 }
 
-function update() { }
+function update() {}
 // ----------------------------------------------------------------------------
 
 // Draw the game board
@@ -283,9 +284,7 @@ function isValidMove(piece, moveX, moveY) {
     // get the piece that was jumped over
     const captured = getPiece(piece.x + dx / 2, piece.y + dy / 2);
     // make sure there exists a piece that was jumped over, and it must be an opposing piece
-    return (
-      captured && captured.color !== piece.color
-    );
+    return captured && captured.color !== piece.color;
   }
 
   // return false if it's not a normal or jump move
@@ -311,16 +310,27 @@ function movePiece(piece, moveX, moveY) {
   // Move the piece
   piece.x = moveX;
   piece.y = moveY;
-  piece.sprite.x = MARGIN + piece.x * TILE_SIZE + TILE_SIZE / 2;
-  piece.sprite.y = MARGIN + piece.y * TILE_SIZE + TILE_SIZE / 2;
+  const newX = MARGIN + moveX * TILE_SIZE + TILE_SIZE / 2;
+  const newY = MARGIN + moveY * TILE_SIZE + TILE_SIZE / 2;
 
-  console.log("Current board state:", getBoardState());
+  // Animate the piece movement
+  checkers.scene.scenes[0].tweens.add({
+    targets: piece.sprite,
+    x: newX,
+    y: newY,
+    duration: 300, // having done some testing and playing, I think 300 ms is the best
+    // https://docs.phaser.io/phaser/concepts/tweens
+    // https://rexrainbow.github.io/phaser3-rex-notes/docs/site/ease-function/
+    ease: 'Power3',
+  });
+
+  console.log('Current board state:', getBoardState());
 }
 
 // Check if the game is over due to all pieces of one color being captured
 function checkGameOver() {
-  const redPieces = pieces.filter(p => p.color === COLORS.red);
-  const blackPieces = pieces.filter(p => p.color === COLORS.black);
+  const redPieces = pieces.filter((p) => p.color === COLORS.red);
+  const blackPieces = pieces.filter((p) => p.color === COLORS.black);
 
   if (redPieces.length === 0) {
     gameOver = true;
@@ -399,7 +409,6 @@ function getBoardState() {
   return board;
 }
 
-
 function sendBoardToServer(boardState) {
   fetch('/api/board-state/', {
     method: 'POST',
@@ -429,8 +438,7 @@ function changePieceColor(newColorOne, newColorTwo) {
     if (piece.color === firstPieceColor) {
       piece.color = newColorOne;
       piece.sprite.setFillStyle(newColorOne);
-    }
-    else {
+    } else {
       piece.color = newColorTwo;
       piece.sprite.setFillStyle(newColorTwo);
     }
