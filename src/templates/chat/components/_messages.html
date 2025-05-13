@@ -108,20 +108,20 @@ let replyToContent = null;
 function showContextMenu(event, messageId, username, content) {
   const contextMenu = document.getElementById('contextMenu');
   const replyPreview = document.getElementById('replyPreview');
-  
+
   // Store reply information
   replyToMessageId = messageId;
   replyToUsername = username;
   replyToContent = content;
-  
+
   // Update preview
   replyPreview.textContent = `Replying to ${username}: ${content}`;
-  
+
   // Position and show menu
   contextMenu.style.left = event.pageX + 'px';
   contextMenu.style.top = event.pageY + 'px';
   contextMenu.style.display = 'block';
-  
+
   // Hide menu when clicking elsewhere
   document.addEventListener('click', hideContextMenu);
 }

@@ -98,20 +98,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
             reply_to = LiveChatMessage.objects.get(id=reply_to_id)
 
         # Save the message to the database
-        message_obj = LiveChatMessage.objects.create(
-            live_chat=chat,
-            user=user,
-            content=message,
-            reply_to=reply_to
-        )
+        message_obj = LiveChatMessage.objects.create(live_chat=chat, user=user, content=message, reply_to=reply_to)
 
         # Return the display name and message ID
         return {
-            'username': user.username or user.email,
-            'message_id': message_obj.id,
-            'reply_to': reply_to_id,
-            'reply_to_username': reply_to.user.username if reply_to else None,
-            'reply_to_content': reply_to.content if reply_to else None
+            "username": user.username or user.email,
+            "message_id": message_obj.id,
+            "reply_to": reply_to_id,
+            "reply_to_username": reply_to.user.username if reply_to else None,
+            "reply_to_content": reply_to.content if reply_to else None,
         }
 
     async def receive(self, text_data):
@@ -136,11 +131,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 "type": "sendMessage",
                 "message": message,
                 "user_id": user_id,
-                "username": message_data['username'],
-                "message_id": message_data['message_id'],
-                "reply_to": message_data['reply_to'],
-                "reply_to_username": message_data['reply_to_username'],
-                "reply_to_content": message_data['reply_to_content']
+                "username": message_data["username"],
+                "message_id": message_data["message_id"],
+                "reply_to": message_data["reply_to"],
+                "reply_to_username": message_data["reply_to_username"],
+                "reply_to_content": message_data["reply_to_content"],
             },
         )
 
@@ -153,13 +148,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
             event (dict): The event data containing message details.
         """
         await self.send(
-            text_data=json.dumps({
-                "message": event["message"],
-                "user_id": event["user_id"],
-                "username": event["username"],
-                "message_id": event["message_id"],
-                "reply_to": event["reply_to"],
-                "reply_to_username": event["reply_to_username"],
-                "reply_to_content": event["reply_to_content"]
-            })
+            text_data=json.dumps(
+                {
+                    "message": event["message"],
+                    "user_id": event["user_id"],
+                    "username": event["username"],
+                    "message_id": event["message_id"],
+                    "reply_to": event["reply_to"],
+                    "reply_to_username": event["reply_to_username"],
+                    "reply_to_content": event["reply_to_content"],
+                }
+            )
         )
