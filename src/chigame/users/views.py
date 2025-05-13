@@ -422,7 +422,7 @@ def notification_search_results(request):
 
 
 @login_required
-def user_inbox_view(request, pk, category='inbox'):
+def user_inbox_view(request, pk, category="inbox"):
     """
     Displays a user's inbox containing notifications. The user can only access
     their own inbox.

@@ -10,7 +10,7 @@
         <div class="list-group">
           {% for key, label in category_choices %}
             <a href="{% url 'users:user-inbox-category' pk=pk category=key %}"
-              class="list-group-item list-group-item-action {% if active_category == key %}active{% endif %}">
+               class="list-group-item list-group-item-action {% if active_category == key %}active{% endif %}">
               {{ label }}
             </a>
           {% endfor %}
@@ -19,7 +19,7 @@
       <!-- Main Content (Right) -->
       <div class="col-md-9">
         <a href="{% url 'users:deleted-notifications' pk=request.user.pk %}"
-          class="btn btn-primary">Show Deleted Notifications</a>
+           class="btn btn-primary">Show Deleted Notifications</a>
         <br />
         <br />
         <ul class="list-group">
@@ -27,7 +27,8 @@
             {% csrf_token %}
             {% for notification in notifications %}
               {% with notification_type=notification.type %}
-                <li class="notification-container list-group-item d-flex justify-content-between align-items-center border shadow-sm notification-hover {% if notification.read %}read{% else %}unread{% endif %}" oncontextmenu="openContextMenu(event, '{{ notification.id }}')">
+                <li class="notification-container list-group-item d-flex justify-content-between align-items-center border shadow-sm notification-hover {% if notification.read %}read{% else %}unread{% endif %}"
+                    oncontextmenu="openContextMenu(event, '{{ notification.id }}')">
                   <div class="ms-2 me-auto">
                     <label>
                       <input type="checkbox" name="notification[]" value="{{ notification.id }}" />
@@ -42,23 +43,26 @@
                   <div class="button-container d-flex gap-2">
                     {% if notification.read %}
                       <a href="{% url 'users:act-on-inbox-notification' notification.pk 'mark_unread' %}"
-                        class="text-decoration-none text-primary" title="Mark as Unread">
+                         class="text-decoration-none text-primary"
+                         title="Mark as Unread">
                         <i class="bi bi-envelope" style="font-size: 1.2rem;"></i>
                       </a>
                     {% else %}
                       <a href="{% url 'users:act-on-inbox-notification' notification.pk 'mark_read' %}"
-                        class="text-decoration-none text-primary" title="Mark as Read">
+                         class="text-decoration-none text-primary"
+                         title="Mark as Read">
                         <i class="bi bi-envelope-open" style="font-size: 1.2rem;"></i>
                       </a>
                     {% endif %}
-                  
                     <a href="{% url 'users:act-on-inbox-notification' notification.pk 'delete' %}"
-                      class="text-danger text-decoration-none" title="Delete">
+                       class="text-danger text-decoration-none"
+                       title="Delete">
                       <i class="bi bi-trash" style="font-size: 1.2rem;"></i>
                     </a>
-
-                    <a href="javascript:void(0);" onclick="openContextMenuFromButton(event, '{{ notification.id }}')"
-                      class="text-muted text-decoration-none" title="Move">
+                    <a href="javascript:void(0);"
+                       onclick="openContextMenuFromButton(event, '{{ notification.id }}')"
+                       class="text-muted text-decoration-none"
+                       title="Move">
                       <i class="bi bi-folder2-open" style="font-size: 1.2rem;"></i>
                     </a>
                   </div>
