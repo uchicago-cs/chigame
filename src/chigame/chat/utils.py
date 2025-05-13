@@ -2,8 +2,8 @@
 Utilities for the chat app. Includes profanity filtering.
 """
 
-import re
 import os
+import re
 
 # this is the path to the file containing profane words
 PATH_TO_PROFANITY_FILE = os.path.join(os.path.dirname(__file__), "PROFANITY.txt")
@@ -19,18 +19,17 @@ class ProfanityFilter:
         Initialize the profanity filter from a comma separated file containing profane words.
         """
         # Get the directory where this file is located
-        current_dir = os.path.dirname(os.path.abspath(__file__))
         profanity_file = PATH_TO_PROFANITY_FILE
-        
+
         # Read profane words from file (comma separated)
         try:
-            with open(profanity_file, 'r') as f:
+            with open(profanity_file) as f:
                 profanity_text = f.read().strip()
-                self.profanity_list = [word.strip() for word in profanity_text.split(',')]
+                self.profanity_list = [word.strip() for word in profanity_text.split(",")]
         except FileNotFoundError:
             print(f"Warning: Profanity file not found at {profanity_file}")
             self.profanity_list = []
-        
+
         # Create the regex pattern
         escaped_words = [re.escape(word) for word in self.profanity_list]
         self.pattern = re.compile(r"\b(" + "|".join(escaped_words) + r")\b", re.IGNORECASE)
