@@ -1,15 +1,18 @@
 import json
-from django.core.cache import cache
+
 from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
+from django.core.cache import cache
+import asyncio
 
 from chigame.users.models import User
 
 from .models import LiveChat, LiveChatMessage
 
 # Rate limiting constants
-MESSAGES_PER_SECOND = 1 # Maximum messages allowed per second
+MESSAGES_PER_SECOND = 1  # Maximum messages allowed per second
 RATE_LIMIT_KEY_PREFIX = "chat_rate_limit:"
+
 
 class ChatConsumer(AsyncWebsocketConsumer):
     """
@@ -86,21 +89,21 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def check_rate_limit(self, user_id):
         """
         Checks if the user has exceeded their message rate limit.
-        
+
         Args:
             user_id (int): The ID of the user.
-            
+
         Returns:
             bool: True if user is within rate limit, False otherwise.
         """
         cache_key = f"{RATE_LIMIT_KEY_PREFIX}{user_id}"
-        
+
         # Initialize the cache key if it does not exist
         if not cache.add(cache_key, 0, 1):
             # Atomically increment the message count
             if cache.incr(cache_key) > MESSAGES_PER_SECOND:
                 return False
-        
+
         return True
 
     async def save_message(self, chat_id, user_id, message):
@@ -111,17 +114,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
             chat_id (int): The ID of the chat.
             user_id (int): The ID of the user.
             message (str): The message to save.
-            
+
         Returns:
             tuple: (username, bool) - The username and whether the message was saved.
         """
         # Check rate limit first
         if not await self.check_rate_limit(user_id):
             return None, False
-            
+
         chat, user = await asyncio.gather(
             database_sync_to_async(LiveChat.objects.get)(id=chat_id),
-            database_sync_to_async(User.objects.get)(id=user_id)
+            database_sync_to_async(User.objects.get)(id=user_id),
         )
 
         # Save the message to the database
@@ -144,14 +147,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         # Save message to database once when first received from client
         username, saved = await self.save_message(self.chat_id, user_id, message)
-        
+
         if not saved:
             # Send rate limit error to the user
             await self.send(
-                text_data=json.dumps({
-                    "type": "error",
-                    "message": f"Rate limit exceeded. Maximum {MESSAGES_PER_SECOND} messages per second allowed."
-                })
+                text_data=json.dumps(
+                    {
+                        "type": "error",
+                        "message": f"Rate limit exceeded. Maximum {MESSAGES_PER_SECOND} messages per second allowed.",
+                    }
+                )
             )
             return
 
