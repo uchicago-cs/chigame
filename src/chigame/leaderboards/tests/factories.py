@@ -25,6 +25,7 @@ class GameFactory(DjangoModelFactory):
     description = Faker("sentence")
     min_players = Faker("random_int", min=1, max=3)
     max_players = Faker("random_int", min=4, max=6)
+    complexity = Faker("random_int", min=1, max=5)
 
 
 class LeaderboardFactory(DjangoModelFactory):

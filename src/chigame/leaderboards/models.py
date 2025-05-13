@@ -1,5 +1,8 @@
 from django.db import models
 
+from chigame.games.models import Game, Match
+from chigame.users.models import UserProfile
+
 
 class Region(models.Model):
     continent = models.CharField(max_length=100)
@@ -8,23 +11,6 @@ class Region(models.Model):
 
     def __str__(self):
         return f"{self.region}, {self.country}"
-
-
-class Game(models.Model):
-    name = models.CharField(max_length=255)
-    # other fields for Game as needed
-
-    def __str__(self):
-        return self.name
-
-
-class User(models.Model):
-    username = models.CharField(max_length=150, unique=True)
-    region = models.ForeignKey(Region, on_delete=models.SET_NULL, null=True, blank=True)
-    # other fields for User as needed
-
-    def __str__(self):
-        return self.username
 
 
 class Leaderboard(models.Model):
@@ -38,19 +24,11 @@ class Leaderboard(models.Model):
 
 class LeaderboardEntry(models.Model):
     leaderboard = models.ForeignKey(Leaderboard, on_delete=models.CASCADE, related_name="entries")
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="leaderboard_entries")
+    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name="leaderboard_entries")
     rank = models.IntegerField()
 
     def __str__(self):
-        return f"{self.user.username} - Rank {self.rank}"
-
-
-class Match(models.Model):
-    # Define Match fields as needed
-    date_played = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"Match {self.id} on {self.date_played.date()}"
+        return f"{self.user.display_name} - Rank {self.rank}"
 
 
 class Metric(models.Model):
@@ -66,9 +44,69 @@ class Metric(models.Model):
 class MetricScore(models.Model):
     score = models.IntegerField()
     leaderboard_entry = models.ForeignKey(LeaderboardEntry, on_delete=models.CASCADE, related_name="metric_scores")
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="metric_scores")
+    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name="metric_scores")
     metric = models.ForeignKey(Metric, on_delete=models.CASCADE, related_name="metric_scores")
     match = models.ForeignKey(Match, on_delete=models.CASCADE, related_name="metric_scores")
 
     def __str__(self):
-        return f"{self.user.username} - {self.metric.name}: {self.score}"
+        return f"{self.user.display_name} - {self.metric.name}: {self.score}"
+
+
+class LeaderboardPrivacySetting(models.Model):
+    """
+    Stores user Settings for leaderboard visibility.
+
+    Setting hierarchy:
+    1. Specific leaderboard Setting (highest priority)
+    2. Game-level setting
+    3. Global setting (lowest priority)
+    """
+
+    complete_opt_out = models.BooleanField(default=False)
+    display_as_anonymous = models.BooleanField(default=False)
+
+    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+    game = models.ForeignKey(Game, on_delete=models.CASCADE, null=True, blank=True)
+    leaderboard = models.ForeignKey(Leaderboard, on_delete=models.CASCADE, null=True, blank=True)
+
+    class Meta:
+        unique_together = ("user", "game", "leaderboard")
+
+    def __str__(self):
+        if self.leaderboard:
+            return f"{self.user.display_name}'s settings for {self.leaderboard.name}"
+        elif self.game:
+            return f"{self.user.display_name}'s settings for {self.game.name}"
+        else:
+            return f"{self.user.display_name}'s global settings"
+
+    @classmethod
+    def get_user_setting(cls, user, game=None, leaderboard=None):
+        """
+        Retrieve the user's setting for a specific game or leaderboard.
+        If no specific game or leaderboard is provided, return global setting.
+
+        This follows the hierarchy:
+        1. Specific leaderboard Setting (highest priority)
+        2. Game-level setting
+        3. Global setting (lowest priority)
+
+        If no setting is found, return None.
+        """
+        if leaderboard:
+            # specific leaderboard setting
+            setting = cls.objects.filter(user=user, leaderboard=leaderboard).first()
+            if setting:
+                return setting
+        if game:
+            # game-level setting
+            setting = cls.objects.filter(user=user, game=game, leaderboard__isnull=True).first()
+            if setting:
+                return setting
+
+        # global setting
+        setting = cls.objects.filter(user=user, game__isnull=True, leaderboard__isnull=True).first()
+        if setting:
+            return setting
+
+        return None
