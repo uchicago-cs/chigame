@@ -93,48 +93,49 @@
     {% endif %}
   </div>
 </div>
-
 <!-- Context Menu -->
-<div id="contextMenu" class="position-fixed bg-white border shadow-sm rounded p-2" style="display: none; z-index: 1000;">
+<div id="contextMenu"
+     class="position-fixed bg-white border shadow-sm rounded p-2"
+     style="display: none;
+            z-index: 1000">
   <div class="small text-muted mb-1" id="replyPreview"></div>
   <button class="btn btn-sm btn-light w-100" onclick="replyToMessage()">Reply</button>
 </div>
-
 <script>
-let replyToMessageId = null;
-let replyToUsername = null;
-let replyToContent = null;
+  let replyToMessageId = null;
+  let replyToUsername = null;
+  let replyToContent = null;
 
-function showContextMenu(event, messageId, username, content) {
-  const contextMenu = document.getElementById('contextMenu');
-  const replyPreview = document.getElementById('replyPreview');
+  function showContextMenu(event, messageId, username, content) {
+    const contextMenu = document.getElementById('contextMenu');
+    const replyPreview = document.getElementById('replyPreview');
 
-  // Store reply information
-  replyToMessageId = messageId;
-  replyToUsername = username;
-  replyToContent = content;
+    // Store reply information
+    replyToMessageId = messageId;
+    replyToUsername = username;
+    replyToContent = content;
 
-  // Update preview
-  replyPreview.textContent = `Replying to ${username}: ${content}`;
+    // Update preview
+    replyPreview.textContent = `Replying to ${username}: ${content}`;
 
-  // Position and show menu
-  contextMenu.style.left = event.pageX + 'px';
-  contextMenu.style.top = event.pageY + 'px';
-  contextMenu.style.display = 'block';
+    // Position and show menu
+    contextMenu.style.left = event.pageX + 'px';
+    contextMenu.style.top = event.pageY + 'px';
+    contextMenu.style.display = 'block';
 
-  // Hide menu when clicking elsewhere
-  document.addEventListener('click', hideContextMenu);
-}
+    // Hide menu when clicking elsewhere
+    document.addEventListener('click', hideContextMenu);
+  }
 
-function hideContextMenu() {
-  const contextMenu = document.getElementById('contextMenu');
-  contextMenu.style.display = 'none';
-  document.removeEventListener('click', hideContextMenu);
-}
+  function hideContextMenu() {
+    const contextMenu = document.getElementById('contextMenu');
+    contextMenu.style.display = 'none';
+    document.removeEventListener('click', hideContextMenu);
+  }
 
-function replyToMessage() {
-  const input = document.getElementById('id_message_send_input');
-  input.focus();
-  hideContextMenu();
-}
+  function replyToMessage() {
+    const input = document.getElementById('id_message_send_input');
+    input.focus();
+    hideContextMenu();
+  }
 </script>
