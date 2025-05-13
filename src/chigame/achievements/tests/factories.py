@@ -2,7 +2,7 @@ import factory
 from factory.django import DjangoModelFactory
 
 from chigame.achievements.models import Achievement, User, UserAchievement
-from chigame.api.tests.factories import GameFactory, LobbyFactory, UserFactory
+from chigame.api.tests.factories import GameFactory, LobbyFactory
 from chigame.games.models import Match
 
 
