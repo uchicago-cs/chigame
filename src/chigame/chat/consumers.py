@@ -8,7 +8,7 @@ from chigame.users.models import User
 from .models import LiveChat, LiveChatMessage
 
 # Rate limiting constants
-MESSAGES_PER_SECOND = 5  # Maximum messages allowed per second
+MESSAGES_PER_SECOND = 1 # Maximum messages allowed per second
 RATE_LIMIT_KEY_PREFIX = "chat_rate_limit:"
 
 class ChatConsumer(AsyncWebsocketConsumer):
