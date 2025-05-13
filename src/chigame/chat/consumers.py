@@ -11,6 +11,7 @@ from .models import LiveChat, LiveChatMessage
 
 # Rate limiting constants
 MESSAGES_PER_SECOND = 1  # Maximum messages allowed per second
+RATE_LIMIT_WINDOW_SECONDS = 1  # Time window for rate limiting in seconds
 RATE_LIMIT_KEY_PREFIX = "chat_rate_limit:"
 
 class ChatConsumer(AsyncWebsocketConsumer):
