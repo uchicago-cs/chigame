@@ -783,3 +783,11 @@ def notifications_by_label(request, label_id):
         "notifications": notifications,
     }
     return render(request, "users/notifications_by_label.html", context)
+
+
+@login_required
+def toggle_profanity(request, pk):
+    user = get_object_or_404(User, pk=pk)
+    user.profanity_filter = not user.profanity_filter
+    user.save()
+    return redirect(reverse("users:user-profile", kwargs={"pk": pk}))
