@@ -399,7 +399,6 @@ function getBoardState() {
   return board;
 }
 
-
 function sendBoardToServer(boardState) {
   fetch('/api/board-state/', {
     method: 'POST',
@@ -413,12 +412,14 @@ function sendBoardToServer(boardState) {
 
 // Event Listener for Settings Menu
 document.addEventListener('DOMContentLoaded', () => {
-  const settingsButton = document.getElementById('settings-button');
-  const settingsMenu = document.getElementById('settings-menu');
+  const settingsContainer = document.getElementById('settings-container');
 
-  settingsButton.addEventListener('click', () => {
-    settingsMenu.classList.toggle('active');
-    settingsMenu.classList.toggle('hidden');
+  settingsContainer.addEventListener('mouseover', () => {
+    settingsContainer.classList.add('show');
+  });
+
+  settingsContainer.addEventListener('mouseout', () => {
+    settingsContainer.classList.remove('show');
   });
 });
 
@@ -445,10 +446,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // if the first piece is a default color, change to colorblind colors
     if (firstPieceColor === COLORS.red || firstPieceColor === COLORS.black) {
       changePieceColor(COLORS.colorblind_blue, COLORS.colorblind_orange);
+      changeColorButton.classList.add('selected');
     }
     // if the first piece is a colorblind color, change to default colors
     else {
       changePieceColor(COLORS.black, COLORS.red);
+      changeColorButton.classList.remove('selected');
+
     }
   });
 });
