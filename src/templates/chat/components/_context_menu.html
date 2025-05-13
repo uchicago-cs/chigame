@@ -1,9 +1,17 @@
 <div id="contextMenu" class="context-menu">
   <div class="small text-muted mb-1" id="replyPreview"></div>
-  <button class="btn btn-sm btn-light w-100" onclick="deleteMessage()" title="Pinning Messages">Pinning Messages</button>
-  <button class="btn btn-sm btn-light w-100" onclick="replyToMessage()" title="Reply">Reply</button>
-  <button class="btn btn-sm btn-light w-100" onclick="editMessage()" title="Edit Message">Edit Message</button>
-  <button class="btn btn-sm btn-danger w-100" onclick="deleteMessage()" title="Delete Message">Delete Message</button>
+  <button class="btn btn-sm btn-light w-100"
+          onclick="deleteMessage()"
+          title="Pinning Messages">Pinning Messages</button>
+  <button class="btn btn-sm btn-light w-100"
+          onclick="replyToMessage()"
+          title="Reply">Reply</button>
+  <button class="btn btn-sm btn-light w-100"
+          onclick="editMessage()"
+          title="Edit Message">Edit Message</button>
+  <button class="btn btn-sm btn-danger w-100"
+          onclick="deleteMessage()"
+          title="Delete Message">Delete Message</button>
 </div>
 <script>
   let replyToMessageId = null;
