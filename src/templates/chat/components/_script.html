@@ -28,8 +28,14 @@
       JSON.stringify({
         message: messageInput,
         user_id: "{{ request.user.id }}",
+        reply_to: replyToMessageId
       })
     );
+    
+    // Clear reply state
+    replyToMessageId = null;
+    replyToUsername = null;
+    replyToContent = null;
   };
 
   /**
@@ -48,11 +54,21 @@
     // Create message container
     const messageContainer = document.createElement("div");
     messageContainer.className = "mb-3 align-self-end";
+    messageContainer.setAttribute("data-message-id", data.message_id);
+    messageContainer.setAttribute("oncontextmenu", `showContextMenu(event, ${data.message_id}, '${data.username}', '${data.message}'); return false;`);
 
     // Create message bubble
     const messageBubble = document.createElement("div");
     messageBubble.className = "bg-success-subtle rounded p-2 shadow-sm";
     messageBubble.style.maxWidth = "80%";
+
+    // Add reply preview if this is a reply
+    if (data.reply_to) {
+      const replyPreview = document.createElement("div");
+      replyPreview.className = "small text-muted border-start border-2 ps-2 mb-1";
+      replyPreview.textContent = `Replying to ${data.reply_to_username}: ${data.reply_to_content}`;
+      messageBubble.appendChild(replyPreview);
+    }
 
     // Create message sender
     const sender = document.createElement("div");

@@ -73,8 +73,15 @@
   <div class="d-flex flex-column h-100">
     {% if messages %}
       {% for message in messages %}
-        <div class="mb-3 {% if message.user == request.user %}align-self-end{% else %}align-self-start{% endif %}">
+        <div class="mb-3 {% if message.user == request.user %}align-self-end{% else %}align-self-start{% endif %}"
+             data-message-id="{{ message.id }}"
+             oncontextmenu="showContextMenu(event, {{ message.id }}, '{{ message.user.username }}', '{{ message.content }}'); return false;">
           <div class="{% if message.user == request.user %}bg-success-subtle{% else %}bg-white{% endif %} rounded p-2 shadow-sm">
+            {% if message.reply_to %}
+              <div class="small text-muted border-start border-2 ps-2 mb-1">
+                Replying to {{ message.reply_to.user.username }}: {{ message.reply_to.content }}
+              </div>
+            {% endif %}
             <div class="fw-bold small text-danger">{{ message.user.username }}</div>
             <div class="mt-1">{{ message.content }}</div>
             <div class="text-end text-muted small mt-1">{{ message.sent_at|date:"g:i A" }}</div>
@@ -86,3 +93,48 @@
     {% endif %}
   </div>
 </div>
+
+<!-- Context Menu -->
+<div id="contextMenu" class="position-fixed bg-white border shadow-sm rounded p-2" style="display: none; z-index: 1000;">
+  <div class="small text-muted mb-1" id="replyPreview"></div>
+  <button class="btn btn-sm btn-light w-100" onclick="replyToMessage()">Reply</button>
+</div>
+
+<script>
+let replyToMessageId = null;
+let replyToUsername = null;
+let replyToContent = null;
+
+function showContextMenu(event, messageId, username, content) {
+  const contextMenu = document.getElementById('contextMenu');
+  const replyPreview = document.getElementById('replyPreview');
+  
+  // Store reply information
+  replyToMessageId = messageId;
+  replyToUsername = username;
+  replyToContent = content;
+  
+  // Update preview
+  replyPreview.textContent = `Replying to ${username}: ${content}`;
+  
+  // Position and show menu
+  contextMenu.style.left = event.pageX + 'px';
+  contextMenu.style.top = event.pageY + 'px';
+  contextMenu.style.display = 'block';
+  
+  // Hide menu when clicking elsewhere
+  document.addEventListener('click', hideContextMenu);
+}
+
+function hideContextMenu() {
+  const contextMenu = document.getElementById('contextMenu');
+  contextMenu.style.display = 'none';
+  document.removeEventListener('click', hideContextMenu);
+}
+
+function replyToMessage() {
+  const input = document.getElementById('id_message_send_input');
+  input.focus();
+  hideContextMenu();
+}
+</script>
