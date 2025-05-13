@@ -142,20 +142,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "reply_to_content": message_data["reply_to_content"],
                 },
             )
-        elif msg_type == "delete":
-            message_id = text_data_json["message_id"]
-            user_id = text_data_json["user_id"]
-
-            try:
-                # must need to call .delete() so you cant use message id
-                msg = await database_sync_to_async(LiveChatMessage.objects.get)(id=message_id, user_id=user_id)
-                await database_sync_to_async(msg.delete)()
-                await self.channel_layer.group_send(
-                    self.roomGroupName,
-                    {"type": "deleteMessage", "message_id": message_id, "user_id": user_id},
-                )
-            except LiveChatMessage.DoesNotExist:
-                print("error")
 
     async def sendMessage(self, event):
         """
@@ -175,19 +161,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "reply_to": event["reply_to"],
                     "reply_to_username": event["reply_to_username"],
                     "reply_to_content": event["reply_to_content"],
-                }
-            )
-        )
-
-    async def deleteMessage(self, event):
-        message_id = event["message_id"]
-        user_id = event["user_id"]
-        await self.send(
-            text_data=json.dumps(
-                {
-                    "type": "delete",
-                    "message": message_id,
-                    "user_id": user_id,
                 }
             )
         )
