@@ -1,9 +1,31 @@
+import random
+
 from allauth.account.forms import SignupForm
 from allauth.socialaccount.forms import SignupForm as SocialSignupForm
 from django.contrib.auth import forms as admin_forms
 from django.contrib.auth import get_user_model
 from django.forms import EmailField
 from django.utils.translation import gettext_lazy as _
+
+POKEMON_NAMES = [
+    "pikachu",
+    "bulbasaur",
+    "charmander",
+    "squirtle",
+    "eevee",
+    "snorlax",
+    "jigglypuff",
+    "psyduck",
+    "gengar",
+    "meowth",
+    "charizard",
+    "wartortle",
+    "ivysaur",
+    "venusaur",
+    "blastoise",
+    "venomoth",
+    "venonat",
+]
 
 User = get_user_model()
 
@@ -36,6 +58,12 @@ class UserSignupForm(SignupForm):
     Check UserSocialSignupForm for accounts created from social.
     """
 
+    def save(self, request):
+        user = super().save(request)
+        user.username = generate_unique_username()
+        user.save()
+        return user
+
 
 class UserSocialSignupForm(SocialSignupForm):
     """
@@ -43,3 +71,16 @@ class UserSocialSignupForm(SocialSignupForm):
     Default fields will be added automatically.
     See UserSignupForm otherwise.
     """
+
+
+def generate_unique_username():
+    """Generates a unique default username for user for signup process.
+    Users can change their username after signup in their profile account
+    page.
+    """
+    while True:
+        name = random.choice(POKEMON_NAMES)
+        number = random.randint(100, 9999)
+        username = f"{name}{number}"
+        if not User.objects.filter(username=username).exists():
+            return username
