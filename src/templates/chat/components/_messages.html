@@ -127,6 +127,7 @@
 <div id="contextMenu" class="context-menu">
   <div class="small text-muted mb-1" id="replyPreview"></div>
   <button class="btn btn-sm btn-light w-100" onclick="replyToMessage()">Reply</button>
+  <button class="btn btn-sm btn-danger w-100" onclick="deleteMessage()">Delete</button>
 </div>
 <script>
   let replyToMessageId = null;
@@ -164,5 +165,24 @@
     const input = document.getElementById('id_message_send_input');
     input.focus();
     hideContextMenu();
+  }
+
+  /**
+   * Deletes a message on the frontend.
+   */
+  function deleteMessage() {
+    const messageId = replyToMessageId;
+    fetch(`/chat/message/${messageId}/delete`, {
+      method: 'GET',
+    }).then(response => {
+      if (response.ok) {
+        const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
+        if (messageElement) {
+          messageElement.remove();
+        }
+      } else {
+        console.error('Failed to delete message');
+      }
+    });
   }
 </script>
