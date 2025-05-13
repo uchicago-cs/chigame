@@ -26,8 +26,8 @@ from django.views.generic.edit import FormMixin
 from chigame.users.models import User
 
 from .filters import LobbyFilter
-from .forms import GameForm, LobbyForm, ReviewForm
-from .models import Chat, Game, GameList, Lobby, Match, Player, Review, Tournament
+from .forms import GameForm, IFGameForm, LobbyForm, ReviewForm
+from .models import Chat, Game, GameList, InteractiveFictionGame, Lobby, Match, Player, Review, Tournament
 from .simulation_utils import TournamentSimulator, run_complete_tournament_simulation
 from .tables import LobbyTable
 
@@ -47,7 +47,7 @@ class GameListView(ListView):
         queryset = (
             super()
             .get_queryset()
-            .annotate(avg_rating=Avg("review__rating"), popularity=Count("review__is_public"))
+            .annotate(avg_rating=Avg("reviews__rating"), popularity=Count("reviews__is_public"))
             .annotate(rating_percentage=ExpressionWrapper((F("avg_rating") / 5) * 100, output_field=FloatField()))
         )
         sort = self.request.GET.get("sort_by", "name-asc")
@@ -63,6 +63,13 @@ class GameDetailView(LoginRequiredMixin, FormMixin, DetailView):
     context_object_name = "game"
     form_class = ReviewForm
 
+    # for twine files, redirect to different IF view
+    def dispatch(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if self.object.twine_file.name.endswith(".html"):
+            return redirect("interactive-fiction-detail", pk=self.object.pk)
+        return super().dispatch(request, *args, **kwargs)
+
     def get_success_url(self):
         return reverse("game-detail", kwargs={"pk": self.object.pk})
 
@@ -70,6 +77,8 @@ class GameDetailView(LoginRequiredMixin, FormMixin, DetailView):
         context = super().get_context_data(**kwargs)
         context["form"] = self.get_form()
         context["reviews"] = Review.objects.filter(game=self.object)
+        context["popularity"] = self.object.reviews.count()
+        context["avg_rating"] = self.object.reviews.filter(is_public=True).aggregate(Avg("rating"))["rating__avg"]
         # Include the user's GameLists: default Favorites plus others
         if self.request.user.is_authenticated:
             favorites_list, _ = GameList.objects.get_or_create(name="Favorites", created_by=self.request.user)
@@ -105,11 +114,6 @@ class GameCreateView(UserPassesTestMixin, CreateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
-        # Game create and edit views share the same template, so this variable lets us know which is which
-        # Currently, this is being so that BGG autofilling is only available when creating a game
-        context["is_create"] = True
-
         return context
 
 
@@ -397,42 +401,55 @@ def search_results(request):
 
 # =============== Interactive Fiction Views ===============
 class InteractiveFictionView(TemplateView):
-    template_name = "games/game_detail.html"
+    template_name = "games/interactive-fiction/IF_game_create.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # creates a fake game object
-        fake_game = Game(
-            pk=9999,
-            name="Interactive Fiction Adventure",
-            description="Embark on an interactive text-based journey!",
-        )
-        context["game"] = fake_game
+        game = get_object_or_404(Game, pk=kwargs["pk"])
 
-        # check if there is an uploaded IF file
-        uploaded_file = self.request.session.get("uploaded_interactive_file")
-        if uploaded_file:
-            file_url = f"/media/{uploaded_file}"
-            context["uploaded_file_url"] = file_url
+        context["game"] = game
+
+        if game.twine_file:
+            context["uploaded_file_url"] = game.twine_file.url  # use actual uploaded Twine file
+
+        return context
+
+
+class IFGameCreateView(UserPassesTestMixin, CreateView):
+    model = InteractiveFictionGame
+    form_class = IFGameForm
+    template_name = "games/interactive-fiction/IF_game_create.html"
+    success_url = reverse_lazy("game-list")
+
+    def test_func(self):
+        return self.request.user.is_staff
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
         return context
 
 
 class UploadFileView(View):
-    def post(self, request, pk):
+    def post(self, request, pk=None):
         uploaded_file = request.FILES.get("uploaded_file")
 
         if uploaded_file:
-            upload_path = os.path.join(settings.MEDIA_ROOT, "interactive_uploads")
-            os.makedirs(upload_path, exist_ok=True)
-
-            fs = FileSystemStorage(location=upload_path)
+            # Save the file to twine_games/
+            fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, "twine_games"))
             safe_filename = uploaded_file.name.replace(" ", "_")
-            fs.save(safe_filename, uploaded_file)
+            filename = fs.save(safe_filename, uploaded_file)
 
-            request.session["uploaded_interactive_file"] = f"interactive_uploads/{safe_filename}"
+            # Create a basic Game instance
+            game = Game.objects.create(
+                name=uploaded_file.name.replace(".html", ""),
+                description="Uploaded Twine game",
+                min_players=1,
+                max_players=1,
+                twine_file=f"twine_games/{filename}",
+            )
 
-            messages.success(request, "File uploaded successfully!")
-            return redirect("interactive-fiction")
+            messages.success(request, f"Game '{game.name}' uploaded successfully!")
+            return redirect("game-detail", pk=game.pk)
 
         messages.error(request, "No file selected.")
         return redirect("interactive-fiction")
