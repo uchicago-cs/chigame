@@ -24,6 +24,8 @@ class LiveChatMessage(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     sent_at = models.DateTimeField(auto_now_add=True)
     content = models.TextField(null=False)
+
+    # this is for messaging quoting/replying
     reply_to = models.ForeignKey("self", on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
