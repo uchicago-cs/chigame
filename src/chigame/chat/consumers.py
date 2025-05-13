@@ -119,8 +119,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
         if not await self.check_rate_limit(user_id):
             return None, False
             
-        chat = await database_sync_to_async(LiveChat.objects.get)(id=chat_id)
-        user = await database_sync_to_async(User.objects.get)(id=user_id)
+        chat, user = await asyncio.gather(
+            database_sync_to_async(LiveChat.objects.get)(id=chat_id),
+            database_sync_to_async(User.objects.get)(id=user_id)
+        )
 
         # Save the message to the database
         await database_sync_to_async(LiveChatMessage.objects.create)(live_chat=chat, user=user, content=message)
