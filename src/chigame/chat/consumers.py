@@ -38,26 +38,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
     def check_user_in_chat(self, user, chat):
         return chat.users.filter(id=user.id).exists()
 
-    async def check_rate_limit(self, user_id):
-        """
-        Checks if the user has exceeded their message rate limit.
-        
-        Args:
-            user_id (int): The ID of the user.
-            
-        Returns:
-            bool: True if user is within rate limit, False otherwise.
-        """
-        cache_key = f"{RATE_LIMIT_KEY_PREFIX}{user_id}"
-        message_count = cache.get(cache_key, 0)
-        
-        if message_count >= MESSAGES_PER_SECOND:
-            return False
-            
-        # Increment message count and set expiry to 1 second
-        cache.set(cache_key, message_count + 1, 1)
-        return True
-
     async def connect(self):
         """
         Connects to the chat room and adds the user who is connecting to the chat room to the group.
@@ -102,6 +82,26 @@ class ChatConsumer(AsyncWebsocketConsumer):
         # Safely handle disconnect even if connection was never fully established
         if hasattr(self, "room_group_name"):
             await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
+
+    async def check_rate_limit(self, user_id):
+        """
+        Checks if the user has exceeded their message rate limit.
+        
+        Args:
+            user_id (int): The ID of the user.
+            
+        Returns:
+            bool: True if user is within rate limit, False otherwise.
+        """
+        cache_key = f"{RATE_LIMIT_KEY_PREFIX}{user_id}"
+        message_count = cache.get(cache_key, 0)
+        
+        if message_count >= MESSAGES_PER_SECOND:
+            return False
+            
+        # Increment message count and set expiry to 1 second
+        cache.set(cache_key, message_count + 1, 1)
+        return True
 
     async def save_message(self, chat_id, user_id, message):
         """
