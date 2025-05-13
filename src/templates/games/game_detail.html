@@ -22,6 +22,8 @@
         players
       </h4>
       <h4>Complexity: {{ game.complexity }}/5</h4>
+      <h4>Average Rating: {{ avg_rating|floatformat:2|default:"N/A" }}</h4>
+      <h4>Number of Reviews: {{ popularity|default:0 }}</h4>
       {% for category in game.category.all %}
         <a href="#"><span class="badge rounded-pill text-bg-primary">{{ category }}</span></a>
       {% endfor %}
@@ -93,6 +95,12 @@
           </p>
         {% endif %}
         <p>{{ game.description|linebreaksbr }}</p>
+        {% if uploaded_file_url %}
+          <h3>Play Twine Game</h3>
+          <a href="{{ uploaded_file_url }}"
+             target="_blank"
+             class="btn btn-success">Open Game in New Tab</a>
+        {% endif %}
         <h3 id="player-description">Players</h3>
         <p>
           {% if game.min_players == game.max_players %}
