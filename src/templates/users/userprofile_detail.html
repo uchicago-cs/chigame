@@ -4,7 +4,7 @@
 
 {% block title %}
   User:
-  {{ object.display_name }}
+  {{ profile.user.name }}
 {% endblock title %}
 {% block content %}
   <style>
@@ -18,37 +18,82 @@
       display: inline-block;
       margin-right: 10px;
     }
+
+    .media-body {
+      text-align: center;
+    }
+
+    .btn {
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 15px;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .btn:focus {
+      outline: none;
+      border-color: #800000;
+      box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.2);
+    }
+
+    .btn {
+      background-color: #800000;
+      color: white;
+      text-align: center;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn:hover {
+      background-color: #800000;
+    }
+
+    .profile-bio {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #f8f9fa;
+      border-radius: 12px;
+      border: 1px solid #ddd;
+      text-align: left;
+      font-size: 16px;
+    }
   </style>
   <div class="container mt-5">
     <div class="row">
       <div class="col-md-6 offset-md-3">
         <div class="card">
-          <div class="card-header">{{ object.display_name }}</div>
+          <div class="card-header">
+            <h3>
+              {% if profile.user == request.user %}
+                Welcome to Chigame, {{ profile.user.name }}!
+              {% else %}
+                {{ profile.user.name }}'s Profile
+              {% endif %}
+            </h3>
+          </div>
           <div class="card-body">
             <div class="media">
               <div class="media-body">
-                <p>Bio: {{ object.bio }}</p>
-                {% if object.user == request.user %}
-                  <a href="{% url 'users:update' %}" class="btn btn-primary">Edit Profile</a>
+                {% if profile.user == request.user %}
                   <a href="{% url 'users:detail' request.user.pk %}"
                      class="btn btn-primary">Account</a>
-                  <a href="{% url 'users:friend-list' object.user.id %}"
+                  <a href="{% url 'users:friend-list' profile.user.id %}"
                      class="btn btn-primary">Friend List</a>
-                  <a href="{% url 'users:user-history' object.user.pk %}"
+                  <a href="{% url 'users:user-history' profile.user.pk %}"
                      class="btn btn-primary">Stats</a>
                 {% elif is_friend %}
-                  <a href="{% url 'users:remove-friend' object.user.pk %}"
+                  <a href="{% url 'users:remove-friend' profile.user.pk %}"
                      class="btn btn-primary">Remove Friend</a>
-                  <a href="{% url 'users:user-history' object.user.pk %}"
+                  <a href="{% url 'users:user-history' profile.user.pk %}"
                      class="btn btn-primary">Stats</a>
                 {% elif is_friend %}
-                  <a href="{% url 'users:remove-friend' object.user.pk %}"
+                  <a href="{% url 'users:remove-friend' profile.user.pk %}"
                      class="btn btn-primary">Remove Friend</a>
-                  <a href="{% url 'users:user-history' object.user.pk %}"
+                  <a href="{% url 'users:user-history' profile.user.pk %}"
                      class="btn btn-primary">Stats</a>
                 {% elif friendship_request %}
                   {% if friendship_request.sender_id == request.user.pk %}
-                    <a href="{% url 'users:cancel-friend-invitation' object.user.id %}"
+                    <a href="{% url 'users:cancel-friend-invitation' profile.user.id %}"
                        class="btn btn-primary">Cancel Friendship Request</a>
                   {% else %}
                     <a href="{% url 'users:accept-friend-invitation' friendship_request.id %}"
@@ -56,11 +101,23 @@
                     <a href="{% url 'users:decline-friend-invitation' friendship_request.id %}"
                        class="btn btn-primary">Decline Friendship Request</a>
                   {% endif %}
-                  <a href="{% url 'users:user-history' object.user.pk %}"
+                  <a href="{% url 'users:user-history' profile.user.pk %}"
                      class="btn btn-primary">Stats</a>
                 {% else %}
-                  <a href="{% url 'users:add-friend' object.user.pk %}"
+                  <a href="{% url 'users:add-friend' profile.user.pk %}"
                      class="btn btn-primary">Add Friend</a>
+                {% endif %}
+              </div>
+              <div class="profile-bio">
+                <h4>Bio:</h4>
+                {% if profile.bio == "" %}
+                  {% if profile.user == request.user %}
+                    <p>Add a bio to your profile...</p>
+                  {% else %}
+                    <p>Nothing added yet.</p>
+                  {% endif %}
+                {% else %}
+                  <p>{{ profile.bio }}</p>
                 {% endif %}
               </div>
             </div>
