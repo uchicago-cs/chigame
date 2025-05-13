@@ -222,3 +222,12 @@ class AchievementCreateView(generics.CreateAPIView):
     def perform_create(self, serializer):
         game_id = self.kwargs["pk"]
         serializer.save(game_id=game_id)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+
+        return Response(
+            {"message": "Achievement created successfully!", "data": serializer.data}, status=status.HTTP_201_CREATED
+        )
