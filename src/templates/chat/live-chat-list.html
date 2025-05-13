@@ -4,7 +4,9 @@
     <h1>Live Chats</h1>
     <ul>
         {% for chat in chats %}
-            <li>{{ chat.name }}</li>
+            <li class="list-group-item">
+                <a href="{% url 'chat-page' chat.id %}">{{ chat.name }}</a>
+            </li>
         {% endfor %}
     </ul>
 {% endblock %}
