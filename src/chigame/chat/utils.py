@@ -17,7 +17,7 @@ class ProfanityFilter:
         """
         # Get the directory where this file is located
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        profanity_file = os.path.join(current_dir, "PROFANE_WORDS.txt")
+        profanity_file = os.path.join(current_dir, "PROFANITY.txt")
         
         # Read profane words from file
         try:
