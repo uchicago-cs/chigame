@@ -40,7 +40,7 @@ urlpatterns = [
     path("user_history/<int:pk>", views.user_history, name="user-history"),
     path("search-results", view=user_search_results, name="user-search-results"),
     path("notifications/search-results", view=notification_search_results, name="notification-search-results"),
-    path("inbox/<int:pk>", view=user_inbox_view, name="user-inbox"),
+    path("inbox/<int:pk>/", view=user_inbox_view, name="user-inbox"),
     path("profile/<int:pk>/friends", view=friend_list_view, name="friend-list"),
     path("inbox/<int:pk>/deleted_notifications", views.deleted_notifications_view, name="deleted-notifications"),
     path("notification_detail/<int:pk>", view=notification_detail, name="notification-detail"),
