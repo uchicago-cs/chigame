@@ -24,7 +24,7 @@ def delete_message(request, message_id):
     """
     if not request.user.is_authenticated:
         return JsonResponse({"error": "Unauthorized"}, status=401)
-    
+
     message = get_object_or_404(LiveChatMessage, id=message_id)
 
     if not request.user == message.user:
@@ -33,4 +33,3 @@ def delete_message(request, message_id):
     message.delete()
 
     return JsonResponse({"message": "Message deleted successfully"}, status=200)
-
