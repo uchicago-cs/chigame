@@ -1,8 +1,8 @@
 <template>
   <nav class="navbar">
     <div class="logo">
-      <img src="/logo.png" alt="Logo" class="logo" />
-      <span>Chigame</span>
+      <router-link to="/"><img src="/logo.png" alt="Logo" class="logo" /></router-link>
+      <router-link to="/"class="chigame-text"><span>Chigame</span></router-link>
     </div>
 
     <ul class="nav-links">
@@ -26,6 +26,13 @@ export default {
 </script>
 
 <style scoped>
+.chigame-text {
+  color: #800000;
+  font-family: "Pixelify Sans", sans-serif;
+  font-weight: bold;
+  text-decoration: none;
+}
+
 .navbar {
   display: flex;
   align-items: center;
