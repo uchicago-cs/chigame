@@ -1,6 +1,8 @@
 {% extends "base.html" %}
 
 {% block content %}
+  <input type="text" id="search-input" placeholder="Search...">
+  <div class="container">
   <h1>Live Chats</h1>
   <ul>
     {% for chat in chats %}
@@ -9,4 +11,5 @@
       </li>
     {% endfor %}
   </ul>
+  </div>
 {% endblock content %}
