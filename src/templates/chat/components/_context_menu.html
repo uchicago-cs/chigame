@@ -4,6 +4,7 @@
   <button class="btn btn-sm btn-light w-100" onclick="deleteMessage()">Pinning Messages</button>
   <button class="btn btn-sm btn-light w-100" onclick="replyToMessage()">Reply</button>
   <button class="btn btn-sm btn-light w-100" onclick="deleteMessage()">Edit Message</button>
+  <button class="btn btn-sm btnlight w-100" onclick="reactToMessage()">Add Reaction</button>
   <button class="btn btn-sm btn-danger w-100" onclick="deleteMessage()">Delete</button>
 </div>
 <script>
@@ -61,5 +62,26 @@
         console.error('Failed to delete message');
       }
     });
+  }
+
+  /**
+   * Reacts to a message on the frontend.
+   */
+  function reactToMessage(content) {
+    const messageId = replyToMessageId;
+    fetch('/chat/message/<int:message_id>/react', {
+        method: 'POST',
+        body: "message_id=${messageId}&content=${encodeURIComponent(emoji)}"
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === "added") {
+          console.log("Reaction ${emoji} added");
+          // update UI to show new reaction
+        } else if (data.status === "removed") {
+          console.log("Reaction ${emoji} removed");
+          // update UI to remove reaction
+        }
+      });
   }
 </script>
