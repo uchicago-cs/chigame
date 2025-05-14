@@ -25,7 +25,6 @@ class LobbySerializer(serializers.ModelSerializer):
             "time_constraint",
             "lobby_created",
         )
-        read_only_fields = ["created_by"]
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -103,4 +102,3 @@ class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
         fields = ["id", "user", "title", "rating", "review", "is_public", "created_at"]
-        read_only_fields = ("user",)
