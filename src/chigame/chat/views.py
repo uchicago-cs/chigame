@@ -1,7 +1,8 @@
+from django.core.exceptions import ValidationError
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
 
-from .models import LiveChat, LiveChatMessage
+from .models import LiveChat, LiveChatMessage, LiveChatMessageReaction
 
 
 def chat(request, chat_id):
@@ -33,3 +34,27 @@ def delete_message(request, message_id):
     message.delete()
 
     return JsonResponse({"message": "Message deleted successfully"}, status=200)
+
+
+def react_to_message(request, message_id, content):
+    """
+    Reacts to a message in the database, creating a new reaction.
+
+    Args:
+        request: The request object.
+        message_id: The id of the message to react to.
+        content: Content of message reaction (validated as single emoji).
+
+    Returns:
+        A JSON response.
+    """
+    if LiveChatMessageReaction.objects.filter(user=request.user, message=message_id, content=content) is not None:
+        return JsonResponse({"error": "Reaction already exists."}, status=400)
+
+    message = get_object_or_404(LiveChatMessage, id=message_id)
+    try:
+        LiveChatMessageReaction.objects.create(user=request.user, message=message, content=content)
+    except ValidationError:
+        return JsonResponse({"error": "Reaction is not a single emoji."}, status=400)
+
+    return JsonResponse({"reaction": "Reacted successfully"}, status=200)
