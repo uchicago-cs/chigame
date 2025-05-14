@@ -749,6 +749,7 @@ class LobbyTests(APITestCase):
         self.assertEqual(unchanged_lobby.name, lobby.name)
 
 
+# [api] SpamFilterTests removed and then added back due to disappearing commmit
 class SpamFilterTests(APITestCase):
     def setUp(self):
         self.user = UserFactory()
