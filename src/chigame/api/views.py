@@ -20,7 +20,7 @@ from chigame.api.serializers import (
     ReviewSerializer,
     UserSerializer,
 )
-from chigame.api.spam import is_spam
+from chigame.api.spam_utils import is_spam
 from chigame.games.models import Game, Lobby, Message, Review
 from chigame.users.models import Group, User
 
