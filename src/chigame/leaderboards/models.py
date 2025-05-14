@@ -28,7 +28,7 @@ class LeaderboardEntry(models.Model):
     rank = models.IntegerField()
 
     def __str__(self):
-        return f"{self.user.display_name} - Rank {self.rank}"
+        return f"{self.user.user.username} - Rank {self.rank}"
 
 
 class Metric(models.Model):
@@ -49,4 +49,4 @@ class MetricScore(models.Model):
     match = models.ForeignKey(Match, on_delete=models.CASCADE, related_name="metric_scores")
 
     def __str__(self):
-        return f"{self.user.display_name} - {self.metric.name}: {self.score}"
+        return f"{self.user.user.username} - {self.metric.name}: {self.score}"

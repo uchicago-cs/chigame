@@ -2,10 +2,13 @@ from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, status
+from rest_framework.authentication import SessionAuthentication
+from rest_framework.exceptions import ValidationError
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from chigame.api.filters import GameFilter
 from chigame.api.serializers import (
@@ -22,7 +25,7 @@ from chigame.api.serializers import (
 )
 from chigame.games.models import Game, Lobby, Message, Review
 from chigame.leaderboards.models import LeaderboardEntry, Match, Metric, MetricScore
-from chigame.users.models import Group, User
+from chigame.users.models import Group, User, UserProfile
 
 
 # Helper function to get user from slug
@@ -223,53 +226,39 @@ class MetricScoreView(generics.ListCreateAPIView):
     """
 
     serializer_class = MetricScoreSerializer
+    authentication_classes = [JWTAuthentication, SessionAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         game_id = self.kwargs["game_id"]
-        print(f"Game ID: {game_id}")
         return MetricScore.objects.filter(metric__game=game_id)
 
-    def post(self, request, game_id):
-        # authenticated user
-        user_id = self.request.data.get("user")
-        user = get_object_or_404(User, pk=user_id)
+    def perform_create(self, serializer):
+        game_id = self.kwargs["game_id"]
 
-        # validate the game exists
+        user = self.request.user
+        user_profile, created = UserProfile.objects.get_or_create(user=user, defaults={})
         game = get_object_or_404(Game, id=game_id)
 
-        # pass the request data to the serializer
-        serializer = MetricScoreSerializer(data=request.data, context={"request": request})
-        if serializer.is_valid():
-            # extracta obejcts from validated data
-            metric_id = serializer.validated_data.pop("metric_id")
-            match_id = serializer.validated_data.pop("match_id")
-            # get the metric and match objects
-            metric = get_object_or_404(Metric, id=metric_id, game=game)
-            match = get_object_or_404(Match, id=match_id, game=game)
+        metric_id = self.request.data.get("metric_id")
+        match_id = self.request.data.get("match_id")
 
-            # Find or create the LeaderboardEntry for the user and metric's leaderboard
-            leaderboard = metric.game.leaderboards.first()
-            if not leaderboard:
-                return Response({"error": "No leaderboard found for this game."}, status=status.HTTP_400_BAD_REQUEST)
-            # Create or get the LeaderboardEntry for the user
-            leaderboard_entry, created = LeaderboardEntry.objects.get_or_create(
-                leaderboard=leaderboard,  # Assuming one leaderboard per game
-                user=user,
-                defaults={"rank": 0},  # Default rank; this can be updated later
-            )
+        metric = get_object_or_404(Metric, id=metric_id, game=game)
+        match = get_object_or_404(Match, id=match_id, game=game)
 
-            # Save the MetricScore object
-            metric_score = MetricScore.objects.create(
-                score=serializer.validated_data["score"],
-                user=user,
-                metric=metric,
-                match=match,
-                leaderboard_entry=leaderboard_entry,
-            )
+        leaderboard = metric.game.leaderboards.first()
+        if not leaderboard:
+            raise ValidationError("No leaderboard found for this game.")
 
-            # Return the created MetricScore
-            response_serializer = MetricScoreSerializer(metric_score)
-            return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+        leaderboard_entry, _ = LeaderboardEntry.objects.get_or_create(
+            leaderboard=leaderboard,
+            user=user_profile,
+            defaults={"rank": 0},
+        )
 
-        # If the serializer is invalid, return the errors
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.save(
+            user=user_profile,
+            metric=metric,
+            match=match,
+            leaderboard_entry=leaderboard_entry,
+        )

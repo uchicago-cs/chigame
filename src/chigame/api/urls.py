@@ -6,7 +6,7 @@ from . import views
 game_patterns = [
     path("", views.GameListView.as_view(), name="api-game-list"),
     path("<int:pk>/", views.GameDetailView.as_view(), name="api-game-detail"),
-    path("<int:pk>/categories/", views.GameCategoriesAPIView.as_view(), name="api-game-categories"),
+    path("<int:pk>/categories/", views.GameCategoriesAPIView.as_view(), name="api-game-asdcategories"),
     path("<int:pk>/mechanics/", views.GameMechanicsAPIView.as_view(), name="api-game-mechanics"),
     path("<int:pk>/reviews/", views.GameReviewListView.as_view(), name="api-game-reviews"),
     path("<int:pk>/reviews/create/", views.ReviewCreateView.as_view(), name="api-game-review-create"),
