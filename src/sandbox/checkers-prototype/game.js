@@ -28,6 +28,8 @@ const COLORS = {
   black: 0x000000,
   red: 0xff0000,
   white: 0xffffff,
+  colorblind_blue: 0x1e88e5,
+  colorblind_orange: 0xffc107,
 };
 let pieces = [];
 let selectedPiece = null;
@@ -44,9 +46,12 @@ let drawOfferedBy = null;
 // ----------------------------------------------------------------------------
 
 // ---INIT FUNCTIONS-----------------------------------------------------------
-function preload() {}
+function preload() { }
 
 function create() {
+  // Store reference to the scene
+  const scene = this;
+
   drawBoard(this);
   populatePieces(this);
 
@@ -55,16 +60,51 @@ function create() {
   const drawBtn = document.getElementById('drawBtn');
   const declineDrawBtn = document.getElementById('declineDrawBtn');
   const gameOverMessage = document.getElementById('gameOverMessage');
+  const playAgainPrompt = document.getElementById('playAgainPrompt');
+  const playAgainYes = document.getElementById('playAgainYes');
+  const playAgainNo = document.getElementById('playAgainNo');
+
+  function resetGame() {
+    // Clear all pieces
+    pieces.forEach(piece => piece.sprite.destroy());
+    pieces = [];
+
+    // Reset game state
+    gameOver = false;
+    selectedPiece = null;
+    currentPlayer = COLORS.red;
+    drawOffered = false;
+    drawOfferedBy = null;
+
+    // Reset UI
+    gameOverMessage.textContent = '';
+    gameOverMessage.classList.remove('show');
+    playAgainPrompt.style.display = 'none';
+    drawBtn.style.display = 'block';
+    drawBtn.textContent = 'Offer Draw';
+    forfeitBtn.style.display = 'block';
+    declineDrawBtn.style.display = 'none';
+
+    // Repopulate the board using the stored scene reference
+    populatePieces(scene);
+  }
+
+  playAgainYes.addEventListener('click', resetGame);
+  playAgainNo.addEventListener('click', () => {
+    playAgainPrompt.style.display = 'none';
+  });
 
   forfeitBtn.addEventListener('click', () => {
     if (!gameOver && currentPlayer === COLORS.red) {
       gameOver = true;
       gameOverMessage.textContent = 'Red player has forfeited! Black wins!';
       gameOverMessage.classList.add('show');
+      document.getElementById('playAgainPrompt').style.display = 'block';
     } else if (!gameOver && currentPlayer === COLORS.black) {
       gameOver = true;
       gameOverMessage.textContent = 'Black player has forfeited! Red wins!';
       gameOverMessage.classList.add('show');
+      document.getElementById('playAgainPrompt').style.display = 'block';
     }
   });
 
@@ -100,6 +140,7 @@ function create() {
       drawBtn.style.display = 'none';
       declineDrawBtn.style.display = 'none';
       forfeitBtn.style.display = 'none';
+      document.getElementById('playAgainPrompt').style.display = 'block';
     }
   });
 
@@ -110,7 +151,7 @@ function create() {
   });
 }
 
-function update() {}
+function update() { }
 // ----------------------------------------------------------------------------
 
 // Draw the game board
@@ -261,6 +302,9 @@ function movePiece(piece, moveX, moveY) {
     if (captured) {
       captured.sprite.destroy(); // delete the sprite (remove from display state)
       pieces = pieces.filter((p) => p !== captured); // remove it from the array (game state)
+
+      // Check for game over after capturing a piece
+      checkGameOver();
     }
   }
 
@@ -269,6 +313,32 @@ function movePiece(piece, moveX, moveY) {
   piece.y = moveY;
   piece.sprite.x = MARGIN + piece.x * TILE_SIZE + TILE_SIZE / 2;
   piece.sprite.y = MARGIN + piece.y * TILE_SIZE + TILE_SIZE / 2;
+
+  console.log("Current board state:", getBoardState());
+}
+
+// Check if the game is over due to all pieces of one color being captured
+function checkGameOver() {
+  const redPieces = pieces.filter(p => p.color === COLORS.red);
+  const blackPieces = pieces.filter(p => p.color === COLORS.black);
+
+  if (redPieces.length === 0) {
+    gameOver = true;
+    const gameOverMessage = document.getElementById('gameOverMessage');
+    gameOverMessage.textContent = 'All red pieces captured! Black wins!';
+    gameOverMessage.classList.add('show');
+    document.getElementById('playAgainPrompt').style.display = 'block';
+    document.getElementById('drawBtn').style.display = 'none';
+    document.getElementById('forfeitBtn').style.display = 'none';
+  } else if (blackPieces.length === 0) {
+    gameOver = true;
+    const gameOverMessage = document.getElementById('gameOverMessage');
+    gameOverMessage.textContent = 'All black pieces captured! Red wins!';
+    gameOverMessage.classList.add('show');
+    document.getElementById('playAgainPrompt').style.display = 'block';
+    document.getElementById('drawBtn').style.display = 'none';
+    document.getElementById('forfeitBtn').style.display = 'none';
+  }
 }
 
 // helper function to get the piece
@@ -300,3 +370,85 @@ function endTurn() {
     declineDrawBtn.style.display = 'none';
   }
 }
+
+// Retrieves a 2D array representation of the board state where 0 are unoccupied
+// positions, 1 are red pieces, 2 are black pieces
+function getBoardState() {
+  const board = [];
+  for (let row = 0; row < BOARD_SIZE; row++) {
+    const newRow = [];
+    for (let col = 0; col < BOARD_SIZE; col++) {
+      newRow.push(0);
+    }
+    board.push(newRow);
+  }
+
+  for (const piece of pieces) {
+    const col = piece.x;
+    const row = piece.y;
+
+    if (row >= 0 && row < BOARD_SIZE && col >= 0 && col < BOARD_SIZE) {
+      if (piece.color == COLORS.red) {
+        board[row][col] = 1; // Red piece
+      } else {
+        board[row][col] = 2; // Black piece
+      }
+    }
+  }
+
+  return board;
+}
+
+
+function sendBoardToServer(boardState) {
+  fetch('/api/board-state/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': getCSRFToken(),
+    },
+    body: JSON.stringify({ board: boardState }),
+  });
+}
+
+// Event Listener for Settings Menu
+document.addEventListener('DOMContentLoaded', () => {
+  const settingsButton = document.getElementById('settings-button');
+  const settingsMenu = document.getElementById('settings-menu');
+
+  settingsButton.addEventListener('click', () => {
+    settingsMenu.classList.toggle('active');
+    settingsMenu.classList.toggle('hidden');
+  });
+});
+
+// Function to change the color of all pieces
+function changePieceColor(newColorOne, newColorTwo) {
+  const firstPieceColor = pieces[0].color;
+  pieces.forEach((piece) => {
+    if (piece.color === firstPieceColor) {
+      piece.color = newColorOne;
+      piece.sprite.setFillStyle(newColorOne);
+    }
+    else {
+      piece.color = newColorTwo;
+      piece.sprite.setFillStyle(newColorTwo);
+    }
+  });
+}
+
+// Event listener for the toggle colorblind button
+document.addEventListener('DOMContentLoaded', () => {
+  const changeColorButton = document.getElementById('toggle-colorblind');
+  changeColorButton.addEventListener('click', () => {
+    const firstPieceColor = pieces[0].color;
+    // if the first piece is a default color, change to colorblind colors
+    if (firstPieceColor === COLORS.red || firstPieceColor === COLORS.black) {
+      changePieceColor(COLORS.colorblind_blue, COLORS.colorblind_orange);
+    }
+    // if the first piece is a colorblind color, change to default colors
+    else {
+      changePieceColor(COLORS.black, COLORS.red);
+    }
+  });
+});
