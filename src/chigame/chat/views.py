@@ -48,13 +48,19 @@ def react_to_message(request, message_id, content):
     Returns:
         A JSON response.
     """
-    if LiveChatMessageReaction.objects.filter(user=request.user, message=message_id, content=content) is not None:
-        return JsonResponse({"error": "Reaction already exists."}, status=400)
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "Unauthorized"}, status=401)
 
     message = get_object_or_404(LiveChatMessage, id=message_id)
     try:
-        LiveChatMessageReaction.objects.create(user=request.user, message=message, content=content)
-    except ValidationError:
-        return JsonResponse({"error": "Reaction is not a single emoji."}, status=400)
-
-    return JsonResponse({"reaction": "Reacted successfully"}, status=200)
+        existing = LiveChatMessageReaction.objects.filter(user=request.user, message=message, content=content)
+        if existing.exists():
+            existing.delete()  # deletes the reaction if one exists
+            return JsonResponse({"status": "unreacted", "content": content}, status=200)
+        else:
+            LiveChatMessageReaction.objects.create(
+                user=request.user, message=message, content=content
+            )  # otherwise, creates a new one
+            return JsonResponse({"status": "reacted", "content": content}, status=200)
+    except ValidationError as e:
+        return JsonResponse({"error": str(e)}, status=400)  # not a single emoji
