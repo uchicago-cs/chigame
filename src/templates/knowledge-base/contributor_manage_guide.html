@@ -23,7 +23,10 @@
           <tr>
             <td>
               Guide for {{ guide.game_id }}
-              <!--<a href="{% url 'download-guide' guide.pk %}" class="maroon">[Download]</a>-->
+              &nbsp;
+              <a href="{% url 'download-guide' guide.pk %}" class="maroon">
+                <i class="fas fa-download"></i>
+              </a>
             </td>
             <td>{{ guide.pk }}</td>
             <td>Last Upload: {{ guide.recent_upload }}</td>
