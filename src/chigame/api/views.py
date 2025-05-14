@@ -4,7 +4,6 @@ from django.shortcuts import get_object_or_404, redirect
 from django.views import View
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, status
-from rest_framework.exceptions import PermissionDenied
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import SAFE_METHODS, BasePermission
 from rest_framework.response import Response
@@ -118,19 +117,11 @@ class IsAuthenticatedOrReadOnly(BasePermission):
         return request.user and request.user.is_authenticated
 
 
-class IsGroupAdminOrReadOnly(BasePermission):
-    def has_permission(self, request, view):
-        if request.method in SAFE_METHODS:
-            return True
-        group = view.get_object()
-        return request.user == group.created_by or group.members.filter(id=request.user.id).exists()
-
-
 class GroupListView(generics.ListCreateAPIView):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
     pagination_class = PageNumberPagination
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permissions_classes = [IsAuthenticatedOrReadOnly]
 
     def perform_create(self, serializer):
         group = serializer.save(created_by=self.request.user)
@@ -140,19 +131,6 @@ class GroupListView(generics.ListCreateAPIView):
 class GroupDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly, IsGroupAdminOrReadOnly]
-
-    def perform_update(self, request, *args, **kwargs):
-        group = self.get_object()
-        if not group.group_admin_permissions and request.user != group.created_by:
-            raise PermissionDenied("You do not have permission to update this group.")
-        return super().perform_update(request, *args, **kwargs)
-
-    def perform_destroy(self, request, *args, **kwargs):
-        group = self.get_object()
-        if group.created_by != self.request.user:
-            raise PermissionDenied("You do not have permission to delete this group.")
-        return super().perform_destroy(request, *args, **kwargs)
 
 
 class GroupMembersView(generics.ListAPIView):
@@ -180,7 +158,7 @@ class GroupJoinView(LoginRequiredMixin, View):
         group = get_object_or_404(Group, id=group_id)
         user = request.user
 
-        if not group.members.filter(id=user.id).exists():
+        if user not in group.members.all():
             group.members.add(user)
         return redirect("api-group-detail", pk=group_id)
 
@@ -190,7 +168,7 @@ class GroupLeaveView(LoginRequiredMixin, View):
         group = get_object_or_404(Group, id=group_id)
         user = request.user
 
-        if group.members.filter(id=user.id).exists():
+        if user in group.members.all():
             group.members.remove(user)
         return redirect("api-group-detail", pk=group_id)
 
