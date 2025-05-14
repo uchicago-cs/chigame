@@ -70,10 +70,20 @@ class DefaultView(ListView):
         return context
 
 
-def GuideDetailView(request, pk):
-    guide = get_object_or_404(Guide, pk=pk)
-    context = {"guide": guide}
-    return render(request, "knowledge-base/guide_detail.html", context)
+class GuideDetail(DetailView):
+    model = Guide
+    template_name = "knowledge-base/guide_detail.html"
+    context_object_name = "guide"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        guide = self.get_object()
+
+        context["published"] = False
+
+        if guide.game_id.published_guide_id == guide:
+            context["published"] = True
+        return context
 
 
 # Contributors
