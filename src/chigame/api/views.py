@@ -231,7 +231,8 @@ class MetricScoreView(generics.ListCreateAPIView):
 
     def post(self, request, game_id):
         # authenticated user
-        user = request.user
+        user_id = self.request.data.get("user")
+        user = get_object_or_404(User, pk=user_id)
 
         # validate the game exists
         game = get_object_or_404(Game, id=game_id)
