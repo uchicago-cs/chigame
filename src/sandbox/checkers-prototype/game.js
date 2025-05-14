@@ -31,9 +31,11 @@ const COLORS = {
   colorblind_blue: 0x1e88e5,
   colorblind_orange: 0xffc107,
 };
+let lightPiece = COLORS.red;
+let darkPiece = COLORS.black;
 let pieces = [];
 let selectedPiece = null;
-let currentPlayer = COLORS.red; // red starts first
+let currentPlayer = lightPiece; // red starts first
 // change to adjust the piece size, any value less than 2 would make the pieces
 // bigger than the tiles
 const RADIUS_SCALE_FACTOR = 2.5;
@@ -72,7 +74,7 @@ function create() {
     // Reset game state
     gameOver = false;
     selectedPiece = null;
-    currentPlayer = COLORS.red;
+    currentPlayer = lightPiece;
     drawOffered = false;
     drawOfferedBy = null;
 
@@ -95,12 +97,12 @@ function create() {
   });
 
   forfeitBtn.addEventListener('click', () => {
-    if (!gameOver && currentPlayer === COLORS.red) {
+    if (!gameOver && currentPlayer === lightPiece) {
       gameOver = true;
       gameOverMessage.textContent = 'Red player has forfeited! Black wins!';
       gameOverMessage.classList.add('show');
       document.getElementById('playAgainPrompt').style.display = 'block';
-    } else if (!gameOver && currentPlayer === COLORS.black) {
+    } else if (!gameOver && currentPlayer === darkPiece) {
       gameOver = true;
       gameOverMessage.textContent = 'Black player has forfeited! Red wins!';
       gameOverMessage.classList.add('show');
@@ -123,7 +125,7 @@ function create() {
     if (!drawOffered) {
       drawOffered = true;
       drawOfferedBy = currentPlayer;
-      if (currentPlayer === COLORS.red) {
+      if (currentPlayer === lightPiece) {
         gameOverMessage.textContent = 'Red player has offered a draw. Black player, please accept or decline.';
       } else {
         gameOverMessage.textContent = 'Black player has offered a draw. Red player, please accept or decline.';
@@ -246,7 +248,7 @@ function populatePieces(scene) {
     for (let x = 0; x < BOARD_SIZE; x++) {
       // create black pieces on odd/dark tiles
       if ((x + y) % 2 === 1) {
-        createPiece(x, y, COLORS.black, scene);
+        createPiece(x, y, darkPiece, scene);
       }
     }
   }
@@ -256,7 +258,7 @@ function populatePieces(scene) {
     for (let x = 0; x < BOARD_SIZE; x++) {
       // create red pieces on odd/dark tiles
       if ((x + y) % 2 === 1) {
-        createPiece(x, y, COLORS.red, scene);
+        createPiece(x, y, lightPiece, scene);
       }
     }
   }
@@ -271,7 +273,7 @@ function isValidMove(piece, moveX, moveY) {
   // with our current orientation, red pieces always move up and black pieces move down
   // may need to fix this once we introduce multiplayer, which would require
   // us to flip the board for different players
-  const direction = piece.color === COLORS.red ? -1 : 1; // in js, y=0 at the top
+  const direction = piece.color === lightPiece ? -1 : 1; // in js, y=0 at the top
 
   // Normal move (1 step diagonally)
   if (Math.abs(dx) === 1 && dy === direction) {
@@ -319,8 +321,8 @@ function movePiece(piece, moveX, moveY) {
 
 // Check if the game is over due to all pieces of one color being captured
 function checkGameOver() {
-  const redPieces = pieces.filter(p => p.color === COLORS.red);
-  const blackPieces = pieces.filter(p => p.color === COLORS.black);
+  const redPieces = pieces.filter(p => p.color === lightPiece);
+  const blackPieces = pieces.filter(p => p.color === darkPiece);
 
   if (redPieces.length === 0) {
     gameOver = true;
@@ -355,7 +357,7 @@ function endTurn() {
   selectedPiece = null;
 
   // switch between red and black player turn
-  currentPlayer = currentPlayer === COLORS.red ? COLORS.black : COLORS.red;
+  currentPlayer = currentPlayer === lightPiece ? darkPiece : lightPiece;
 
   // reset draw offer if it was made by the current player
   if (drawOffered && drawOfferedBy === currentPlayer) {
@@ -388,7 +390,7 @@ function getBoardState() {
     const row = piece.y;
 
     if (row >= 0 && row < BOARD_SIZE && col >= 0 && col < BOARD_SIZE) {
-      if (piece.color == COLORS.red) {
+      if (piece.color == lightPiece) {
         board[row][col] = 1; // Red piece
       } else {
         board[row][col] = 2; // Black piece
@@ -444,10 +446,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const firstPieceColor = pieces[0].color;
     // if the first piece is a default color, change to colorblind colors
     if (firstPieceColor === COLORS.red || firstPieceColor === COLORS.black) {
+      lightPiece = COLORS.colorblind_orange;
+      darkPiece = COLORS.colorblind_blue;
       changePieceColor(COLORS.colorblind_blue, COLORS.colorblind_orange);
     }
     // if the first piece is a colorblind color, change to default colors
     else {
+      lightPiece = COLORS.red;
+      darkPiece = COLORS.black;
       changePieceColor(COLORS.black, COLORS.red);
     }
   });
