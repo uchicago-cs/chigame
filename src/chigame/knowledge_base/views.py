@@ -246,3 +246,7 @@ class ReviewPendingGuideView(LoginRequiredMixin, UserPassesTestMixin, DetailView
         context["feedback"] = feedback
         context["message"] = message
         return self.render_to_response(context)
+
+
+def faq_view(request):
+    return render(request, "knowledge-base/faq.html")
