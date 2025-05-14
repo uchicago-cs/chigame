@@ -2,7 +2,7 @@
 
 {% block page-content %}
   <div class="container py-4">
-    <h1 class="mb-4">Guide List</h1>
+    <h1 class="mb-4">Knowledge Base</h1>
     <form method="get" class="row g-2 align-items-center mb-4">
       <div class="col-md-4">
         <input type="text"
@@ -45,7 +45,12 @@
                    class="text-decoration-none">Guide for {{ guide.game_id }}</a>
               </h5>
               <p class="card-text mb-1">
-                <strong>Category:</strong> {{ guide.game_id.categories.first }}
+                {% with categories=guide.game_id.categories.all %}
+                  {% if categories %}
+                    <span class="badge bg-secondary me-1">{{ categories.0 }}</span>
+                    {% if categories|length > 1 %}<small class="text-muted">and {{ categories|length|add:"-1" }} more</small>{% endif %}
+                  {% endif %}
+                {% endwith %}
               </p>
               <p class="card-text">
                 <small class="text-muted">Last updated: {{ guide.recent_upload|date:"Y-m-d H:i" }}</small>
