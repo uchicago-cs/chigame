@@ -95,7 +95,7 @@
           </p>
         {% endif %}
         <p>{{ game.description|linebreaksbr }}</p>
-        {% if game.twine_file and game.twine_file.name.endswith:".html" %}
+        {% if is_twine_game %}
           <h3>Play Twine Game</h3>
           <a href="{{ game.twine_file.url }}"
              target="_blank"
