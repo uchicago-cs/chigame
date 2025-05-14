@@ -219,7 +219,6 @@ class ChatTests(APITestCase):
         self.chat = ChatFactory(tournament=self.tournament)
         self.endpoint = reverse("api-chat-list")
 
-        self.client.force_authenticate(user=self.user1)
         data1 = {
             "sender": self.user1.email,
             "tournament": self.tournament.id,
@@ -237,7 +236,6 @@ class ChatTests(APITestCase):
         self.assertEqual(data1["content"], Message.objects.get(id=1).content)
         self.assertEqual(1, Message.objects.get(id=1).token_id)
 
-        self.client.force_authenticate(user=self.user2)
         data2 = {
             "sender": self.user2.email,
             "tournament": self.tournament.id,
@@ -255,7 +253,6 @@ class ChatTests(APITestCase):
         self.assertEqual(data2["content"], Message.objects.get(id=2).content)
         self.assertEqual(2, Message.objects.get(id=2).token_id)
 
-        self.client.force_authenticate(user=self.user1)
         data3 = {
             "sender": self.user1.email,
             "tournament": self.tournament.id,
@@ -273,7 +270,6 @@ class ChatTests(APITestCase):
         self.assertEqual(data3["content"], Message.objects.get(id=3).content)
         self.assertEqual(3, Message.objects.get(id=3).token_id)
 
-        self.client.force_authenticate(user=self.user2)
         data4 = {
             "sender": self.user2.email,
             "tournament": self.tournament.id,
@@ -298,8 +294,6 @@ class ChatTests(APITestCase):
         self.tournament = TournamentFactory(game=self.game)
         self.chat = ChatFactory(tournament=self.tournament)
         self.endpoint = reverse("api-chat-list")
-
-        self.client.force_authenticate(user=self.user1)
         data1 = {
             "sender": self.user1.email,
             "tournament": self.tournament.id,
@@ -317,7 +311,6 @@ class ChatTests(APITestCase):
         self.assertEqual(data1["content"], Message.objects.get(id=1).content)
         self.assertEqual(1, Message.objects.get(id=1).token_id)
 
-        self.client.force_authenticate(user=self.user2)
         data2 = {
             "sender": self.user2.email,
             "tournament": self.tournament.id,
@@ -335,7 +328,6 @@ class ChatTests(APITestCase):
         self.assertEqual(data2["content"], Message.objects.get(id=2).content)
         self.assertEqual(2, Message.objects.get(id=2).token_id)
 
-        self.client.force_authenticate(user=self.user1)
         data3 = {
             "sender": self.user1.email,
             "tournament": self.tournament.id,
@@ -353,7 +345,6 @@ class ChatTests(APITestCase):
         self.assertEqual(data3["content"], Message.objects.get(id=3).content)
         self.assertEqual(3, Message.objects.get(id=3).token_id)
 
-        self.client.force_authenticate(user=self.user2)
         data4 = {
             "sender": self.user2.email,
             "tournament": self.tournament.id,
@@ -371,7 +362,6 @@ class ChatTests(APITestCase):
         self.assertEqual(data4["content"], Message.objects.get(id=4).content)
         self.assertEqual(4, Message.objects.get(id=4).token_id)
 
-        self.client.force_authenticate(user=self.user1)
         delete1 = {"sender": self.user1.email, "tournament": self.tournament.id, "content": None, "update_on": 1}
 
         response = self.client.post(self.endpoint, delete1, format="json")
@@ -389,7 +379,6 @@ class ChatTests(APITestCase):
         self.assertEqual(data1["content"], Message.objects.get(id=1).content)
         self.assertEqual(1, Message.objects.get(id=1).token_id)
 
-        self.client.force_authenticate(user=self.user2)
         delete2 = {"sender": self.user2.email, "tournament": self.tournament.id, "content": None, "update_on": 2}
 
         response = self.client.post(self.endpoint, delete2, format="json")
@@ -467,9 +456,6 @@ class UserTests(APITestCase):
         self.tournament = TournamentFactory(game=self.game)
         self.chat = ChatFactory(tournament=self.tournament)
         self.endpoint = reverse("api-chat-list")
-
-        self.client.force_authenticate(user=self.user1)
-
         data1 = {
             "sender": self.user1.email,
             "tournament": self.tournament.id,
@@ -486,8 +472,6 @@ class UserTests(APITestCase):
         self.assertEqual(data1["update_on"], Message.objects.get(id=1).update_on)
         self.assertEqual(data1["content"], Message.objects.get(id=1).content)
         self.assertEqual(1, Message.objects.get(id=1).token_id)
-
-        self.client.force_authenticate(user=self.user2)
 
         data2 = {
             "sender": self.user2.email,
@@ -506,7 +490,6 @@ class UserTests(APITestCase):
         self.assertEqual(data2["content"], Message.objects.get(id=2).content)
         self.assertEqual(2, Message.objects.get(id=2).token_id)
 
-        self.client.force_authenticate(user=self.user1)
         data3 = {
             "sender": self.user1.email,
             "tournament": self.tournament.id,
@@ -524,7 +507,6 @@ class UserTests(APITestCase):
         self.assertEqual(data3["content"], Message.objects.get(id=3).content)
         self.assertEqual(3, Message.objects.get(id=3).token_id)
 
-        self.client.force_authenticate(user=self.user2)
         data4 = {
             "sender": self.user2.email,
             "tournament": self.tournament.id,
@@ -542,7 +524,6 @@ class UserTests(APITestCase):
         self.assertEqual(data4["content"], Message.objects.get(id=4).content)
         self.assertEqual(4, Message.objects.get(id=4).token_id)
 
-        self.client.force_authenticate(user=self.user1)
         delete1 = {"sender": self.user1.email, "tournament": self.tournament.id, "content": None, "update_on": 1}
 
         response = self.client.post(self.endpoint, delete1, format="json")
@@ -560,7 +541,6 @@ class UserTests(APITestCase):
         self.assertEqual(data1["content"], Message.objects.get(id=1).content)
         self.assertEqual(1, Message.objects.get(id=1).token_id)
 
-        self.client.force_authenticate(user=self.user2)
         delete2 = {"sender": self.user2.email, "tournament": self.tournament.id, "content": None, "update_on": 2}
 
         response = self.client.post(self.endpoint, delete2, format="json")
@@ -578,7 +558,6 @@ class UserTests(APITestCase):
         self.assertEqual(data2["content"], Message.objects.get(id=2).content)
         self.assertEqual(2, Message.objects.get(id=2).token_id)
 
-        self.client.force_authenticate(user=self.user1)
         feed1 = {"token_id": 0, "tournament": self.tournament.id}
 
         response = self.client.post(reverse("api-chat-detail"), feed1, format="json")

@@ -2,9 +2,8 @@ from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, status
-from rest_framework.exceptions import ValidationError
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -20,7 +19,6 @@ from chigame.api.serializers import (
     ReviewSerializer,
     UserSerializer,
 )
-from chigame.api.spam_utils import is_spam  # Import the spam detection function
 from chigame.games.models import Game, Lobby, Message, Review
 from chigame.users.models import Group, User
 
@@ -90,10 +88,6 @@ class LobbyListView(generics.ListCreateAPIView):
     queryset = Lobby.objects.all()
     serializer_class = LobbySerializer
     pagination_class = PageNumberPagination
-    permission_classes = [IsAuthenticatedOrReadOnly]  # similar to GameListView
-
-    def perform_create(self, serializer):
-        serializer.save(created_by=self.request.user)
 
 
 class LobbyDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -131,18 +125,6 @@ class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
 class MessageView(generics.CreateAPIView):
     queryset = Message.objects.all()
     serializer_class = MessageSerializer
-    permission_classes = [IsAuthenticated]
-
-    def perform_create(self, serializer):
-        content = serializer.validated_data.get("content", "")
-        if is_spam(content):
-            raise ValidationError("Your message appears to be spam.")
-
-        serializer.save()
-        # serializer.save(sender=self.request.user)
-
-
-# Need Livechat in order to use this endpoint
 
 
 class GroupListView(generics.ListCreateAPIView):
@@ -177,8 +159,6 @@ class UserGroupsView(generics.ListAPIView):
 
 
 class MessageFeedView(APIView):
-    permission_classes = [IsAuthenticated]
-
     def post(self, request, *args, **kwargs):
         # Get data from the frontend
         token_id = request.data.get("token_id")
@@ -209,19 +189,12 @@ class GameReviewListView(generics.ListAPIView):
 
 class ReviewCreateView(generics.CreateAPIView):
     serializer_class = ReviewSerializer
-    queryset = Review.objects.none()
 
     def perform_create(self, serializer):
-        review_text = serializer.validated_data.get("review", "")
-        if is_spam(review_text):
-            raise ValidationError("Your review appears to be spam. Please revise your content.")
-
-        # user_id = self.request.data.get("user")
+        user_id = self.request.data.get("user")
         game_id = self.kwargs["pk"]
-        # user = get_object_or_404(User, pk=user_id)
-        # serializer.save(user=user, game_id=game_id)
-
-        serializer.save(user=self.request.user, game_id=game_id)
+        user = get_object_or_404(User, pk=user_id)
+        serializer.save(user=user, game_id=game_id)
 
 
 class ReviewDetailView(generics.RetrieveUpdateDestroyAPIView):
