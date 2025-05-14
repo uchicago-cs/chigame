@@ -20,7 +20,7 @@ from chigame.api.serializers import (
     ReviewSerializer,
     UserSerializer,
 )
-from chigame.api.spam_utils import is_spam  # Import the spam detection function
+from chigame.api.spam import is_spam
 from chigame.games.models import Game, Lobby, Message, Review
 from chigame.users.models import Group, User
 
@@ -90,10 +90,6 @@ class LobbyListView(generics.ListCreateAPIView):
     queryset = Lobby.objects.all()
     serializer_class = LobbySerializer
     pagination_class = PageNumberPagination
-    permission_classes = [IsAuthenticatedOrReadOnly]  # similar to GameListView
-
-    def perform_create(self, serializer):
-        serializer.save(created_by=self.request.user)
 
 
 class LobbyDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -176,8 +172,6 @@ class UserGroupsView(generics.ListAPIView):
 
 
 class MessageFeedView(APIView):
-    permission_classes = [IsAuthenticated]
-
     def post(self, request, *args, **kwargs):
         # Get data from the frontend
         token_id = request.data.get("token_id")
@@ -208,7 +202,6 @@ class GameReviewListView(generics.ListAPIView):
 
 class ReviewCreateView(generics.CreateAPIView):
     serializer_class = ReviewSerializer
-    queryset = Review.objects.none()
 
     def perform_create(self, serializer):
         review_text = serializer.validated_data.get("review", "")
