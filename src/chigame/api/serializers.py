@@ -25,6 +25,7 @@ class LobbySerializer(serializers.ModelSerializer):
             "time_constraint",
             "lobby_created",
         )
+        read_only_fields = ["created_by"]
 
 
 class UserSerializer(serializers.ModelSerializer):
