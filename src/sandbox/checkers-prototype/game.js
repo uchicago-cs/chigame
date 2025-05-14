@@ -45,6 +45,7 @@ let drawOfferedBy = null;
 // Initial time for each player
 let redTime = 300;
 let blackTime = 300;
+// this will determine whose timer to decrement
 let activeTimer = null;
 
 // ----------------------------------------------------------------------------
@@ -92,6 +93,7 @@ function create() {
     // Repopulate the board using the stored scene reference
     populatePieces(scene);
 
+    // reset the timers
     stopPlayerTimer();
     redTime = 300;
     blackTime = 300;
@@ -466,59 +468,62 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
+// functions for the timers
 function startPlayerTimer() {
-  stopPlayerTimer(); // clear any running timer
+  // stop the current running timer
+  stopPlayerTimer();
 
+  // https://stackoverflow.com/questions/5978519/how-can-i-use-setinterval-and-clearinterval
   activeTimer = setInterval(() => {
-    // subtract time from current player
     if (currentPlayer === COLORS.red) {
-      redTime--;
+      redTime--; // subtract 1 second from red's timer
       // Black wins if red runs out of time
       if (redTime <= 0) {
         endGameOnTimeout(COLORS.black);
       }
     } else {
-      blackTime--;
+      blackTime--; // subtract 1 second from black's timer
       // Red wins if black runs out of time
       if (blackTime <= 0) {
         endGameOnTimeout(COLORS.red);
       }
     }
-
+    // update the time
     updateTimerDisplay();
-  }, 1000);
+  }, 1000); // function runs every 1000ms, aka 1 second
 }
 
 function stopPlayerTimer() {
   if (activeTimer) {
+    // stop the currently running timer
     clearInterval(activeTimer);
+    // reset timer ref to null
     activeTimer = null;
   }
 }
 
 function updateTimerDisplay() {
+    // get the HTML elements
   const redDisplay = document.getElementById('red-timer');
   const blackDisplay = document.getElementById('black-timer');
 
-  redDisplay.textContent = `Red: ${formatTime(redTime)}`;
-  blackDisplay.textContent = `Black: ${formatTime(blackTime)}`;
+  // update the innerHTML
+  redDisplay.textContent = `Red: ${redTime}`;
+  blackDisplay.textContent = `Black: ${blackTime}`;
 }
 
-function formatTime(seconds) {
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${m}:${s.toString().padStart(2, '0')}`;
-}
-
+// end the gamer if either player runs out of time
 function endGameOnTimeout(winnerColor) {
-  stopPlayerTimer();
+  stopPlayerTimer(); // stop the timer so that it doesn't go into the negatives
   gameOver = true;
 
+  // winner message
   const message = document.getElementById('gameOverMessage');
   const winner = winnerColor === COLORS.red ? 'Red' : 'Black';
   message.textContent = `${winner === 'Red' ? 'Black' : 'Red'} ran out of time! ${winner} wins!`;
   message.classList.add('show');
 
+  // Show "play again" option
   document.getElementById('playAgainPrompt').style.display = 'block';
   document.getElementById('drawBtn').style.display = 'none';
   document.getElementById('forfeitBtn').style.display = 'none';

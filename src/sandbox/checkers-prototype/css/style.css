@@ -175,11 +175,3 @@ canvas {
 .settings-menu.active {
     transform: translateX(0);
 }
-
-#timer {
-    padding: 10px;
-    background-color: black;
-    font-size: 24px;
-    margin-top: 10px;
-    color: white;
-}
