@@ -56,3 +56,4 @@ INSTALLED_APPS += ["django_extensions"]  # noqa: F405
 
 # Add additional configuration below:
 # ------------------------------------------------------------------------------
+CORS_ALLOW_ALL_ORIGINS = True  # dev only
