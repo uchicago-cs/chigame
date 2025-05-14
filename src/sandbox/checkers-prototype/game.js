@@ -448,13 +448,22 @@ document.addEventListener('DOMContentLoaded', () => {
     if (firstPieceColor === COLORS.red || firstPieceColor === COLORS.black) {
       lightPiece = COLORS.colorblind_orange;
       darkPiece = COLORS.colorblind_blue;
-      changePieceColor(COLORS.colorblind_blue, COLORS.colorblind_orange);
+      if (currentPlayer = COLORS.red) {
+        currentPlayer = lightPiece;
+      } else {
+        currentPlayer = darkPiece;
+      }
     }
     // if the first piece is a colorblind color, change to default colors
     else {
       lightPiece = COLORS.red;
       darkPiece = COLORS.black;
-      changePieceColor(COLORS.black, COLORS.red);
+      if (currentPlayer = COLORS.colorblind_orange) {
+        currentPlayer = lightPiece;
+      } else {
+        currentPlayer = darkPiece;
+      }
     }
+    changePieceColor(darkPiece, lightPiece);
   });
 });
