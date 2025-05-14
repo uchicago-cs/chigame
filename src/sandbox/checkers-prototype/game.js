@@ -42,11 +42,15 @@ const HIGHLIGHT_SIZE = 3;
 let gameOver = false;
 let drawOffered = false;
 let drawOfferedBy = null;
+// Initial time for each player
+let redTime = 300;
+let blackTime = 300;
+let activeTimer = null;
 
 // ----------------------------------------------------------------------------
 
 // ---INIT FUNCTIONS-----------------------------------------------------------
-function preload() { }
+function preload() {}
 
 function create() {
   // Store reference to the scene
@@ -66,7 +70,7 @@ function create() {
 
   function resetGame() {
     // Clear all pieces
-    pieces.forEach(piece => piece.sprite.destroy());
+    pieces.forEach((piece) => piece.sprite.destroy());
     pieces = [];
 
     // Reset game state
@@ -87,6 +91,12 @@ function create() {
 
     // Repopulate the board using the stored scene reference
     populatePieces(scene);
+
+    stopPlayerTimer();
+    redTime = 300;
+    blackTime = 300;
+    updateTimerDisplay();
+    startPlayerTimer();
   }
 
   playAgainYes.addEventListener('click', resetGame);
@@ -124,14 +134,15 @@ function create() {
       drawOffered = true;
       drawOfferedBy = currentPlayer;
       if (currentPlayer === COLORS.red) {
-        gameOverMessage.textContent = 'Red player has offered a draw. Black player, please accept or decline.';
+        gameOverMessage.textContent =
+          'Red player has offered a draw. Black player, please accept or decline.';
       } else {
-        gameOverMessage.textContent = 'Black player has offered a draw. Red player, please accept or decline.';
+        gameOverMessage.textContent =
+          'Black player has offered a draw. Red player, please accept or decline.';
       }
       gameOverMessage.classList.add('show');
       drawBtn.textContent = 'Accept Draw';
       declineDrawBtn.style.display = 'block';
-
     } else {
       // Accept Draw (second click)
       gameOver = true;
@@ -149,9 +160,12 @@ function create() {
       resetDrawOffer();
     }
   });
+
+  updateTimerDisplay(); // initial display
+  startPlayerTimer(); // red starts first
 }
 
-function update() { }
+function update() {}
 // ----------------------------------------------------------------------------
 
 // Draw the game board
@@ -283,9 +297,7 @@ function isValidMove(piece, moveX, moveY) {
     // get the piece that was jumped over
     const captured = getPiece(piece.x + dx / 2, piece.y + dy / 2);
     // make sure there exists a piece that was jumped over, and it must be an opposing piece
-    return (
-      captured && captured.color !== piece.color
-    );
+    return captured && captured.color !== piece.color;
   }
 
   // return false if it's not a normal or jump move
@@ -314,13 +326,13 @@ function movePiece(piece, moveX, moveY) {
   piece.sprite.x = MARGIN + piece.x * TILE_SIZE + TILE_SIZE / 2;
   piece.sprite.y = MARGIN + piece.y * TILE_SIZE + TILE_SIZE / 2;
 
-  console.log("Current board state:", getBoardState());
+  console.log('Current board state:', getBoardState());
 }
 
 // Check if the game is over due to all pieces of one color being captured
 function checkGameOver() {
-  const redPieces = pieces.filter(p => p.color === COLORS.red);
-  const blackPieces = pieces.filter(p => p.color === COLORS.black);
+  const redPieces = pieces.filter((p) => p.color === COLORS.red);
+  const blackPieces = pieces.filter((p) => p.color === COLORS.black);
 
   if (redPieces.length === 0) {
     gameOver = true;
@@ -348,6 +360,8 @@ function getPiece(x, y) {
 
 // end the turn
 function endTurn() {
+  stopPlayerTimer(); // stop current timer
+
   // remove the selected piece and its highlight
   if (selectedPiece) {
     selectedPiece.sprite.setStrokeStyle();
@@ -356,6 +370,7 @@ function endTurn() {
 
   // switch between red and black player turn
   currentPlayer = currentPlayer === COLORS.red ? COLORS.black : COLORS.red;
+  startPlayerTimer(); // start next player’s timer
 
   // reset draw offer if it was made by the current player
   if (drawOffered && drawOfferedBy === currentPlayer) {
@@ -399,7 +414,6 @@ function getBoardState() {
   return board;
 }
 
-
 function sendBoardToServer(boardState) {
   fetch('/api/board-state/', {
     method: 'POST',
@@ -429,8 +443,7 @@ function changePieceColor(newColorOne, newColorTwo) {
     if (piece.color === firstPieceColor) {
       piece.color = newColorOne;
       piece.sprite.setFillStyle(newColorOne);
-    }
-    else {
+    } else {
       piece.color = newColorTwo;
       piece.sprite.setFillStyle(newColorTwo);
     }
@@ -452,3 +465,61 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
+
+function startPlayerTimer() {
+  stopPlayerTimer(); // clear any running timer
+
+  activeTimer = setInterval(() => {
+    // subtract time from current player
+    if (currentPlayer === COLORS.red) {
+      redTime--;
+      // Black wins if red runs out of time
+      if (redTime <= 0) {
+        endGameOnTimeout(COLORS.black);
+      }
+    } else {
+      blackTime--;
+      // Red wins if black runs out of time
+      if (blackTime <= 0) {
+        endGameOnTimeout(COLORS.red);
+      }
+    }
+
+    updateTimerDisplay();
+  }, 1000);
+}
+
+function stopPlayerTimer() {
+  if (activeTimer) {
+    clearInterval(activeTimer);
+    activeTimer = null;
+  }
+}
+
+function updateTimerDisplay() {
+  const redDisplay = document.getElementById('red-timer');
+  const blackDisplay = document.getElementById('black-timer');
+
+  redDisplay.textContent = `Red: ${formatTime(redTime)}`;
+  blackDisplay.textContent = `Black: ${formatTime(blackTime)}`;
+}
+
+function formatTime(seconds) {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
+function endGameOnTimeout(winnerColor) {
+  stopPlayerTimer();
+  gameOver = true;
+
+  const message = document.getElementById('gameOverMessage');
+  const winner = winnerColor === COLORS.red ? 'Red' : 'Black';
+  message.textContent = `${winner === 'Red' ? 'Black' : 'Red'} ran out of time! ${winner} wins!`;
+  message.classList.add('show');
+
+  document.getElementById('playAgainPrompt').style.display = 'block';
+  document.getElementById('drawBtn').style.display = 'none';
+  document.getElementById('forfeitBtn').style.display = 'none';
+}
