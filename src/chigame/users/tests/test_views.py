@@ -12,7 +12,7 @@ from django.utils.translation import gettext_lazy as _
 from chigame.users.forms import UserAdminChangeForm
 from chigame.users.models import User
 from chigame.users.tests.factories import UserFactory
-from chigame.users.views import UserRedirectView, UserUpdateView, user_detail_view, user_list
+from chigame.users.views import NameUpdateView, UsernameUpdateView, UserRedirectView, user_detail_view, user_list
 
 pytestmark = pytest.mark.django_db
 
@@ -30,24 +30,30 @@ class TestUserUpdateView:
         return None
 
     def test_get_success_url(self, user: User, rf: RequestFactory):
-        view = UserUpdateView()
+        name_update_view = NameUpdateView()
+        username_update_view = UsernameUpdateView()
         request = rf.get("/fake-url/")
         request.user = user
 
-        view.request = request
-        assert view.get_success_url() == f"/users/{user.pk}/"
+        name_update_view.request = request
+        username_update_view.request = request
+        assert name_update_view.get_success_url() == f"/users/{user.pk}/"
+        assert username_update_view.get_success_url() == f"/users/{user.pk}/"
 
     def test_get_object(self, user: User, rf: RequestFactory):
-        view = UserUpdateView()
+        name_update_view = NameUpdateView()
+        username_update_view = UsernameUpdateView()
         request = rf.get("/fake-url/")
         request.user = user
 
-        view.request = request
+        name_update_view.request = request
+        username_update_view.request = request
 
-        assert view.get_object() == user
+        assert name_update_view.get_object() == user
+        assert username_update_view.get_object() == user
 
-    def test_form_valid(self, user: User, rf: RequestFactory):
-        view = UserUpdateView()
+    def test_name_form_valid(self, user: User, rf: RequestFactory):
+        name_update_view = NameUpdateView()
         request = rf.get("/fake-url/")
 
         # Add the session/message middleware to the request
@@ -55,14 +61,32 @@ class TestUserUpdateView:
         MessageMiddleware(self.dummy_get_response).process_request(request)
         request.user = user
 
-        view.request = request
+        name_update_view.request = request
 
         # Initialize the form
         form = UserAdminChangeForm()
         form.cleaned_data = {}
         form.instance = user
-        view.form_valid(form)
+        name_update_view.form_valid(form)
+        messages_sent = [m.message for m in messages.get_messages(request)]
+        assert messages_sent == [_("Information successfully updated")]
 
+    def test_username_form_valid(self, user: User, rf: RequestFactory):
+        username_update_view = UsernameUpdateView()
+        request = rf.get("/fake-url/")
+
+        # Add the session/message middleware to the request
+        SessionMiddleware(self.dummy_get_response).process_request(request)
+        MessageMiddleware(self.dummy_get_response).process_request(request)
+        request.user = user
+
+        username_update_view.request = request
+
+        # Initialize the form
+        form = UserAdminChangeForm()
+        form.cleaned_data = {}
+        form.instance = user
+        username_update_view.form_valid(form)
         messages_sent = [m.message for m in messages.get_messages(request)]
         assert messages_sent == [_("Information successfully updated")]
 
