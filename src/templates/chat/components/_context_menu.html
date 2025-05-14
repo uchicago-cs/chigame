@@ -13,6 +13,7 @@
           onclick="deleteMessage()"
           title="Delete Message">Delete Message</button>
 </div>
+{% csrf_token %}
 <script>
   let replyToMessageId = null;
   let replyToUsername = null;
@@ -44,6 +45,42 @@
 
     contextMenu.style.display = 'none';
     document.removeEventListener('click', hideContextMenu);
+  }
+
+  function editMessage() {
+    const messageId = replyToMessageId;
+    const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
+    const contentElement = messageElement?.querySelector(".mt-1");
+    const oldContent = contentElement?.innerText || "";
+
+    const newContent = prompt("Edit your message: ", oldContent);
+    if (!newContent) return;
+
+
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    fetch(`/chat/message/${messageId}/edit`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-CSRFToken': csrfToken
+        },
+        body: `content=${encodeURIComponent(newContent)}`
+      })
+      .then(response => {
+        if (response.ok) {
+          if (contentElement) {
+            contentElement.innerText = newContent;
+          }
+        } else {
+          console.error('Failed to edit message');
+        }
+      })
+      .catch(error => {
+        console.error('Error editing message:', error);
+      });
+
+    hideContextMenu();
   }
 
   /**
