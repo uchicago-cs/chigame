@@ -27,7 +27,7 @@
   <div class="grid-container">
     {% for guide in guides %}
       <div class="game-card">
-        <a href="#">Guide for {{ guide.game_id }}</a>
+        <a href="{% url 'knowledge-base-guide-detail' guide.pk %}"">Guide for {{ guide.game_id }}</a>
         <!-- should replace the link with the guide details link in the issue on guide page-->
       </div>
     {% empty %}
