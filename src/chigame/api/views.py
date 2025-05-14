@@ -202,6 +202,7 @@ class GameReviewListView(generics.ListAPIView):
 
 class ReviewCreateView(generics.CreateAPIView):
     serializer_class = ReviewSerializer
+    queryset = Review.objects.none()
 
     def perform_create(self, serializer):
         review_text = serializer.validated_data.get("review", "")
