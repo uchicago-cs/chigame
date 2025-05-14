@@ -200,6 +200,7 @@ class ReviewCreateView(generics.CreateAPIView):
 class ReviewDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
+    queryset = Review.objects.none()
 
     def perform_destroy(self, instance):
         if instance.user != self.request.user:
