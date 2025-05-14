@@ -473,7 +473,7 @@ function getLegalMoves(color) {
     const moves = [];
     //moving up or down board?
     const direction = color === COLORS.red ? -1 : 1;
-  
+
     //loop thru pieces
     pieces.forEach(piece => {
       if (piece.color !== color) return; //return for other p;layer peices
@@ -481,14 +481,14 @@ function getLegalMoves(color) {
       [-1, 1].forEach(diagonal => { //try L and R diagonals
         const col = piece.x + diagonal; //new col
         const row = piece.y + direction; //new row
-        if ( //check if mvoe is valid 
+        if ( //check if mvoe is valid
           col >= 0 && col < BOARD_SIZE && row >= 0 && row < BOARD_SIZE &&
           !getPiece(col, row) && isValidMove(piece, col, row)) {
           moves.push({ piece, x: col, y: row }); //add move to arr
         }
       });
       // jump moves for captures
-      [-2, 2].forEach(jump => { 
+      [-2, 2].forEach(jump => {
         const jump_col = piece.x + jump;
         const jump_row = piece.y + 2 * direction;
         if (
@@ -498,11 +498,11 @@ function getLegalMoves(color) {
         }
       });
     });
-  
+
     return moves;
   }
 
-  
+
   // Easy bot: pick a random legal move and play it
 function easyBot(scene) {
     //get legal moves
@@ -521,14 +521,3 @@ function easyBot(scene) {
     // end bot's turn
     endTurn(scene);
   }
-
-//medium/prefer captures and centeral moves bot
-
-    //get legal moves
-    //find central/captures
-    //play capture or central move
-
-
-//hard //use strategy
-    //implement some algorithm to make the bot hard to beat
-
