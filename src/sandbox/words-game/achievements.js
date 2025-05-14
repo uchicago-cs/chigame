@@ -75,6 +75,6 @@ export const ACHIEVEMENTS = [
 function countGreenTiles(guess) {
   if (!Array.isArray(guess)) return 0;
   return guess.reduce((count, letterObj) => {
-    return count + (letterObj && letterObj.color === "green" ? 1 : 0);
+    return count + (letterObj && letterObj.color === "rgb(83, 141, 78)" ? 1 : 0);
   }, 0);
 }
