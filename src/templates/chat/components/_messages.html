@@ -96,6 +96,35 @@
     z-index: 1000;
     display: none;
   }
+
+  .message-reactions {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+    font-size: 1.1em;
+  }
+
+  .reaction-pill {
+    display: inline-block;
+    background-color: #ffe6ea;
+    color: #b30000;
+    border-radius: 12px;
+    padding: 2px 8px;
+    margin-right: 6px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: background-color 0.2s ease;
+  }
+
+  .reaction-pill:hover {
+    background-color: #ffccd5;
+  }
+
+  .reaction-count {
+    margin-left: 4px;
+    font-weight: bold;
+  }
 </style>
 <div id="message-container"
      class="chat-messages-scroll flex-grow-1 overflow-auto p-3 bg-light d-flex flex-column">
@@ -104,7 +133,7 @@
       {% for message in messages %}
         <div class="mb-3 {% if message.user == request.user %}align-self-end{% else %}align-self-start{% endif %}"
              data-message-id="{{ message.id }}"
-             oncontextmenu="showContextMenu(event, {{ message.id }}, '{{ message.user.username }}', '{{ message.content }}'); return false;">
+             oncontextmenu="showContextMenu(event, '{{ message.id }}', '{{ message.user.username }}', '{{ message.content }}'); return false;">
           <div class="{% if message.user == request.user %}bg-success-subtle{% else %}bg-white{% endif %} rounded p-2 shadow-sm">
             {% if message.reply_to %}
               <div class="message-reply">
@@ -115,6 +144,7 @@
             <div class="fw-bold small text-danger">{{ message.user.username }}</div>
             <div class="mt-1">{{ message.content }}</div>
             <div class="text-end text-muted small mt-1">{{ message.sent_at|date:"g:i A" }}</div>
+            <div class="message-reactions mt-1" id="reactions-{{ message.id }}"></div>
           </div>
         </div>
       {% endfor %}
@@ -124,3 +154,38 @@
   </div>
 </div>
 {% include "chat/components/_context_menu.html" %}
+<script>
+  function addReactionToMessage(messageId, content) {
+    const container = document.getElementById(`reactions-${messageId}`);
+    if (!container) return; //grab container
+    const existing = container.querySelector(`[data-reaction="${content}"]`);
+    if (existing) { //if the reaction exists, add to it
+      const countSpan = existing.querySelector('.reaction-count');
+      const count = parseInt(countSpan.textContent, 10);
+      countSpan.textContent = count + 1; //add one when clicked
+    } else { //if not, create new pill
+      const span = document.createElement('span');
+      span.className = 'reaction-pill';
+      span.dataset.reaction = content;
+      span.dataset.messageId = messageId;
+      span.innerHTML = `${content} <span class="reaction-count">1</span>`;
+      span.onclick = () => reactToMessage(content);
+      container.appendChild(span); //adds to container
+    }
+  }
+
+  function removeReactionToMessage(messageId, content) {
+    const container = document.getElementById(`reactions-${messageId}`);
+    if (!container) return;
+    const existing = container.querySelector(`[data-reaction="${content}"]`);
+    if (existing) {
+      const countSpan = existing.querySelector('.reaction-count');
+      const count = parseInt(countSpan.textContent, 10);
+      if (count > 1) {
+        countSpan.textContent = count - 1;
+      } else {
+        existing.remove();
+      }
+    }
+  }
+</script>

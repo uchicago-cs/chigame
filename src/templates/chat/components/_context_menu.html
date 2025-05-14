@@ -67,7 +67,7 @@
   /**
    * Reacts to a message on the frontend.
    */
-  function reactToMessage(content) {
+  function reactToMessage(content = "❤️") {
     const messageId = replyToMessageId;
     fetch('/chat/message/<int:message_id>/react', {
         method: 'POST',
@@ -76,12 +76,12 @@
       .then(response => response.json())
       .then(data => {
         if (data.status === "added") {
-          console.log("Reaction ${emoji} added");
-          // update UI to show new reaction
+          addReactionToMessage(messageId, content);
         } else if (data.status === "removed") {
           console.log("Reaction ${emoji} removed");
-          // update UI to remove reaction
+          removeReactionFromMessage(messageId, content);
         }
       });
+    hideContextMenu();
   }
 </script>
