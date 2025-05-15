@@ -6,13 +6,13 @@ from .views import (
     DefaultView,
     DownloadGuide,
     FeedbackDetail,
-    GuideDetail,
+    GuideDetailView,
     ModeratorGuidesPending,
 )
 
 urlpatterns = [
     path("", DefaultView.as_view(), name="knowledge-base"),
-    path("guides/<int:pk>", GuideDetail.as_view(), name="knowledge-base-guide-detail"),
+    path("guides/<int:pk>", GuideDetailView.as_view(), name="knowledge-base-guide-detail"),
     path("moderation", ModeratorGuidesPending.as_view(), name="knowledge-base-moderator"),
     path("manage-my-guides", ContributorManageGuide.as_view(), name="contributor-manage-guide"),
     path("guides/<int:pk>/download", DownloadGuide, name="download-guide"),
