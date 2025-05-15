@@ -1,0 +1,31 @@
+<h1>LEADERBOARDS</h1>
+{% if request.user.is_authenticated %}
+  {% if entries %}
+    <table>
+      <thead>
+        <tr>
+          <th>Game</th>
+          <th>Rank</th>
+          <th>Player</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for entry in entries %}
+          <tr>
+            <td>{{ entry.leaderboard.game.name }}</td>
+            <td>{{ entry.rank }}</td>
+            <td>{{ entry.user.display_name }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>You are not ranked in any leaderboards yet.</p>
+  {% endif %}
+  <p>
+    <strong>Default View Metric:</strong> {{ default_view_metric|default:"Not set" }} &nbsp;&nbsp;&nbsp;
+    <strong>Anonymity Setting:</strong> {{ anonymity|default:"Not set" }}
+  </p>
+{% else %}
+  <p>Please log in to view your leaderboard summary.</p>
+{% endif %}
