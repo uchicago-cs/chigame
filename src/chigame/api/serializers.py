@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
-from chigame.achievements.models import UserAchievement
+
+from chigame.achievements.models import UserAchievement, Achievement
 from chigame.games.models import Category, Chat, Game, Lobby, Mechanic, Message, Review, Tournament, User
 from chigame.users.models import Group
 
@@ -98,14 +99,17 @@ class MessageFeedSerializer(serializers.ModelSerializer):
     def get_sender(self, obj):
         return obj.sender.name
 
-
 class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
         fields = ["id", "user", "title", "rating", "review", "is_public", "created_at"]
 
-
 class UserAchievementSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserAchievement
         fields = ["id", "user", "pinned", "date_earned", "progress"]
+
+class AchievementSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Achievement
+        fields = ["id", "name", "description", "rarity", "threshold"]

@@ -2,14 +2,17 @@ from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, status
+from rest_framework.exceptions import ValidationError
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from chigame.achievements.models import Achievement, UserAchievement
+
 from chigame.api.filters import GameFilter
 from chigame.api.serializers import (
+    AchievementSerializer,
     CategorySerializer,
     GameSerializer,
     GroupSerializer,
@@ -21,6 +24,7 @@ from chigame.api.serializers import (
     UserAchievementSerializer,
     UserSerializer,
 )
+from chigame.api.spam_utils import is_spam
 from chigame.games.models import Game, Lobby, Message, Review
 from chigame.users.models import Group, User
 
@@ -127,6 +131,17 @@ class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
 class MessageView(generics.CreateAPIView):
     queryset = Message.objects.all()
     serializer_class = MessageSerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        content = serializer.validated_data.get("content", "")
+        if is_spam(content):
+            raise ValidationError("Your message appears to be spam.")
+
+        serializer.save()
+
+
+# Need Livechat in order to use this endpoint
 
 
 class GroupListView(generics.ListCreateAPIView):
@@ -191,8 +206,13 @@ class GameReviewListView(generics.ListAPIView):
 
 class ReviewCreateView(generics.CreateAPIView):
     serializer_class = ReviewSerializer
+    queryset = Review.objects.none()
 
     def perform_create(self, serializer):
+        review_text = serializer.validated_data.get("review", "")
+        if is_spam(review_text):
+            raise ValidationError("Your review appears to be spam. Please revise your content.")
+
         user_id = self.request.data.get("user")
         game_id = self.kwargs["pk"]
         user = get_object_or_404(User, pk=user_id)
@@ -232,13 +252,38 @@ class UserAchievementCreateView(generics.CreateAPIView):
         if UserAchievement.objects.filter(achievement=achievement, user=user).exists():
             return Response(
                 {"error": f"This achievement already exists for user '{user.email}'"},
+              status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        self.perform_create(serializer)
+
+        return Response(
+            {"message": "Achievement created successfully!", "data": serializer.data}, status=status.HTTP_201_CREATED)
+ 
+class AchievementCreateView(generics.CreateAPIView):
+    serializer_class = AchievementSerializer
+
+    def perform_create(self, serializer):
+        game_id = self.kwargs["pk"]
+        serializer.save(game_id=game_id)
+
+    def create(self, request, *args, **kwargs):
+        name = request.data.get("name")
+        game = Game.objects.get(id=self.kwargs["pk"])
+
+        if Achievement.objects.filter(name=name, game=game).exists():
+            return Response(
+                {"error": f"An achievement with the name '{name}' already exists for this game."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+
         self.perform_create(serializer)
 
         return Response(
-            {"message": "Achievement assigned to user!", "data": serializer.data}, status=status.HTTP_201_CREATED
-        )
+            {"message": "Achievement assigned to user!", "data": serializer.data}, status=status.HTTP_201_CREATED)
