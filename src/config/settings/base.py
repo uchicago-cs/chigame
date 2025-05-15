@@ -234,6 +234,7 @@ TEMPLATES = [
                 "chigame.users.context_processors.allauth_settings",
                 # https://django-machina.readthedocs.io/en/latest/getting_started.html#django-settings
                 "machina.core.context_processors.metadata",
+                "chigame.users.context_processors.user_notifications",
             ],
             "loaders": [
                 # https://django-machina.readthedocs.io/en/latest/getting_started.html#django-settings
