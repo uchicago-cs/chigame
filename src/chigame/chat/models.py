@@ -28,6 +28,8 @@ class LiveChatMessage(models.Model):
     # this is for messaging quoting/replying
     reply_to = models.ForeignKey("self", on_delete=models.SET_NULL, null=True, blank=True)
 
+    edited = models.BooleanField(default=False)
+
     def __str__(self):
         return f"Message: [{self.content}] by {self.user} in LiveChat {self.live_chat}"
 
