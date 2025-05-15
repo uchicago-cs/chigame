@@ -64,6 +64,10 @@ function create() {
   const playAgainYes = document.getElementById('playAgainYes');
   const playAgainNo = document.getElementById('playAgainNo');
 
+  // current turn indicator
+  const turn = document.getElementById('player-turn');
+  turn.textContent = 'Red';
+
   function resetGame() {
     // Clear all pieces
     pieces.forEach(piece => piece.sprite.destroy());
@@ -84,6 +88,7 @@ function create() {
     drawBtn.textContent = 'Offer Draw';
     forfeitBtn.style.display = 'block';
     declineDrawBtn.style.display = 'none';
+    turn.textContent = 'Red';
 
     // Repopulate the board using the stored scene reference
     populatePieces(scene);
@@ -356,6 +361,14 @@ function endTurn() {
 
   // switch between red and black player turn
   currentPlayer = currentPlayer === COLORS.red ? COLORS.black : COLORS.red;
+
+  // change current turn indicator
+  const turn = document.getElementById('player-turn');
+  if (currentPlayer === COLORS.red) {
+    turn.textContent = 'Red';
+  } else {
+    turn.textContent = 'Black';
+  }
 
   // reset draw offer if it was made by the current player
   if (drawOffered && drawOfferedBy === currentPlayer) {
