@@ -34,6 +34,8 @@ const COLORS = {
 let pieces = [];
 let selectedPiece = null;
 let currentPlayer = COLORS.red; // red starts first
+let redCaptured = 0; // Number of pieces that red has captured
+let blackCaptured = 0; // Number of pieces that black has captured
 // change to adjust the piece size, any value less than 2 would make the pieces
 // bigger than the tiles
 const RADIUS_SCALE_FACTOR = 2.5;
@@ -75,6 +77,8 @@ function create() {
     currentPlayer = COLORS.red;
     drawOffered = false;
     drawOfferedBy = null;
+    redCaptured = 0;
+    blackCaptured = 0;
 
     // Reset UI
     gameOverMessage.textContent = '';
