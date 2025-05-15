@@ -1,5 +1,6 @@
 import random
 
+import factory
 from django.utils import timezone
 from factory import Faker, Iterator, LazyAttribute, LazyFunction, Sequence, SubFactory, post_generation
 from factory.django import DjangoModelFactory
@@ -20,7 +21,7 @@ class MechanicFactory(DjangoModelFactory):
     class Meta:
         model = Mechanic
 
-    name = Faker("word")
+    name = factory.Sequence(lambda n: f"Mechanic {n}")
     description = Faker("text", max_nb_chars=200)
 
 
