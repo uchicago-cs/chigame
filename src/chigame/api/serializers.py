@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+from chigame.achievements.models import Achievement
 from chigame.games.models import Category, Chat, Game, Lobby, Mechanic, Message, Review, Tournament, User
 from chigame.users.models import Group
 
@@ -25,7 +26,6 @@ class LobbySerializer(serializers.ModelSerializer):
             "time_constraint",
             "lobby_created",
         )
-        read_only_fields = ["created_by"]
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -103,4 +103,9 @@ class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
         fields = ["id", "user", "title", "rating", "review", "is_public", "created_at"]
-        read_only_fields = ("user",)
+
+
+class AchievementSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Achievement
+        fields = ["id", "name", "description", "rarity", "threshold"]
