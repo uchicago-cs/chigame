@@ -10,6 +10,9 @@ class LiveChat(models.Model):
 
     name = models.TextField(null=False)
     users: models.ManyToManyField = models.ManyToManyField(User, through="LiveChatUser", related_name="live_chats")
+    pinned_message = models.ForeignKey(
+        "LiveChatMessage", null=True, blank=True, on_delete=models.SET_NULL, related_name="pinned_message"
+    )
 
     def __str__(self):
         return f"LiveChat with name:'{self.name}'"
