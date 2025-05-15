@@ -294,6 +294,7 @@ class Notification(models.Model):
     message = models.CharField(max_length=255, blank=True, null=True)
     objects = NotificationQuerySet.as_manager()
     bookmarked = models.BooleanField(default=False)
+    labels = models.ManyToManyField("NotificationLabel", blank=True, related_name="notifications")
 
     class Meta:
         unique_together = ["receiver", "actor_content_type", "actor_object_id", "type"]
@@ -379,3 +380,14 @@ class UpcomingMatchNotification(BaseNotificationHandler):
 
     def get_redirect_str(self):
         return reverse("games:lobby-details", kwargs={"pk": self.notification.actor.lobby.pk})
+
+
+class NotificationLabel(models.Model):
+    name = models.CharField(max_length=50)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="notification_labels")
+
+    class Meta:
+        unique_together = ("name", "user")
+
+    def __str__(self):
+        return self.name
