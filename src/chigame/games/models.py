@@ -741,3 +741,45 @@ class GameList(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.created_by})"
+
+
+# ================ Word Game Models ================
+class WordleStat(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    current_streak = models.IntegerField(default=0)
+    last_played = models.DateField(null=True, blank=True)
+    last_word = models.CharField(max_length=10, blank=True)
+    last_word_date = models.DateField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.user.username} - Streak: {self.current_streak}"
+
+
+class WordleSession(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    word = models.CharField(max_length=10)
+    guesses = models.JSONField(default=list)  # list of guessed words
+    board_state = models.JSONField(default=dict)  # optional visual tile states
+    is_completed = models.BooleanField(default=False)
+    start_time = models.DateTimeField(auto_now_add=True)
+    end_time = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.word} - Completed: {self.is_completed}"
+
+
+class WordleAchievementUnlock(models.Model):
+    class Rarity(models.IntegerChoices):
+        COMMON = 1, "Common"
+        UNCOMMON = 2, "Uncommon"
+        RARE = 3, "Rare"
+        PRECIOUS = 4, "Precious"
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    name = models.CharField(max_length=100)
+    rarity = models.IntegerField(choices=Rarity.choices)
+    date_unlocked = models.DateTimeField(auto_now_add=True)
+    session = models.ForeignKey(WordleSession, null=True, blank=True, on_delete=models.SET_NULL)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.name} ({self.get_rarity_display()})"
