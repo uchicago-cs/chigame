@@ -175,3 +175,22 @@ canvas {
 .settings-menu.active {
     transform: translateX(0);
 }
+
+#toggle-coordinates {
+    display: inline-block;
+    font-size: 16px;
+    padding: 6px 12px;
+    margin: 0.25rem 0;
+    background-color: #d2b48c;
+    color: #3b2f2a;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+#toggle-coordinates:hover {
+    background-color: #c59e71;
+    transform: translateX(2px);
+}
