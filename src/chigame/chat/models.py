@@ -55,3 +55,43 @@ class LiveChatMessageReaction(models.Model):
 
     def __str__(self):
         return f"{self.user} reacted with {self.content} to message {self.message}"
+
+
+class LiveChatPollOption(models.Model):
+    """
+    An option in a LiveChatPoll.
+    """
+
+    content = models.TextField(null=False)
+    
+
+class LiveChatPoll(models.Model):
+    """
+    A poll in a live chat.
+    """
+
+    live_chat = models.ForeignKey(LiveChat, on_delete=models.CASCADE)
+    question = models.TextField(null=False)
+    options = models.ManyToManyField(LiveChatPollOption, related_name="polls")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    closed_at = models.DateTimeField(null=True)
+
+    def __str__(self):
+        return f"Poll: {self.question} in LiveChat {self.live_chat}"
+
+
+class LiveChatPollVote(models.Model):
+    """
+    A vote in a LiveChatPoll.
+    """
+
+    poll = models.ForeignKey(LiveChatPoll, on_delete=models.CASCADE)
+    option = models.ForeignKey(LiveChatPollOption, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ("poll", "option", "user")
+
+    def __str__(self):
+        return f"{self.user} voted for {self.option} in Poll {self.poll}"
