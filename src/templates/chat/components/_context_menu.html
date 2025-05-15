@@ -67,18 +67,26 @@
         },
         body: `content=${encodeURIComponent(newContent)}`
       })
-      .then(response => {
-        if (response.ok) {
+      .then(response => response.json())
+      .then(data => {
+        if (data.message === "Message edited successfully" && data.edited === true) {
           if (contentElement) {
             contentElement.innerText = newContent;
           }
-          let editedTag = messageElement.querySelector(".edited-tag");
-          if (!editedTag) {
-            editedTag = document.createElement("div")
-            editedTag.className = "test-end text-muted small mt-1 edited-tag fst-italic"
-            editedTag.innerText = "(edited)"
-            messageElement.appendChild(editedTag)
+
+
+          const existingTag = messageElement.querySelector(".edited-tag");
+          if (existingTag) {
+            existingTag.remove();
           }
+
+          const editedTag = document.createElement("div");
+          editedTag.className = "text-end text-muted small mt-1 edited-tag fst-italic";
+          editedTag.innerText = "(edited)";
+          messageElement.appendChild(editedTag);
+
+
+
         } else {
           console.error('Failed to edit message');
         }

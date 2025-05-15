@@ -59,6 +59,6 @@ def edit_message(request, message_id):
         message.edited = True
         message.content = content
         message.save()
-        return JsonResponse({"message": "Message edited successfully"}, status=200)
+        return JsonResponse({"message": "Message edited successfully", "edited": message.edited}, status=200)
 
     return JsonResponse({"message": "Type of request not allowed"}, status=405)

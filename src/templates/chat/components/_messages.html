@@ -116,6 +116,7 @@
             <div class="mt-1">{{ message.content }}</div>
             <div class="text-end text-muted small mt-1">{{ message.sent_at|date:"g:i A" }}</div>
           </div>
+          {% if message.edited %}<div class="text-end text-muted small mt-1 fst-italic">(edited)</div>{% endif %}
         </div>
       {% endfor %}
     {% else %}
