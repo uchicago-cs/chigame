@@ -66,6 +66,10 @@ function create() {
   const playAgainYes = document.getElementById('playAgainYes');
   const playAgainNo = document.getElementById('playAgainNo');
 
+  // Score displays
+  const redC = document.getElementById('red-captured');
+  const blackC = document.getElementById('black-captured');
+
   function resetGame() {
     // Clear all pieces
     pieces.forEach(piece => piece.sprite.destroy());
@@ -88,6 +92,8 @@ function create() {
     drawBtn.textContent = 'Offer Draw';
     forfeitBtn.style.display = 'block';
     declineDrawBtn.style.display = 'none';
+    redC.textContent = "Red: 0";
+    blackC.textContent = "Black: 0";
 
     // Repopulate the board using the stored scene reference
     populatePieces(scene);
@@ -296,6 +302,14 @@ function isValidMove(piece, moveX, moveY) {
   return false;
 }
 
+// Updates score on frontend
+function updateScore() {
+  const redC = document.getElementById('red-captured');
+  const blackC = document.getElementById('black-captured');
+  redC.textContent = "Red: " + redCaptured;
+  blackC.textContent = "Black: " + blackCaptured;
+}
+
 function movePiece(piece, moveX, moveY) {
   const dx = moveX - piece.x;
   const dy = moveY - piece.y;
@@ -306,6 +320,12 @@ function movePiece(piece, moveX, moveY) {
     if (captured) {
       captured.sprite.destroy(); // delete the sprite (remove from display state)
       pieces = pieces.filter((p) => p !== captured); // remove it from the array (game state)
+      if (currentPlayer === COLORS.red) {
+        redCaptured++;
+      } else {
+        blackCaptured++;
+      }
+      updateScore();
 
       // Check for game over after capturing a piece
       checkGameOver();
