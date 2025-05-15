@@ -202,11 +202,11 @@
                              class="notification-item dropdown dropdown-item text-reset text-decoration-none {% if not n.read %}notification-unread{% endif %} notification-style-{{ n.get_style_key }}"
                              id="notification-{{ n.id }}">
                             <div class="d-flex justify-content-between align-items-start">
-                               {# Icon  #}
+                              {# Icon  #}
                               <div class="notification-icon d-flex align-items-start">
                                 <i class="{{ n.get_icon_class }} me-2"></i>
                                 <div>
-                                  <span class="notification-strong" >{{ n.get_rich_message|truncatewords:15 }}</span>
+                                  <span class="notification-strong">{{ n.get_rich_message|truncatewords:15 }}</span>
                                   <br />
                                   <small class="text-muted">{{ n.last_sent|timesince }} ago</small>
                                 </div>

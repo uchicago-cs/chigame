@@ -8,7 +8,7 @@
 
 #notification-btn-wrapper button:hover {
   background-color: rgba(0, 0, 0, 0.05);
-  border-radius: 0.5rem; 
+  border-radius: 0.5rem;
 }
 
 #notification-btn-wrapper button {
@@ -19,8 +19,8 @@
 
 
 .notification-dismiss-btn:hover {
-    background-color: transparent !important; 
-    opacity: 1;                            
+    background-color: transparent !important;
+    opacity: 1;
 }
 
 .notification-item {
@@ -29,11 +29,11 @@
 
 .notification-style-friend {
   background-color: #f8f9fa;
-  border-left: 3px solid #7aa5d5; 
+  border-left: 3px solid #7aa5d5;
 }
 .notification-style-group {
   background-color: #f8f9fa;
-  border-left: 3px solid #85c799; 
+  border-left: 3px solid #85c799;
 }
 .notification-style-match {
   background-color: #f8f9fa;
@@ -48,7 +48,7 @@
   border-left: 3px solid #5bc0de;
 }
 .notification-style-default {
-  background-color: #ffffff; 
+  background-color: #ffffff;
 }
 
 .notification-unread .notification-strong {

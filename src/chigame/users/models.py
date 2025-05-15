@@ -323,14 +323,14 @@ class Notification(models.Model):
         # For Mapping integer types to the stringsC SS expects
         type_map = {
             self.FRIEND_REQUEST: "friend",
-            self.REMINDER: "system", 
-            self.UPCOMING_MATCH: "match", 
+            self.REMINDER: "system",
+            self.UPCOMING_MATCH: "match",
             self.MATCH_PROPOSAL: "match",
             self.GROUP_INVITATION: "group",
             self.ACHIEVEMENT: "achievement",
         }
         return type_map.get(self.type, "default")
-    
+
     def get_rich_message(self):
         actor = self.actor
 
@@ -343,21 +343,25 @@ class Notification(models.Model):
 
         try:
             if self.type == self.FRIEND_REQUEST:
-                if hasattr(actor, 'sender') and actor.sender:
+                if hasattr(actor, "sender") and actor.sender:
                     # Try to get username, fallback to name, then to "Someone"
-                    sender_name = getattr(actor.sender, 'username', None) or \
-                                  getattr(actor.sender, 'name', None) or \
-                                  "Someone"
+                    sender_name = (
+                        getattr(actor.sender, "username", None) or getattr(actor.sender, "name", None) or "Someone"
+                    )
                     return f"{sender_name} sent you a friend request."
                 return default_message_for_type
 
             elif self.type == self.GROUP_INVITATION:
-                if (hasattr(actor, 'sender') and actor.sender and
-                        hasattr(actor, 'friend_group') and actor.friend_group and
-                        hasattr(actor.friend_group, 'name')):
-                    sender_name = getattr(actor.sender, 'username', None) or \
-                                  getattr(actor.sender, 'name', None) or \
-                                  "Someone"
+                if (
+                    hasattr(actor, "sender")
+                    and actor.sender
+                    and hasattr(actor, "friend_group")
+                    and actor.friend_group
+                    and hasattr(actor.friend_group, "name")
+                ):
+                    sender_name = (
+                        getattr(actor.sender, "username", None) or getattr(actor.sender, "name", None) or "Someone"
+                    )
                     group_name = actor.friend_group.name
                     return f"{sender_name} invited you to join the group '{group_name}'."
                 return self.message or "You have a group invitation."
@@ -365,8 +369,8 @@ class Notification(models.Model):
             # For all other notification types, use the existing message or the type-specific default
             return final_fallback_message
 
-        except AttributeError as e:
-            return final_fallback_message # Safe fallback in case of unexpected errors
+        except AttributeError:
+            return final_fallback_message  # Safe fallback in case of unexpected errors
 
     def get_icon_class(self):
         if self.type == self.FRIEND_REQUEST:
@@ -383,7 +387,6 @@ class Notification(models.Model):
             return "bi-info-circle-fill"
         else:
             return "bi-bell-fill"
-
 
 
 class BaseNotificationHandler:
