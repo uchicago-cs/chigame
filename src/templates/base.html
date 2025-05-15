@@ -199,11 +199,11 @@
                       {% if header_notifications %}
                         {% for n in header_notifications %}
                           <a href="{% url 'users:notification-detail' n.pk %}"
-                             class="dropdown-item text-reset text-decoration-none"
+                             class="dropdown dropdown-item text-reset text-decoration-none notification-type-{{ n.get_type_string|default:'default' }}"
                              id="notification-{{ n.id }}">
                             <div class="d-flex justify-content-between align-items-start">
                               <div>
-                                <strong>{{ n.message|default:"You have a new notification" }}</strong>
+                                <strong class="red">{{ n.get_rich_message|truncatewords:15 }}</strong>
                                 <br />
                                 <small class="text-muted">{{ n.last_sent|timesince }} ago</small>
                               </div>

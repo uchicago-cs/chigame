@@ -16,3 +16,23 @@
   border: none;
   padding: 0.5rem;
 }
+
+.notification-type-friend {
+  background-color: #d1e9f0; /* A slightly richer, but still soft, blue */
+}
+.notification-type-invite {
+  background-color: #ff9c80; /* A warm, noticeable light yellow/orange */
+}
+.notification-type-system {
+  background-color: #e8e8e8; /* A clearer, slightly darker grey */
+}
+.notification-type-achievement {
+  background-color: #c8e6c8; /* A more distinct, pleasant green */
+}
+.notification-type-default {
+  background-color: #ffffff;    /* White for fallback is usually fine */
+}
+
+.dropdown {
+  border-radius: 4px;
+}

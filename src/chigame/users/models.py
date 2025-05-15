@@ -319,6 +319,61 @@ class Notification(models.Model):
         self.last_sent = timezone.now()
         self.save()
 
+    def get_type_string(self):
+        # For Mapping integer types to the stringsC SS expects
+        type_map = {
+            self.FRIEND_REQUEST: "friend",
+            self.REMINDER: "system", 
+            self.UPCOMING_MATCH: "invite", 
+            self.MATCH_PROPOSAL: "invite",
+            self.GROUP_INVITATION: "invite",
+            self.ACHIEVEMENT: "achievement",
+        }
+        return type_map.get(self.type, "default")
+    
+    def get_rich_message(self):
+        """
+        Generates a human-readable, detailed message for the notification,
+        focusing on Friend Requests and Group Invitations.
+        """
+        actor = self.actor
+
+        # Default message: Use pre-set message, then type-specific default, then generic default
+        default_message_for_type = self.DEFAULT_MESSAGES.get(self.type, "You have a new notification.")
+        final_fallback_message = self.message or default_message_for_type
+
+        if not actor:
+            return final_fallback_message
+
+        try:
+            if self.type == self.FRIEND_REQUEST:
+                if hasattr(actor, 'sender') and actor.sender:
+                    # Try to get username, fallback to name, then to "Someone"
+                    sender_name = getattr(actor.sender, 'username', None) or \
+                                  getattr(actor.sender, 'name', None) or \
+                                  "Someone"
+                    return f"{sender_name} sent you a friend request."
+                return default_message_for_type
+
+            elif self.type == self.GROUP_INVITATION:
+                if (hasattr(actor, 'sender') and actor.sender and
+                        hasattr(actor, 'friend_group') and actor.friend_group and
+                        hasattr(actor.friend_group, 'name')):
+                    sender_name = getattr(actor.sender, 'username', None) or \
+                                  getattr(actor.sender, 'name', None) or \
+                                  "Someone"
+                    group_name = actor.friend_group.name
+                    return f"{sender_name} invited you to join the group '{group_name}'."
+                return self.message or "You have a group invitation."
+
+            # For all other notification types, use the existing message or the type-specific default
+            return final_fallback_message
+
+        except AttributeError as e:
+            return final_fallback_message # Safe fallback in case of unexpected errors
+
+    # ... (your existing methods like get_type_string, mark_as_read, etc.)
+
 
 class BaseNotificationHandler:
     def __init__(self, notification):
