@@ -26,8 +26,8 @@ from django.views.generic.edit import FormMixin
 from chigame.users.models import User
 
 from .filters import LobbyFilter
-from .forms import GameForm, LobbyForm, ReviewForm
-from .models import Chat, Game, GameList, Lobby, Match, Player, Review, Tournament
+from .forms import GameForm, IFGameForm, LobbyForm, ReviewForm
+from .models import Chat, Game, GameList, InteractiveFictionGame, Lobby, Match, Player, Review, Tournament
 from .simulation_utils import TournamentSimulator, run_complete_tournament_simulation
 from .tables import LobbyTable
 
@@ -114,11 +114,6 @@ class GameCreateView(UserPassesTestMixin, CreateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
-        # Game create and edit views share the same template, so this variable lets us know which is which
-        # Currently, this is being so that BGG autofilling is only available when creating a game
-        context["is_create"] = True
-
         return context
 
 
@@ -406,7 +401,7 @@ def search_results(request):
 
 # =============== Interactive Fiction Views ===============
 class InteractiveFictionView(TemplateView):
-    template_name = "games/game_detail.html"
+    template_name = "games/interactive-fiction/IF_game_create.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -417,6 +412,20 @@ class InteractiveFictionView(TemplateView):
         if game.twine_file:
             context["uploaded_file_url"] = game.twine_file.url  # use actual uploaded Twine file
 
+        return context
+
+
+class IFGameCreateView(UserPassesTestMixin, CreateView):
+    model = InteractiveFictionGame
+    form_class = IFGameForm
+    template_name = "games/interactive-fiction/IF_game_create.html"
+    success_url = reverse_lazy("game-list")
+
+    def test_func(self):
+        return self.request.user.is_staff
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
         return context
 
 
