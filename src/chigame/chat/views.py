@@ -1,5 +1,6 @@
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, redirect, render
 
+from .forms import LiveChatForm
 from .models import LiveChat, LiveChatMessage
 
 
@@ -20,5 +21,12 @@ def live_chat_list(request):
 
 
 def create_live_chat(request):
-    return render(request, "chat/create-live-chat.html")
-    
+    if request.method == "POST":
+        form = LiveChatForm(request.POST)
+
+        if form.is_valid():
+            form.save()
+            return redirect("live-chat-list")
+    else:
+        form = LiveChatForm()
+    return render(request, "chat/create-live-chat.html", {"form": form})
