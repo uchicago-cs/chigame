@@ -42,9 +42,8 @@ class UserDetailView(LoginRequiredMixin, DetailView):
 user_detail_view = UserDetailView.as_view()
 
 
-class UserUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+class BaseUserUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     model = User
-    fields = ["name"]
     success_message = _("Information successfully updated")
 
     def get_success_url(self):
@@ -55,7 +54,16 @@ class UserUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         return self.request.user
 
 
-user_update_view = UserUpdateView.as_view()
+class NameUpdateView(BaseUserUpdateView):
+    fields = ["name"]
+
+
+class UsernameUpdateView(BaseUserUpdateView):
+    fields = ["username"]
+
+
+name_update_view = NameUpdateView.as_view()
+username_update_view = UsernameUpdateView.as_view()
 
 
 class UserRedirectView(LoginRequiredMixin, RedirectView):
@@ -166,7 +174,7 @@ def user_profile_detail_view(request, pk):
     if request.user.is_authenticated and request.user.pk == pk:
         # if user is accessing their own profile, create a profile if it doesn't exist
         profile = UserProfile.get_or_create_profile(request.user)
-        return render(request, "users/userprofile_detail.html", {"object": profile})
+        return render(request, "users/userprofile_detail.html", {"profile": profile})
     else:
         # fetch another user's profile
         try:
@@ -196,7 +204,7 @@ def user_profile_detail_view(request, pk):
             )
 
     # provide frontend profile + friendship status
-    context = {"object": profile, "is_friend": is_friend, "friendship_request": friendship_request}
+    context = {"profile": profile, "is_friend": is_friend, "friendship_request": friendship_request}
     return render(request, "users/userprofile_detail.html", context=context)
 
 
@@ -223,12 +231,10 @@ def send_friend_invitation(request, pk):
     if curr_user.friends.filter(pk=other_user.pk).exists():
         messages.error(request, "You are already friends with this user")
         return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
-
     # if the current user is trying to send a friend request to themselves, return an error
     if curr_user.id == other_user.id:
         messages.error(request, "You can't send friendship invitation to yourself")
         return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
-
     # check if the friendship invitation already exists
     invitation, new = FriendInvitation.objects.filter(
         Q(sender=curr_user, receiver=other_user, is_deleted=False)
@@ -422,7 +428,7 @@ def notification_search_results(request):
 
 
 @login_required
-def user_inbox_view(request, pk):
+def user_inbox_view(request, pk, category="inbox"):
     """
     Displays a user's inbox containing notifications. The user can only access
     their own inbox.
@@ -440,20 +446,28 @@ def user_inbox_view(request, pk):
             for each notification type
     """
 
+    if pk != request.user.pk:
+        messages.error(request, "Not your inbox")
+        return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
+
     user = request.user
-    notifications = Notification.objects.filter_by_receiver(user)
+
+    if category and category in dict(Notification.CATEGORY_CHOICES):
+        notifications = Notification.objects.filter_by_receiver(user).filter_by_category(category)
+    else:
+        notifications = Notification.objects.filter_by_receiver(user)
+
     default_notification_messages = Notification.DEFAULT_MESSAGES
     context = {
         "pk": pk,
         "user": user,
         "notifications": notifications,
         "default_notification_messages": default_notification_messages,
+        "active_category": category,
+        "category_choices": Notification.CATEGORY_CHOICES,
     }
-    if pk == user.id:
-        return render(request, "users/user_inbox.html", context)
-    else:
-        messages.error(request, "Not your inbox")
-        return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
+
+    return render(request, "users/user_inbox.html", context)
 
 
 @login_required
@@ -675,6 +689,16 @@ def view_bookmarked_notifications(request, pk):
     else:
         messages.error(request, "Not your inbox")
         return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
+
+
+@login_required
+def upload_profile_photo(request):
+    if request.method == "POST" and request.FILES.get("photo"):
+        profile = UserProfile.get_or_create_profile(request.user)
+        profile.profile_photo = request.FILES["photo"]
+        profile.save()
+        messages.success(request, "Profile photo updated.")
+    return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
 
 
 @csrf_protect
