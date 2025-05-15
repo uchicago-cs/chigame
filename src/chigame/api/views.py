@@ -8,6 +8,7 @@ from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnl
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from chigame.achievements.models import Achievement, UserAchievement
 from chigame.api.filters import GameFilter
 from chigame.api.serializers import (
     CategorySerializer,
