@@ -9,7 +9,6 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from chigame.achievements.models import Achievement, UserAchievement
-
 from chigame.api.filters import GameFilter
 from chigame.api.serializers import (
     AchievementSerializer,
@@ -252,7 +251,7 @@ class UserAchievementCreateView(generics.CreateAPIView):
         if UserAchievement.objects.filter(achievement=achievement, user=user).exists():
             return Response(
                 {"error": f"This achievement already exists for user '{user.email}'"},
-              status=status.HTTP_400_BAD_REQUEST,
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         serializer = self.get_serializer(data=request.data)
@@ -261,8 +260,10 @@ class UserAchievementCreateView(generics.CreateAPIView):
         self.perform_create(serializer)
 
         return Response(
-            {"message": "Achievement created successfully!", "data": serializer.data}, status=status.HTTP_201_CREATED)
- 
+            {"message": "Achievement created successfully!", "data": serializer.data}, status=status.HTTP_201_CREATED
+        )
+
+
 class AchievementCreateView(generics.CreateAPIView):
     serializer_class = AchievementSerializer
 
@@ -286,4 +287,5 @@ class AchievementCreateView(generics.CreateAPIView):
         self.perform_create(serializer)
 
         return Response(
-            {"message": "Achievement assigned to user!", "data": serializer.data}, status=status.HTTP_201_CREATED)
+            {"message": "Achievement assigned to user!", "data": serializer.data}, status=status.HTTP_201_CREATED
+        )
