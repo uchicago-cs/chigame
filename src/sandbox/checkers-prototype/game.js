@@ -452,3 +452,60 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
+
+// Coordinates overlay button
+document.addEventListener('DOMContentLoaded', () => {
+  const toggleCoordinatesBtn = document.getElementById('toggle-coordinates');
+  let coordsVisible = false;
+  const coordElements = [];
+
+  toggleCoordinatesBtn.addEventListener('click', () => {
+    coordsVisible = !coordsVisible;
+
+    if (coordsVisible) {
+      // get board position on screen
+      const gameDiv = document.getElementById('game');
+      const rect = gameDiv.getBoundingClientRect();
+
+      // for each index, create a top label and a left label
+      for (let i = 0; i < BOARD_SIZE; i++) {
+        // Column label
+        const colLabel = document.createElement('div');
+        colLabel.textContent = i + 1;
+        Object.assign(colLabel.style, {
+          position: 'absolute',
+          left: `${rect.left + MARGIN + i * TILE_SIZE + TILE_SIZE / 2}px`,
+          top: `${rect.top - 20}px`,
+          transform: 'translateX(-50%)',
+          fontFamily: '"Outfit", sans-serif',
+          color: '#3b2f2a',
+          userSelect: 'none',
+          pointerEvents: 'none',
+        });
+        document.body.appendChild(colLabel);
+        coordElements.push(colLabel);
+
+        // Row label
+        const rowLabel = document.createElement('div');
+        rowLabel.textContent = i + 1;
+        Object.assign(rowLabel.style, {
+          position: 'absolute',
+          left: `${rect.left - 20}px`,
+          top: `${rect.top + MARGIN + i * TILE_SIZE + TILE_SIZE / 2}px`,
+          transform: 'translateY(-50%)',
+          fontFamily: '"Outfit", sans-serif',
+          color: '#3b2f2a',
+          userSelect: 'none',
+          pointerEvents: 'none',
+        });
+        document.body.appendChild(rowLabel);
+        coordElements.push(rowLabel);
+      }
+
+    } else {
+      // remove coordinates
+      coordElements.forEach(el => document.body.removeChild(el));
+      coordElements.length = 0;
+    }
+  });
+});

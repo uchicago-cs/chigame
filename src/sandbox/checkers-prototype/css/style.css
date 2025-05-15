@@ -176,21 +176,22 @@ canvas {
     transform: translateX(0);
 }
 
-#toggle-coordinates {
+.settings-option {
     display: inline-block;
-    font-size: 16px;
-    padding: 6px 12px;
+    font-size: 14px;
+    padding: 6px 10px;
     margin: 0.25rem 0;
     background-color: #d2b48c;
     color: #3b2f2a;
     border: none;
     border-radius: 6px;
-    cursor: pointer;
     white-space: nowrap;
+    cursor: pointer;
+    box-sizing: border-box;
     transition: background-color 0.2s ease, transform 0.1s ease;
 }
 
-#toggle-coordinates:hover {
+.settings-option:hover {
     background-color: #c59e71;
     transform: translateX(2px);
 }
