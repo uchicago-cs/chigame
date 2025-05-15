@@ -18,6 +18,7 @@
     <div id="container">
       <div id="title">
         <h1 class="name">"Words"</h1>
+        <a href="{% url 'index' %}">Back</a>
       </div>
       <div id="streak">
         <h3>Streak:</h3>
@@ -91,6 +92,15 @@
         For repeated letters, correct placement is prioritized.
         You have exactly 6 attempts to guess the word correctly.
       </p>
+    </div>
+    <!--Game End Screen-->
+    <div id="end-screen" class="end-screen hidden">
+      <div class="end-content">
+        <h2 id="end-title"></h2>
+        <p id="end-message"></p>
+        <div id="end-guesses"></div>
+        <button id="restart-btn">Play Again</button>
+      </div>
     </div>
   </body>
 </html>
