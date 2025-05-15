@@ -63,7 +63,7 @@ class LiveChatPollOption(models.Model):
     """
 
     content = models.TextField(null=False)
-    
+
 
 class LiveChatPoll(models.Model):
     """
