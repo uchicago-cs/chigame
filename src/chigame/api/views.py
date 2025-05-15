@@ -8,8 +8,10 @@ from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnl
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from chigame.achievements.models import Achievement
 from chigame.api.filters import GameFilter
 from chigame.api.serializers import (
+    AchievementSerializer,
     CategorySerializer,
     GameSerializer,
     GroupSerializer,
@@ -231,3 +233,30 @@ class ReviewDetailView(generics.RetrieveUpdateDestroyAPIView):
         if user != self.request.user:
             raise PermissionDenied("You do not have permission to edit this review.")
         serializer.save()
+
+
+class AchievementCreateView(generics.CreateAPIView):
+    serializer_class = AchievementSerializer
+
+    def perform_create(self, serializer):
+        game_id = self.kwargs["pk"]
+        serializer.save(game_id=game_id)
+
+    def create(self, request, *args, **kwargs):
+        name = request.data.get("name")
+        game = Game.objects.get(id=self.kwargs["pk"])
+
+        if Achievement.objects.filter(name=name, game=game).exists():
+            return Response(
+                {"error": f"An achievement with the name '{name}' already exists for this game."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        self.perform_create(serializer)
+
+        return Response(
+            {"message": "Achievement created successfully!", "data": serializer.data}, status=status.HTTP_201_CREATED
+        )
