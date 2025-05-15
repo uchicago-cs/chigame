@@ -11,8 +11,8 @@ from rest_framework.utils.serializer_helpers import ReturnDict
 
 # Local application/library specific imports
 from chigame.api.serializers import GameSerializer
-from chigame.api.tests.factories import ChatFactory, GameFactory, TournamentFactory, UserFactory
-from chigame.games.models import Game, Message, User
+from chigame.api.tests.factories import ChatFactory, GameFactory, LobbyFactory, TournamentFactory, UserFactory
+from chigame.games.models import Game, Lobby, Message, User
 
 
 class GameTests(APITestCase):
@@ -192,6 +192,23 @@ class GameTests(APITestCase):
     #     self.check_equal(game2, response.data[1])
     #     self.check_equal(game3, response.data[2])
 
+    def test_game_list_pagination_metadata(self):
+        """
+        Ensure paginated metadata is returned for the /api/games/ endpoint.
+        """
+        for _ in range(15):
+            GameFactory()
+
+        url = reverse("api-game-list")
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("count", response.data)
+        self.assertIn("next", response.data)
+        self.assertIn("previous", response.data)
+        self.assertIn("results", response.data)
+        self.assertLessEqual(len(response.data["results"]), 10)
+
 
 class ChatTests(APITestCase):
     def test_create_message(self):
@@ -202,6 +219,7 @@ class ChatTests(APITestCase):
         self.chat = ChatFactory(tournament=self.tournament)
         self.endpoint = reverse("api-chat-list")
 
+        self.client.force_authenticate(user=self.user1)
         data1 = {
             "sender": self.user1.email,
             "tournament": self.tournament.id,
@@ -219,6 +237,7 @@ class ChatTests(APITestCase):
         self.assertEqual(data1["content"], Message.objects.get(id=1).content)
         self.assertEqual(1, Message.objects.get(id=1).token_id)
 
+        self.client.force_authenticate(user=self.user2)
         data2 = {
             "sender": self.user2.email,
             "tournament": self.tournament.id,
@@ -236,6 +255,7 @@ class ChatTests(APITestCase):
         self.assertEqual(data2["content"], Message.objects.get(id=2).content)
         self.assertEqual(2, Message.objects.get(id=2).token_id)
 
+        self.client.force_authenticate(user=self.user1)
         data3 = {
             "sender": self.user1.email,
             "tournament": self.tournament.id,
@@ -253,6 +273,7 @@ class ChatTests(APITestCase):
         self.assertEqual(data3["content"], Message.objects.get(id=3).content)
         self.assertEqual(3, Message.objects.get(id=3).token_id)
 
+        self.client.force_authenticate(user=self.user2)
         data4 = {
             "sender": self.user2.email,
             "tournament": self.tournament.id,
@@ -277,6 +298,8 @@ class ChatTests(APITestCase):
         self.tournament = TournamentFactory(game=self.game)
         self.chat = ChatFactory(tournament=self.tournament)
         self.endpoint = reverse("api-chat-list")
+
+        self.client.force_authenticate(user=self.user1)
         data1 = {
             "sender": self.user1.email,
             "tournament": self.tournament.id,
@@ -294,6 +317,7 @@ class ChatTests(APITestCase):
         self.assertEqual(data1["content"], Message.objects.get(id=1).content)
         self.assertEqual(1, Message.objects.get(id=1).token_id)
 
+        self.client.force_authenticate(user=self.user2)
         data2 = {
             "sender": self.user2.email,
             "tournament": self.tournament.id,
@@ -311,6 +335,7 @@ class ChatTests(APITestCase):
         self.assertEqual(data2["content"], Message.objects.get(id=2).content)
         self.assertEqual(2, Message.objects.get(id=2).token_id)
 
+        self.client.force_authenticate(user=self.user1)
         data3 = {
             "sender": self.user1.email,
             "tournament": self.tournament.id,
@@ -328,6 +353,7 @@ class ChatTests(APITestCase):
         self.assertEqual(data3["content"], Message.objects.get(id=3).content)
         self.assertEqual(3, Message.objects.get(id=3).token_id)
 
+        self.client.force_authenticate(user=self.user2)
         data4 = {
             "sender": self.user2.email,
             "tournament": self.tournament.id,
@@ -345,6 +371,7 @@ class ChatTests(APITestCase):
         self.assertEqual(data4["content"], Message.objects.get(id=4).content)
         self.assertEqual(4, Message.objects.get(id=4).token_id)
 
+        self.client.force_authenticate(user=self.user1)
         delete1 = {"sender": self.user1.email, "tournament": self.tournament.id, "content": None, "update_on": 1}
 
         response = self.client.post(self.endpoint, delete1, format="json")
@@ -362,6 +389,7 @@ class ChatTests(APITestCase):
         self.assertEqual(data1["content"], Message.objects.get(id=1).content)
         self.assertEqual(1, Message.objects.get(id=1).token_id)
 
+        self.client.force_authenticate(user=self.user2)
         delete2 = {"sender": self.user2.email, "tournament": self.tournament.id, "content": None, "update_on": 2}
 
         response = self.client.post(self.endpoint, delete2, format="json")
@@ -439,6 +467,8 @@ class UserTests(APITestCase):
         self.tournament = TournamentFactory(game=self.game)
         self.chat = ChatFactory(tournament=self.tournament)
         self.endpoint = reverse("api-chat-list")
+
+        self.client.force_authenticate(user=self.user1)
         data1 = {
             "sender": self.user1.email,
             "tournament": self.tournament.id,
@@ -456,6 +486,7 @@ class UserTests(APITestCase):
         self.assertEqual(data1["content"], Message.objects.get(id=1).content)
         self.assertEqual(1, Message.objects.get(id=1).token_id)
 
+        self.client.force_authenticate(user=self.user2)
         data2 = {
             "sender": self.user2.email,
             "tournament": self.tournament.id,
@@ -473,6 +504,7 @@ class UserTests(APITestCase):
         self.assertEqual(data2["content"], Message.objects.get(id=2).content)
         self.assertEqual(2, Message.objects.get(id=2).token_id)
 
+        self.client.force_authenticate(user=self.user1)
         data3 = {
             "sender": self.user1.email,
             "tournament": self.tournament.id,
@@ -490,6 +522,7 @@ class UserTests(APITestCase):
         self.assertEqual(data3["content"], Message.objects.get(id=3).content)
         self.assertEqual(3, Message.objects.get(id=3).token_id)
 
+        self.client.force_authenticate(user=self.user2)
         data4 = {
             "sender": self.user2.email,
             "tournament": self.tournament.id,
@@ -507,6 +540,7 @@ class UserTests(APITestCase):
         self.assertEqual(data4["content"], Message.objects.get(id=4).content)
         self.assertEqual(4, Message.objects.get(id=4).token_id)
 
+        self.client.force_authenticate(user=self.user1)
         delete1 = {"sender": self.user1.email, "tournament": self.tournament.id, "content": None, "update_on": 1}
 
         response = self.client.post(self.endpoint, delete1, format="json")
@@ -524,6 +558,7 @@ class UserTests(APITestCase):
         self.assertEqual(data1["content"], Message.objects.get(id=1).content)
         self.assertEqual(1, Message.objects.get(id=1).token_id)
 
+        self.client.force_authenticate(user=self.user2)
         delete2 = {"sender": self.user2.email, "tournament": self.tournament.id, "content": None, "update_on": 2}
 
         response = self.client.post(self.endpoint, delete2, format="json")
@@ -541,6 +576,7 @@ class UserTests(APITestCase):
         self.assertEqual(data2["content"], Message.objects.get(id=2).content)
         self.assertEqual(2, Message.objects.get(id=2).token_id)
 
+        self.client.force_authenticate(user=self.user1)
         feed1 = {"token_id": 0, "tournament": self.tournament.id}
 
         response = self.client.post(reverse("api-chat-detail"), feed1, format="json")
@@ -571,3 +607,141 @@ class UserTests(APITestCase):
         self.assertEqual(response.data[3]["update_on"], data4["update_on"])
         self.assertEqual(response.data[4]["update_on"], delete1["update_on"])
         self.assertEqual(response.data[5]["update_on"], delete2["update_on"])
+
+
+class LobbyTests(APITestCase):
+    """
+    Test cases for Lobby API Endpoints.
+    """
+
+    def test_get_lobby(self):
+        """
+        Ensure we can get a lobby object.
+        """
+
+        # Create a lobby object
+        lobby = LobbyFactory()
+
+        # Get the lobby object
+        url = reverse("api-lobby-detail", args=[lobby.id])
+        response = self.client.get(url, format="json")
+
+        # Check that the lobby object was retrieved correctly
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(Lobby.objects.count(), 1)
+        self.assertEqual(response.data["id"], lobby.id)
+        self.assertEqual(response.data["name"], lobby.name)
+        self.assertEqual(response.data["game"], lobby.game.id)
+        self.assertEqual(response.data["game_mod_status"], lobby.game_mod_status)
+        self.assertEqual(response.data["created_by"], lobby.created_by.id)
+        self.assertEqual(response.data["min_players"], lobby.min_players)
+        self.assertEqual(response.data["max_players"], lobby.max_players)
+        self.assertEqual(response.data["time_constraint"], lobby.time_constraint)
+
+    def test_delete_lobby(self):
+        """
+        Ensure we can delete a game object.
+        """
+
+        # Create a lobby object
+        user = UserFactory()
+        self.client.force_authenticate(user=user)
+        lobby = LobbyFactory(created_by=user)
+
+        # Delete the lobby object
+        url = reverse("api-lobby-detail", args=[lobby.id])
+        response = self.client.delete(url, format="json")
+
+        # Check that the lobby object was deleted correctly
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(Lobby.objects.count(), 0)
+
+    def test_delete_lobby_unauthorized(self):
+        """
+        Ensure we cannot delete a lobby object if the user is not the creator of the lobby.
+        """
+
+        # Create a lobby object
+        lobby = LobbyFactory()
+
+        # Create user who creates the lobby and another user
+        creator = UserFactory()
+        other_user = UserFactory()
+        lobby.created_by = creator
+        lobby.save()
+        self.client.force_authenticate(user=other_user)
+
+        # Delete the lobby object
+        url = reverse("api-lobby-detail", args=[lobby.id])
+        response = self.client.delete(url, format="json")
+
+        # Check lobby not deleted
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(Lobby.objects.count(), 1)
+        self.assertEqual(Lobby.objects.get(id=lobby.id).created_by, creator)
+
+    def test_patch_lobby_authorized(self):
+        """
+        Ensure we can patch a lobby object if the user is the creator of the lobby.
+        """
+        # Create a lobby object
+        user = UserFactory()
+        self.client.force_authenticate(user=user)
+        lobby = LobbyFactory(created_by=user)
+
+        # Update data
+        updated_data = {
+            "name": "Updated Lobby Name",
+            "min_players": 3,
+            "max_players": 6,
+        }
+
+        # Patch request
+        url = reverse("api-lobby-detail", args=[lobby.id])
+        response = self.client.patch(url, updated_data, format="json")
+
+        # Check that the lobby object was patched correctly
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["name"], updated_data["name"])
+        self.assertEqual(response.data["min_players"], updated_data["min_players"])
+        self.assertEqual(response.data["max_players"], updated_data["max_players"])
+
+        # Check that database was updated
+
+        updated_lobby = Lobby.objects.get(id=lobby.id)
+        self.assertEqual(updated_lobby.name, updated_data["name"])
+        self.assertEqual(updated_lobby.min_players, updated_data["min_players"])
+        self.assertEqual(updated_lobby.max_players, updated_data["max_players"])
+
+    def test_patch_lobby_unauthorized(self):
+        """
+        Ensure we cannot patch a lobby object if the user is not the creator of the lobby.
+        """
+
+        # Create a lobby object
+        lobby = LobbyFactory()
+
+        # Create user who creates the lobby and another user
+        creator = UserFactory()
+        other_user = UserFactory()
+        lobby.created_by = creator
+        lobby.save()
+        self.client.force_authenticate(user=other_user)
+
+        # Update data
+        updated_data = {
+            "name": "Updated Lobby Name",
+            "min_players": 3,
+            "max_players": 6,
+        }
+
+        # Patch request
+        url = reverse("api-lobby-detail", args=[lobby.id])
+        response = self.client.patch(url, updated_data, format="json")
+
+        # Check that the lobby object was patched correctly
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        # Check database not updated
+        unchanged_lobby = Lobby.objects.get(id=lobby.id)
+        self.assertEqual(unchanged_lobby.name, lobby.name)

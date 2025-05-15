@@ -78,9 +78,9 @@ class UserProfile(models.Model):
     """
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    display_name = models.TextField()
     bio = models.TextField(blank=True)
     date_joined = models.DateTimeField(auto_now_add=True)
+    profile_photo = models.ImageField(upload_to="profile_photos/", blank=True, null=True)
 
     @classmethod
     def get_or_create_profile(cls, user: User) -> "UserProfile":
@@ -92,7 +92,11 @@ class FriendInvitationManager(models.Manager):
     def get_by_users(self, user1, user2, **kwargs):
         """Gets a friend invitation given two user, which can be a sender
         or a receiver"""
-        return self.get(Q(sender=user1, receiver=user2) | Q(sender=user2, receiver=user1), **kwargs)
+        return (
+            self.filter(Q(sender=user1, receiver=user2) | Q(sender=user2, receiver=user1), **kwargs)
+            .order_by("-timestamp")
+            .first()
+        )
 
 
 class FriendInvitation(models.Model):
@@ -107,6 +111,9 @@ class FriendInvitation(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     objects = FriendInvitationManager()
     is_deleted = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = ("sender", "receiver")
 
     def accept_invitation(self):
         """
@@ -208,6 +215,12 @@ class NotificationQuerySet(models.QuerySet):
             queryset = queryset.is_not_deleted()
         return queryset
 
+    def filter_by_category(self, category, include_deleted=False):
+        queryset = self.filter(category=category)
+        if not include_deleted:
+            queryset = queryset.is_not_deleted()
+        return queryset
+
     def mark_all_unread(self):
         self.update(read=False)
 
@@ -242,6 +255,15 @@ class Notification(models.Model):
     Handles visibility, read/unread status, and timestamping of events.
     """
 
+    CATEGORY_CHOICES = [
+        ("inbox", "Inbox"),
+        ("spam", "Spam"),
+        ("social", "Social"),
+        ("promotions", "Promotions"),
+        ("updates", "Updates"),
+        ("archived", "Archived"),
+    ]
+
     FRIEND_REQUEST = 1
     REMINDER = 2
     UPCOMING_MATCH = 3
@@ -270,6 +292,7 @@ class Notification(models.Model):
 
     DEFAULT_MESSAGES = {FRIEND_REQUEST: "You have a friend invitation"}
 
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default="inbox")
     receiver = models.ForeignKey(User, on_delete=models.CASCADE)
     first_sent = models.DateTimeField(auto_now_add=True)
     last_sent = models.DateTimeField(auto_now_add=True)
@@ -281,6 +304,7 @@ class Notification(models.Model):
     actor = GenericForeignKey("actor_content_type", "actor_object_id")
     message = models.CharField(max_length=255, blank=True, null=True)
     objects = NotificationQuerySet.as_manager()
+    bookmarked = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ["receiver", "actor_content_type", "actor_object_id", "type"]

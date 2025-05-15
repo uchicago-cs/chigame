@@ -1,4 +1,5 @@
 from django.urls import include, path
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from . import views
 
@@ -9,6 +10,13 @@ game_patterns = [
     path("<int:pk>/mechanics/", views.GameMechanicsAPIView.as_view(), name="api-game-mechanics"),
     path("<int:pk>/reviews/", views.GameReviewListView.as_view(), name="api-game-reviews"),
     path("<int:pk>/reviews/create/", views.ReviewCreateView.as_view(), name="api-game-review-create"),
+    path("<int:game_id>/reviews/<int:pk>/", views.ReviewDetailView.as_view(), name="api-game-review-detail"),
+    path(
+        "<int:game_id>/achievements/<int:pk>/assign/",
+        views.UserAchievementCreateView.as_view(),
+        name="api-user-achievement-assignment",
+    ),
+    path("<int:pk>/achievements/create/", views.AchievementCreateView.as_view(), name="api-game-achievement-create"),
 ]
 
 lobby_patterns = [
@@ -34,10 +42,16 @@ group_patterns = [
     path("<int:pk>/members/", views.GroupMembersView.as_view(), name="api-group-members"),
 ]
 
+login_patterns = [
+    path("token/", TokenObtainPairView.as_view(), name="token-obtain-pair"),
+    path("token/refresh/", TokenRefreshView.as_view(), name="token-refresh"),
+]
+
 urlpatterns = [
     path("games/", include(game_patterns)),
     path("lobbies/", include(lobby_patterns)),
     path("users/", include(user_patterns)),
     path("tournaments/", include(tournament_patterns)),
     path("groups/", include(group_patterns)),
+    path("login/", include(login_patterns)),
 ]
