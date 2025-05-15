@@ -28,6 +28,7 @@ let word = "";
 let guessedWordCount = 0;
 let allowedWords = [];
 let gameOver = false;
+const url = "https://api.dictionaryapi.dev/api/v2/entries/en/";
 
 //color constants
 const COLOR_CORRECT = "rgb(83, 141, 78)";
@@ -169,22 +170,42 @@ function getTileColor(letter, index) {
     return COLOR_OFF;
 }
 
+//Check if Word is a Valid Word
+async function isValidWord(word) {
+    const word_url = url + word;
+    try {
+        const response = await fetch(word_url);
+
+        if (response.status === 404) {
+            showNotification(`"${word}" Is Not a Valid Word.`);
+            return false;
+        }
+
+        const json = await response.json();
+        console.log("Dictionary API response:", json);
+        return true;
+    } catch (error) {
+        console.error("Error checking word:", error.message);
+        return false;
+    }
+}
+
 //Handles running the submission of each word
-function handleSubmitWord() {
+async function handleSubmitWord() {
     if (gameOver) {
         return;
     }
     const currentWordArr = getCurrentWordArr();
 
     if (currentWordArr.length !== 5) {
-        window.alert("Word must be 5 letters");
+        showNotification("Word must be 5 letters");
         return;
     }
 
     const currentWord = currentWordArr.join("").toLowerCase();
 
-    if (!allowedWords.includes(currentWord)) {
-        window.alert("Word is not recognised!");
+    const valid = await isValidWord(currentWord);
+    if (!valid) {
         return;
     }
 
@@ -219,16 +240,56 @@ function handleSubmitWord() {
 
     //game end
     if (currentWord === word) {
-        window.alert("Congratulations! 🎉");
+        showNotification("Congratulations! 🎉");
         gameOver = true;
         return;
     }
 
     if (guessedWords.length === 6) {
-        window.alert(`Sorry, you have no more guesses! The word was "${word}".`);
+        showNotification(`Sorry, you have no more guesses! The word was "${word}".`);
         gameOver = true;
+        setTimeout(() => {
+            showEndScreen(true);
+        }, 1500);
         return;
     }
 
     guessedWords.push([]);
 }
+
+//Show Notification
+function showNotification(message, duration = 1000) {
+    const notification = document.getElementById("notification");
+    notification.textContent = message;
+    notification.classList.add("show");
+    notification.classList.remove("hidden");
+
+    setTimeout(() => {
+        notification.classList.remove("show");
+        notification.classList.add("hidden");
+    }, duration);
+}
+
+//Show End Screen
+function showEndScreen(won) {
+    const endScreen = document.getElementById("end-screen");
+    const endTitle = document.getElementById("end-title");
+    const endMessage = document.getElementById("end-message");
+    const endGuesses = document.getElementById("end-guesses");
+
+    endTitle.textContent = won ? "You Won! 🎉" : "Game Over";
+    endMessage.textContent = won ? "Nice job!" : `The word was "${word}"`;
+
+    endGuesses.innerHTML = "";
+    guessedWords.forEach(guessArr => {
+        const row = document.createElement("div");
+        row.textContent = guessArr.join("").toUpperCase();
+        endGuesses.appendChild(row);
+    });
+
+    endScreen.classList.remove("hidden");
+}
+
+document.getElementById("restart-btn").addEventListener("click", () => {
+    location.reload();
+});
