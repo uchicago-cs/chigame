@@ -711,6 +711,13 @@ def move_notification(request, pk):
 
 @login_required
 def create_notification_label(request):
+    """
+    Handles the creation of a new notification label for the logged-in user.
+
+    If the request method is POST and a label name is provided, it creates a new
+    NotificationLabel object associated with the user. If the label name is empty,
+    it displays an error message. Finally, it redirects the user back to their inbox.
+    """
     if request.method == "POST":
         label_name = request.POST.get("label_name")
         if label_name:
@@ -723,6 +730,18 @@ def create_notification_label(request):
 
 @login_required
 def assign_label_to_notification(request, notification_id):
+    """
+    Assigns a selected notification label to a specific notification.
+
+    It retrieves the notification and the label based on their IDs and ensures
+    that both belong to the logged-in user. If the label is found, it's added
+    to the notification's labels. If the label doesn't exist or doesn't belong
+    to the user, an error message is displayed. The user is then redirected
+    back to their inbox.
+
+    Args:
+        notification_id (int): The ID of the notification to assign the label to.
+    """
     notification = get_object_or_404(Notification, pk=notification_id, receiver=request.user)
     label_id = request.POST.get("label_id")
 
@@ -738,6 +757,17 @@ def assign_label_to_notification(request, notification_id):
 
 @login_required
 def notifications_by_label(request, label_id):
+    """
+    Retrieves and displays all notifications associated with a specific label
+    belonging to the logged-in user.
+
+    It fetches the NotificationLabel object and then retrieves all notifications
+    that have been assigned this label. These are then passed to a template for
+    rendering.
+
+    Args:
+        label_id (int): The ID of the notification label to filter by.
+    """
     label = get_object_or_404(NotificationLabel, pk=label_id, user=request.user)
     notifications = label.notifications.all()
     context = {
