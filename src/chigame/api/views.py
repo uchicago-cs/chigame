@@ -7,6 +7,7 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from chigame.achievements.models import Achievement, UserAchievement
 from chigame.api.filters import GameFilter
 from chigame.api.serializers import (
     CategorySerializer,
@@ -224,6 +225,16 @@ class UserAchievementCreateView(generics.CreateAPIView):
         serializer.save(achievement_id=achievement_id)
 
     def create(self, request, *args, **kwargs):
+        user_id = self.request.data.get("user")
+        user = get_object_or_404(User, pk=user_id)
+        achievement = Achievement.objects.get(id=self.kwargs["pk"])
+
+        if UserAchievement.objects.filter(achievement=achievement, user=user).exists():
+            return Response(
+                {"error": f"This achievement already exists for user '{user.email}'"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
