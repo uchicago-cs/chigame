@@ -1,8 +1,10 @@
 import os
 import xml.etree.ElementTree as ET
+from datetime import datetime, timedelta
 from functools import wraps
 from random import choice
 
+import jwt
 import requests
 from django.conf import settings
 from django.contrib import messages
@@ -1179,3 +1181,22 @@ def remove_from_gamelist(request, pk, list_pk):
     game_list = get_object_or_404(GameList, pk=list_pk, created_by=request.user)
     game_list.games.remove(game)
     return redirect("game-detail", pk=pk)
+
+
+# =============== Word Game Views ===============
+
+
+@login_required
+def wordle_game_page(request):
+    # Generate a short-lived JWT for secure identification
+    payload = {
+        "user_id": request.user.id,
+        "username": request.user.username,
+        "exp": datetime.now(timezone.utc) + timedelta(minutes=30),
+    }
+    token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
+
+    # GitHub Pages game URL + token
+    iframe_url = f"https://zhejiej.github.io/Words-Game//?token={token}"
+
+    return render(request, "games/wordle.html", {"iframe_url": iframe_url})

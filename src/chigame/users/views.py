@@ -428,7 +428,7 @@ def notification_search_results(request):
 
 
 @login_required
-def user_inbox_view(request, pk):
+def user_inbox_view(request, pk, category="inbox"):
     """
     Displays a user's inbox containing notifications. The user can only access
     their own inbox.
@@ -446,20 +446,28 @@ def user_inbox_view(request, pk):
             for each notification type
     """
 
+    if pk != request.user.pk:
+        messages.error(request, "Not your inbox")
+        return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
+
     user = request.user
-    notifications = Notification.objects.filter_by_receiver(user)
+
+    if category and category in dict(Notification.CATEGORY_CHOICES):
+        notifications = Notification.objects.filter_by_receiver(user).filter_by_category(category)
+    else:
+        notifications = Notification.objects.filter_by_receiver(user)
+
     default_notification_messages = Notification.DEFAULT_MESSAGES
     context = {
         "pk": pk,
         "user": user,
         "notifications": notifications,
         "default_notification_messages": default_notification_messages,
+        "active_category": category,
+        "category_choices": Notification.CATEGORY_CHOICES,
     }
-    if pk == user.id:
-        return render(request, "users/user_inbox.html", context)
-    else:
-        messages.error(request, "Not your inbox")
-        return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
+
+    return render(request, "users/user_inbox.html", context)
 
 
 @login_required
