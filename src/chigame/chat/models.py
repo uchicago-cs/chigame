@@ -2,7 +2,6 @@ from django.db import models
 
 from chigame.users.models import User
 
-
 MAX_EMOJI_LENGTH = 10
 
 
