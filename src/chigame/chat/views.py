@@ -56,6 +56,7 @@ def edit_message(request, message_id):
 
     if request.method == "POST":
         content = request.POST.get("content")
+        message.edited = True
         message.content = content
         message.save()
         return JsonResponse({"message": "Message edited successfully"}, status=200)
