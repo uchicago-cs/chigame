@@ -66,9 +66,8 @@ function create() {
   const playAgainYes = document.getElementById('playAgainYes');
   const playAgainNo = document.getElementById('playAgainNo');
 
-  // Score displays
-  const redC = document.getElementById('red-captured');
-  const blackC = document.getElementById('black-captured');
+  // Score display
+  const score = document.getElementById('score');
 
   function resetGame() {
     // Clear all pieces
@@ -92,8 +91,7 @@ function create() {
     drawBtn.textContent = 'Offer Draw';
     forfeitBtn.style.display = 'block';
     declineDrawBtn.style.display = 'none';
-    redC.textContent = "Red: 0";
-    blackC.textContent = "Black: 0";
+    score.innerHTML = "Red: 0<br>Black: 0";
 
     // Repopulate the board using the stored scene reference
     populatePieces(scene);
@@ -304,10 +302,8 @@ function isValidMove(piece, moveX, moveY) {
 
 // Updates score on frontend
 function updateScore() {
-  const redC = document.getElementById('red-captured');
-  const blackC = document.getElementById('black-captured');
-  redC.textContent = "Red: " + redCaptured;
-  blackC.textContent = "Black: " + blackCaptured;
+  const score = document.getElementById('score');
+  score.innerHTML = "Red: " + redCaptured + "<br>Black: " + blackCaptured;
 }
 
 function movePiece(piece, moveX, moveY) {
