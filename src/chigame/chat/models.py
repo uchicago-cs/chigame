@@ -75,7 +75,11 @@ class LiveChatPoll(models.Model):
     options = models.ManyToManyField(LiveChatPollOption, related_name="polls")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    closed_at = models.DateTimeField(null=True)
+
+    # if the current date is after the closed_at date, the poll is closed
+    # this is used to determine if the poll is still active
+    closed_at = models.DateTimeField(null=True, help_text="The date and time the poll will be closed")
+    # if the closed_at is null, the poll can be active indefinitely
 
     def __str__(self):
         return f"Poll: {self.question} in LiveChat {self.live_chat}"
