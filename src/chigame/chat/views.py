@@ -17,3 +17,8 @@ def chat(request, chat_id):
 def live_chat_list(request):
     chats = LiveChat.objects.all()
     return render(request, "chat/live-chat-list.html", {"chats": chats})
+
+
+def create_live_chat(request):
+    return render(request, "chat/create-live-chat.html")
+    
