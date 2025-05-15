@@ -147,6 +147,11 @@ class MessageView(generics.CreateAPIView):
 
     # Need Livechat in order to use this endpoint
 
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        serializer.save(sender=self.request.user)
+
 
 class GroupListView(generics.ListCreateAPIView):
     queryset = Group.objects.all()
