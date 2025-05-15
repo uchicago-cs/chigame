@@ -3,6 +3,9 @@ from django.db import models
 from chigame.users.models import User
 
 
+MAX_EMOJI_LENGTH = 10
+
+
 class LiveChat(models.Model):
     """
     Represents a new live chat between users.
@@ -50,7 +53,7 @@ class LiveChatMessageReaction(models.Model):
     message = models.ForeignKey(LiveChatMessage, on_delete=models.CASCADE)
 
     # this is the emoji that the user reacted with
-    content = models.CharField(null=False, max_length=10, help_text="Up to 10 emoji characters")
+    content = models.CharField(null=False, max_length=MAX_EMOJI_LENGTH, help_text=f"Up to {MAX_EMOJI_LENGTH} emoji characters")
 
     class Meta:
         unique_together = ("user", "message", "content")
