@@ -3,7 +3,7 @@ from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, status
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -89,6 +89,11 @@ class LobbyListView(generics.ListCreateAPIView):
     serializer_class = LobbySerializer
     pagination_class = PageNumberPagination
 
+    permission_classes = [IsAuthenticatedOrReadOnly]  # similar to GameListView
+
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user)
+
 
 class LobbyDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Lobby.objects.all()
@@ -126,6 +131,11 @@ class MessageView(generics.CreateAPIView):
     queryset = Message.objects.all()
     serializer_class = MessageSerializer
 
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        serializer.save(sender=self.request.user)
+
 
 class GroupListView(generics.ListCreateAPIView):
     queryset = Group.objects.all()
@@ -159,6 +169,8 @@ class UserGroupsView(generics.ListAPIView):
 
 
 class MessageFeedView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def post(self, request, *args, **kwargs):
         # Get data from the frontend
         token_id = request.data.get("token_id")
