@@ -6,6 +6,7 @@ from .views import (
     DefaultView,
     DownloadGuide,
     FeedbackDetail,
+    FeedbackView,
     GuideDetail,
     ModeratorGuidesPending,
     ReviewPendingGuideView,
@@ -21,4 +22,5 @@ urlpatterns = [
     path("manage-my-guides/feedback/<int:pk>", FeedbackDetail.as_view(), name="feedback-detail"),
     path("upload", ContributorMdUpload, name="knowledge-base-guide-upload"),
     path("guides/<int:pk>/reupload", ContributorMdUpload, name="knowledge-base-guide-reupload"),
+    path("feedback", FeedbackView.as_view(), name="knowledge-base-feedback"),
 ]

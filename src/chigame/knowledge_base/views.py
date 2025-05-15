@@ -8,12 +8,12 @@ from django.db.models.functions import Concat
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.safestring import mark_safe
-from django.views.generic import DetailView, ListView
+from django.views.generic import DetailView, ListView, TemplateView
 
 from chigame.games.models import Category, Game
 
 from .forms import MarkdownUploadForm
-from .models import Guide, ReviewFeedback
+from .models import GeneralFeedback, Guide, ReviewFeedback
 
 
 # Viewers
@@ -246,3 +246,14 @@ class ReviewPendingGuideView(LoginRequiredMixin, UserPassesTestMixin, DetailView
         context["feedback"] = feedback
         context["message"] = message
         return self.render_to_response(context)
+
+
+class FeedbackView(TemplateView):
+    template_name = "knowledge-base/feedback.html"
+
+    def post(self, request, *args, **kwargs):
+        feedback_text = request.POST.get("feedback")
+        if feedback_text:
+            GeneralFeedback.objects.create(feedback=feedback_text)
+            return render(request, self.template_name, {"submitted": True})
+        return render(request, self.template_name)

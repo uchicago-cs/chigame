@@ -21,6 +21,9 @@
         <p class="mb-0">Home</p>
       </a>
       <div class="d-flex gap-3">
+        <a href="{% url 'knowledge-base-feedback' %}">
+          <p class="mb-0">Give Feedback</p>
+        </a>
         {% if request.user.moderator %}
           <a href="{% url 'knowledge-base-moderator' %}">
             <p class="mb-0">Moderator View</p>
