@@ -1,0 +1,18 @@
+{% extends "knowledge-base/base.html" %}
+
+{% block page-content %}
+  <h1>Review Guide</h1>
+  <p>Author: {{ guide.author.username|default:guide.author.email }}</p>
+  <div>
+    <h2>Guide Content</h2>
+    <div>{{ html_content|safe }}</div>
+  </div>
+  <form method="post">
+    {% csrf_token %}
+    <textarea name="feedback">{{ feedback }}</textarea>
+    <button type="submit" name="action" value="accept">Accept</button>
+    <button type="submit" name="action" value="reject">Reject</button>
+    <button type="submit" name="action" value="request_changes">Request Changes</button>
+  </form>
+  {% if message %}<div>{{ message }}</div>{% endif %}
+{% endblock page-content %}
