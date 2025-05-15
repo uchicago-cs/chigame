@@ -21,6 +21,7 @@ from .models import (
     GroupInvitationNotification,
     MatchProposalNotification,
     Notification,
+    NotificationLabel,
     UserProfile,
 )
 from .tables import FriendsTable, UserTable
@@ -706,3 +707,41 @@ def move_notification(request, pk):
         return HttpResponse(status=204)
 
     return HttpResponse(status=400)
+
+
+@login_required
+def create_notification_label(request):
+    if request.method == "POST":
+        label_name = request.POST.get("label_name")
+        if label_name:
+            NotificationLabel.objects.get_or_create(user=request.user, name=label_name)
+            messages.success(request, "Label created successfully.")
+        else:
+            messages.error(request, "Label name cannot be empty.")
+    return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
+
+
+@login_required
+def assign_label_to_notification(request, notification_id):
+    notification = get_object_or_404(Notification, pk=notification_id, receiver=request.user)
+    label_id = request.POST.get("label_id")
+
+    try:
+        label = NotificationLabel.objects.get(pk=label_id, user=request.user)
+        notification.labels.add(label)
+        messages.success(request, "Label assigned to notification.")
+    except NotificationLabel.DoesNotExist:
+        messages.error(request, "Label not found or does not belong to you.")
+
+    return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
+
+
+@login_required
+def notifications_by_label(request, label_id):
+    label = get_object_or_404(NotificationLabel, pk=label_id, user=request.user)
+    notifications = label.notifications.all()
+    context = {
+        "label": label,
+        "notifications": notifications,
+    }
+    return render(request, "users/notifications_by_label.html", context)
