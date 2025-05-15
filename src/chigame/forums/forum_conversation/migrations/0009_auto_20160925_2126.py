@@ -6,15 +6,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('forum_conversation', '0008_auto_20160903_0512'),
+        ("forum_conversation", "0008_auto_20160903_0512"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='topic',
-            name='slug',
-            field=models.SlugField(max_length=255, verbose_name='Slug'),
+            model_name="topic",
+            name="slug",
+            field=models.SlugField(max_length=255, verbose_name="Slug"),
         ),
     ]
