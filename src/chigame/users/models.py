@@ -22,9 +22,15 @@ def validate_username(value):
 
 class User(AbstractUser):
     """
-    Default custom user model for ChiGame.
-    If adding fields that need to be filled at user signup,
-    check forms.SignupForm and forms.SocialSignupForms accordingly.
+    Custom user model for ChiGame.
+
+    Extends Django's AbstractUser to:
+    - Use email instead of username as the primary login field.
+    - Allow optional username and name fields.
+    - Enforce username validation (not purely numeric).
+    - Support symmetrical friend relationships between users.
+
+    When modifying signup fields, update forms.SignupForm and forms.SocialSignupForms accordingly.
     """
 
     # First and last name do not cover name patterns around the globe
@@ -35,6 +41,8 @@ class User(AbstractUser):
     username = models.CharField(
         _("username"), max_length=255, unique=True, blank=True, null=True, validators=[validate_username]
     )
+    # friends is a symmetrical relationship, so it is a many-to-many field
+    friends = models.ManyToManyField("self", symmetrical=True, blank=True)
     tokens = models.PositiveSmallIntegerField(validators=[MaxValueValidator(3)], default=1)
 
     # a moderator can manage/approve game guides in Knowledge Base
@@ -70,10 +78,9 @@ class UserProfile(models.Model):
     """
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    display_name = models.TextField()
     bio = models.TextField(blank=True)
-    friends = models.ManyToManyField(User, related_name="friendship", blank=True)
     date_joined = models.DateTimeField(auto_now_add=True)
+    profile_photo = models.ImageField(upload_to="profile_photos/", blank=True, null=True)
 
     @classmethod
     def get_or_create_profile(cls, user: User) -> "UserProfile":
@@ -85,7 +92,11 @@ class FriendInvitationManager(models.Manager):
     def get_by_users(self, user1, user2, **kwargs):
         """Gets a friend invitation given two user, which can be a sender
         or a receiver"""
-        return self.get(Q(sender=user1, receiver=user2) | Q(sender=user2, receiver=user1), **kwargs)
+        return (
+            self.filter(Q(sender=user1, receiver=user2) | Q(sender=user2, receiver=user1), **kwargs)
+            .order_by("-timestamp")
+            .first()
+        )
 
 
 class FriendInvitation(models.Model):
@@ -101,13 +112,18 @@ class FriendInvitation(models.Model):
     objects = FriendInvitationManager()
     is_deleted = models.BooleanField(default=False)
 
+    class Meta:
+        unique_together = ("sender", "receiver")
+
     def accept_invitation(self):
+        """
+        Accept a friend invitation.
+        """
         sender = self.sender
-        sender_profile = UserProfile.objects.get(user__pk=sender.pk)
         receiver = self.receiver
-        receiver_profile = UserProfile.objects.get(user__pk=receiver.pk)
-        sender_profile.friends.add(receiver)
-        receiver_profile.friends.add(sender)
+        # add the receiver to the sender's friends list (it is symmetrical)
+        sender.friends.add(receiver)
+        # set the invitation as accepted
         self.accepted = True
         self.save()
 
@@ -116,13 +132,12 @@ class FriendInvitation(models.Model):
         self.is_deleted = True
         self.save()
 
-    class Meta:
-        unique_together = ["sender", "receiver"]
-
 
 class Group(models.Model):
     """
     A group of users.
+
+    Groups are created by a user (creator) and can have multiple members.
     """
 
     name = models.TextField()
@@ -134,7 +149,7 @@ class Group(models.Model):
 
 class GroupInvitation(models.Model):
     """
-    An invitation to join a group
+    An invitation to join a group.
     """
 
     friend_group = models.ForeignKey(Group, on_delete=models.CASCADE)
@@ -142,9 +157,20 @@ class GroupInvitation(models.Model):
     receiver = models.ForeignKey(User, related_name="received_group_invitations", on_delete=models.CASCADE)
     accepted = models.BooleanField(default=False)
     timestamp = models.DateTimeField(auto_now_add=True)
+    is_deleted = models.BooleanField(default=False)
 
-    class Meta:
-        unique_together = ["friend_group", "sender", "receiver"]
+    def accept_invitation(self):
+        """
+        Accept a group invitation.
+        """
+        receiver = self.receiver
+        self.friend_group.members.add(receiver)
+        self.accepted = True
+        self.save()
+
+    def delete(self):
+        self.is_deleted = True
+        self.save()
 
 
 class NotificationQuerySet(models.QuerySet):
@@ -188,6 +214,12 @@ class NotificationQuerySet(models.QuerySet):
             queryset = queryset.is_not_deleted()
         return queryset
 
+    def filter_by_category(self, category, include_deleted=False):
+        queryset = self.filter(category=category)
+        if not include_deleted:
+            queryset = queryset.is_not_deleted()
+        return queryset
+
     def mark_all_unread(self):
         self.update(read=False)
 
@@ -215,8 +247,21 @@ class NotificationQuerySet(models.QuerySet):
 
 class Notification(models.Model):
     """
-    A notification to user
+    A notification to user.
+
+    Supports different types (friend request, match reminder, etc.).
+    Links to an actor object (e.g., another user or a lobby) using a GenericForeignKey.
+    Handles visibility, read/unread status, and timestamping of events.
     """
+
+    CATEGORY_CHOICES = [
+        ("inbox", "Inbox"),
+        ("spam", "Spam"),
+        ("social", "Social"),
+        ("promotions", "Promotions"),
+        ("updates", "Updates"),
+        ("archived", "Archived"),
+    ]
 
     FRIEND_REQUEST = 1
     REMINDER = 2
@@ -236,6 +281,7 @@ class Notification(models.Model):
 
     DEFAULT_MESSAGES = {FRIEND_REQUEST: "You have a friend invitation"}
 
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default="inbox")
     receiver = models.ForeignKey(User, on_delete=models.CASCADE)
     first_sent = models.DateTimeField(auto_now_add=True)
     last_sent = models.DateTimeField(auto_now_add=True)
@@ -247,6 +293,7 @@ class Notification(models.Model):
     actor = GenericForeignKey("actor_content_type", "actor_object_id")
     message = models.CharField(max_length=255, blank=True, null=True)
     objects = NotificationQuerySet.as_manager()
+    bookmarked = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ["receiver", "actor_content_type", "actor_object_id", "type"]
@@ -271,3 +318,64 @@ class Notification(models.Model):
     def renew_notification(self):
         self.last_sent = timezone.now()
         self.save()
+
+
+class BaseNotificationHandler:
+    def __init__(self, notification):
+        self.notification = notification
+
+    def get_redirect_str(self):
+        raise NotImplementedError("Subclasses must implement get_redirect_str")
+
+
+# Paths must be updated as urls are added
+
+
+class FriendRequestNotification(BaseNotificationHandler):
+    """
+    Handles redirection logic for friend request notifications. Redirects the
+    user to the sender's profile page upon interaction.
+    """
+
+    def get_redirect_str(self):
+        return reverse("users:user-profile", kwargs={"pk": self.notification.actor.sender.pk})
+
+
+class MatchProposalNotification(BaseNotificationHandler):
+    """
+    Handles redirection logic for match proposal notifications. Redirects the
+    user to the lobby of the match upon interaction.
+    """
+
+    def get_redirect_str(self):
+        return reverse("games:lobby-details", kwargs={"pk": self.notification.actor.lobby.pk})
+
+
+class GroupInvitationNotification(BaseNotificationHandler):
+    """
+    Handles redirection logic for group invitation notifications. Redirects the
+    user to the group page upon interaction.
+    """
+
+    def get_redirect_str(self):
+        raise NotImplementedError("Group invitation notifications do not have a redirect URL")
+
+
+class ReminderNotification(BaseNotificationHandler):
+    """
+    Handles redirection logic for reminder notifications. Redirects the
+    user to the notification page upon interaction.
+    """
+
+    def get_redirect_str(self):
+        raise NotImplementedError("Reminder notifications do not have a redirect URL")
+
+
+class UpcomingMatchNotification(BaseNotificationHandler):
+    """
+    Handles redirection logic for upcoming match notifications. Redirects the
+    user to the lobby of the match upon interaction.
+    """
+
+    def get_redirect_str(self):
+        return reverse("games:lobby-details", kwargs={"pk": self.notification.actor.lobby.pk})

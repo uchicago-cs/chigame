@@ -1,82 +1,44 @@
 import markdown
 from django.shortcuts import render
 
+from .markdown_extensions import HtmlSanitizerExtension, SectionWrapperExtension
+
 MARKDOWN_STRING = """
-# Game Guide: Basic Combat Mechanics
+<script>console.log("Injected code")</script>
+# Introduction
+Welcome to our knowledge base guide. This is the introduction section.
 
-## Table of Contents
-[TOC]
+This is the first example of a <a href="https://google.com">link</a>.
 
-## Introduction
-This guide covers the basic combat mechanics in our game.
-New players should read this guide carefully before starting their adventure.
+This is the second example of a [link](https://google.com).
 
-## Combat Basics
-The combat system consists of several key elements:
+# Getting Started
 
-### Attack Types
-1. Melee Attacks
-   - Sword Slash
-   - Shield Bash
-   - Kick
+Second page
 
-2. Ranged Attacks
-   - Bow Shot
-   - Magic Bolt
-   - Throwing Knife
+# Advanced Features
 
-### Damage Calculation
-| Attack Type | Base Damage | Critical Chance |
-|------------|-------------|-----------------|
-| Sword Slash | 15 | 10% |
-| Shield Bash | 10 | 5% |
-| Bow Shot | 12 | 15% |
-| Magic Bolt | 20 | 20% |
-
-## Code Examples
-Here's how damage is calculated in the game:
-
-```python
-def calculate_damage(base_damage, critical_chance):
-    if random.random() < critical_chance:
-        return base_damage * 2
-    return base_damage
-```
-
-## Advanced Techniques
-1. Combo Attacks
-   - Chain multiple attacks together
-   - Each successful hit increases damage
-   - Maximum of 5 hits in a combo
-
-2. Defense Strategies
-   - Block reduces damage by 50%
-   - Dodge completely avoids damage
-   - Parry can counter-attack
-
-## Tips and Tricks
-* Always keep your shield ready
-* Use the environment to your advantage
-* Learn enemy attack patterns
-* Practice your timing for perfect blocks
+More content and <a href="...">link</a>
 """
 
 
 def markdown_content_view(request):
-    md = markdown.Markdown(
-        extensions=[
-            "fenced_code",  # For code blocks
-            "tables",  # For table support
-            "toc",  # For table of contents
-            "nl2br",  # For converting newlines to <br> tags
-            "sane_lists",  # For better list handling
-            "codehilite",  # For syntax highlighting
-        ]
-    )
-    markdown_content = {
-        "title": "Knowledge Base Markdown Sandbox",
-        "content": MARKDOWN_STRING,
+    # Get the requested section from query parameters
+    requested_section = request.GET.get("section", "introduction")
+
+    # Initialize markdown with our extensions
+    md = markdown.Markdown(extensions=["fenced_code", SectionWrapperExtension(), HtmlSanitizerExtension()])
+
+    # Convert markdown to HTML
+    html_content = md.convert(MARKDOWN_STRING)
+
+    # Create context with the rendered content
+    context = {
+        "html_content": html_content,
+        "requested_section": requested_section,
     }
-    context = {"markdown_content": markdown_content}
-    markdown_content["content"] = md.convert(markdown_content["content"])
-    return render(request, "md_app/markdown_content.html", context=context)
+
+    # Choose template based on UI mode
+    template = "md_app/markdown_content.html"
+
+    return render(request, template, context=context)
