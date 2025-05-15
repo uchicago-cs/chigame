@@ -171,3 +171,7 @@ a.upload-button:active {
 .game-card:hover {
   box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }
+
+.min-h-200 {
+  min-height: 200px;
+}
