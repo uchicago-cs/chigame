@@ -747,6 +747,7 @@ class LobbyTests(APITestCase):
         self.assertEqual(unchanged_lobby.name, lobby.name)
 
 
+
 class SpamFilterTests(APITestCase):
     def setUp(self):
         self.user = UserFactory()
