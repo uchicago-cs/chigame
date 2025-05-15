@@ -7,8 +7,8 @@
 }
 
 #notification-btn-wrapper button:hover {
-  background-color: rgba(0, 0, 0, 0.05); /* subtle light grey */
-  border-radius: 0.5rem; /* soft corners if needed */
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: 0.5rem; 
 }
 
 #notification-btn-wrapper button {
@@ -17,22 +17,62 @@
   padding: 0.5rem;
 }
 
-.notification-type-friend {
-  background-color: #d1e9f0; /* A slightly richer, but still soft, blue */
+
+.notification-dismiss-btn:hover {
+    background-color: transparent !important; 
+    opacity: 1;                            
 }
-.notification-type-invite {
-  background-color: #ff9c80; /* A warm, noticeable light yellow/orange */
+
+.notification-item {
+  margin-bottom: .3rem;
 }
-.notification-type-system {
-  background-color: #e8e8e8; /* A clearer, slightly darker grey */
+
+.notification-style-friend {
+  background-color: #f8f9fa;
+  border-left: 3px solid #7aa5d5; 
 }
-.notification-type-achievement {
-  background-color: #c8e6c8; /* A more distinct, pleasant green */
+.notification-style-group {
+  background-color: #f8f9fa;
+  border-left: 3px solid #85c799; 
 }
-.notification-type-default {
-  background-color: #ffffff;    /* White for fallback is usually fine */
+.notification-style-match {
+  background-color: #f8f9fa;
+  border-left: 3px solid #f0ad4e;
+}
+.notification-style-achievement {
+  background-color: #f8f9fa;
+  border-left: 3px solid #d9534f;
+}
+.notification-style-system {
+  background-color: #f8f9fa;
+  border-left: 3px solid #5bc0de;
+}
+.notification-style-default {
+  background-color: #ffffff; 
+}
+
+.notification-unread .notification-strong {
+    font-weight: bold;
+    color: #000;
+}
+
+.notification-unread {
+    background-color: #e9ecef; /* A slightly more distinct background for unread */
+}
+
+.notification-icon {
+  padding-left: .4rem !important;
+}
+
+
+.notification-strong {
+    display: inline-block;
+    white-space: normal;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 .dropdown {
   border-radius: 4px;
+  padding: .1rem;
 }

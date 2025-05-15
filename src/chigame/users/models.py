@@ -319,23 +319,19 @@ class Notification(models.Model):
         self.last_sent = timezone.now()
         self.save()
 
-    def get_type_string(self):
+    def get_style_key(self):
         # For Mapping integer types to the stringsC SS expects
         type_map = {
             self.FRIEND_REQUEST: "friend",
             self.REMINDER: "system", 
-            self.UPCOMING_MATCH: "invite", 
-            self.MATCH_PROPOSAL: "invite",
-            self.GROUP_INVITATION: "invite",
+            self.UPCOMING_MATCH: "match", 
+            self.MATCH_PROPOSAL: "match",
+            self.GROUP_INVITATION: "group",
             self.ACHIEVEMENT: "achievement",
         }
         return type_map.get(self.type, "default")
     
     def get_rich_message(self):
-        """
-        Generates a human-readable, detailed message for the notification,
-        focusing on Friend Requests and Group Invitations.
-        """
         actor = self.actor
 
         # Default message: Use pre-set message, then type-specific default, then generic default
@@ -372,7 +368,22 @@ class Notification(models.Model):
         except AttributeError as e:
             return final_fallback_message # Safe fallback in case of unexpected errors
 
-    # ... (your existing methods like get_type_string, mark_as_read, etc.)
+    def get_icon_class(self):
+        if self.type == self.FRIEND_REQUEST:
+            return "bi-person-plus-fill"
+        elif self.type == self.GROUP_INVITATION:
+            return "bi-people-fill"
+        elif self.type == self.UPCOMING_MATCH:
+            return "bi-calendar-event-fill"
+        elif self.type == self.MATCH_PROPOSAL:
+            return "bi-joystick"
+        elif self.type == self.ACHIEVEMENT:
+            return "bi-star-fill"
+        elif self.type == self.REMINDER:
+            return "bi-info-circle-fill"
+        else:
+            return "bi-bell-fill"
+
 
 
 class BaseNotificationHandler:
