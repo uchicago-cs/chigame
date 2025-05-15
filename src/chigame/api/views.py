@@ -94,6 +94,11 @@ class LobbyListView(generics.ListCreateAPIView):
     serializer_class = LobbySerializer
     pagination_class = PageNumberPagination
 
+    permission_classes = [IsAuthenticatedOrReadOnly]  # similar to GameListView
+
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user)
+
 
 class LobbyDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Lobby.objects.all()
@@ -137,10 +142,10 @@ class MessageView(generics.CreateAPIView):
         if is_spam(content):
             raise ValidationError("Your message appears to be spam.")
 
-        serializer.save()
+        # serializer.save()
+        serializer.save(sender=self.request.user)
 
-
-# Need Livechat in order to use this endpoint
+    # Need Livechat in order to use this endpoint
 
 
 class GroupListView(generics.ListCreateAPIView):
@@ -175,6 +180,8 @@ class UserGroupsView(generics.ListAPIView):
 
 
 class MessageFeedView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def post(self, request, *args, **kwargs):
         # Get data from the frontend
         token_id = request.data.get("token_id")
