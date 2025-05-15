@@ -744,7 +744,7 @@ class GameList(models.Model):
 
 
 # ================ Word Game Models ================
-class WordleStat(models.Model):
+class WordStat(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     current_streak = models.IntegerField(default=0)
     last_played = models.DateField(null=True, blank=True)
@@ -755,7 +755,7 @@ class WordleStat(models.Model):
         return f"{self.user.username} - Streak: {self.current_streak}"
 
 
-class WordleSession(models.Model):
+class WordSession(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     word = models.CharField(max_length=10)
     guesses = models.JSONField(default=list)  # list of guessed words
@@ -768,7 +768,7 @@ class WordleSession(models.Model):
         return f"{self.user.username} - {self.word} - Completed: {self.is_completed}"
 
 
-class WordleAchievementUnlock(models.Model):
+class WordAchievementUnlock(models.Model):
     class Rarity(models.IntegerChoices):
         COMMON = 1, "Common"
         UNCOMMON = 2, "Uncommon"
@@ -779,7 +779,7 @@ class WordleAchievementUnlock(models.Model):
     name = models.CharField(max_length=100)
     rarity = models.IntegerField(choices=Rarity.choices)
     date_unlocked = models.DateTimeField(auto_now_add=True)
-    session = models.ForeignKey(WordleSession, null=True, blank=True, on_delete=models.SET_NULL)
+    session = models.ForeignKey(WordSession, null=True, blank=True, on_delete=models.SET_NULL)
 
     def __str__(self):
         return f"{self.user.username} - {self.name} ({self.get_rarity_display()})"
