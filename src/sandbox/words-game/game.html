@@ -9,7 +9,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Press+Start+2P&display=swap"
           rel="stylesheet" />
     <link rel="stylesheet" href="game.css" />
-    <script defer src="game.js"></script>
   </head>
   <body>
     <div id="notification-wrapper">
@@ -103,5 +102,11 @@
         <button id="restart-btn">Play Again</button>
       </div>
     </div>
+    <script>
+      const urlParams = new URLSearchParams(window.location.search);
+      const mode = urlParams.get('mode');
+      window.gameMode = mode;
+    </script>
+    <script src="game.js" defer></script>
   </body>
 </html>
