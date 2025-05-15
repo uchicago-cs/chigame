@@ -503,13 +503,20 @@ function stopPlayerTimer() {
 }
 
 function updateTimerDisplay() {
-    // get the HTML elements
+  // get the HTML elements
   const redDisplay = document.getElementById('red-timer');
   const blackDisplay = document.getElementById('black-timer');
 
+  // change format to mm:ss
+  // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/padStart
+  const redMin = Math.floor(redTime / 60);
+  const redSec = String(redTime % 60).padStart(2, '0');
+  const blackMin = Math.floor(blackTime / 60);
+  const blackSec = String(blackTime % 60).padStart(2, '0');
+
   // update the innerHTML
-  redDisplay.textContent = `Red: ${redTime}`;
-  blackDisplay.textContent = `Black: ${blackTime}`;
+  redDisplay.textContent = `Red: ${redMin}:${redSec}`;
+  blackDisplay.textContent = `Black: ${blackMin}:${blackSec}`;
 }
 
 // end the gamer if either player runs out of time
