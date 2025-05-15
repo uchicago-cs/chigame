@@ -1,0 +1,21 @@
+<!-- Full transparency: This was AI generated code. This needs to be made to be
+more pretty. I just needed this to see my results. -->
+{% extends "base.html" %}
+
+{% block content %}
+  <h1>{{ scope }} Privacy Settings</h1>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">
+      {% if form.instance.pk %}
+        Save Changes
+      {% else %}
+        Create Setting
+      {% endif %}
+    </button>
+  </form>
+  <p>
+    <a href="{% url 'privacy-list' %}">← Back to all settings</a>
+  </p>
+{% endblock content %}
