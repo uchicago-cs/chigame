@@ -6,6 +6,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils import timezone
 
+from chigame.achievements.models import Achievement
 from chigame.users.models import Group, Notification, User
 
 
@@ -79,6 +80,15 @@ class Game(models.Model):
         # https://docs.djangoproject.com/en/stable/ref/models/instances/#django.db.models.Model.full_clean
         self.full_clean()
         super().save(*args, **kwargs)
+
+    def get_achievement(self, name: str):
+        """
+        Returns the achievement with the given name for this game.
+        """
+        try:
+            return Achievement.objects.get(name=name)
+        except Achievement.DoesNotExist:
+            return None
 
     def __str__(self):
         return self.name
