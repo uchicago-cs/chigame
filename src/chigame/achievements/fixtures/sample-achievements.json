@@ -1,5 +1,61 @@
 [
     {
+        "model": "users.user",
+        "pk": 1,
+        "fields": {
+            "password": "argon2$argon2id$v=19$m=102400,t=2,p=8$Zzk2ZjFCTXl4RlJmOW1VU1JHa3QxZA$tiaFDXObRmwzYoVytjyCGFVfJnoqp1uYUOvCVUsUHpY",
+            "last_login": null,
+            "is_superuser": true,
+            "is_staff": true,
+            "is_active": true,
+            "date_joined": "2023-10-30T03:15:43.052Z",
+            "name": "player1",
+            "email": "player1@example.com",
+            "groups": [],
+            "user_permissions": []
+        }
+    },
+    {
+        "model": "users.user",
+        "pk": 2,
+        "fields": {
+            "password": "argon2$argon2id$v=19$m=102400,t=2,p=8$Zzk2ZjFCTXl4RlJmOW1VU1JHa3QxZA$tiaFDXObRmwzYoVytjyCGFVfJnoqp1uYUOvCVUsUHpY",
+            "last_login": null,
+            "is_superuser": false,
+            "is_staff": false,
+            "is_active": true,
+            "date_joined": "2023-10-30T03:15:43.052Z",
+            "username": "player2",
+            "email": "player2@example.com",
+            "groups": [],
+            "user_permissions": []
+        }
+    },
+    {
+        "model": "games.game",
+        "pk": 1,
+        "fields": {
+            "name": "Checkers",
+            "description": "A classic board game",
+            "image": "/static/images/no_picture_available.png",
+            "min_players": 2,
+            "max_players": 2,
+            "complexity": 2
+        }
+    },
+    {
+        "model": "games.game",
+        "pk": 2,
+        "fields": {
+            "name": "Word Game",
+            "description": "Guess the word",
+            "image": "/static/images/no_picture_available.png",
+            "min_players": 1,
+            "max_players": 1,
+            "complexity": 2
+        }
+    },
+    {
         "model": "achievements.achievement",
         "pk": 1,
         "fields": {
@@ -170,6 +226,28 @@
             "achievement": 7,
             "pinned": false,
             "date_earned": "2025-03-20T19:01:17Z",
+            "progress": 1.0
+        }
+    },
+    {
+        "model": "achievements.userachievement",
+        "pk": 7,
+        "fields": {
+            "user": 2,
+            "achievement": 8,
+            "pinned": true,
+            "date_earned": "2025-03-25T19:01:40Z",
+            "progress": 1.0
+        }
+    },
+    {
+        "model": "achievements.userachievement",
+        "pk": 8,
+        "fields": {
+            "user": 2,
+            "achievement": 5,
+            "pinned": false,
+            "date_earned": "2024-03-30T19:02:03Z",
             "progress": 1.0
         }
     }
