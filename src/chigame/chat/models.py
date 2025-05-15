@@ -53,7 +53,9 @@ class LiveChatMessageReaction(models.Model):
     message = models.ForeignKey(LiveChatMessage, on_delete=models.CASCADE)
 
     # this is the emoji that the user reacted with
-    content = models.CharField(null=False, max_length=MAX_EMOJI_LENGTH, help_text=f"Up to {MAX_EMOJI_LENGTH} emoji characters")
+    content = models.CharField(
+        null=False, max_length=MAX_EMOJI_LENGTH, help_text=f"Up to {MAX_EMOJI_LENGTH} emoji characters"
+    )
 
     class Meta:
         unique_together = ("user", "message", "content")
