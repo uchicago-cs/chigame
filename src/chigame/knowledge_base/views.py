@@ -246,3 +246,43 @@ class ReviewPendingGuideView(LoginRequiredMixin, UserPassesTestMixin, DetailView
         context["feedback"] = feedback
         context["message"] = message
         return self.render_to_response(context)
+
+
+class ModeratorListByGame(LoginRequiredMixin, UserPassesTestMixin, ListView):
+    model = Game
+    template_name = "knowledge-base/moderator_game_list.html"
+    context_object_name = "games"
+
+    def get_queryset(self):
+        queryset = Game.objects.all()
+        return queryset
+
+    # called when UserPassesTestMixin
+    # this makes sure only moderators can access this page
+    def test_func(self):
+        return self.request.user.moderator
+
+
+class ModeratorSingleGame(LoginRequiredMixin, UserPassesTestMixin, ListView):
+    model = Guide
+    template_name = "knowledge-base/moderator_single_game.html"
+    context_object_name = "pendingGuides"
+
+    def get_queryset(self):
+        pk = self.kwargs["pk"]
+        game = get_object_or_404(Game, pk=pk)
+        queryset = Guide.objects.filter(game_id=game)
+
+        # for sorting
+        sort = self.request.GET.get("sort")
+        if sort == "old":
+            queryset = queryset.order_by("recent_upload")
+        else:  # default: newest first
+            queryset = queryset.order_by("-recent_upload")
+
+        return queryset
+
+    # called when UserPassesTestMixin
+    # this makes sure only moderators can access this page
+    def test_func(self):
+        return self.request.user.moderator

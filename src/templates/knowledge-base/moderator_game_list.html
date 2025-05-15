@@ -1,0 +1,28 @@
+{% extends "knowledge-base/base.html" %}
+
+{% load static %}
+
+<link rel="stylesheet" href="{% static 'css/knowledge-base-styles.css' %}" />
+{% block page-content %}
+  <h2>Manage Published Guides By Game</h2>
+  <table border="1">
+    <thead>
+      <tr>
+        <th>Game</th>
+        <th>Published Guide</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for game in games %}
+        <tr>
+          <td>{{ game }}</td>
+          <td>{{ game.published_guide_id }}, by {{ game.published_guide_id.author }}</td>
+          <td>
+            <a href="#">Manage</a>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock page-content %}
