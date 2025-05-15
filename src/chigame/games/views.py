@@ -78,10 +78,8 @@ class GameDetailView(LoginRequiredMixin, FormMixin, DetailView):
         context["popularity"] = self.object.reviews.count()
         context["avg_rating"] = self.object.reviews.filter(is_public=True).aggregate(Avg("rating"))["rating__avg"]
 
-        #FOR IF/twine GAMES
-        context["is_twine_game"] = (
-            self.object.twine_file.name.endswith(".html") if self.object.twine_file else False
-        )
+        # FOR IF/twine GAMES
+        context["is_twine_game"] = self.object.twine_file.name.endswith(".html") if self.object.twine_file else False
         # Include the user's GameLists: default Favorites plus others
         if self.request.user.is_authenticated:
             favorites_list, _ = GameList.objects.get_or_create(name="Favorites", created_by=self.request.user)
