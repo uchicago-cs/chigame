@@ -8,6 +8,17 @@ of the project
 
 ```python manage.py loaddata src/chigame/knowledge_base/fixtures/kb_user_game_data.json src/chigame/knowledge_base/fixtures/kb_guides_data.json src/chigame/knowledge_base/fixtures/kb_feedbacks_data.json src/chigame/knowledge_base/fixtures/kb_email_verifications_data```
 
+## Fixture Explanations
+
+Since our guides reference differet parts of Chigame, we need multiple different types of models.
+We found it easier to split these up into different sub-applications, so that, if part of one fixture
+needs updating, we can isolate our change to a small part of the code.
+
+Files
+ * Users & Games: Creates four users and three games, including categories for the latter
+ * Email Verifications: Creates email verification for the 4 test users, so testers can log in immediately
+ * Guides: Defines mulitple guide submissions in a few different states (see below)
+ * Feedback: Defines moderator responses to these submissions
 
 ## Fixture Contents
 ### Users
