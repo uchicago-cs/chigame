@@ -38,14 +38,36 @@ const RADIUS_SCALE_FACTOR = 2.5;
 // selected piece highlight stroke width
 const HIGHLIGHT_SIZE = 3;
 
-// ----------------------------------------------------------------------------
+// ------------------- Get Board State ----------------------------------------
+// From Database
+
+async function fetchInitialBoardState() {
+  try {
+    const response = await fetch(`/games/checkers/${BOARD_ID}/state/`);
+    if (!response.ok) {
+      throw new Error("Failed to fetch board state");
+    }
+    const data = await response.json();
+    return data.state;
+  } catch (error) {
+    console.error("Error loading board state:", error);
+    return null;
+  }
+}
 
 // ---INIT FUNCTIONS-----------------------------------------------------------
 function preload() { }
 
-function create() {
-  drawBoard(this);
-  populatePieces(this);
+async function create() {
+  const state = await fetchInitialBoardState();
+  if (state) {
+    drawBoard(this);
+    populatePiecesFromState(this, state);
+  } else {
+    console.warn("Using default board because state failed to load.");
+    drawBoard(this);
+    populatePieces(this); // fallback
+  }
 }
 
 function update() { }
@@ -151,6 +173,19 @@ function populatePieces(scene) {
       // create red pieces on odd/dark tiles
       if ((x + y) % 2 === 1) {
         createPiece(x, y, COLORS.red, scene);
+      }
+    }
+  }
+}
+
+function populatePiecesFromState(scene, state) {
+  for (let y = 0; y < state.length; y++) {
+    for (let x = 0; x < state[y].length; x++) {
+      const cell = state[y][x];
+      if (cell === 1) {
+        createPiece(x, y, COLORS.red, scene);
+      } else if (cell === 2) {
+        createPiece(x, y, COLORS.black, scene);
       }
     }
   }
@@ -273,4 +308,35 @@ function getBoardState() {
   }
 
   return board;
+}
+
+// If you have more than one tab open it will automatically update by calling
+// from the server
+
+let lastKnownState = JSON.stringify(getBoardState());
+
+function reloadBoardFromState(state) {
+  // Clear existing pieces
+  pieces.forEach(p => p.sprite.destroy());
+  pieces = [];
+
+  // Re-populate pieces
+  populatePiecesFromState(checkers.scene.scenes[0], state);
+}
+
+function update() {
+  // Every 2 seconds, poll server for board state
+  if (!window.lastPollTime || Date.now() - window.lastPollTime > 2000) {
+    window.lastPollTime = Date.now();
+    fetch(`/games/checkers/${BOARD_ID}/state/`)
+      .then(res => res.json())
+      .then(data => {
+        const newState = JSON.stringify(data.state);
+        if (newState !== lastKnownState) {
+          lastKnownState = newState;
+          reloadBoardFromState(data.state);
+        }
+      })
+      .catch(err => console.error("Polling error:", err));
+  }
 }

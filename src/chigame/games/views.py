@@ -1276,3 +1276,12 @@ def checkers_game_update_board_state(request, board_id):
         return Response({"error": "Board not found"}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["GET"])
+def checkers_game_get_board_state(request, board_id):
+    try:
+        board = CheckersBoard.objects.get(pk=board_id)
+        return Response({"state": board.state})
+    except CheckersBoard.DoesNotExist:
+        return Response({"error": "Board not found"}, status=404)
