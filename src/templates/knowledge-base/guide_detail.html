@@ -15,7 +15,7 @@
       <a href="{% url 'game-detail' guide.game_id.pk %}">Go to Game</a>
       <p>
         Content:
-        {{ guide.content }}
+        {{ rendered_content|safe }}
       </p>
       <p>Likes: {{ guide.likes.count }}</p>
       <p>Favorites: {{ guide.favorites.count }}</p>

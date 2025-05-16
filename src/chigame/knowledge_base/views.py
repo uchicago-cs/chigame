@@ -14,6 +14,7 @@ from django.views.generic import DetailView, ListView
 from chigame.games.models import Category, Game
 
 from .forms import MarkdownUploadForm
+from .markdown_extensions import HtmlSanitizerExtension, SectionWrapperExtension
 from .models import Guide, ReviewFeedback
 
 
@@ -80,6 +81,11 @@ class GuideDetail(DetailView):
         guide = self.get_object()
 
         context["published"] = False
+
+        # Render the markdown text as actual markdown
+        md = markdown.Markdown(extensions=[SectionWrapperExtension(), HtmlSanitizerExtension(), "fenced_code"])
+        html_content = md.convert(guide.content)
+        context["rendered_content"] = html_content
 
         if guide.game_id.published_guide_id == guide:
             context["published"] = True
