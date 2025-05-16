@@ -213,21 +213,21 @@
         Enable Ratings
       </label>
     </div>
-      <hr />
-      <h3>Upload a File</h3>
-      <form method="post"
-            action="{% url 'upload-file' pk=game.pk %}"
-            enctype="multipart/form-data">
-        {% csrf_token %}
-        <div id="upload-zone">
-          Drag &amp; drop a file here
-          <br />
-          or click to browse
-        </div>
-        <input type="file" id="myFile" name="uploaded_file" class="if-file-input" />
-        <button type="submit" class="btn-primary">Upload</button>
-      </form>
-      <h3>Publish Story</h3>
-      <a href="{{ uploaded_file_url }}" target="_blank" class="btn-success">Play Uploaded Game</a>
+    <hr />
+    <h3>Upload a File</h3>
+    <form method="post"
+          action="{% url 'upload-file' pk=game.pk %}"
+          enctype="multipart/form-data">
+      {% csrf_token %}
+      <div id="upload-zone">
+        Drag &amp; drop a file here
+        <br />
+        or click to browse
+      </div>
+      <input type="file" id="myFile" name="uploaded_file" class="if-file-input" />
+      <button type="submit" class="btn-primary">Upload</button>
+    </form>
+    <h3>Publish Story</h3>
+    <a href="{{ uploaded_file_url }}" target="_blank" class="btn-success">Play Uploaded Game</a>
   </form>
 {% endblock content %}
