@@ -1,5 +1,5 @@
 //Set up game
-document.addEventListener("DOMContentLoaded", async () => {
+window.addEventListener("load", async () => {
     await loadWords();
     createSquares();
     getNewWord();
@@ -50,8 +50,19 @@ function loadWords() {
 
 //Get a new word to solve
 function getNewWord() {
-    word = allowedWords[Math.floor(Math.random() * allowedWords.length)];
-    console.log("Today's word:", word);
+    if (mode === 'game') {
+        word = allowedWords[Math.floor(Math.random() * allowedWords.length)];
+        console.log(`Today's Word: ${word}`);
+    } else if (mode === 'solo') {
+        const today = new Date();
+        const startDate = new Date('2025-05-03');
+        const dayIndex = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
+        const index = dayIndex % allowedWords.length;
+        word = allowedWords[index];
+        console.log(`Today's Word: ${word}`);
+    } else {
+        console.error("Unrecognized game mode:", mode);
+    }
 }
 
 //Create boxes/grid for the board container
