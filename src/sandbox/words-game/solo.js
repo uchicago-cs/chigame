@@ -50,8 +50,14 @@ function loadWords() {
 
 //Get a new word to solve
 function getNewWord() {
-    word = allowedWords[Math.floor(Math.random() * allowedWords.length)];
-    console.log("Today's word:", word);
+    const today = new Date();
+    const startDate = new Date('2025-05-03');
+    const dayIndex = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
+    const index = dayIndex % allowedWords.length;
+    //New Different Word Everyday for 3000Days ie: all words in WORDS.txt is all used.
+    word = allowedWords[index];
+    console.log(word);
+
 }
 
 //Create boxes/grid for the board container
@@ -171,7 +177,7 @@ async function isValidWord(word) {
         const response = await fetch(word_url);
 
         if (response.status === 404) {
-            showNotification(`"${word}" Is Not A Valid Word.`);
+            showNotification(`"${word}" Is Not a Valid Word.`);
             return false;
         }
 
@@ -243,7 +249,7 @@ async function handleSubmitWord() {
         showNotification(`Sorry, you have no more guesses! The word was "${word}".`);
         gameOver = true;
         setTimeout(() => {
-            showEndScreen(false);
+            showEndScreen(true);
         }, 1500);
         return;
     }
@@ -264,6 +270,7 @@ function showNotification(message, duration = 1000) {
     }, duration);
 }
 
+//Show End Screen
 function showEndScreen(won) {
     const endScreen = document.getElementById("end-screen");
     const endTitle = document.getElementById("end-title");
