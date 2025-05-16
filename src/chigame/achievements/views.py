@@ -1,3 +1,4 @@
+
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
@@ -8,12 +9,12 @@ from chigame.users.models import User
 
 from .models import Achievement, UserAchievement
 
+from django.shortcuts import render
 
 def demo_game(request):
     return render(request, "achievements/demo_game.html")
 
 
-@login_required
 @login_required
 def user_achievements(request, username=None):
     """
