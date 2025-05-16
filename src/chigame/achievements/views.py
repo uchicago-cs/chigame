@@ -1,11 +1,7 @@
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
-from django.utils import timezone
-
 from chigame.games.models import Game
 from chigame.users.models import User
-
 from .models import Achievement, UserAchievement
 
 
