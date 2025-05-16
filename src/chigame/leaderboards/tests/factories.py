@@ -1,40 +1,111 @@
-from factory import Faker, SelfAttribute, SubFactory
+import factory
+from django.contrib.auth import get_user_model
+from django.utils import timezone
 from factory.django import DjangoModelFactory
 
-from chigame.games.models import Game
-from chigame.leaderboards.models import Leaderboard, LeaderboardPrivacySetting
+from chigame.games.models import Game, Lobby, Match
+from chigame.leaderboards.models import Leaderboard, LeaderboardEntry, Metric, MetricScore, Region, LeaderboardPrivacySetting
 from chigame.users.models import UserProfile
-from chigame.users.tests.factories import UserFactory
+
+AuthUser = get_user_model()
 
 
-# I'm making this because the users team doesnt have a factory for UserProfile
+class AuthUserFactory(DjangoModelFactory):
+    class Meta:
+        model = AuthUser
+
+    email = factory.Sequence(lambda n: f"user{n}@example.com")
+    username = factory.LazyAttribute(lambda o: o.email.split("@")[0])
+    # use PostGenerationMethodCall to hash the password
+    password = factory.PostGenerationMethodCall("set_password", "password123")
+
+
 class UserProfileFactory(DjangoModelFactory):
     class Meta:
         model = UserProfile
 
-    user = SubFactory(UserFactory)
-    display_name = Faker("user_name")
+    user = factory.SubFactory(AuthUserFactory)
+    display_name = factory.Faker("user_name")
+    bio = factory.Faker("sentence")
 
 
-# I'm making this because the game team doesnt have a factory for Game
+class RegionFactory(DjangoModelFactory):
+    class Meta:
+        model = Region
+
+    continent = factory.Iterator(["North America", "Europe", "Asia"])
+    country = factory.Faker("country")
+    region = factory.Faker("state")
+
+
 class GameFactory(DjangoModelFactory):
     class Meta:
         model = Game
 
-    name = Faker("sentence", nb_words=3)
-    description = Faker("sentence")
-    min_players = Faker("random_int", min=1, max=3)
-    max_players = Faker("random_int", min=4, max=6)
-    complexity = Faker("random_int", min=1, max=5)
+    name = factory.Faker("word")
+    description = factory.Faker("sentence")
+    min_players = 1
+    max_players = 4
+    complexity = factory.Iterator([1, 2, 3, 4, 5])
+
+
+class LobbyFactory(DjangoModelFactory):
+    class Meta:
+        model = Lobby
+
+    game = factory.SubFactory(GameFactory)
+    name = factory.Faker("word")
+    created_by = factory.SubFactory(AuthUserFactory)
+    min_players = factory.SelfAttribute("game.min_players")
+    max_players = factory.SelfAttribute("game.max_players")
+
+
+class MatchFactory(DjangoModelFactory):
+    class Meta:
+        model = Match
+
+    game = factory.SubFactory(GameFactory)
+    lobby = factory.SubFactory(LobbyFactory)
+    date_played = factory.LazyFunction(timezone.now)
 
 
 class LeaderboardFactory(DjangoModelFactory):
     class Meta:
         model = Leaderboard
 
-    name = Faker("sentence", nb_words=2)
-    description = Faker("sentence")
-    game = SubFactory(GameFactory)
+    name = factory.Faker("word")
+    description = factory.Faker("sentence")
+    game = factory.SubFactory(GameFactory)
+
+
+class LeaderboardEntryFactory(DjangoModelFactory):
+    class Meta:
+        model = LeaderboardEntry
+
+    leaderboard = factory.SubFactory(LeaderboardFactory)
+    user = factory.SubFactory(UserProfileFactory)
+    rank = factory.Sequence(lambda n: n + 1)
+
+
+class MetricFactory(DjangoModelFactory):
+    class Meta:
+        model = Metric
+
+    name = factory.Faker("word")
+    unit = factory.Iterator(["points", "wins", "losses"])
+    description = factory.Faker("sentence")
+    game = factory.SubFactory(GameFactory)
+
+
+class MetricScoreFactory(DjangoModelFactory):
+    class Meta:
+        model = MetricScore
+
+    score = factory.Faker("random_int", min=0, max=100)
+    leaderboard_entry = factory.SubFactory(LeaderboardEntryFactory)
+    user = factory.SelfAttribute("leaderboard_entry.user")
+    metric = factory.SubFactory(MetricFactory)
+    match = factory.SubFactory(MatchFactory)
 
 
 # This makes a default privacy setting for other factories to inherit
@@ -44,7 +115,7 @@ class LeaderboardPrivacySettingFactory(DjangoModelFactory):
 
     complete_opt_out = False
     display_as_anonymous = False
-    user = SubFactory(UserProfileFactory)
+    user = factory.SubFactory(UserProfileFactory)
     game = None
     leaderboard = None
 
@@ -62,7 +133,7 @@ class GamePrivacySettingFactory(LeaderboardPrivacySettingFactory):
     Factory for game-level privacy settings (has game, no leaderboard)
     """
 
-    game = SubFactory(GameFactory)
+    game = factory.SubFactory(GameFactory)
 
 
 class LeaderboardSpecificPrivacySettingFactory(LeaderboardPrivacySettingFactory):
@@ -70,5 +141,5 @@ class LeaderboardSpecificPrivacySettingFactory(LeaderboardPrivacySettingFactory)
     Factory for leaderboard-specific privacy settings (has game and leaderboard)
     """
 
-    leaderboard = SubFactory(LeaderboardFactory)
-    game = SelfAttribute("leaderboard.game")
+    leaderboard = factory.SubFactory(LeaderboardFactory)
+    game = factory.SelfAttribute("leaderboard.game")
