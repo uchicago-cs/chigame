@@ -114,6 +114,11 @@
             {% endif %}
             <div class="fw-bold small text-danger">{{ message.user.username }}</div>
             <div class="mt-1">{{ message.content }}</div>
+            <div class="message-meta text-end text-muted small mt-1">
+              {% if message.id == chat.pinned_message.id %}
+                <span class="text-warning small ms-1 pinned-label">📌 Pinned</span>
+              {% endif %}
+            </div>
             <div class="text-end text-muted small mt-1">{{ message.sent_at|date:"g:i A" }}</div>
           </div>
         </div>

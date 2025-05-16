@@ -64,7 +64,8 @@ def pin_message(request, message_id):
             "pinned_message": {
                 "id": message.id,
                 "content": message.content,
-                "username": message.user.username,
+                "username": message.user.username or message.user.email,
+                "is_pinned": True,
             },
         },
         status=200,
