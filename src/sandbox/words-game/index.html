@@ -20,7 +20,7 @@
       </div>
       <div class="game-modes">
         <div class="mode">
-          <a href="{% url 'game' %}">
+          <a href="{% url 'game' mode=game %}">
             <button class="mode-btn">Solo</button>
           </a>
           <div class="mode-description">
@@ -33,7 +33,7 @@
           </div>
         </div>
         <div class="mode">
-          <a href="{% url 'solo' %}">
+          <a href="{% url 'solo' mode=solo %}">
             <button class="mode-btn">Daily</button>
           </a>
           <div class="mode-description">
