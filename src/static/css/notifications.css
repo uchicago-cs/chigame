@@ -1,3 +1,29 @@
+.notification-hover:hover {
+  background-color: #f8f9fa;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.notification-container .button-container {
+  visibility: visible; /* Always show */
+}
+
+.notification-container.read {
+  background-color: #f0f0f0;
+  color: #6c757d; /* Bootstrap’s text-muted */
+}
+
+.notification-container.read a {
+  color: #6c757d !important;
+  text-decoration: none;
+}
+
+.notification-container.read .badge {
+  opacity: 0.7;
+}
+
+.icon-lg {
+    font-size: 1.2rem;
 
 .notifications-dropdown {
   width: 320px;
@@ -15,4 +41,5 @@
   background-color: transparent;
   border: none;
   padding: 0.5rem;
+
 }
