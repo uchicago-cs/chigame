@@ -1,21 +1,20 @@
 {% extends "knowledge-base/base.html" %}
 
 {% block page-content %}
-  <div class="knowledge-base container py-4">
+  <div class="knowledge-base container">
     <div class="d-flex justify-content-between align-items-center pb-4">
       <h1 class="m-0">Knowledge Base</h1>
       <div class="d-flex gap-2">
-        {% if has_guides %}
-          <a href="{% url 'contributor-manage-guide' %}"
-             class="btn btn-outline-primary">Manage My Guides</a>
-        {% endif %}
         {% if not request.user.is_authenticated %}
-          <button type="button"
-                  class="btn btn-secondary disabled"
-                  title="Login to manage guides">Manage My Guides</button>
+          <a href="{% url 'account_login' %}" class="btn btn-primary">Login to Contribute</a>
+        {% else %}
+          {% if has_guides %}
+            <a href="{% url 'contributor-manage-guide' %}"
+               class="btn btn-outline-primary">Manage My Guides</a>
+          {% endif %}
+          <a href="{% url 'knowledge-base-guide-upload' %}"
+             class="btn btn-success">Upload a Guide</a>
         {% endif %}
-        <a href="{% url 'knowledge-base-guide-upload' %}"
-           class="btn btn-success">Upload a Guide</a>
       </div>
     </div>
     <!-- search bar -->
@@ -44,12 +43,13 @@
             <option value="old" {% if request.GET.sort == "old" %}selected{% endif %}>Oldest Update</option>
           </select>
         </div>
-        <div class="col-md-2 d-grid">
+        <div class="d-flex flex-row align-items-center gap-2">
+          <div>
+            <a href="{% url 'knowledge-base' %}"
+               class="btn btn-link p-0 text-decoration-none">Clear Search</a>
+          </div>
           <button type="submit" class="btn btn-primary">Search</button>
         </div>
-      </div>
-      <div class="mb-3">
-        <a href="{% url 'knowledge-base' %}" class="btn btn-link p-0">Clear Search</a>
       </div>
     </form>
     <div class="row row-cols-1 row-cols-md-3 g-4 mb-4">
