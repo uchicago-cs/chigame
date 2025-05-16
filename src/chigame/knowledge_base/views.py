@@ -1,4 +1,6 @@
 # Keep model imports for now, as it will be required for WIP features
+import markdown
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
@@ -6,6 +8,7 @@ from django.db.models import CharField, F, Q, Value
 from django.db.models.functions import Concat
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.safestring import mark_safe
 from django.views.generic import DetailView, ListView
 
 from chigame.games.models import Category, Game
@@ -67,10 +70,20 @@ class DefaultView(ListView):
         return context
 
 
-def GuideDetailView(request, pk):
-    guide = get_object_or_404(Guide, pk=pk)
-    context = {"guide": guide}
-    return render(request, "knowledge-base/guide_detail.html", context)
+class GuideDetail(DetailView):
+    model = Guide
+    template_name = "knowledge-base/guide_detail.html"
+    context_object_name = "guide"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        guide = self.get_object()
+
+        context["published"] = False
+
+        if guide.game_id.published_guide_id == guide:
+            context["published"] = True
+        return context
 
 
 # Contributors
@@ -112,9 +125,8 @@ def ContributorMdUpload(request, pk=None):
             else:
                 game = form.cleaned_data["game"]  # the game user chooses
                 guide = Guide.objects.create(author=request.user, content=content, game_id=game, status=0)
-            return redirect("knowledge-base")
-            # I make it redirects to landing page after submission for now, could later
-            # create an issue that adds a "sucessful submission" page
+            messages.success(request, "Guide Uploaded Successfully!")
+            return redirect("contributor-manage-guide")
 
     else:
         form = MarkdownUploadForm(fixed_game=fixed_game)
@@ -187,3 +199,50 @@ class ModeratorGuidesPending(LoginRequiredMixin, UserPassesTestMixin, ListView):
     # this makes sure only moderators can access this page
     def test_func(self):
         return self.request.user.moderator
+
+
+class ReviewPendingGuideView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
+    model = Guide
+    template_name = "knowledge-base/moderator_review_guide.html"
+    context_object_name = "guide"
+
+    def test_func(self):
+        return self.request.user.moderator
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        guide = self.get_object()
+        context["html_content"] = mark_safe(markdown.markdown(guide.content, extensions=["fenced_code", "tables"]))
+        context["feedback"] = ""
+        context["message"] = ""
+        return context
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        feedback = request.POST.get("feedback", "")
+        action = request.POST.get("action")
+        message = ""
+        if action in ["accept", "reject", "request_changes"]:
+            status_map = {
+                "accept": Guide.GuideStatus.ACCEPTED,
+                "reject": Guide.GuideStatus.REJECTED,
+                "request_changes": Guide.GuideStatus.REQUESTED_CHANGE,
+            }
+            self.object.status = status_map[action]
+            self.object.save()
+            ReviewFeedback.objects.create(
+                reviewer=request.user,
+                guide_id=self.object,
+                status=status_map[action],
+                comment=feedback,
+            )
+            if action == "accept":
+                message = "Guide accepted."
+            elif action == "reject":
+                message = "Guide rejected."
+            elif action == "request_changes":
+                message = "Changes requested."
+        context = self.get_context_data(object=self.object)
+        context["feedback"] = feedback
+        context["message"] = message
+        return self.render_to_response(context)
