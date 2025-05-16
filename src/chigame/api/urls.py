@@ -48,6 +48,11 @@ login_patterns = [
     path("token/refresh/", TokenRefreshView.as_view(), name="token-refresh"),
 ]
 
+word_game_patterns = [
+    path("data/", views.WordGameDataListView.as_view(), name="api-word-game-data-list"),
+    path("data/<str:key>/", views.WordGameDataDetailView.as_view(), name="api-word-game-data-detail"),
+]
+
 urlpatterns = [
     path("games/", include(game_patterns)),
     path("lobbies/", include(lobby_patterns)),
@@ -55,4 +60,5 @@ urlpatterns = [
     path("tournaments/", include(tournament_patterns)),
     path("groups/", include(group_patterns)),
     path("login/", include(login_patterns)),
+    path("word-game/", include(word_game_patterns)),
 ]

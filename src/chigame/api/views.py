@@ -22,9 +22,10 @@ from chigame.api.serializers import (
     ReviewSerializer,
     UserAchievementSerializer,
     UserSerializer,
+    WordGameDataSerializer,
 )
 from chigame.api.spam_utils import is_spam
-from chigame.games.models import Game, Lobby, Message, Review
+from chigame.games.models import Game, Lobby, Message, Review, WordGameData
 from chigame.users.models import Group, User
 
 
@@ -304,3 +305,43 @@ class AchievementCreateView(generics.CreateAPIView):
         return Response(
             {"message": "Achievement assigned to user!", "data": serializer.data}, status=status.HTTP_201_CREATED
         )
+
+
+class WordGameDataListView(generics.ListCreateAPIView):
+    """
+    API endpoint to list and create Word Game data for the authenticated user.
+    """
+
+    serializer_class = WordGameDataSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return WordGameData.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        # Check if this key already exists for the user
+        key = serializer.validated_data.get("key")
+        try:
+            existing = WordGameData.objects.get(user=self.request.user, key=key)
+            # Update the existing record instead
+            existing.value = serializer.validated_data.get("value")
+            existing.save()
+        except WordGameData.DoesNotExist:
+            # Create a new record
+            serializer.save(user=self.request.user)
+
+
+class WordGameDataDetailView(generics.RetrieveUpdateDestroyAPIView):
+    """
+    API endpoint to retrieve, update or delete a specific Word Game data entry.
+    """
+
+    serializer_class = WordGameDataSerializer
+    permission_classes = [IsAuthenticated]
+    lookup_field = "key"
+
+    def get_queryset(self):
+        return WordGameData.objects.filter(user=self.request.user)
+
+    def perform_update(self, serializer):
+        serializer.save(user=self.request.user)
