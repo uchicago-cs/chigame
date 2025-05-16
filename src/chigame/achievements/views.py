@@ -4,10 +4,8 @@ from chigame.games.models import Game
 from chigame.users.models import User
 from .models import Achievement, UserAchievement
 
-
 def demo_game(request):
     return render(request, "achievements/demo_game.html")
-
 
 @login_required
 def user_achievements(request, username=None):
