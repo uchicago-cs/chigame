@@ -220,15 +220,18 @@ class ReviewCreateView(generics.CreateAPIView):
         if is_spam(review_text):
             raise ValidationError("Your review appears to be spam. Please revise your content.")
 
-        user_id = self.request.data.get("user")
+        # user_id = self.request.data.get("user")
         game_id = self.kwargs["pk"]
-        user = get_object_or_404(User, pk=user_id)
-        serializer.save(user=user, game_id=game_id)
+        game = get_object_or_404(Game, pk=game_id)
+        # user = get_object_or_404(User, pk=user_id)
+        # serializer.save(user=user, game_id=game_id)
+        serializer.save(user=self.request.user, game=game)
 
 
 class ReviewDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
+    queryset = Review.objects.none()
 
     def perform_destroy(self, instance):
         if instance.user != self.request.user:
