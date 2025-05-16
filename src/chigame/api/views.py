@@ -236,6 +236,14 @@ class ReviewDetailView(generics.RetrieveUpdateDestroyAPIView):
         serializer.save()
 
 
+class AchievementListView(generics.ListAPIView):
+    serializer_class = AchievementSerializer
+
+    def get_queryset(self):
+        game_id = self.kwargs["pk"]
+        return Achievement.objects.filter(game__id=game_id)
+
+
 class UserAchievementCreateView(generics.CreateAPIView):
     serializer_class = UserAchievementSerializer
 
