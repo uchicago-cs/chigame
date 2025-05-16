@@ -245,4 +245,5 @@ class ReviewPendingGuideView(LoginRequiredMixin, UserPassesTestMixin, DetailView
         context = self.get_context_data(object=self.object)
         context["feedback"] = feedback
         context["message"] = message
-        return self.render_to_response(context)
+
+        return redirect("knowledge-base-moderator")
