@@ -11,7 +11,8 @@ def chat(request, chat_id):
     # if the chat is public, add the request user to the chat
     if chat.public and not chat.users.filter(id=request.user.id).exists():
         chat.users.add(request.user)
-
+    if request.user.is_authenticated and not chat.users.filter(id=request.user.id).exists():
+        chat.users.add(request.user)
     return render(request, "chat/index.html", {"chat": chat, "messages": messages})
 
 
