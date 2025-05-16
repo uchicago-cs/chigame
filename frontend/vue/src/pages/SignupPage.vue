@@ -1,15 +1,44 @@
 <template>
-  <div>
-    <h2>Sign Up Page</h2>
+  <div class="signup-container">
+    <div class="form-card">
+      <h2>Sign Up</h2>
+      <form @submit.prevent="handleSubmit">
+
+        <label for="first-name">First Name</label>
+        <input id="first-name" type="first-name" required />
+
+        <label for="last-name">Last Name</label>
+        <input id="last-name" type="last-name" required />
+
+        <label for="email">Email</label>
+        <input id="email" type="email" required />
+
+        <label for="password">Password</label>
+        <input id="password" type="password" required />
+
+        <label for="confirm-password">Confirm Password</label>
+        <input id="confirm-password" type="password" required />
+
+        <button type="submit">Sign Up</button>
+        <div class="mt-3" style="min-height: 20vh;">
+          <div v-if="error">
+          <div class="alert alert-danger mt-3">
+              <p>{{ error }}</p>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
   </div>
 </template>
+
 
 <script setup>
 
 </script>
 
 <style scoped>
-.login-container {
+.signup-container {
   background: white;     /* page stays white */
   min-height: 100vh;
   display: flex;
