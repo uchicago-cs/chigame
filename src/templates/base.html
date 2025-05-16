@@ -39,6 +39,7 @@
             type="text/css" />
       <!-- CSS for Footer and Navbar -->
       <link href="{% static 'css/base.css' %}" rel="stylesheet" />
+      <link href="{% static 'css/notifications.css' %}" rel="stylesheet" />
       <!-- Google Fonts -->
       <link rel="preconnect" href="https://fonts.googleapis.com" />
       <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -53,14 +54,15 @@
     {% block javascript %}
       <!-- Bootstrap JS -->
       <script defer
-              src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/js/bootstrap.min.js"
-              integrity="sha512-1/RvZTcCDEUjY/CypiMz+iqqtaoQfAITmNSJY17Myp4Ms5mdxPS5UV7iOfdZoxcGhzFbOm6sntTKJppjvuhg4g=="
+              src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/js/bootstrap.bundle.min.js"
+              integrity="sha512-i9cEfJwUwViEPFKdC1enz4ZRGBj8YQo6QByFTF92YXHi7waCqyexvRD75S5NVTsSiTv7rKWqG9Y5eFxmRsOn0A=="
               crossorigin="anonymous"
               referrerpolicy="no-referrer"></script>
       <!-- Your stuff: Third-party javascript libraries go here -->
       <!-- SwiperJS CSS -->
       <!-- place project specific Javascript in this file -->
       <script defer src="{% static 'js/project.js' %}"></script>
+      <script defer src="{% static 'js/notifications.js' %}"></script>
       <script src= "https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.js"></script>
       <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.js"></script>
     {% endblock javascript %}
@@ -132,53 +134,101 @@
                   <a id="log-in-link" class="nav-link" href="{% url 'account_login' %}">{% translate "Sign In" %}</a>
                 </li>
               {% endif %}
-              <li class="nav-item">
-                <!-- Dynamically update search bar landing page depending on query_type-->
-                <form id="search-bar"
-                      action="{% url 'game-search-results' %}"
-                      method="get"
-                      class="d-flex align-items-center">
-                  <div>
-                    {% url 'forum:index' as forum_url %}
-                    {% url 'forum_search:search' as forum_search_url %}
-                    {% url 'games:index' as games_url %}
-                    {% url 'game-search-results' as game_search_url %}
-                    {% url 'users:user-search-results' as users_search_url %}
-                    {% url 'users:notification-search-results' as notifications_search_url %}
-                    <select id="query-type" name="query_type" class="form-select">
-                      <option value="games"
-                              {% if request.path == games_url or request.path == games_search_url %}selected{% endif %}>
-                        Games
-                      </option>
-                      <option value="users"
-                              {% if request.path == users_search_url %}selected{% endif %}>Users</option>
-                      <option value="forums"
-                              {% if request.path == forum_url or request.path == forum_search_url %}selected{% endif %}>
-                        Forums
-                      </option>
-                      <option value="notifications"
-                              {% if request.path == notifications_search_url %}selected{% endif %}>
-                        Notifications
-                      </option>
-                      <!-- Add more options here -->
-                    </select>
-                  </div>
-                  <div>
-                    <!-- Name must remain as "q" as django-machina expects that name -->
-                    <input id="query-input"
-                           name="q"
-                           type="text"
-                           placeholder="Search..."
-                           class="form-control me-2" />
-                  </div>
-                  <div>
-                    <button id="advanced-search-button"
-                            class="btn btn-large btn-primary ms-2 d-none"
-                            type="button">{% trans "Advanced Search" %}</button>
-                  </div>
-                </form>
-              </li>
-            </ul>
+              <div class="d-flex align-items-center">
+                <li class="nav-item">
+                  <!-- Dynamically update search bar landing page depending on query_type-->
+                  <form id="search-bar"
+                        action="{% url 'game-search-results' %}"
+                        method="get"
+                        class="d-flex align-items-center">
+                    <div>
+                      {% url 'forum:index' as forum_url %}
+                      {% url 'forum_search:search' as forum_search_url %}
+                      {% url 'games:index' as games_url %}
+                      {% url 'game-search-results' as game_search_url %}
+                      {% url 'users:user-search-results' as users_search_url %}
+                      {% url 'users:notification-search-results' as notifications_search_url %}
+                      <select id="query-type" name="query_type" class="form-select">
+                        <option value="games"
+                                {% if request.path == games_url or request.path == games_search_url %}selected{% endif %}>
+                          Games
+                        </option>
+                        <option value="users"
+                                {% if request.path == users_search_url %}selected{% endif %}>Users</option>
+                        <option value="forums"
+                                {% if request.path == forum_url or request.path == forum_search_url %}selected{% endif %}>
+                          Forums
+                        </option>
+                        <option value="notifications"
+                                {% if request.path == notifications_search_url %}selected{% endif %}>
+                          Notifications
+                        </option>
+                        <!-- Add more options here -->
+                      </select>
+                    </div>
+                    <div>
+                      <!-- Name must remain as "q" as django-machina expects that name -->
+                      <input id="query-input"
+                             name="q"
+                             type="text"
+                             placeholder="Search..."
+                             class="form-control me-2" />
+                    </div>
+                    <div>
+                      <button id="advanced-search-button"
+                              class="btn btn-large btn-primary ms-2 d-none"
+                              type="button">{% trans "Advanced Search" %}</button>
+                    </div>
+                  </form>
+                </li>
+              </ul>
+              <ul id="notification-btn-wrapper" class="navbar-nav ms-2">
+                {% if request.user.is_authenticated %}
+                  <!-- Notifications -->
+                  <li class="nav-item dropdown">
+                    <button id="notification-btn"
+                            class="btn btn-outline-secondary position-relative dropdown-toggle"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                      <i class="bi bi-bell"></i>
+                      {% if header_notifications|length > 0 %}
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                          {{ header_notifications|length }}
+                        </span>
+                      {% endif %}
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end notifications-dropdown"
+                        aria-labelledby="notification-btn">
+                      {% if header_notifications %}
+                        {% for n in header_notifications %}
+                          <a href="{% url 'users:notification-detail' n.pk %}"
+                             class="notification-item dropdown dropdown-item text-reset text-decoration-none {% if not n.read %}notification-unread{% endif %} notification-style-{{ n.get_style_key }}"
+                             id="notification-{{ n.id }}">
+                            <div class="d-flex justify-content-between align-items-start">
+                              {# Icon  #}
+                              <div class="notification-icon d-flex align-items-start">
+                                <i class="{{ n.get_icon_class }} me-2"></i>
+                                <div>
+                                  <span class="notification-strong">{{ n.get_rich_message|truncatewords:15 }}</span>
+                                  <br />
+                                  <small class="text-muted">{{ n.last_sent|timesince }} ago</small>
+                                </div>
+                              </div>
+                              <button class="notification-dismiss-btn btn-close btn-sm ms-2"
+                                      title="Dismiss"
+                                      onclick="event.preventDefault(); dismissNotification({{ n.id }})"></button>
+                            </div>
+                          </a>
+                        {% endfor %}
+                      {% else %}
+                        <li class="dropdown-item text-muted">No new notifications</li>
+                      {% endif %}
+                    </ul>
+                  </li>
+                  <!-- User profile / logout links -->
+                {% endif %}
+              </ul>
+            </div>
           </div>
         </div>
       </nav>
