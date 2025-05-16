@@ -14,16 +14,16 @@
   <form method="get" class="mb-3 d-flex align-items-center gap-2">
     <select name="sort" class="form-select w-auto">
       <option value="">Sort by: Most Recent Update</option>
-      <option value="old" {% if request.GET.sort == "old" %}selected{% endif %}>Oldest Update</option>
+      <option value="old" {% if request.GET.sort == "old" %}selected{% endif %}>Sort by: Oldest Update</option>
     </select>
-    <button type="submit" class="btn btn-outline-secondary">Search</button>
+    <button type="submit" class="btn btn-outline-secondary">Sort</button>
   </form>
   <table border="1">
     <thead>
       <tr>
         <th>Guide ID</th>
         <th>Author</th>
-        <th>TimeStamp</th>
+        <th>Timestamp</th>
         <th>Status</th>
         <th>Action</th>
       </tr>

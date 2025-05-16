@@ -280,12 +280,6 @@ class ModeratorSingleGame(LoginRequiredMixin, UserPassesTestMixin, ListView):
             queryset = queryset.order_by("recent_upload")
         else:  # default: newest first
             queryset = queryset.order_by("-recent_upload")
-        # for sorting
-        sort = self.request.GET.get("sort")
-        if sort == "old":
-            queryset = queryset.order_by("recent_upload")
-        else:  # default: newest first
-            queryset = queryset.order_by("-recent_upload")
         return queryset
 
     # called when UserPassesTestMixin
