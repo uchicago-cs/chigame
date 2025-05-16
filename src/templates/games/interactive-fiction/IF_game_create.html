@@ -213,7 +213,6 @@
         Enable Ratings
       </label>
     </div>
-    {% if game.pk == 9999 %}
       <hr />
       <h3>Upload a File</h3>
       <form method="post"
@@ -230,6 +229,5 @@
       </form>
       <h3>Publish Story</h3>
       <a href="{{ uploaded_file_url }}" target="_blank" class="btn-success">Play Uploaded Game</a>
-    {% endif %}
   </form>
 {% endblock content %}
