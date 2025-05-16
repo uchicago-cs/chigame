@@ -34,6 +34,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ("id", "name", "username", "email", "password")
+        read_only_fields = ("user",)
 
     def create(self, validated_data):
         user = User.objects.create_user(
@@ -103,6 +104,7 @@ class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
         fields = ["id", "user", "title", "rating", "review", "is_public", "created_at"]
+        read_only_fields = ["id", "created_at", "user"]
 
 
 class UserAchievementSerializer(serializers.ModelSerializer):
