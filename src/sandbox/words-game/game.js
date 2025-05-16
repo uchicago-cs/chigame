@@ -3,7 +3,7 @@ window.addEventListener("load", async () => {
     const modal = document.getElementById("word-length-modal");
     const selector = document.getElementById("word-length-selector");
     const startBtn = document.getElementById("start-game-btn");
-    
+
     startBtn.addEventListener("click", async () => {
         wordLength = parseInt(selector.value);
         modal.style.display = "none";
