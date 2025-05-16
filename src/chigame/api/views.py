@@ -2,8 +2,9 @@ from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, status
+from rest_framework.exceptions import ValidationError
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -179,6 +180,8 @@ class UserGroupsView(generics.ListAPIView):
 
 
 class MessageFeedView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def post(self, request, *args, **kwargs):
         # Get data from the frontend
         token_id = request.data.get("token_id")
@@ -209,9 +212,14 @@ class GameReviewListView(generics.ListAPIView):
 
 class ReviewCreateView(generics.CreateAPIView):
     serializer_class = ReviewSerializer
+    queryset = Review.objects.none()
 
     def perform_create(self, serializer):
-        user_id = self.request.data.get("user")
+        review_text = serializer.validated_data.get("review", "")
+        if is_spam(review_text):
+            raise ValidationError("Your review appears to be spam. Please revise your content.")
+
+        # user_id = self.request.data.get("user")
         game_id = self.kwargs["pk"]
         game = get_object_or_404(Game, pk=game_id)
         # user = get_object_or_404(User, pk=user_id)

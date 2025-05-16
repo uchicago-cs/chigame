@@ -1,20 +1,18 @@
 import re
 
-
-
 BANNED_WORDS = {
-     "buy now",
-     "free money",
-     "click here",
-     "subscribe",
-     "limited time offer",
-     "urgent",
-     "winner",
-     "cash prize",
-     "risk-free",
-     "guaranteed",
-     "act now",
- }
+    "buy now",
+    "free money",
+    "click here",
+    "subscribe",
+    "limited time offer",
+    "urgent",
+    "winner",
+    "cash prize",
+    "risk-free",
+    "guaranteed",
+    "act now",
+}
 
 
 def is_spam(content: str | None) -> bool:
