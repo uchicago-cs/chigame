@@ -12,7 +12,7 @@ from rest_framework.utils.serializer_helpers import ReturnDict
 # Local application/library specific imports
 from chigame.api.serializers import GameSerializer
 from chigame.api.tests.factories import ChatFactory, GameFactory, LobbyFactory, TournamentFactory, UserFactory
-from chigame.games.models import Game, Lobby, Message, User
+from chigame.games.models import Game, Lobby, Message, Review, User
 
 
 class GameTests(APITestCase):
@@ -829,3 +829,122 @@ class AccessControlTests(APITestCase):
         data = {"token_id": 0, "tournament": tournament.id}
         response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+class SpamFilterTests(APITestCase):
+    def setUp(self):
+        self.user = UserFactory()
+        self.client.force_authenticate(user=self.user)
+        self.game = GameFactory()
+        self.game.save()
+        self.tournament = TournamentFactory(game=self.game)
+        self.chat = ChatFactory(tournament=self.tournament)
+        self.client.force_authenticate(user=self.user)
+
+    def test_review_rejects_spam(self):
+        url = reverse("api-game-review-create", args=[self.game.id])
+        data = {
+            "title": "Limited offer",
+            "review": "Buy now and save big",  # Spammy content
+            "rating": 1,
+            "is_public": True,
+        }
+        response = self.client.post(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("spam", str(response.data).lower())
+        self.assertEqual(Review.objects.count(), 0)
+
+    # def test_message_rejects_spam(self):
+    #     url = reverse("api-chat-list")
+    #     data = {
+    #         # "sender": self.user.email,
+    #         "tournament": self.tournament.id,
+    #         "content": "Click here to claim free money!",  # Spammy content
+    #         "update_on": None,
+    #     }
+    #     response = self.client.post(url, data, format="json")
+    #     self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+    #     self.assertIn("spam", str(response.data).lower())
+    #     self.assertEqual(Message.objects.count(), 0)
+
+    def test_review_allows_normal_content(self):
+        url = reverse("api-game-review-create", args=[self.game.id])
+
+        print("Game ID:", self.game.id)
+        from chigame.games.models import Game  # add this import at the top if needed
+
+        print("Game exists:", Game.objects.filter(id=self.game.id).exists())
+
+        data = {
+            "title": "Challenging and fun",
+            "review": "Had a great time playing with friends.",
+            "rating": 5,
+            "is_public": True,
+        }
+        response = self.client.post(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Review.objects.count(), 1)
+
+    # def test_message_with_excessive_exclamations_rejected(self):
+    #     url = reverse("api-chat-list")
+    #     data = {
+    #         # "sender": self.user.email,
+    #         "tournament": self.tournament.id,
+    #         "content": "!!!!!!!!!!!!!!!",  # Spam-like behavior
+    #         "update_on": None,
+    #     }
+    #     response = self.client.post(url, data, format="json")
+    #     self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+    #     self.assertIn("spam", str(response.data).lower())
+    #     self.assertEqual(Message.objects.count(), 0)
+
+    def test_review_with_excessive_characters_rejected(self):
+        url = reverse("api-game-review-create", args=[self.game.id])
+        data = {
+            "title": "Spammy symbols",
+            "review": "!!!!!!!!!",  # Detected by repeated character rule
+            "rating": 1,
+            "is_public": True,
+        }
+        response = self.client.post(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("spam", str(response.data).lower())
+        self.assertEqual(Review.objects.count(), 0)
+
+    def test_short_legit_review_passes(self):
+        url = reverse("api-game-review-create", args=[self.game.id])
+        data = {
+            "title": "Fun!",
+            "review": "Quick and intense game",  # short but varied
+            "rating": 4,
+            "is_public": True,
+        }
+        response = self.client.post(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Review.objects.count(), 1)
+
+    def test_review_with_repetitive_words_rejected(self):
+        url = reverse("api-game-review-create", args=[self.game.id])
+        data = {
+            "title": "meh",
+            "review": "good good good",  # Not enough unique words
+            "rating": 3,
+            "is_public": True,
+        }
+        response = self.client.post(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("spam", str(response.data).lower())
+        self.assertEqual(Review.objects.count(), 0)
+
+    def test_review_too_short_rejected(self):
+        url = reverse("api-game-review-create", args=[self.game.id])
+        data = {
+            "title": "Too short",
+            "review": "ab",  # Only two characters
+            "rating": 2,
+            "is_public": True,
+        }
+        response = self.client.post(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("spam", str(response.data).lower())
+        self.assertEqual(Review.objects.count(), 0)
