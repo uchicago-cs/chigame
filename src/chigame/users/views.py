@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models import Q
-from django.http import Http404, HttpResponse, HttpResponseNotFound
+from django.http import Http404, HttpResponseNotFound
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
@@ -450,12 +450,15 @@ def user_inbox_view(request, pk):
     user = request.user
     notifications = Notification.objects.filter_by_receiver(user)
     default_notification_messages = Notification.DEFAULT_MESSAGES
+    user_labels = NotificationLabel.objects.filter(user=user)
     context = {
         "pk": pk,
         "user": user,
         "notifications": notifications,
         "default_notification_messages": default_notification_messages,
+        "labels": user_labels,
     }
+
     if pk == user.id:
         return render(request, "users/user_inbox.html", context)
     else:
@@ -698,15 +701,25 @@ def upload_profile_photo(request):
 @require_POST
 def move_notification(request, pk):
     notification = get_object_or_404(Notification, pk=pk, receiver=request.user)
-    category = request.POST.get("category")
-
-    valid_categories = dict(Notification.CATEGORY_CHOICES).keys()
-    if category in valid_categories:
-        notification.category = category
+    new_category = request.POST.get("category")
+    if new_category and new_category in dict(Notification.CATEGORY_CHOICES):
+        notification.category = new_category
         notification.save()
-        return HttpResponse(status=204)
+        messages.success(request, f"Notification moved to {new_category}.")
+        return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
 
-    return HttpResponse(status=400)
+    label_id = request.POST.get("label_id")
+    if label_id:
+        try:
+            label = NotificationLabel.objects.get(pk=label_id, user=request.user)
+            notification.labels.add(label)
+            messages.success(request, "Label assigned to notification.")
+        except NotificationLabel.DoesNotExist:
+            messages.error(request, "Label not found or does not belong to you.")
+        return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
+
+    messages.error(request, "Invalid category or label.")
+    return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
 
 
 @login_required
@@ -718,21 +731,6 @@ def create_notification_label(request):
             messages.success(request, "Label created successfully.")
         else:
             messages.error(request, "Label name cannot be empty.")
-    return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
-
-
-@login_required
-def assign_label_to_notification(request, notification_id):
-    notification = get_object_or_404(Notification, pk=notification_id, receiver=request.user)
-    label_id = request.POST.get("label_id")
-
-    try:
-        label = NotificationLabel.objects.get(pk=label_id, user=request.user)
-        notification.labels.add(label)
-        messages.success(request, "Label assigned to notification.")
-    except NotificationLabel.DoesNotExist:
-        messages.error(request, "Label not found or does not belong to you.")
-
     return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
 
 

@@ -58,10 +58,5 @@ urlpatterns = [
     path("upload-photo/", upload_profile_photo, name="upload-photo"),
     path("notifications/<int:pk>/move/", views.move_notification, name="move-notification"),
     path("labels/create/", views.create_notification_label, name="create-notification-label"),
-    path(
-        "notifications/<int:notification_id>/assign_label/",
-        views.assign_label_to_notification,
-        name="assign-notification-label",
-    ),
     path("labels/<int:label_id>/notifications/", views.notifications_by_label, name="notifications-by-label"),
 ]
