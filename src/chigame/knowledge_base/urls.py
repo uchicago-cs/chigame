@@ -9,6 +9,7 @@ from .views import (
     GuideDetail,
     ModeratorGuidesPending,
     ModeratorListByGame,
+    ModeratorSetPublishedGuide,
     ModeratorSingleGame,
     ReviewPendingGuideView,
 )
@@ -24,5 +25,10 @@ urlpatterns = [
     path("upload", ContributorMdUpload, name="knowledge-base-guide-upload"),
     path("guides/<int:pk>/reupload", ContributorMdUpload, name="knowledge-base-guide-reupload"),
     path("moderation/review/games", ModeratorListByGame.as_view(), name="moderator-manage-by-game"),
-    path("moderation/review/games/<int:pk>", ModeratorSingleGame.as_view(), name="moderator-manage-by-game"),
+    path("moderation/review/games/<int:game_pk>", ModeratorSingleGame.as_view(), name="moderator-single-game"),
+    path(
+        "moderation/review/games/<int:game_pk>/set-published/<int:guide_pk>",
+        ModeratorSetPublishedGuide,
+        name="moderator-set-publish-guide",
+    ),
 ]
