@@ -30,6 +30,7 @@ const COLORS = {
   white: 0xffffff,
   colorblind_blue: 0x1e88e5,
   colorblind_orange: 0xffc107,
+  yellow: 0xffff00,
 };
 let pieces = [];
 let selectedPiece = null;
@@ -46,7 +47,9 @@ let drawOfferedBy = null;
 // ----------------------------------------------------------------------------
 
 // ---INIT FUNCTIONS-----------------------------------------------------------
-function preload() { }
+function preload() {
+  this.load.image('crown', 'img/kingIcon.svg');
+}
 
 function create() {
   // Store reference to the scene
@@ -66,7 +69,7 @@ function create() {
 
   function resetGame() {
     // Clear all pieces
-    pieces.forEach(piece => piece.sprite.destroy());
+    pieces.forEach((piece) => piece.sprite.destroy());
     pieces = [];
 
     // Reset game state
@@ -124,14 +127,15 @@ function create() {
       drawOffered = true;
       drawOfferedBy = currentPlayer;
       if (currentPlayer === COLORS.red) {
-        gameOverMessage.textContent = 'Red player has offered a draw. Black player, please accept or decline.';
+        gameOverMessage.textContent =
+          'Red player has offered a draw. Black player, please accept or decline.';
       } else {
-        gameOverMessage.textContent = 'Black player has offered a draw. Red player, please accept or decline.';
+        gameOverMessage.textContent =
+          'Black player has offered a draw. Red player, please accept or decline.';
       }
       gameOverMessage.classList.add('show');
       drawBtn.textContent = 'Accept Draw';
       declineDrawBtn.style.display = 'block';
-
     } else {
       // Accept Draw (second click)
       gameOver = true;
@@ -151,7 +155,7 @@ function create() {
   });
 }
 
-function update() { }
+function update() {}
 // ----------------------------------------------------------------------------
 
 // Draw the game board
@@ -203,6 +207,7 @@ function createPiece(x, y, color, scene) {
     x,
     y,
     color,
+    isking: false,
     sprite: scene.add.circle(
       // same center position as when we create the board tiles/squares
       MARGIN + x * TILE_SIZE + TILE_SIZE / 2,
@@ -273,19 +278,23 @@ function isValidMove(piece, moveX, moveY) {
   // us to flip the board for different players
   const direction = piece.color === COLORS.red ? -1 : 1; // in js, y=0 at the top
 
+  const isKing = piece.isKing;
+
+  // if the piece is a king, it can move in both y directions
+  const validDirection = isKing ? Math.abs(dy) === 1 : dy === direction;
+  const validJumpDirection = isKing ? Math.abs(dy) === 2 : dy === 2 * direction;
+
   // Normal move (1 step diagonally)
-  if (Math.abs(dx) === 1 && dy === direction) {
+  if (Math.abs(dx) === 1 && validDirection) {
     return true;
   }
 
   // Jump move (2 steps diagonally)
-  if (Math.abs(dx) === 2 && dy === 2 * direction) {
+  if (Math.abs(dx) === 2 && validJumpDirection) {
     // get the piece that was jumped over
     const captured = getPiece(piece.x + dx / 2, piece.y + dy / 2);
     // make sure there exists a piece that was jumped over, and it must be an opposing piece
-    return (
-      captured && captured.color !== piece.color
-    );
+    return captured && captured.color !== piece.color;
   }
 
   // return false if it's not a normal or jump move
@@ -301,6 +310,7 @@ function movePiece(piece, moveX, moveY) {
     const captured = getPiece(piece.x + dx / 2, piece.y + dy / 2);
     if (captured) {
       captured.sprite.destroy(); // delete the sprite (remove from display state)
+      if (captured.kingIcon) captured.kingIcon.destroy(); // destroy the icon as well
       pieces = pieces.filter((p) => p !== captured); // remove it from the array (game state)
 
       // Check for game over after capturing a piece
@@ -313,14 +323,31 @@ function movePiece(piece, moveX, moveY) {
   piece.y = moveY;
   piece.sprite.x = MARGIN + piece.x * TILE_SIZE + TILE_SIZE / 2;
   piece.sprite.y = MARGIN + piece.y * TILE_SIZE + TILE_SIZE / 2;
+  // If piece is a king and has a star icon, move the icon too
+  if (piece.isKing && piece.kingIcon) {
+    piece.kingIcon.x = piece.sprite.x;
+    piece.kingIcon.y = piece.sprite.y;
+  }
 
-  console.log("Current board state:", getBoardState());
+  // Check for king promotion
+  if (
+    (piece.color === COLORS.red && piece.y === 0) ||
+    (piece.color === COLORS.black && piece.y === BOARD_SIZE - 1)
+  ) {
+    piece.isKing = true;
+    const crown = piece.sprite.scene.add.image(piece.sprite.x, piece.sprite.y, 'crown');
+    // Resize the icon
+    crown.setDisplaySize(TILE_SIZE / 2, TILE_SIZE / 2);
+    piece.kingIcon = crown;
+  }
+
+  console.log('Current board state:', getBoardState());
 }
 
 // Check if the game is over due to all pieces of one color being captured
 function checkGameOver() {
-  const redPieces = pieces.filter(p => p.color === COLORS.red);
-  const blackPieces = pieces.filter(p => p.color === COLORS.black);
+  const redPieces = pieces.filter((p) => p.color === COLORS.red);
+  const blackPieces = pieces.filter((p) => p.color === COLORS.black);
 
   if (redPieces.length === 0) {
     gameOver = true;
@@ -399,7 +426,6 @@ function getBoardState() {
   return board;
 }
 
-
 function sendBoardToServer(boardState) {
   fetch('/api/board-state/', {
     method: 'POST',
@@ -429,8 +455,7 @@ function changePieceColor(newColorOne, newColorTwo) {
     if (piece.color === firstPieceColor) {
       piece.color = newColorOne;
       piece.sprite.setFillStyle(newColorOne);
-    }
-    else {
+    } else {
       piece.color = newColorTwo;
       piece.sprite.setFillStyle(newColorTwo);
     }
