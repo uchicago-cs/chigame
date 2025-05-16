@@ -47,4 +47,7 @@ urlpatterns = [
     path("<int:pk>/", views.GameDetailView.as_view(), name="game-detail"),
     # Word Game
     path("wordle/", views.wordle_game_page, name="wordle-game"),
+    # checkers
+    path("checkers/<int:pk>/", views.checkers_game_view, name="checkers-game"),
+    path("checkers/<int:board_id>/update/", views.checkers_game_update_board_state, name="update_board_state"),
 ]

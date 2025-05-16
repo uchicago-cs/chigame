@@ -24,12 +24,30 @@ from django.utils.timezone import now
 from django.views import View
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, TemplateView, UpdateView
 from django.views.generic.edit import FormMixin
+from rest_framework import status
+
+# ============ new imports
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 
 from chigame.users.models import User
 
 from .filters import LobbyFilter
 from .forms import GameForm, IFGameForm, LobbyForm, ReviewForm
-from .models import Chat, Game, GameList, InteractiveFictionGame, Lobby, Match, Player, Review, Tournament
+from .models import (
+    Chat,
+    Checkers,
+    CheckersBoard,
+    CheckersTurn,
+    Game,
+    GameList,
+    InteractiveFictionGame,
+    Lobby,
+    Match,
+    Player,
+    Review,
+    Tournament,
+)
 from .simulation_utils import TournamentSimulator, run_complete_tournament_simulation
 from .tables import LobbyTable
 
@@ -1200,3 +1218,61 @@ def wordle_game_page(request):
     iframe_url = f"https://zhejiej.github.io/Words-Game//?token={token}"
 
     return render(request, "games/wordle.html", {"iframe_url": iframe_url})
+
+
+def checkers_game_view(request, pk):
+    game = get_object_or_404(Checkers, id=pk)
+    player = request.user
+
+    # ✅ Find latest turn (if any), otherwise create default board
+    latest_turn = CheckersTurn.objects.filter(game=game).order_by("-turn_number").first()
+
+    if latest_turn:
+        board = latest_turn.board
+    else:
+        # First time loading, create default board
+        default_state = [
+            [0, 2, 0, 2, 0, 2, 0, 2],
+            [2, 0, 2, 0, 2, 0, 2, 0],
+            [0, 2, 0, 2, 0, 2, 0, 2],
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [1, 0, 1, 0, 1, 0, 1, 0],
+            [0, 1, 0, 1, 0, 1, 0, 1],
+            [1, 0, 1, 0, 1, 0, 1, 0],
+        ]
+        board = CheckersBoard.objects.create(state=default_state)
+        # Save first turn
+        CheckersTurn.objects.create(game=game, board=board, turn_number=1, player=game.player_1)
+
+    turn_number = CheckersTurn.objects.filter(game=game).count() + 1
+
+    return render(
+        request,
+        "games/game_checkers.html",
+        {
+            "game_id": game.id,
+            "board_id": board.id,
+            "player_id": player.id,
+            "turn_number": turn_number,
+        },
+    )
+
+
+@api_view(["POST"])
+def checkers_game_update_board_state(request, board_id):
+    try:
+        board = CheckersBoard.objects.get(pk=board_id)
+        new_state = request.data.get("state")
+
+        if new_state is None:
+            return Response({"error": "Missing 'state'"}, status=status.HTTP_400_BAD_REQUEST)
+
+        board.state = new_state
+        board.save()
+        return Response({"success": True})
+
+    except CheckersBoard.DoesNotExist:
+        return Response({"error": "Board not found"}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
