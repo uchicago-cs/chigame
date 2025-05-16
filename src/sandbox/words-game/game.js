@@ -1,11 +1,21 @@
 //Set up game
 window.addEventListener("load", async () => {
-    await loadWords();
-    createSquares();
-    getNewWord();
-    setupKeyboard();
-    handlePhysicalKeyboardInput();
+    const modal = document.getElementById("word-length-modal");
+    const selector = document.getElementById("word-length-selector");
+    const startBtn = document.getElementById("start-game-btn");
+    
+    startBtn.addEventListener("click", async () => {
+        wordLength = parseInt(selector.value);
+        modal.style.display = "none";
+
+        await loadWords();
+        createSquares();
+        getNewWord();
+        setupKeyboard();
+        handlePhysicalKeyboardInput();
+    });
 });
+
 
 const howToPlayBtn = document.getElementById('how-to-play-btn');
 const howToPlayText = document.getElementById('how-to-play-text');
@@ -37,8 +47,7 @@ const COLOR_WRONG = "rgb(40, 58, 60)";
 
 
 //Loads the words from WORDS.txt to the game
-function loadWords() {
-    return fetch('WORDS.txt')
+function loadWords() {    return fetch(`${wordLength}WORDS.txt`)
         .then(response => response.text())
         .then(text => {
             allowedWords = text.split('\n').map(w => w.trim().toLowerCase());
@@ -69,13 +78,19 @@ function getNewWord() {
 function createSquares() {
     const gameBoard = document.getElementById("board");
 
-    for (let index = 0; index < 30; index++) {
+    //set size based on word-legnth
+    gameBoard.style.display = "grid";
+    gameBoard.style.gridTemplateColumns = `repeat(${wordLength}, 1fr)`;
+    gameBoard.style.gap = "5px";
+    const totalTiles = wordLength * 6;
+    for (let index = 0; index < totalTiles; index++) {
         let square = document.createElement("div");
         square.classList.add("square");
         square.classList.add("animate__animated");
         square.setAttribute("id", index + 1);
         gameBoard.appendChild(square);
     }
+
 }
 
 //Sends key to board when pressed on the screen
@@ -121,7 +136,7 @@ function handlePhysicalKeyboardInput() {
     });
 }
 
-//Returns current word you're ussing
+//Returns current word you're using
 function getCurrentWordArr() {
     const numberOfGuessedWords = guessedWords.length;
     return guessedWords[numberOfGuessedWords - 1];
@@ -131,12 +146,14 @@ function getCurrentWordArr() {
 function updateGuessedWords(letter) {
     const currentWordArr = getCurrentWordArr();
 
-    if (currentWordArr && currentWordArr.length < 5) {
+    if (currentWordArr && currentWordArr.length < wordLength) {
         currentWordArr.push(letter);
 
         const availableSpaceEl = document.getElementById(String(availableSpace));
         availableSpace = availableSpace + 1;
         availableSpaceEl.textContent = letter.toUpperCase();
+        availableSpaceEl.classList.add("pop-in");
+        setTimeout(() => availableSpaceEl.classList.remove("pop-in"), 200);
     }
 }
 
@@ -153,6 +170,10 @@ function handleDeleteLetter() {
 
     const lastLetterEl = document.getElementById(String(availableSpace));
     if (lastLetterEl) {
+        lastLetterEl.classList.add("pop-out");
+        setTimeout(() => {
+            lastLetterEl.classList.remove("pop-out");
+        }, 150);
         lastLetterEl.textContent = "";
     }
 }
@@ -183,6 +204,7 @@ async function isValidWord(word) {
 
         if (response.status === 404) {
             showNotification(`"${word}" Is Not A Valid Word.`);
+            shakeRow(guessedWordCount);
             return false;
         }
 
@@ -202,8 +224,9 @@ async function handleSubmitWord() {
     }
     const currentWordArr = getCurrentWordArr();
 
-    if (currentWordArr.length !== 5) {
-        showNotification("Word must be 5 letters");
+    if (currentWordArr.length !== wordLength) {
+        showNotification(`Word must be ${wordLength} letters`);
+        shakeRow(guessedWordCount);
         return;
     }
 
@@ -214,7 +237,7 @@ async function handleSubmitWord() {
         return;
     }
 
-    const firstLetterId = guessedWordCount * 5 + 1;
+    const firstLetterId = guessedWordCount * wordLength + 1;
     const interval = 200;
 
     //Adds the Keyboard color + effects
@@ -224,7 +247,6 @@ async function handleSubmitWord() {
 
             const letterId = firstLetterId + index;
             const letterEl = document.getElementById(letterId);
-            letterEl.classList.add("animate__flipInX");
             letterEl.style = `background-color:${tileColor};border-color:${tileColor}`;
 
             //change on-web keyboard color
@@ -247,8 +269,12 @@ async function handleSubmitWord() {
     if (currentWord === word) {
         showNotification("Congratulations! 🎉");
         gameOver = true;
+        setTimeout(() => {
+            showEndScreen(true);
+        }, 1500);
         return;
     }
+
 
     if (guessedWords.length === 6) {
         showNotification(`Sorry, you have no more guesses! The word was "${word}".`);
@@ -267,7 +293,6 @@ function showNotification(message, duration = 1000) {
     const notification = document.getElementById("notification");
     notification.textContent = message;
     notification.classList.add("show");
-    notification.classList.remove("hidden");
 
     setTimeout(() => {
         notification.classList.remove("show");
@@ -280,6 +305,9 @@ function showEndScreen(won) {
     const endTitle = document.getElementById("end-title");
     const endMessage = document.getElementById("end-message");
     const endGuesses = document.getElementById("end-guesses");
+
+    endScreen.classList.remove("hidden");
+    endScreen.classList.add("visible");
 
     endTitle.textContent = won ? "You Won! 🎉" : "Game Over";
     endMessage.textContent = won ? "Nice job!" : `The word was "${word}"`;
@@ -297,3 +325,11 @@ function showEndScreen(won) {
 document.getElementById("restart-btn").addEventListener("click", () => {
     location.reload();
 });
+
+function shakeRow(rowIndex) {
+    for (let i = 0; i < wordLength; i++) {
+        const tile = document.getElementById(rowIndex * wordLength + i + 1);
+        tile.classList.add("shake");
+        setTimeout(() => tile.classList.remove("shake"), 500);
+    }
+}

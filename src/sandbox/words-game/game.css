@@ -249,6 +249,7 @@ h1 {
     font-size: 1.1rem;
     margin-bottom: 1rem;
     color: var(--primary);
+    text-shadow: 2px 2px 0 black;
 }
 
 #how-to-play-text h4 {
@@ -287,6 +288,7 @@ h1 {
 
 .hidden {
     display: none;
+    pointer-events: none;
 }
 
 .visible {
@@ -479,7 +481,7 @@ h1 {
     80% { transform: translateX(5px); }
     100% { transform: translateX(0); }
 }
-
+  
 .shake {
     animation: shake 0.5s cubic-bezier(.36,.07,.19,.97);
 }
@@ -510,4 +512,76 @@ h1 {
 .small-logo {
     height: 40px;
     margin-right: 0.5rem;
+}
+
+.modal {
+    font-family: 'Press Start 2P', cursive;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: none; /* Blur doesn't match pixel vibe */
+}
+
+.modal-content {
+    background: var(--card-bg);
+    color: var(--accent);
+    padding: 1.5rem;
+    border-radius: 0px;
+    box-shadow: 6px 6px 0px rgba(0, 0, 0, 0.4);
+    text-align: center;
+    font-size: 0.65rem;
+    max-width: 90%;
+    width: 320px;
+    border: 2px solid var(--primary);
+    text-transform: uppercase;
+    line-height: 1.5;
+}
+
+#word-length-selector {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.65rem;
+    padding: 0.6rem 0.8rem;
+    border-radius: 0;
+    border: 2px solid var(--primary);
+    background: var(--card-bg);
+    color: var(--accent);
+    margin-top: 1rem;
+    text-transform: uppercase;
+    box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.3);
+    appearance: none;
+    width: 100%;
+}
+#word-length-selector:hover {
+    background-color: var(--primary);
+    color: white;
+    cursor: pointer;
+    transform: translateY(-2px);
+    box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.4);
+}
+
+.start-game {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.75rem;
+    background-color: var(--primary);
+    color: white;
+    padding: 0.75rem 1.25rem;
+    border: 2px solid var(--primary);
+    border-radius: 0;
+    text-transform: uppercase;
+    box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+    margin-top: 1rem;
+}
+
+.start-game:hover {
+    background-color: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.4);
 }
