@@ -1,5 +1,23 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1>Create Live Chat</h1>
-{% endblock %}
+  <div class="container mt-5" id="chat-form-container">
+    <h1 class="mb-4">Create New Live Chat</h1>
+    <form method="post" novalidate>
+      {% csrf_token %}
+      <div class="mb-3">
+        <label for="id_name" class="form-label">Chat Name</label>
+        <input type="text" name="name" class="form-control" id="id_name" required />
+      </div>
+      <div class="mb-3">
+        <label for="id_description" class="form-label">Description</label>
+        <textarea name="description" class="form-control" id="id_description" rows="3"></textarea>
+      </div>
+      <div class="form-check mb-3">
+        <input type="checkbox" name="public" class="form-check-input" id="id_public" />
+        <label class="form-check-label" for="id_public">Make chat public</label>
+      </div>
+      <button type="submit" class="btn btn-primary">Create Chat</button>
+    </form>
+  </div>
+{% endblock content %}
