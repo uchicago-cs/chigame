@@ -5,8 +5,6 @@
     <div class="d-flex justify-content-between align-items-center pb-4">
       <h1 class="m-0">Knowledge Base</h1>
       <div class="d-flex gap-2">
-        <a href="{% url 'knowledge-base-guide-upload' %}"
-           class="btn btn-success">Upload a Guide</a>
         {% if has_guides %}
           <a href="{% url 'contributor-manage-guide' %}"
              class="btn btn-outline-primary">Manage My Guides</a>
@@ -16,6 +14,8 @@
                   class="btn btn-secondary disabled"
                   title="Login to manage guides">Manage My Guides</button>
         {% endif %}
+        <a href="{% url 'knowledge-base-guide-upload' %}"
+           class="btn btn-success">Upload a Guide</a>
       </div>
     </div>
     <!-- search bar -->
