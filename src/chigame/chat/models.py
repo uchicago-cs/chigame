@@ -11,6 +11,7 @@ class LiveChat(models.Model):
     name = models.TextField(null=False)
     users: models.ManyToManyField = models.ManyToManyField(User, through="LiveChatUser", related_name="live_chats")
     public = models.BooleanField(default=False)  # defined for global chats
+    description = models.TextField(null=True, blank=True)
 
     def __str__(self):
         return f"LiveChat with name:'{self.name}'"
@@ -37,7 +38,6 @@ class LiveChatUser(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     live_chat = models.ForeignKey(LiveChat, on_delete=models.CASCADE)
-    description = models.TextField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.user} in chat {self.live_chat.name}"
