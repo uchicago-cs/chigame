@@ -1,5 +1,6 @@
 # Keep model imports for now, as it will be required for WIP features
 import markdown
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
@@ -125,9 +126,8 @@ def ContributorMdUpload(request, pk=None):
             else:
                 game = form.cleaned_data["game"]  # the game user chooses
                 guide = Guide.objects.create(author=request.user, content=content, game_id=game, status=0)
-            return redirect("knowledge-base")
-            # I make it redirects to landing page after submission for now, could later
-            # create an issue that adds a "sucessful submission" page
+            messages.success(request, "Guide Uploaded Successfully!")
+            return redirect("contributor-manage-guide")
 
     else:
         form = MarkdownUploadForm(fixed_game=fixed_game)
