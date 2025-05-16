@@ -61,6 +61,7 @@
           </td>
         </tr>
       {% endfor %}
+      {% if not ApprovedGuides %}<td colspan="5">No approved guides for {{ game }} yet.</td>{% endif %}
     </tbody>
   </table>
 {% endblock page-content %}

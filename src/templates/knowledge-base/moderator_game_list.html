@@ -38,6 +38,7 @@
           </td>
         </tr>
       {% endfor %}
+      {% if not games %}<td colspan="4">No games yet.</td>{% endif %}
     </tbody>
   </table>
 {% endblock page-content %}

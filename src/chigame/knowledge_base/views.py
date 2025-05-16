@@ -272,7 +272,7 @@ class ModeratorSingleGame(LoginRequiredMixin, UserPassesTestMixin, ListView):
     def get_queryset(self):
         pk = self.kwargs["game_pk"]
         game = get_object_or_404(Game, pk=pk)
-        queryset = Guide.objects.filter(game_id=game)
+        queryset = Guide.objects.filter(game_id=game, status=1)
 
         # for sorting
         sort = self.request.GET.get("sort")
