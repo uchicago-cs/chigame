@@ -56,16 +56,6 @@
     }
 
     /* Buttons */
-    .btn-primary {
-      background-color: #1d4ed8;
-      color: #fff;
-      border: none;
-      padding: 0.5rem 1rem;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 1rem;
-      text-align: left;
-    }
 
     .btn-success {
       background-color: #16a34a;
@@ -96,11 +86,21 @@
       display: none;
     }
   </style>
+
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       const zone = document.getElementById('upload-zone');
       const input = document.getElementById('myFile');
       if (!zone || !input) return;
+
+      function showFileName(file) {
+        zone.innerHTML = `
+          <div>
+            <strong>Selected file:</strong><br/>
+            ${file.name}<br>
+          </div>
+        `;
+      }
 
       zone.addEventListener('click', () => input.click());
 
@@ -119,8 +119,16 @@
           input.files = e.dataTransfer.files;
         }
       });
+
+        input.addEventListener('change', () => {
+          const file = input.files[0];
+          if (file) {
+            showFileName(file);
+          }
+        });
     });
   </script>
+
   <h1>Create Interactive Fiction Game</h1>
   <form method="post" enctype="multipart/form-data" id="game_form">
     {% csrf_token %}
@@ -225,7 +233,6 @@
         or click to browse
       </div>
       <input type="file" id="myFile" name="uploaded_file" class="if-file-input" />
-      <button type="submit" class="btn-primary">Upload</button>
     </form>
     <h3>Publish Story</h3>
     <a href="{{ uploaded_file_url }}" target="_blank" class="btn-success">Play Uploaded Game</a>
