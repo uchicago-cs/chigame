@@ -163,14 +163,6 @@
         {% endfor %}
       </select>
     </div>
-    <!-- Content Warnings -->
-    <div>
-      <label for="id_content_warnings">Content Warnings</label>
-      <input type="text"
-             name="content_warnings"
-             id="id_content_warnings"
-             value="{{ form.content_warnings.value }}" />
-    </div>
     <!-- Rules -->
     <div>
       <label for="id_rules">Rules:</label>
@@ -226,13 +218,14 @@
           enctype="multipart/form-data">
       {% csrf_token %}
       <div id="upload-zone">
-        Drag &amp; drop a file here
+        Drag &amp; drop a ".html" file here
         <br />
         or click to browse
       </div>
-      <input type="file" id="myFile" name="uploaded_file" class="if-file-input" />
+      <input type="file" id="myFile" name="uploaded_file" class="if-file-input" accept=".html" />
     </form>
     <h3>Publish Story</h3>
     <a href="{{ uploaded_file_url }}" target="_blank" class="btn-success">Play Uploaded Game</a>
   </form>
+  <div style="height: 4rem;"></div>
 {% endblock content %}
