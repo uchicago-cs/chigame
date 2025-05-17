@@ -98,6 +98,7 @@ function setupKeyboard() {
     const keys = document.querySelectorAll(".keyboard-row button");
     for (let i = 0; i < keys.length; i++) {
         keys[i].onclick = ({ target }) => {
+            playSound(clickSound);
             const letter = target.getAttribute("data-key").toLowerCase();
 
             if (letter === "enter") {
@@ -118,6 +119,7 @@ function setupKeyboard() {
 //Sends key to board when pressed on your physical keyboard
 function handlePhysicalKeyboardInput() {
     document.addEventListener('keydown', (e) => {
+        playSound(clickSound);
         const key = e.key.toLowerCase();
 
         if (key === "enter") {
@@ -268,6 +270,7 @@ async function handleSubmitWord() {
     //game end
     if (currentWord === word) {
         showNotification("Congratulations! 🎉");
+        playSound(yaySound);
         gameOver = true;
         setTimeout(() => {
             showEndScreen(true);
@@ -278,6 +281,7 @@ async function handleSubmitWord() {
 
     if (guessedWords.length === 6) {
         showNotification(`Sorry, you have no more guesses! The word was "${word}".`);
+        playSound(loseSound);
         gameOver = true;
         setTimeout(() => {
             showEndScreen(false);
@@ -344,3 +348,42 @@ function toggleSettings() {
     const settingsScreen = document.getElementById("settings");
     settingsScreen.classList.toggle("hidden");
 }
+
+//Dark Mode
+document.getElementById("dark-mode-toggle").addEventListener("change", function () {
+    document.body.classList.toggle("dark-mode", this.checked);
+});
+
+//Color Blind Mode
+document.getElementById("colorblind-toggle").addEventListener("change", function () {
+    document.body.classList.toggle("colorblind-mode", this.checked);
+});
+
+//Sound Controls
+const muteToggle = document.getElementById("mute-toggle");
+const volumeSlider = document.getElementById("volume");
+const yaySound = new Audio('sound/yay.mp3');
+const loseSound = new Audio('sound/lose.mp3');
+const clickSound = new Audio('sound/click.mp3');
+
+yaySound.volume = volumeSlider.value / 100;
+loseSound.volume = volumeSlider.value / 100;
+clickSound.volume = volumeSlider.value / 100;
+
+function setVolume(volume) {
+    yaySound.volume = volume;
+    loseSound.volume = volume;
+    clickSound.volume = volume
+}
+
+function playSound(audio) {
+    if (!muteToggle.checked) {
+        audio.currentTime = 0;
+        audio.play();
+    }
+}
+volumeSlider.addEventListener("input", function () {
+    const volume = this.value / 100;
+    setVolume(volume);
+    console.log("Volume set to:", volume);
+});
