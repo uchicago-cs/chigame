@@ -674,6 +674,10 @@ h1 {
 body.dark-mode {
     --card-bg: #c4c4c4;
     --text: #000000;
+    --bg-dark: #c4c4c4;
+    --accent: #8c703b;
+    --key-bg: #cfcfcf;
+    --key-text: #000000;
 }
 
 body.colorblind-mode {
