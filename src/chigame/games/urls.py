@@ -51,4 +51,6 @@ urlpatterns = [
     path("feedback/update/<int:feedback_id>/", views.update_feedback_view, name="update-feedback"),
     path("feedback/delete/<int:feedback_id>/", views.delete_feedback_view, name="delete-feedback"),
     path("feedback/my-feedback/", views.user_feedback_list, name="user-feedback-list"),
+    # Word Game
+    path("wordle/", views.wordle_game_page, name="wordle-game"),
 ]

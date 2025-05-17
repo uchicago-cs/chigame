@@ -11,6 +11,13 @@ game_patterns = [
     path("<int:pk>/reviews/", views.GameReviewListView.as_view(), name="api-game-reviews"),
     path("<int:pk>/reviews/create/", views.ReviewCreateView.as_view(), name="api-game-review-create"),
     path("<int:game_id>/reviews/<int:pk>/", views.ReviewDetailView.as_view(), name="api-game-review-detail"),
+    path("<int:pk>/achievements/", views.AchievementListView.as_view(), name="api-game-achievements"),
+    path(
+        "<int:game_id>/achievements/<int:pk>/assign/",
+        views.UserAchievementCreateView.as_view(),
+        name="api-user-achievement-assignment",
+    ),
+    path("<int:pk>/achievements/create/", views.AchievementCreateView.as_view(), name="api-game-achievement-create"),
 ]
 
 lobby_patterns = [

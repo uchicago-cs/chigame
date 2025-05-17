@@ -1,8 +1,10 @@
 import os
 import xml.etree.ElementTree as ET
+from datetime import datetime, timedelta
 from functools import wraps
 from random import choice
 
+import jwt
 import requests
 from django.conf import settings
 from django.contrib import messages
@@ -66,8 +68,6 @@ class GameDetailView(LoginRequiredMixin, FormMixin, DetailView):
     # for twine files, redirect to different IF view
     def dispatch(self, request, *args, **kwargs):
         self.object = self.get_object()
-        if self.object.twine_file.name.endswith(".html"):
-            return redirect("interactive-fiction-detail", pk=self.object.pk)
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
@@ -79,6 +79,9 @@ class GameDetailView(LoginRequiredMixin, FormMixin, DetailView):
         context["reviews"] = Review.objects.filter(game=self.object)
         context["popularity"] = self.object.reviews.count()
         context["avg_rating"] = self.object.reviews.filter(is_public=True).aggregate(Avg("rating"))["rating__avg"]
+
+        # FOR IF/twine GAMES
+        context["is_twine_game"] = self.object.twine_file.name.endswith(".html") if self.object.twine_file else False
         # Include the user's GameLists: default Favorites plus others
         if self.request.user.is_authenticated:
             favorites_list, _ = GameList.objects.get_or_create(name="Favorites", created_by=self.request.user)
@@ -1297,3 +1300,22 @@ def remove_from_gamelist(request, pk, list_pk):
     game_list = get_object_or_404(GameList, pk=list_pk, created_by=request.user)
     game_list.games.remove(game)
     return redirect("game-detail", pk=pk)
+
+
+# =============== Word Game Views ===============
+
+
+@login_required
+def wordle_game_page(request):
+    # Generate a short-lived JWT for secure identification
+    payload = {
+        "user_id": request.user.id,
+        "username": request.user.username,
+        "exp": datetime.now(timezone.utc) + timedelta(minutes=30),
+    }
+    token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
+
+    # GitHub Pages game URL + token
+    iframe_url = f"https://zhejiej.github.io/Words-Game//?token={token}"
+
+    return render(request, "games/wordle.html", {"iframe_url": iframe_url})
