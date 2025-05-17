@@ -1,8 +1,11 @@
 // ---GAME CONSTANTS----------------------------------------------------------------
+const gameWidth = 650;
+const gameHeight = 650;
+
 const config = {
   type: Phaser.AUTO,
-  width: 650,
-  height: 650,
+  width: gameWidth,
+  height: gameHeight,
   parent: 'game',
   scene: {
     preload,
@@ -20,7 +23,8 @@ const BOARD_SIZE = 8;
 I made the canvas background color black. Therefore, by making the game board
 smaller to account for the margin, it'll appear as if there's a black border.
 */
-const TILE_SIZE = (config.width - 2 * MARGIN) / BOARD_SIZE;
+let TILE_SIZE = (config.width - 2 * MARGIN) / BOARD_SIZE;
+
 // colors we will use in this game
 const COLORS = {
   light_brown: 0xefbb74,
@@ -199,7 +203,7 @@ function drawBoard(scene) {
 
 function createPiece(x, y, color, scene) {
   // create a piece
-  const piece = {
+  let piece = {
     x,
     y,
     color,
@@ -438,6 +442,37 @@ function changePieceColor(newColorOne, newColorTwo) {
 }
 
 // Event listener for the toggle colorblind button
+document.addEventListener('DOMContentLoaded', () => {
+  const changeColorButton = document.getElementById('toggle-colorblind');
+  changeColorButton.addEventListener('click', () => {
+    const firstPieceColor = pieces[0].color;
+    // if the first piece is a default color, change to colorblind colors
+    if (firstPieceColor === COLORS.red || firstPieceColor === COLORS.black) {
+      changePieceColor(COLORS.colorblind_blue, COLORS.colorblind_orange);
+    }
+    // if the first piece is a colorblind color, change to default colors
+    else {
+      changePieceColor(COLORS.black, COLORS.red);
+    }
+  });
+});
+
+// Function to change the color of all pieces
+function resize_board(percentage) {
+  const firstPieceColor = pieces[0].color;
+  pieces.forEach((piece) => {
+    if (piece.color === firstPieceColor) {
+      piece.color = newColorOne;
+      piece.sprite.setFillStyle(newColorOne);
+    }
+    else {
+      piece.color = newColorTwo;
+      piece.sprite.setFillStyle(newColorTwo);
+    }
+  });
+}
+
+// Event listener for the resize button
 document.addEventListener('DOMContentLoaded', () => {
   const changeColorButton = document.getElementById('toggle-colorblind');
   changeColorButton.addEventListener('click', () => {
