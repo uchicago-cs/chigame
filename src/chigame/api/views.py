@@ -13,6 +13,7 @@ from chigame.api.filters import GameFilter
 from chigame.api.serializers import (
     AchievementSerializer,
     CategorySerializer,
+    GameDataSerializer,
     GameSerializer,
     GroupSerializer,
     LobbySerializer,
@@ -22,10 +23,9 @@ from chigame.api.serializers import (
     ReviewSerializer,
     UserAchievementSerializer,
     UserSerializer,
-    WordGameDataSerializer,
 )
 from chigame.api.spam_utils import is_spam
-from chigame.games.models import Game, Lobby, Message, Review, WordGameData
+from chigame.games.models import Game, GameData, Lobby, Message, Review
 from chigame.users.models import Group, User
 
 
@@ -310,41 +310,51 @@ class AchievementCreateView(generics.CreateAPIView):
         )
 
 
-class WordGameDataListView(generics.ListCreateAPIView):
+class GameDataListView(generics.ListCreateAPIView):
     """
-    API endpoint to list and create Word Game data for the authenticated user.
+    API endpoint to list and create game data for the authenticated user.
     """
 
-    serializer_class = WordGameDataSerializer
+    serializer_class = GameDataSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return WordGameData.objects.filter(user=self.request.user)
+        # Allow filtering by game
+        game_id = self.request.query_params.get("game", None)
+        if game_id:
+            return GameData.objects.filter(user=self.request.user, game_id=game_id)
+        return GameData.objects.filter(user=self.request.user)
 
     def perform_create(self, serializer):
-        # Check if this key already exists for the user
+        # Check if this key already exists for the user and game
         key = serializer.validated_data.get("key")
+        game = serializer.validated_data.get("game")
+
         try:
-            existing = WordGameData.objects.get(user=self.request.user, key=key)
+            existing = GameData.objects.get(user=self.request.user, game=game, key=key)
             # Update the existing record instead
             existing.value = serializer.validated_data.get("value")
             existing.save()
-        except WordGameData.DoesNotExist:
+        except GameData.DoesNotExist:
             # Create a new record
             serializer.save(user=self.request.user)
 
 
-class WordGameDataDetailView(generics.RetrieveUpdateDestroyAPIView):
+class GameDataDetailView(generics.RetrieveUpdateDestroyAPIView):
     """
-    API endpoint to retrieve, update or delete a specific Word Game data entry.
+    API endpoint to retrieve, update or delete a specific game data entry.
     """
 
-    serializer_class = WordGameDataSerializer
+    serializer_class = GameDataSerializer
     permission_classes = [IsAuthenticated]
-    lookup_field = "key"
 
     def get_queryset(self):
-        return WordGameData.objects.filter(user=self.request.user)
+        return GameData.objects.filter(user=self.request.user)
+
+    def get_object(self):
+        game_id = self.kwargs.get("game_id")
+        key = self.kwargs.get("key")
+        return get_object_or_404(GameData, user=self.request.user, game_id=game_id, key=key)
 
     def perform_update(self, serializer):
         serializer.save(user=self.request.user)

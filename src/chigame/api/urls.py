@@ -18,8 +18,8 @@ game_patterns = [
         name="api-user-achievement-assignment",
     ),
     path("<int:pk>/achievements/create/", views.AchievementCreateView.as_view(), name="api-game-achievement-create"),
-    path("word-game/data/", views.WordGameDataListView.as_view(), name="api-word-game-data-list"),
-    path("word-game/data/<str:key>/", views.WordGameDataDetailView.as_view(), name="api-word-game-data-detail"),
+    path("data/", views.GameDataListView.as_view(), name="api-game-data-list"),
+    path("<int:game_id>/data/<str:key>/", views.GameDataDetailView.as_view(), name="api-game-data-detail"),
 ]
 
 lobby_patterns = [

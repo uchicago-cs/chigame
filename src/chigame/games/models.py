@@ -743,20 +743,21 @@ class GameList(models.Model):
         return f"{self.name} ({self.created_by})"
 
 
-class WordGameData(models.Model):
+class GameData(models.Model):
     """
-    A key-value store for the Words Game to store user progress and statistics.
-    This allows for persistence between sessions and tracking achievements.
+    A key-value store for games to store user progress and statistics.
+    This allows for persistence between sessions and tracking achievements for any game.
     """
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="word_game_data")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="game_data")
+    game = models.ForeignKey(Game, on_delete=models.CASCADE, related_name="game_data")
     key = models.CharField(max_length=255)  # identifies the type of data being stored
     value = models.TextField()  # stores the actual data as JSON or string
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        unique_together = ["user", "key"]  # ensure each key is unique per user
+        unique_together = ["user", "game", "key"]  # ensure each key is unique per user and game
 
     def __str__(self):
-        return f"{self.user.username}: {self.key}"
+        return f"{self.user.username} - {self.game.name}: {self.key}"
