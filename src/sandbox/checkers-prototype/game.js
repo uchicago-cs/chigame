@@ -48,7 +48,8 @@ let drawOfferedBy = null;
 
 // ---INIT FUNCTIONS-----------------------------------------------------------
 function preload() {
-  this.load.image('crown', 'img/kingIcon.svg');
+  this.load.image('crown', 'img/crown.svg');
+  this.textures.get('crown').setFilter(Phaser.Textures.FilterMode.LINEAR);
 }
 
 function create() {
@@ -337,7 +338,7 @@ function movePiece(piece, moveX, moveY) {
     piece.isKing = true;
     const crown = piece.sprite.scene.add.image(piece.sprite.x, piece.sprite.y, 'crown');
     // Resize the icon
-    crown.setDisplaySize(TILE_SIZE / 2, TILE_SIZE / 2);
+    crown.setDisplaySize(TILE_SIZE, TILE_SIZE);
     piece.kingIcon = crown;
   }
 
