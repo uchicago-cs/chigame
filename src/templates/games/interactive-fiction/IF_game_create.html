@@ -13,6 +13,10 @@
       padding: 0 1rem;
     }
 
+    .spacer {
+      height: 4rem;
+    }
+
     /* Headings & labels */
     h1,
     h3 {
@@ -66,6 +70,7 @@
       cursor: pointer;
       font-size: 1rem;
       text-align: left;
+      text-decoration: none;
     }
 
     /* --- Drag & drop zone --- */
@@ -101,6 +106,21 @@
         `;
       }
 
+      function isHtmlFile(file) {
+        return file && file.name.toLowerCase().endsWith('.html');
+      }
+
+      function handleFile(file) {
+        if (!isHtmlFile(file)) {
+          alert('Only .html files are allowed!');
+          input.value = '';
+          zone.innerHTML = 'Drag & drop a file here<br />or click to browse';
+          return false;
+        }
+        showFileName(file);
+        return true;
+      }
+
       zone.addEventListener('click', () => input.click());
 
       zone.addEventListener('dragover', e => {
@@ -114,16 +134,15 @@
       zone.addEventListener('drop', e => {
         e.preventDefault();
         zone.classList.remove('hover');
-        if (e.dataTransfer.files.length) {
+        const file = e.dataTransfer.files[0];
+        if (file && handleFile(file)) {
           input.files = e.dataTransfer.files;
         }
       });
 
       input.addEventListener('change', () => {
         const file = input.files[0];
-        if (file) {
-          showFileName(file);
-        }
+        handleFile(file);
       });
     });
   </script>
@@ -222,10 +241,14 @@
         <br />
         or click to browse
       </div>
-      <input type="file" id="myFile" name="uploaded_file" class="if-file-input" accept=".html" />
+      <input type="file"
+             id="myFile"
+             name="uploaded_file"
+             class="if-file-input"
+             accept=".html" />
     </form>
     <h3>Publish Story</h3>
     <a href="{{ uploaded_file_url }}" target="_blank" class="btn-success">Play Uploaded Game</a>
+    <div class="spacer"></div>
   </form>
-  <div style="height: 4rem;"></div>
 {% endblock content %}
