@@ -3,6 +3,9 @@ from django.urls import path
 from . import views
 from .views import InteractiveFictionView, LobbyCreateView, UploadFileView
 
+from django.conf import settings
+from django.conf.urls.static import static
+
 urlpatterns = [
     # lobbies
     path("lobby/", views.lobby_list, name="lobby-list"),
@@ -48,3 +51,6 @@ urlpatterns = [
     # Word Game
     path("wordle/", views.wordle_game_page, name="wordle-game"),
 ]
+#for an uploaded twine file this makes the files accessible at a url
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
