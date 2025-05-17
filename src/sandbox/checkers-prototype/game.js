@@ -28,6 +28,7 @@ const COLORS = {
   black: 0x000000,
   red: 0xff0000,
   white: 0xffffff,
+  orange: 0xffa500,
   colorblind_blue: 0x1e88e5,
   colorblind_orange: 0xffc107,
 };
@@ -45,6 +46,7 @@ let highlightedTiles = [];
 let gameOver = false;
 let drawOffered = false;
 let drawOfferedBy = null;
+let lastMoveHighlights = [];
 
 // ----------------------------------------------------------------------------
 
@@ -250,6 +252,9 @@ function createPiece(x, y, color, scene) {
     }
   });
 
+  // so the pieces will be above the highlights
+  piece.sprite.setDepth(1);
+
   // push to array
   pieces.push(piece);
 }
@@ -320,11 +325,34 @@ function movePiece(piece, moveX, moveY) {
     }
   }
 
+  clearLastMoveHighlights();
+  // highlight the original tile
+  const originHighlight = checkers.scene.scenes[0].add.rectangle(
+    MARGIN + piece.x * TILE_SIZE + TILE_SIZE / 2,
+    MARGIN + piece.y * TILE_SIZE + TILE_SIZE / 2,
+    TILE_SIZE,
+    TILE_SIZE,
+    COLORS.orange,
+    0.3
+  );
+  lastMoveHighlights.push(originHighlight);
+
   // Move the piece
   piece.x = moveX;
   piece.y = moveY;
   piece.sprite.x = MARGIN + piece.x * TILE_SIZE + TILE_SIZE / 2;
   piece.sprite.y = MARGIN + piece.y * TILE_SIZE + TILE_SIZE / 2;
+
+  // Highlight destination tile
+  const destHighlight = checkers.scene.scenes[0].add.rectangle(
+    MARGIN + moveX * TILE_SIZE + TILE_SIZE / 2,
+    MARGIN + moveY * TILE_SIZE + TILE_SIZE / 2,
+    TILE_SIZE,
+    TILE_SIZE,
+    COLORS.orange,
+    0.3
+  );
+  lastMoveHighlights.push(destHighlight);
 
   console.log('Current board state:', getBoardState());
 }
@@ -541,3 +569,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
+
+function clearLastMoveHighlights() {
+  while (lastMoveHighlights.length > 0) {
+    lastMoveHighlights.pop().destroy();
+  }
+}
