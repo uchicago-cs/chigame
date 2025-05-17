@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from chigame.achievements.models import Achievement, UserAchievement
-from chigame.games.models import Category, Chat, Game, Lobby, Mechanic, Message, Review, Tournament, User, WordGameData
+from chigame.games.models import Category, Chat, Game, GameData, Lobby, Mechanic, Message, Review, Tournament, User
 from chigame.users.models import Group
 
 
@@ -119,8 +119,8 @@ class AchievementSerializer(serializers.ModelSerializer):
         fields = ["id", "name", "description", "rarity", "threshold"]
 
 
-class WordGameDataSerializer(serializers.ModelSerializer):
+class GameDataSerializer(serializers.ModelSerializer):
     class Meta:
-        model = WordGameData
-        fields = ["id", "key", "value", "created_at", "updated_at"]
+        model = GameData
+        fields = ["id", "game", "key", "value", "created_at", "updated_at"]
         read_only_fields = ["user", "created_at", "updated_at"]
