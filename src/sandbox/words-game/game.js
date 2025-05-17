@@ -300,6 +300,7 @@ function showNotification(message, duration = 1000) {
     }, duration);
 }
 
+//Show EndScreen
 function showEndScreen(won) {
     const endScreen = document.getElementById("end-screen");
     const endTitle = document.getElementById("end-title");
@@ -322,14 +323,24 @@ function showEndScreen(won) {
     endScreen.classList.remove("hidden");
 }
 
+//Restart button in EndScreen
 document.getElementById("restart-btn").addEventListener("click", () => {
     location.reload();
 });
 
+//Animation for shaking the row
 function shakeRow(rowIndex) {
     for (let i = 0; i < wordLength; i++) {
         const tile = document.getElementById(rowIndex * wordLength + i + 1);
         tile.classList.add("shake");
         setTimeout(() => tile.classList.remove("shake"), 500);
     }
+}
+
+//Settings
+document.getElementById("settings-btn").addEventListener("click", toggleSettings);
+//Show Setting Screen
+function toggleSettings() {
+    const settingsScreen = document.getElementById("settings");
+    settingsScreen.classList.toggle("hidden");
 }
