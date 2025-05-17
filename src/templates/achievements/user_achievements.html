@@ -44,8 +44,8 @@
     }
 
     .user-avatar {
-      width: 100px;
-      height: 100px;
+      width: 50px;
+      height: 50px;
       border-radius: 50%;
       background-color: #0d6efd;
       margin-right: 20px;
@@ -57,14 +57,14 @@
     }
 
     .large-avatar {
-      font-size: 60px;
+      font-size: 30px;
     }
 
     .user-stats {
       background-color: var(--card-bg);
-      padding: 20px;
+      padding: 10px;
       border-radius: 5px;
-      margin-bottom: 30px;
+      margin-bottom: 20px;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     }
 
@@ -205,9 +205,9 @@
     }
 
     .not-unlocked .trophy-icon img {
-      filter: brightness(0.5);
-      /* 60% brightness (50% darker) */
-      opacity: 0.8;
+      filter: brightness(0.3);
+      /* 60% brightness (70% darker) */
+      opacity: 0.6;
     }
 
     .toggle-button {
@@ -456,7 +456,7 @@
         {% endif %}
       </div>
       <div>
-        <h2>{{ user_profile.username }}'s Achievements</h2>
+        <h3>{{ user_profile.username }}'s Achievements</h3>
         <p>Member since {{ join_date }}</p>
       </div>
       {% if not viewing_own_profile %}
@@ -467,7 +467,7 @@
       {% endif %}
     </div>
     <div class="user-stats">
-      <h3>Achievement Progress</h3>
+      <h4>Achievement Progress</h4>
       <p>Overall: {{ overall_stats.unlocked }} achievements unlocked out of {{ overall_stats.total }}</p>
       <div class="progress-bar">
         <div class="progress-fill-dynamic"
