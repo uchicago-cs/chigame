@@ -1,6 +1,7 @@
 // ---GAME CONSTANTS----------------------------------------------------------------
 const START_WIDTH = 650;
 const START_HEIGHT = 650;
+const START_MARGIN = 10;
 
 const config = {
   type: Phaser.AUTO,
@@ -18,14 +19,14 @@ const checkers = new Phaser.Game(config);
 
 // 8x8 board
 const BOARD_SIZE = 8;
-const MARGIN = 10;
+let margin = START_MARGIN;
 
 /*
 I made the canvas background color black. Therefore, by making the game board
 smaller to account for the margin, it'll appear as if there's a black border.
 */
 let tiles = [];
-let tile_size = (config.width - 2 * MARGIN) / BOARD_SIZE;
+let tile_size = (config.width - 2 * START_MARGIN) / BOARD_SIZE;
 
 // colors we will use in this game
 const COLORS = {
@@ -174,8 +175,8 @@ function drawBoard(scene) {
           // phaser actually positions shape based on the center, not top-left
           // margin + x returns the top-left location of each tile
           // tile size / 2 returns the center of the tile
-          MARGIN + x * tile_size + tile_size / 2, // x position
-          MARGIN + y * tile_size + tile_size / 2, // y position
+          margin + x * tile_size + tile_size / 2, // x position
+          margin + y * tile_size + tile_size / 2, // y position
           tile_size, // width
           tile_size, // height
           tile_color
@@ -185,6 +186,7 @@ function drawBoard(scene) {
 
       // listens for clicks on tiles
       tile.on('pointerdown', () => {
+        console.log(`Clicked tile at (${x}, ${y})`);
         // does nothing if no pieces were selected or game is over
         if (!selectedPiece || gameOver) return;
 
@@ -212,8 +214,8 @@ function createPiece(x, y, color, scene) {
     color,
     sprite: scene.add.circle(
       // same center position as when we create the board tiles/squares
-      MARGIN + x * tile_size + tile_size / 2,
-      MARGIN + y * tile_size + tile_size / 2,
+      margin + x * tile_size + tile_size / 2,
+      margin + y * tile_size + tile_size / 2,
       // circle radius
       tile_size / RADIUS_SCALE_FACTOR,
       color
@@ -223,6 +225,7 @@ function createPiece(x, y, color, scene) {
   // make the piece clickable
   piece.sprite.setInteractive();
   piece.sprite.on('pointerdown', () => {
+    console.log(`Clicked piece at (${piece.x}, ${piece.y})`);
     // don't allow piece selection if game is over
     if (gameOver) return;
 
@@ -318,8 +321,8 @@ function movePiece(piece, moveX, moveY) {
   // Move the piece
   piece.x = moveX;
   piece.y = moveY;
-  piece.sprite.x = MARGIN + piece.x * tile_size + tile_size / 2;
-  piece.sprite.y = MARGIN + piece.y * tile_size + tile_size / 2;
+  piece.sprite.x = margin + piece.x * tile_size + tile_size / 2;
+  piece.sprite.y = margin + piece.y * tile_size + tile_size / 2;
 
   console.log("Current board state:", getBoardState());
 }
@@ -469,24 +472,24 @@ function resizegame(percentage) {
   checkers.scale.resize(newWidth, newHeight);
 
   // Update margin and tile size
-  const newMargin = MARGIN * percentage;
-  tile_size = (newWidth - 2 * newMargin) / BOARD_SIZE;
+  margin = START_MARGIN * percentage;
+  tile_size = (newWidth - 2 * margin) / BOARD_SIZE;
 
   // Update the positions of the tiles and pieces
   tiles.forEach((tile, index) => {
     const x = index % BOARD_SIZE;
     const y = Math.floor(index / BOARD_SIZE);
     tile.setPosition(
-      newMargin + x * tile_size + tile_size / 2,
-      newMargin + y * tile_size + tile_size / 2
+      margin + x * tile_size + tile_size / 2,
+      margin + y * tile_size + tile_size / 2
     );
     tile.setSize(tile_size, tile_size);
   });
 
   pieces.forEach((piece) => {
     piece.sprite.setPosition(
-      newMargin + piece.x * tile_size + tile_size / 2,
-      newMargin + piece.y * tile_size + tile_size / 2
+      margin + piece.x * tile_size + tile_size / 2,
+      margin + piece.y * tile_size + tile_size / 2
     );
     piece.sprite.setRadius(tile_size / RADIUS_SCALE_FACTOR);
   });
