@@ -16,18 +16,18 @@
 {% endblock javascript %}
 {% block content %}
   <div class="knowledge-base container mt-4">
-    <div class="nav w-100 bg-light border rounded rounded-lg d-flex flex-row justify-content-between p-2 px-4">
+    <div class="nav w-100 bg-light border rounded rounded-lg d-flex flex-row justify-content-between p-2 px-4 fw-semibold">
       <a href="{% url 'knowledge-base' %}">
         <p class="mb-0">Home</p>
       </a>
       <div class="d-flex gap-3">
         {% if request.user.moderator %}
           <a href="{% url 'knowledge-base-moderator' %}">
-            <p class="mb-0">Moderator View</p>
+            <p class="mb-0">Moderator Dashboard</p>
           </a>
         {% endif %}
         <a href="{% url 'contributor-manage-guide' %}">
-          <p class="mb-0">Contributor View</p>
+          <p class="mb-0">Manage My Guides</p>
         </a>
       </div>
     </div>
