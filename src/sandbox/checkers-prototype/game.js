@@ -2,6 +2,7 @@
 const START_WIDTH = 650;
 const START_HEIGHT = 650;
 const START_MARGIN = 10;
+const START_HIGHLIHGHT_SIZE = 3;
 
 const config = {
   type: Phaser.AUTO,
@@ -45,7 +46,7 @@ let currentPlayer = COLORS.red; // red starts first
 // bigger than the tiles
 const RADIUS_SCALE_FACTOR = 2.5;
 // selected piece highlight stroke width
-const HIGHLIGHT_SIZE = 3;
+let highlight_size = START_HIGHLIHGHT_SIZE;
 let gameOver = false;
 let drawOffered = false;
 let drawOfferedBy = null;
@@ -186,7 +187,6 @@ function drawBoard(scene) {
 
       // listens for clicks on tiles
       tile.on('pointerdown', () => {
-        console.log(`Clicked tile at (${x}, ${y})`);
         // does nothing if no pieces were selected or game is over
         if (!selectedPiece || gameOver) return;
 
@@ -225,7 +225,6 @@ function createPiece(x, y, color, scene) {
   // make the piece clickable
   piece.sprite.setInteractive();
   piece.sprite.on('pointerdown', () => {
-    console.log(`Clicked piece at (${piece.x}, ${piece.y})`);
     // don't allow piece selection if game is over
     if (gameOver) return;
 
@@ -242,7 +241,7 @@ function createPiece(x, y, color, scene) {
       }
       // highlight the current piece that is being selected and set them as 'selectedPiece'
       selectedPiece = piece;
-      piece.sprite.setStrokeStyle(HIGHLIGHT_SIZE, COLORS.white);
+      piece.sprite.setStrokeStyle(highlight_size, COLORS.white);
     }
   });
 
@@ -409,7 +408,6 @@ function getBoardState() {
   return board;
 }
 
-
 function sendBoardToServer(boardState) {
   fetch('/api/board-state/', {
     method: 'POST',
@@ -471,9 +469,10 @@ function resizegame(percentage) {
   // Update game configuration
   checkers.scale.resize(newWidth, newHeight);
 
-  // Update margin and tile size
+  // Update margin and tile size and highlight size
   margin = START_MARGIN * percentage;
   tile_size = (newWidth - 2 * margin) / BOARD_SIZE;
+  highlight_size = START_HIGHLIHGHT_SIZE * percentage;
 
   // Update the positions of the tiles and pieces
   tiles.forEach((tile, index) => {
@@ -487,11 +486,43 @@ function resizegame(percentage) {
   });
 
   pieces.forEach((piece) => {
-    piece.sprite.setPosition(
+    // destroy the old sprite
+    piece.sprite.destroy();
+    // create a new sprite with the updated position and size
+    piece.sprite = checkers.scene.scenes[0].add.circle(
       margin + piece.x * tile_size + tile_size / 2,
-      margin + piece.y * tile_size + tile_size / 2
-    );
-    piece.sprite.setRadius(tile_size / RADIUS_SCALE_FACTOR);
+      margin + piece.y * tile_size + tile_size / 2,
+      tile_size / RADIUS_SCALE_FACTOR,
+      piece.color
+    ).setInteractive();
+
+    // If this piece was selected, update the selectedPiece reference to the new sprite
+    if (selectedPiece === piece) {
+      selectedPiece.sprite = piece.sprite;
+      piece.sprite.setStrokeStyle(highlight_size, COLORS.white);
+    }
+
+    // make the new sprite do stuff when clicked
+    piece.sprite.on('pointerdown', () => {
+      // don't allow piece selection if game is over
+      if (gameOver) return;
+
+      // deselect and remove highlight if click a selected piece
+      if (selectedPiece === piece) {
+        selectedPiece.sprite.setStrokeStyle();
+        selectedPiece = null;
+
+        // if player selects their own pieces (does nothing if they click on opponent pieces)
+      } else if (piece.color === currentPlayer) {
+        // clear previous selected piece
+        if (selectedPiece) {
+          selectedPiece.sprite.setStrokeStyle();
+        }
+        // highlight the current piece that is being selected and set them as 'selectedPiece'
+        selectedPiece = piece;
+        piece.sprite.setStrokeStyle(highlight_size, COLORS.white);
+      }
+    });
   });
 }
 
