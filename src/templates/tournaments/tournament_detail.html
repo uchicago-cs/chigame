@@ -2,10 +2,14 @@
 
 {% load static %}
 
-{% block extrahead %}
+{% block title %}
+  Tournament Details - {{ tournament.name }}
+{% endblock title %}
+{% block css %}
+  {{ block.super }}
   <link rel="stylesheet"
         type="text/css"
-        href="{% static 'tournament_styles.css' %}" />
+        href="{% static 'css/tournament_styles.css' %}" />
   <style>
     .simulation-controls {
       margin: 20px 0;
@@ -132,7 +136,7 @@
       display: inline;
     }
   </style>
-{% endblock extrahead %}
+{% endblock css %}
 {% block content %}
   <div class="tournament-header">
     <h1 class="tournament-name">
