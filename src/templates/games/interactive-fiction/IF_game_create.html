@@ -4,6 +4,10 @@
   Interactive Fiction Game
 {% endblock title %}
 {% block content %}
+  <!-- Include Choices.js CDN -->
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
   <style>
     #game_form {
       max-width: 600px;
@@ -81,6 +85,23 @@
   </style>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
+      // Initialize Choices.js for plain text label input
+      const labelInput = document.getElementById('id_labels');
+      if (labelInput) {
+        new Choices(labelInput, {
+          removeItemButton: true,
+          placeholder: true,
+          placeholderValue: 'Type to add a label',
+          delimiter: ',',
+          editItems: true,
+          duplicateItemsAllowed: false,
+          addItems: true,
+          addItemFilter: value => value.trim().length > 0,
+          addItemText: (value) => `Press Enter to add: <b>"${value}"</b>`
+        });
+      }
+
+      // Upload zone logic
       document.querySelectorAll('.upload-zone').forEach(zone => {
         const inputId = zone.dataset.inputId;
         const input = document.getElementById(inputId);
@@ -160,11 +181,10 @@
              id="id_content_warnings"
              value="{{ form.content_warnings.value }}" />
     </div>
-
     <div>
-      <label for="id_content_warnings">Labels</label>
+      <label for="id_labels">Labels</label>
+      <input type="text" name="labels" id="id_labels" />
     </div>
-
     <div>
       <label for="id_rules">Rules:</label>
       <textarea name="rules" id="id_rules" placeholder="Enter the rules" rows="4">{{ form.rules.value }}</textarea>
