@@ -10,6 +10,13 @@
         <input id="password" type="password" v-model="form.password" required />
 
         <button type="submit">Sign In</button>
+        <div class="mt-3" style="min-height: 20vh;">
+          <div v-if="error">
+          <div class="alert alert-danger mt-3">
+              <p>{{ error }}</p>
+            </div>
+          </div>
+        </div>
       </form>
     </div>
   </div>
@@ -18,13 +25,34 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import axios from 'axios'
 
 const router = useRouter()
 const form = ref({ email: '', password: '' })
+const error = ref(null)
 
-function handleSubmit() {
-  console.log('logging in with', form.value)
-  router.push('/')
+const api = axios.create({
+  baseURL: 'http://127.0.0.1:8000',
+})
+
+async function handleSubmit() {
+  error.value = null
+  try {
+    const { data } = await api.post('/api/login/token/', {
+      email: form.value.email,
+      password: form.value.password,
+    })
+    localStorage.setItem('access-token', data.access)
+    api.defaults.headers.common['Authorization'] = `Bearer ${data.access}`
+    router.push('/')
+  } catch (err) {
+    error.value =
+      err.response?.data?.detail ||
+      err.response?.statusText ||
+      err.message
+  }
+  /* console.log('logging in with', form.value)
+  router.push('/') */
 }
 </script>
 

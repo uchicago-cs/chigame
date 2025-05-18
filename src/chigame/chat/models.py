@@ -38,4 +38,20 @@ class LiveChatUser(models.Model):
     live_chat = models.ForeignKey(LiveChat, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f"{self.user} in chat {self.live_chat.channel}"
+        return f"{self.user} in chat {self.live_chat.name}"
+
+
+class LiveChatMessageReaction(models.Model):
+    """
+    A reaction to a LiveChatMessage.
+    """
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    message = models.ForeignKey(LiveChatMessage, on_delete=models.CASCADE)
+    content = models.CharField(null=False, max_length=10)
+
+    class Meta:
+        unique_together = ("user", "message", "content")
+
+    def __str__(self):
+        return f"{self.user} reacted with {self.content} to message {self.message}"

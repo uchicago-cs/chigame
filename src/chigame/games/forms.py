@@ -1,7 +1,7 @@
 from django import forms
 from django.core.validators import MaxValueValidator, MinValueValidator
 
-from .models import Game, Lobby, Review
+from .models import Game, InteractiveFictionGame, Lobby, Review
 
 
 class GameForm(forms.ModelForm):
@@ -19,6 +19,29 @@ class GameForm(forms.ModelForm):
             "name": forms.TextInput,
             "image": forms.Textarea(attrs={"cols": 80, "rows": 1}),
         }
+
+
+class IFGameForm(forms.ModelForm):
+    class Meta:
+        model = InteractiveFictionGame
+        fields = ["name", "description", "image", "categories", "suggested_age", "rules", "year_published"]
+
+    image = forms.CharField(
+        widget=forms.TextInput(attrs={"placeholder": "Enter Image URL"}),
+        required=False,  # If the image URL is optional
+    )
+
+    suggested_age = forms.IntegerField(
+        required=False, widget=forms.NumberInput(attrs={"placeholder": "Suggested Age"})
+    )
+
+    rules = forms.CharField(
+        required=False, widget=forms.Textarea(attrs={"cols": 80, "rows": 4, "placeholder": "Enter Rules"})
+    )
+
+    year_published = forms.IntegerField(
+        required=False, widget=forms.NumberInput(attrs={"placeholder": "Year Published"})
+    )
 
 
 class LobbyForm(forms.ModelForm):
