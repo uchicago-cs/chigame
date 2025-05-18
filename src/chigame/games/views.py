@@ -108,7 +108,6 @@ class GameCreateView(UserPassesTestMixin, CreateView):
     model = Game
     form_class = GameForm
     template_name = "games/game_form.html"
-    success_url = reverse_lazy("game-list")  # URL to redirect after successful creation
     raise_exception = True  # if user is not staff member, raise exception
 
     # check if user is staff member
@@ -118,6 +117,13 @@ class GameCreateView(UserPassesTestMixin, CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         return context
+
+    def get_success_url(self):
+        # If the game has a Twine .html file, go to IF view
+        if self.object.twine_file and self.object.twine_file.name.endswith(".html"):
+            return reverse("if-game", kwargs={"pk": self.object.pk})
+        # Otherwise, go to the normal game detail page
+        return reverse("game-detail", kwargs={"pk": self.object.pk})
 
 
 class GameEditView(UserPassesTestMixin, UpdateView):
