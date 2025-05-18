@@ -1,5 +1,6 @@
 import random
 
+import factory
 from django.utils import timezone
 from factory import Faker, Iterator, LazyAttribute, LazyFunction, Sequence, SubFactory, post_generation
 from factory.django import DjangoModelFactory
@@ -20,7 +21,7 @@ class MechanicFactory(DjangoModelFactory):
     class Meta:
         model = Mechanic
 
-    name = Faker("word")
+    name = factory.Sequence(lambda n: f"Mechanic {n}")
     description = Faker("text", max_nb_chars=200)
 
 
@@ -115,16 +116,29 @@ class LobbyFactory(DjangoModelFactory):
         model = Lobby
 
     match_status = Iterator([Lobby.Lobbied, Lobby.Viewable, Lobby.Finished])
-
     name = Sequence(lambda n: f"lobby_{n}")
     game = SubFactory(GameFactory)
-
     game_mod_status = Iterator([Lobby.Default_game, Lobby.Modified_game])
-
     created_by = SubFactory(UserFactory)
+
     min_players = LazyAttribute(lambda x: random.randint(2, 6))
     max_players = LazyAttribute(lambda o: random.randint(o.min_players, 10))
     time_constraint = LazyAttribute(lambda x: random.randint(100, 500))
     lobby_created = LazyFunction(timezone.now)
-    created_by = SubFactory(UserFactory)
+
     lobby_created = Faker("date_time_this_decade")
+
+    @post_generation
+    def members(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            # we add users to the members field of the lobby
+            for user in extracted:
+                self.members.add(user)
+
+        else:
+            # we add random users to the members field
+            for members in range(random.randint(self.min_players, self.max_players)):
+                self.members.add(UserFactory())

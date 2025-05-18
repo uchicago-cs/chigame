@@ -3,7 +3,7 @@
 from django.db import migrations, models
 
 
-# added is_deleted 
+# added is_deleted
 class Migration(migrations.Migration):
     dependencies = [
         ("users", "0005_alter_user_username"),
