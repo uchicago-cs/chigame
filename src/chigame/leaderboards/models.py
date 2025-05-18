@@ -1,6 +1,4 @@
 from django.db import models
-from chigame.games.models import Game
-from chigame.users.models import UserProfile
 
 from chigame.games.models import Game, Match
 from chigame.users.models import UserProfile
@@ -95,6 +93,7 @@ class LeaderboardPrivacySetting(models.Model):
 
         If no setting is found, return None.
         """
+
         if leaderboard:
             # specific leaderboard setting
             setting = cls.objects.filter(user=user, leaderboard=leaderboard).first()
