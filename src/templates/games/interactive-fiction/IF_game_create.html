@@ -5,22 +5,18 @@
 {% endblock title %}
 {% block content %}
   <style>
-    /* Container */
     #game_form {
       max-width: 600px;
       margin: 2rem 0;
-      /* top/bottom margin, left-aligned */
       padding: 0 1rem;
     }
 
-    /* Headings & labels */
-    h1,
-    h3 {
+    h1, h3 {
       text-align: left;
       margin-bottom: 1rem;
     }
 
-    #game_form>div {
+    #game_form > div {
       margin-bottom: 1.5rem;
     }
 
@@ -30,7 +26,6 @@
       margin-bottom: 0.5rem;
     }
 
-    /* Inputs, selects, textareas */
     #game_form input[type="text"],
     #game_form input[type="number"],
     #game_form select,
@@ -44,18 +39,14 @@
       text-align: left;
     }
 
-    /* Rules textarea a bit taller */
     #game_form textarea#id_rules {
       min-height: 6rem;
     }
 
-    /* Checkboxes inline */
     #game_form input[type="checkbox"] {
       margin-right: 0.5rem;
       vertical-align: middle;
     }
-
-    /* Buttons */
 
     .btn-success {
       background-color: #16a34a;
@@ -66,19 +57,20 @@
       cursor: pointer;
       font-size: 1rem;
       text-align: left;
+      margin-top: 50px;
     }
 
-    /* --- Drag & drop zone --- */
-    #upload-zone {
+    .upload-zone {
       border: 2px dashed #bbb;
       border-radius: 4px;
       padding: 1.5rem;
       text-align: center;
       cursor: pointer;
       color: #555;
+      width: 568px;
     }
 
-    #upload-zone.hover {
+    .upload-zone.hover {
       border-color: #888;
     }
 
@@ -86,74 +78,68 @@
       display: none;
     }
   </style>
+
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const zone = document.getElementById('upload-zone');
-      const input = document.getElementById('myFile');
-      if (!zone || !input) return;
+    document.addEventListener('DOMContentLoaded', function () {
+      document.querySelectorAll('.upload-zone').forEach(zone => {
+        const inputId = zone.dataset.inputId;
+        const input = document.getElementById(inputId);
+        if (!input) return;
 
-      function showFileName(file) {
-        zone.innerHTML = `
-          <div>
-            <strong>Selected file:</strong><br />
-            ${file.name}<br />
-          </div>
-        `;
-      }
-
-      zone.addEventListener('click', () => input.click());
-
-      zone.addEventListener('dragover', e => {
-        e.preventDefault();
-        zone.classList.add('hover');
-      });
-      zone.addEventListener('dragleave', () => {
-        zone.classList.remove('hover');
-      });
-
-      zone.addEventListener('drop', e => {
-        e.preventDefault();
-        zone.classList.remove('hover');
-        if (e.dataTransfer.files.length) {
-          input.files = e.dataTransfer.files;
+        function showFileName(file) {
+          zone.innerHTML = `
+            <div>
+              <strong>Selected file:</strong><br />
+              ${file.name}<br />
+            </div>
+          `;
         }
-      });
 
-      input.addEventListener('change', () => {
-        const file = input.files[0];
-        if (file) {
-          showFileName(file);
-        }
+        zone.addEventListener('click', () => input.click());
+        zone.addEventListener('dragover', e => {
+          e.preventDefault();
+          zone.classList.add('hover');
+        });
+        zone.addEventListener('dragleave', () => {
+          zone.classList.remove('hover');
+        });
+        zone.addEventListener('drop', e => {
+          e.preventDefault();
+          zone.classList.remove('hover');
+          if (e.dataTransfer.files.length) {
+            input.files = e.dataTransfer.files;
+            showFileName(e.dataTransfer.files[0]);
+          }
+        });
+
+        input.addEventListener('change', () => {
+          const file = input.files[0];
+          if (file) {
+            showFileName(file);
+          }
+        });
       });
     });
   </script>
+
   <h1>Create Interactive Fiction Game</h1>
   <form method="post" enctype="multipart/form-data" id="game_form">
     {% csrf_token %}
-    <!-- Game Name -->
     <div>
       <label for="id_name">Game Name:</label>
-      <input type="text"
-             name="name"
-             id="id_name"
-             value="{{ form.name.value }}"
-             required />
+      <input type="text" name="name" id="id_name" value="{{ form.name.value }}" required />
     </div>
-    <!-- Author Name -->
+
     <div>
       <label for="id_author">Author Name</label>
-      <input type="text"
-             name="author"
-             id="id_author"
-             value="{{ form.author.value }}"
-             required />
+      <input type="text" name="author" id="id_author" value="{{ form.author.value }}" required />
     </div>
-    <!-- Game Description -->
+
     <div>
       <label for="id_description">Description:</label>
       <textarea name="description" id="id_description" required>{{ form.description.value }}</textarea>
     </div>
-    <!-- Genre -->
+
     <div>
       <label for="id_genre">Genre</label>
       <select name="genre" id="id_genre">
@@ -163,76 +149,65 @@
         {% endfor %}
       </select>
     </div>
-    <!-- Content Warnings -->
+
     <div>
       <label for="id_content_warnings">Content Warnings</label>
-      <input type="text"
-             name="content_warnings"
-             id="id_content_warnings"
-             value="{{ form.content_warnings.value }}" />
+      <input type="text" name="content_warnings" id="id_content_warnings" value="{{ form.content_warnings.value }}" />
     </div>
-    <!-- Rules -->
+
     <div>
       <label for="id_rules">Rules:</label>
       <textarea name="rules" id="id_rules" placeholder="Enter the rules" rows="4">{{ form.rules.value }}</textarea>
     </div>
-    <!-- Year Published -->
+
     <div>
       <label for="id_year_published">Year Published:</label>
-      <input type="number"
-             name="year_published"
-             id="id_year_published"
-             value="{{ form.year_published.value }}"
-             placeholder="Year Published" />
+      <input type="number" name="year_published" id="id_year_published" value="{{ form.year_published.value }}" placeholder="Year Published" />
     </div>
-    <!-- Content Warning (optional) -->
+
     <div>
       <label for="id_content_warning">Content Warning (optional):</label>
       <textarea name="content_warning" id="id_content_warning" rows="3">{{ form.content_warning.value }}</textarea>
     </div>
-    <!-- Cover Image -->
+
     <div>
       <label for="id_image">Cover Image</label>
-      <input type="text"
-             name="image"
-             id="id_image"
-             value="{{ form.image.value }}"
-             placeholder="Enter Image URL" />
+      <div class="upload-zone" data-input-id="id_cover_image">
+        Drag &amp; drop a file here<br />or click to browse
+      </div>
+      <input type="file" id="id_cover_image" name="uploaded_file" class="if-file-input" />
     </div>
-    <!-- Allow Comments -->
+
     <div>
       <label for="id_allow_comments">
-        <input type="checkbox"
-               name="allow_comments"
-               id="id_allow_comments"
+        <input type="checkbox" name="allow_comments" id="id_allow_comments"
                {% if form.allow_comments.value %}checked{% endif %} />
         Allow Comments
       </label>
     </div>
-    <!-- Enable Ratings -->
+
     <div>
       <label for="id_enable_ratings">
-        <input type="checkbox"
-               name="enable_ratings"
-               id="id_enable_ratings"
+        <input type="checkbox" name="enable_ratings" id="id_enable_ratings"
                {% if form.enable_ratings.value %}checked{% endif %} />
         Enable Ratings
       </label>
     </div>
+
     <hr />
-    <h3>Upload a File</h3>
-    <form method="post"
-          action="{% url 'upload-file' pk=game.pk %}"
-          enctype="multipart/form-data">
-      {% csrf_token %}
-      <div id="upload-zone">
-        Drag &amp; drop a file here
-        <br />
-        or click to browse
-      </div>
-      <input type="file" id="myFile" name="uploaded_file" class="if-file-input" />
-    </form>
-    <h3>Publish Story</h3>
-    <a href="{{ uploaded_file_url }}" target="_blank" class="btn-success">Play Uploaded Game</a>
+
+    <h3>Upload Game Files</h3>
   </form>
+
+  <form method="post" action="{% url 'upload-file' pk=game.pk %}" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="upload-zone" data-input-id="myFile">
+      Drag &amp; drop a file here<br />or click to browse
+    </div>
+    <input type="file" id="myFile" name="uploaded_file" class="if-file-input" />
+    <button type="submit" class="btn-success">Upload Game</button>
+  </form>
+
+  <h3>Publish Story</h3>
+  <a href="{{ uploaded_file_url }}" target="_blank" class="btn-success">Play Uploaded Game</a>
 {% endblock content %}
