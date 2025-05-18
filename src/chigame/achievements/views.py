@@ -8,6 +8,8 @@ from .models import Achievement, UserAchievement
 
 def demo_game(request):
     return render(request, "achievements/demo_game.html")
+
+
 @login_required
 def toggle_pin_achievement(request, achievement_id):
     """
