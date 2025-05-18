@@ -1,5 +1,6 @@
 # Keep model imports for now, as it will be required for WIP features
 import markdown
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
@@ -8,6 +9,7 @@ from django.db.models.functions import Concat
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.safestring import mark_safe
+from django.views.decorators.http import require_POST
 from django.views.generic import DetailView, ListView
 
 from chigame.games.models import Category, Game
@@ -124,9 +126,8 @@ def ContributorMdUpload(request, pk=None):
             else:
                 game = form.cleaned_data["game"]  # the game user chooses
                 guide = Guide.objects.create(author=request.user, content=content, game_id=game, status=0)
-            return redirect("knowledge-base")
-            # I make it redirects to landing page after submission for now, could later
-            # create an issue that adds a "sucessful submission" page
+            messages.success(request, "Guide Uploaded Successfully!")
+            return redirect("contributor-manage-guide")
 
     else:
         form = MarkdownUploadForm(fixed_game=fixed_game)
@@ -155,7 +156,7 @@ class ContributorManageGuide(LoginRequiredMixin, ListView):
 @login_required
 def DownloadGuide(request, pk):
     guide = get_object_or_404(Guide, pk=pk)
-    if guide.author != request.user:
+    if guide.author != request.user and not request.user.moderator:
         raise PermissionDenied
     content = guide.content  # Assuming this is already Markdown or close to it
 
@@ -246,3 +247,65 @@ class ReviewPendingGuideView(LoginRequiredMixin, UserPassesTestMixin, DetailView
         context["feedback"] = feedback
         context["message"] = message
         return self.render_to_response(context)
+
+
+class ModeratorListByGame(LoginRequiredMixin, UserPassesTestMixin, ListView):
+    model = Game
+    template_name = "knowledge-base/moderator_game_list.html"
+    context_object_name = "games"
+
+    def get_queryset(self):
+        queryset = Game.objects.all()
+        return queryset
+
+    # called when UserPassesTestMixin
+    # this makes sure only moderators can access this page
+    def test_func(self):
+        return self.request.user.moderator
+
+
+class ModeratorSingleGame(LoginRequiredMixin, UserPassesTestMixin, ListView):
+    model = Guide
+    template_name = "knowledge-base/moderator_single_game.html"
+    context_object_name = "ApprovedGuides"
+
+    def get_queryset(self):
+        pk = self.kwargs["game_pk"]
+        game = get_object_or_404(Game, pk=pk)
+        queryset = Guide.objects.filter(game_id=game, status=1)
+
+        # for sorting
+        sort = self.request.GET.get("sort")
+        if sort == "old":
+            queryset = queryset.order_by("recent_upload")
+        else:  # default: newest first
+            queryset = queryset.order_by("-recent_upload")
+        return queryset
+
+    # called when UserPassesTestMixin
+    # this makes sure only moderators can access this page
+    def test_func(self):
+        return self.request.user.moderator
+
+    def get_context_data(self, **kwargs):
+        pk = self.kwargs["game_pk"]
+        game = get_object_or_404(Game, pk=pk)
+
+        context = super().get_context_data(**kwargs)
+        context["game"] = game
+        return context
+
+
+@require_POST
+def ModeratorSetPublishedGuide(request, game_pk, guide_pk):
+    game = get_object_or_404(Game, pk=game_pk)
+    guide = get_object_or_404(Guide, pk=guide_pk)
+    if game.published_guide_id != guide:
+        # publish or switch to publish if not currently published
+        game.published_guide_id = guide
+    else:
+        # unpublish if already published
+        game.published_guide_id = None
+
+    game.save()
+    return redirect("moderator-single-game", game_pk)  # or wherever you want to redirect
