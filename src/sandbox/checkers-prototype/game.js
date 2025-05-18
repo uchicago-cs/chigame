@@ -406,7 +406,6 @@ function getBoardState() {
   return board;
 }
 
-
 function sendBoardToServer(boardState) {
   fetch('/api/board-state/', {
     method: 'POST',
@@ -417,6 +416,10 @@ function sendBoardToServer(boardState) {
     body: JSON.stringify({ board: boardState }),
   });
 }
+// --- Settings Menu Functions -------------------------------------------------
+// add event listeners to position the settings menu on resize and load
+window.addEventListener('resize', positionSettingsMenu);
+window.addEventListener('DOMContentLoaded', positionSettingsMenu);
 
 // Event Listener for Settings Menu
 document.addEventListener('DOMContentLoaded', () => {
@@ -426,6 +429,46 @@ document.addEventListener('DOMContentLoaded', () => {
   settingsButton.addEventListener('click', () => {
     settingsMenu.classList.toggle('active');
     settingsMenu.classList.toggle('hidden');
+  });
+});
+
+// Event listener for the toggle colorblind button
+document.addEventListener('DOMContentLoaded', () => {
+  const changeColorButton = document.getElementById('toggle-colorblind');
+  changeColorButton.addEventListener('click', () => {
+    const firstPieceColor = pieces[0].color;
+    // if the first piece is a default color, change to colorblind colors
+    if (firstPieceColor === COLORS.red || firstPieceColor === COLORS.black) {
+      changePieceColor(COLORS.colorblind_blue, COLORS.colorblind_orange);
+    }
+    // if the first piece is a colorblind color, change to default colors
+    else {
+      changePieceColor(COLORS.black, COLORS.red);
+    }
+  });
+});
+
+// Function to position the settings menu
+function positionSettingsMenu() {
+  const navbar = document.getElementById('navbar');
+  const settingsMenu = document.getElementById('settings-menu');
+  if (navbar && settingsMenu) {
+    const rect = navbar.getBoundingClientRect();
+    settingsMenu.style.position = 'fixed';
+    settingsMenu.style.top = rect.bottom + 'px';
+    settingsMenu.style.left = '0';
+  }
+}
+
+// Event listener for the resize slider
+document.addEventListener('DOMContentLoaded', () => {
+  const resizeSlider = document.getElementById('resize-slider');
+  const resizeValue = document.getElementById('resize-value');
+
+  resizeSlider.addEventListener('input', () => {
+    const percent = parseInt(resizeSlider.value, 10);
+    resizeValue.textContent = percent + '%';
+    resizegame(percent / 100);
   });
 });
 
@@ -444,22 +487,7 @@ function changePieceColor(newColorOne, newColorTwo) {
   });
 }
 
-// Event listener for the toggle colorblind button
-document.addEventListener('DOMContentLoaded', () => {
-  const changeColorButton = document.getElementById('toggle-colorblind');
-  changeColorButton.addEventListener('click', () => {
-    const firstPieceColor = pieces[0].color;
-    // if the first piece is a default color, change to colorblind colors
-    if (firstPieceColor === COLORS.red || firstPieceColor === COLORS.black) {
-      changePieceColor(COLORS.colorblind_blue, COLORS.colorblind_orange);
-    }
-    // if the first piece is a colorblind color, change to default colors
-    else {
-      changePieceColor(COLORS.black, COLORS.red);
-    }
-  });
-});
-
+// function to resize the game
 function resizegame(percentage) {
   // Calculate new dimensions
   const newWidth = Math.floor(START_WIDTH * percentage);
@@ -492,14 +520,3 @@ function resizegame(percentage) {
   });
 }
 
-// Event listener for the resize slider
-document.addEventListener('DOMContentLoaded', () => {
-  const resizeSlider = document.getElementById('resize-slider');
-  const resizeValue = document.getElementById('resize-value');
-
-  resizeSlider.addEventListener('input', () => {
-    const percent = parseInt(resizeSlider.value, 10);
-    resizeValue.textContent = percent + '%';
-    resizegame(percent / 100);
-  });
-});
