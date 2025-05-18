@@ -1,0 +1,29 @@
+{% extends "knowledge-base/base.html" %}
+
+{% load static %}
+
+<link rel="stylesheet" href="{% static 'css/knowledge-base-styles.css' %}" />
+{% block page-content %}
+  <p>
+    {% if published %}
+      <h2>Guide for {{ guide.game_id }}</h2>
+      <p>Authored by: {{ guide.author }}</p>
+      <p>Latest Update: {{ guide.recent_upload }}</p>
+      <p>Categories:</p>
+      {% for category in guide.game_id.categories.all %}<span>"{{ category.name }}"</span>{% endfor %}
+      {% if not guide.game_id.categories.exists %}<span>N/A</span>{% endif %}
+      <a href="{% url 'game-detail' guide.game_id.pk %}">Go to Game</a>
+      <p>
+        Content:
+        {{ guide.content }}
+      </p>
+      <p>Likes: {{ guide.likes.count }}</p>
+      <p>Favorites: {{ guide.favorites.count }}</p>
+    {% else %}
+      <h2>Guide Detail Page</h2>
+      This guide object is NOT published. If you are looking for a guide for game
+      {{ guide.game_id }}, please go back to the
+      <a href="{% url 'knowledge-base' %}">knowledge base landing page</a>.
+    {% endif %}
+  </p>
+{% endblock page-content %}
