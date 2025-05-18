@@ -524,7 +524,7 @@ class TournamentCompletedNotification(BaseNotificationHandler):
     def get_redirect_str(self):
         return reverse("tournaments:tournament-detail", kwargs={"pk": self.notification.actor.tournament.pk})
 
-      
+
 class NotificationLabel(models.Model):
     name = models.CharField(max_length=50)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="notification_labels")
