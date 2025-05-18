@@ -8,19 +8,26 @@
 {% block css %}
   {{ block.super }}
   <link href="{% static 'css/knowledge-base-styles.css' %}" rel="stylesheet" />
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
 {% endblock css %}
+{% block javascript %}
+  {{ block.super }}
+{% endblock javascript %}
 {% block content %}
   <div class="knowledge-base container mt-4">
-    <div class="nav w-100 bg-light border rounded rounded-lg d-flex flex-row justify-content-between p-2 px-4">
+    <div class="nav w-100 bg-light border rounded rounded-lg d-flex flex-row justify-content-between p-2 px-4 fw-semibold">
       <a href="{% url 'knowledge-base' %}">
         <p class="mb-0">Home</p>
       </a>
       <div class="d-flex gap-3">
-        <a href="{% url 'knowledge-base-moderator' %}">
-          <p class="mb-0">Moderator View</p>
-        </a>
-        <a href="{% url 'knowledge-base-contributor' %}">
-          <p class="mb-0">Contributor View</p>
+        {% if request.user.moderator %}
+          <a href="{% url 'knowledge-base-moderator' %}">
+            <p class="mb-0">Moderator Dashboard</p>
+          </a>
+        {% endif %}
+        <a href="{% url 'contributor-manage-guide' %}">
+          <p class="mb-0">Manage My Guides</p>
         </a>
       </div>
     </div>
