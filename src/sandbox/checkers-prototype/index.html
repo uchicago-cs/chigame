@@ -43,7 +43,12 @@
     <!-- settings menu -->
     <div id="settings-menu" class="settings-menu hidden">
       <h2>Settings</h2>
-      <!-- Add settings options here -->
+      <!-- Settings Options -->
+      <!-- Board Scale Slider -->
+      <label for="resize-slider">Board Scale</label>
+      <input type="range" id="resize-slider" min="50" max="125" value="100" step="5">
+      <span id="resize-value">100%</span>
+      <!-- Colorblind Mode Toggle -->
       <button id="toggle-colorblind" class="settings-option">Toggle Colorblind Mode</button>
     </div>
     <button id="settings-button" class="settings-button">⚙️</button>

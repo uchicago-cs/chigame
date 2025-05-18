@@ -1,11 +1,12 @@
 // ---GAME CONSTANTS----------------------------------------------------------------
-const gameWidth = 650;
-const gameHeight = 650;
+const START_WIDTH = 650;
+const START_HEIGHT = 650;
+const START_MARGIN = 10;
 
 const config = {
   type: Phaser.AUTO,
-  width: gameWidth,
-  height: gameHeight,
+  width: START_WIDTH,
+  height: START_HEIGHT,
   parent: 'game',
   scene: {
     preload,
@@ -17,13 +18,15 @@ const config = {
 const checkers = new Phaser.Game(config);
 
 // 8x8 board
-const MARGIN = 10;
 const BOARD_SIZE = 8;
+let margin = START_MARGIN;
+
 /*
 I made the canvas background color black. Therefore, by making the game board
 smaller to account for the margin, it'll appear as if there's a black border.
 */
-let TILE_SIZE = (config.width - 2 * MARGIN) / BOARD_SIZE;
+let tiles = [];
+let tile_size = (config.width - 2 * margin) / BOARD_SIZE;
 
 // colors we will use in this game
 const COLORS = {
@@ -167,15 +170,15 @@ function drawBoard(scene) {
       let tile_color = (x + y) % 2 === 0 ? COLORS.light_brown : COLORS.dark_brown;
 
       // draw tiles
-      const tile = scene.add
+      let tile = scene.add
         .rectangle(
           // phaser actually positions shape based on the center, not top-left
           // margin + x returns the top-left location of each tile
           // tile size / 2 returns the center of the tile
-          MARGIN + x * TILE_SIZE + TILE_SIZE / 2, // x position
-          MARGIN + y * TILE_SIZE + TILE_SIZE / 2, // y position
-          TILE_SIZE, // width
-          TILE_SIZE, // height
+          margin + x * tile_size + tile_size / 2, // x position
+          margin + y * tile_size + tile_size / 2, // y position
+          tile_size, // width
+          tile_size, // height
           tile_color
         )
         // make the tiles selectable so players can click on them to move pieces
@@ -197,6 +200,7 @@ function drawBoard(scene) {
           endTurn();
         }
       });
+      tiles.push(tile);
     }
   }
 }
@@ -209,10 +213,10 @@ function createPiece(x, y, color, scene) {
     color,
     sprite: scene.add.circle(
       // same center position as when we create the board tiles/squares
-      MARGIN + x * TILE_SIZE + TILE_SIZE / 2,
-      MARGIN + y * TILE_SIZE + TILE_SIZE / 2,
+      margin + x * tile_size + tile_size / 2,
+      margin + y * tile_size + tile_size / 2,
       // circle radius
-      TILE_SIZE / RADIUS_SCALE_FACTOR,
+      tile_size / RADIUS_SCALE_FACTOR,
       color
     ),
   };
@@ -315,8 +319,8 @@ function movePiece(piece, moveX, moveY) {
   // Move the piece
   piece.x = moveX;
   piece.y = moveY;
-  piece.sprite.x = MARGIN + piece.x * TILE_SIZE + TILE_SIZE / 2;
-  piece.sprite.y = MARGIN + piece.y * TILE_SIZE + TILE_SIZE / 2;
+  piece.sprite.x = margin + piece.x * tile_size + tile_size / 2;
+  piece.sprite.y = margin + piece.y * tile_size + tile_size / 2;
 
   console.log("Current board state:", getBoardState());
 }
@@ -457,33 +461,46 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-// Function to change the color of all pieces
-function resize_board(percentage) {
-  const firstPieceColor = pieces[0].color;
+function resizegame(percentage) {
+  // Calculate new dimensions
+  const newWidth = Math.floor(START_WIDTH * percentage);
+  const newHeight = Math.floor(START_HEIGHT * percentage);
+
+  // Update game configuration
+  checkers.scale.resize(newWidth, newHeight);
+
+  // Update margin and tile size
+  margin = START_MARGIN * percentage;
+  tile_size = (newWidth - 2 * margin) / BOARD_SIZE;
+
+  // Update the positions of the tiles and pieces
+  tiles.forEach((tile, index) => {
+    const x = index % BOARD_SIZE;
+    const y = Math.floor(index / BOARD_SIZE);
+    tile.setPosition(
+      margin + x * tile_size + tile_size / 2,
+      margin + y * tile_size + tile_size / 2
+    );
+    tile.setSize(tile_size, tile_size);
+  });
+
   pieces.forEach((piece) => {
-    if (piece.color === firstPieceColor) {
-      piece.color = newColorOne;
-      piece.sprite.setFillStyle(newColorOne);
-    }
-    else {
-      piece.color = newColorTwo;
-      piece.sprite.setFillStyle(newColorTwo);
-    }
+    piece.sprite.setPosition(
+      margin + piece.x * tile_size + tile_size / 2,
+      margin + piece.y * tile_size + tile_size / 2
+    );
+    piece.sprite.setRadius(tile_size / RADIUS_SCALE_FACTOR);
   });
 }
 
-// Event listener for the resize button
+// Event listener for the resize slider
 document.addEventListener('DOMContentLoaded', () => {
-  const changeColorButton = document.getElementById('toggle-colorblind');
-  changeColorButton.addEventListener('click', () => {
-    const firstPieceColor = pieces[0].color;
-    // if the first piece is a default color, change to colorblind colors
-    if (firstPieceColor === COLORS.red || firstPieceColor === COLORS.black) {
-      changePieceColor(COLORS.colorblind_blue, COLORS.colorblind_orange);
-    }
-    // if the first piece is a colorblind color, change to default colors
-    else {
-      changePieceColor(COLORS.black, COLORS.red);
-    }
+  const resizeSlider = document.getElementById('resize-slider');
+  const resizeValue = document.getElementById('resize-value');
+
+  resizeSlider.addEventListener('input', () => {
+    const percent = parseInt(resizeSlider.value, 10);
+    resizeValue.textContent = percent + '%';
+    resizegame(percent / 100);
   });
 });
