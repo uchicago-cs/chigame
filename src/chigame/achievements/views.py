@@ -9,4 +9,4 @@ def get_recent_achievements(pk, limit=5):
         pl (int): The primary key of the user whose achievements are to be fetched.
         limit (int): The maximum number of recent achievements to fetch. Default is 5.
     """
-    return UserAchievement.objects.filter(user_id=pk).order_by("-date")[:limit]
+    return UserAchievement.objects.filter(user_id=pk).order_by("-date_earned")[:limit]
