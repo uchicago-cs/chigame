@@ -1,8 +1,10 @@
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+
 from ..models import *
 from .serializers import *
+
 
 @api_view(["POST", "GET"])
 def get_achievements(request):
@@ -18,6 +20,7 @@ def get_achievements(request):
         achievements = Achievement.objects.all()
         serializer = AchievementSerializer(achievements, many=True)
         return Response(serializer.data)
+
 
 @api_view(["POST", "GET"])
 def get_user_achievements(request):
