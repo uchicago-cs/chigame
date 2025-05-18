@@ -78,7 +78,6 @@
         if (data.status === "added") {
           addReactionToMessage(messageId, content);
         } else if (data.status === "removed") {
-          console.log("Reaction ${emoji} removed");
           removeReactionFromMessage(messageId, content);
         }
       });
