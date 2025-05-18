@@ -1,4 +1,5 @@
 from .models import UserAchievement
+from django.shortcuts import render
 
 
 def get_recent_achievements(pk, limit=5):
@@ -10,3 +11,6 @@ def get_recent_achievements(pk, limit=5):
         limit (int): The maximum number of recent achievements to fetch. Default is 5.
     """
     return UserAchievement.objects.filter(user_id=pk).order_by("-date_earned")[:limit]
+
+def demo_game(request):
+    return render(request, "achievements/demo_game.html")
