@@ -28,8 +28,8 @@ from django.views.generic.edit import FormMixin
 from chigame.users.models import User
 
 from .filters import LobbyFilter
-from .forms import GameForm, LobbyForm, ReviewForm, IFGameForm
-from .models import Chat, Game, GameList, Lobby, Match, Player, Review, Tournament, InteractiveFictionGame
+from .forms import GameForm, IFGameForm, LobbyForm, ReviewForm
+from .models import Chat, Game, GameList, InteractiveFictionGame, Lobby, Match, Player, Review, Tournament
 from .simulation_utils import (
     MultiStageSimulator,
     RoundRobinSimulator,
