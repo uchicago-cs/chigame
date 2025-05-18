@@ -1,7 +1,3 @@
-:root {
-    --navbar-height: 10%;
-}
-
 body {
     margin: 0;
     background: #e7d3b5;
@@ -148,10 +144,10 @@ canvas {
 /* for the menu itself and the button to toggle it*/
 .settings-menu {
     position: fixed;
-    top: var(--navbar-height);
+    bottom: 0;
     left: 0;
     width: 10%;
-    height: calc(100% - var(--navbar-height));
+    height: 90%;
     background-color: #a67c52;
     color: white;
     padding: 1rem;
@@ -194,25 +190,4 @@ canvas {
     width: 100%;
     max-width: 100%;
     box-sizing: border-box;
-}
-
-.settings-option {
-    display: block;
-    width: 100%;
-    margin: 16px 0 0 0;
-    padding: 12px 6px;
-    background-color: #fff;
-    color: #000;
-    border: none;
-    border-radius: 25px;
-    font-size: 18px;
-    font-family: inherit;
-    cursor: pointer;
-    transition: background 0.2s, opacity 0.2s;
-    box-shadow: 0px 2px 4px rgba(0,0,0,0.12);
-}
-
-.settings-option:hover {
-    background-color: #a67c52;
-    opacity: 0.9;
 }
