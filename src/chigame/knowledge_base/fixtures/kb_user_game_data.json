@@ -1,0 +1,144 @@
+[
+  {
+    "model": "users.user",
+    "pk": 1,
+    "fields": {
+      "password": "argon2$argon2id$v=19$m=102400,t=2,p=8$amdjMmprZTlraTJ6bUNGZmVZR01aYQ$vm2v7qErQWGRxJ8Tl7xyM0GAgwYF0reA3EOt0ZCUFe4",
+      "last_login": "2025-05-06T02:30:41.541Z",
+      "is_superuser": true,
+      "is_staff": true,
+      "is_active": true,
+      "date_joined": "2025-04-30T02:05:53Z",
+      "name": "Admin",
+      "email": "admin@example.com",
+      "username": null,
+      "tokens": 1,
+      "moderator": true,
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 2,
+    "fields": {
+      "password": "argon2$argon2id$v=19$m=102400,t=2,p=8$aGE1NmZkQmpEeUh6cHZxVUtSYUxXTQ$Ix/KS4ULbdOobGCQzVe/Hu17LLJrFcUdJtOYki10IYg",
+      "last_login": "2025-05-01T02:57:31Z",
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2025-04-30T02:59:57Z",
+      "name": "Alex",
+      "email": "alex@example.com",
+      "username": null,
+      "tokens": 1,
+      "moderator": true,
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 3,
+    "fields": {
+      "password": "argon2$argon2id$v=19$m=102400,t=2,p=8$b0ZKTFowcXlqWjFEVkJJZDFqRXlNTQ$h48TBzGoNShJYzPStro8HPIMFjmHJj8Qtbsz0hXkkOA",
+      "last_login": "2025-05-06T02:30:16.605Z",
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2025-05-04T15:57:21.574Z",
+      "name": "Sam",
+      "email": "sam@example.com",
+      "username": null,
+      "tokens": 1,
+      "moderator": false,
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 4,
+    "fields": {
+      "password": "argon2$argon2id$v=19$m=102400,t=2,p=8$YlVXQ0Z5eXNncmpUZ3g0OGRGaVlHVQ$1zZ4I0q/PU2Hpq46+x2oCQ0DquFDnGzVlTHxtlpw5Jg",
+      "last_login": null,
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2025-05-06T02:20:23Z",
+      "name": "Alice",
+      "email": "alice@example.com",
+      "username": null,
+      "tokens": 1,
+      "moderator": false,
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "games.game",
+    "pk": 1,
+    "fields": {
+      "name": "Chess",
+      "description": "This is chess game.",
+      "year_published": null,
+      "image": "/static/images/no_picture_available.png",
+      "rules": "",
+      "min_players": 2,
+      "max_players": 4,
+      "suggested_age": null,
+      "expected_playtime": null,
+      "min_playtime": null,
+      "max_playtime": null,
+      "complexity": "1.00",
+      "BGG_id": null,
+      "published_guide_id": 1,
+      "categories": [1, 9],
+      "mechanics": []
+    }
+  },
+  {
+    "model": "games.game",
+    "pk": 2,
+    "fields": {
+      "name": "Go Game",
+      "description": "This is Go game.",
+      "year_published": null,
+      "image": "/static/images/no_picture_available.png",
+      "rules": "",
+      "min_players": 2,
+      "max_players": 2,
+      "suggested_age": null,
+      "expected_playtime": null,
+      "min_playtime": null,
+      "max_playtime": null,
+      "complexity": "1.00",
+      "BGG_id": null,
+      "published_guide_id": 2,
+      "categories": [1],
+      "mechanics": []
+    }
+  },
+  {
+    "model": "games.game",
+    "pk": 3,
+    "fields": {
+      "name": "Game A",
+      "description": "Game A",
+      "year_published": null,
+      "image": "/static/images/no_picture_available.png",
+      "rules": "",
+      "min_players": 3,
+      "max_players": 5,
+      "suggested_age": null,
+      "expected_playtime": null,
+      "min_playtime": null,
+      "max_playtime": null,
+      "complexity": "1.00",
+      "BGG_id": null,
+      "published_guide_id": null,
+      "categories": [25],
+      "mechanics": []
+    }
+  }
+]
