@@ -375,67 +375,89 @@ def apply_sorting_and_filtering(queryset, sort_param, players_param):
 
 def get_recommended_games(game, user=None, limit=5):
     """
-    Returns a queryset of recommended games based on multiple weighted factors.
+    Returns a queryset of recommended games based on user-weighted factors.
 
     Args:
         game: The reference Game object
-        user: Optional User object to check play history
+        user: Optional User object to check play history and get preferences
         limit: Maximum number of games to return
 
     Returns:
         QuerySet of Game objects ordered by recommendation score
     """
-
-    # Settled on a recommendation system that combines multiple factors
-    # (as opposed to having it only be category based):
-    # Game categories (40% weight)
-    # Game mechanics (30% weight)
-    # Game designers/artists (15% weight)
-    # Similar complexity ratings (10% weight)
-    # Similar playtime (5% weight)
-    #
-    # The reason I went with this weighted approach is to provide more well
-    # rounded recommendations than
-    # using categories alone. Also, I deprioritized, but didn't exclude, games
-    # the user has already played.
+    from chigame.users.models import RecommendationPreferences
 
     all_games = Game.objects.exclude(id=game.id)
+
+    # Default weights if no user or no preferences
+    category_weight = 0.4
+    mechanics_weight = 0.3
+    people_weight = 0.15
+    complexity_weight = 0.1
+    playtime_weight = 0.05
+
+    # Get custom weights if user is authenticated
+    if user and user.is_authenticated:
+        try:
+            prefs = RecommendationPreferences.objects.get(user=user)
+            total = (
+                prefs.category_weight
+                + prefs.mechanics_weight
+                + prefs.designers_weight
+                + prefs.complexity_weight
+                + prefs.playtime_weight
+            )
+
+            # Normalize weights to sum to 1.0
+            if total > 0:
+                category_weight = prefs.category_weight / 100
+                mechanics_weight = prefs.mechanics_weight / 100
+                people_weight = prefs.designers_weight / 100
+                complexity_weight = prefs.complexity_weight / 100
+                playtime_weight = prefs.playtime_weight / 100
+        except RecommendationPreferences.DoesNotExist:
+            # Use defaults
+            pass
 
     game_categories = game.categories.all()
     game_mechanics = game.mechanics.all()
     game_people = game.people.all()
 
-    all_games = all_games.annotate(category_score=Count("categories", filter=Q(categories__in=game_categories)) * 0.4)
-
-    all_games = all_games.annotate(mechanics_score=Count("mechanics", filter=Q(mechanics__in=game_mechanics)) * 0.3)
-
-    all_games = all_games.annotate(people_score=Count("people", filter=Q(people__in=game_people)) * 0.15)
+    all_games = all_games.annotate(
+        category_score=Count("categories", filter=Q(categories__in=game_categories)) * category_weight
+    )
+    all_games = all_games.annotate(
+        mechanics_score=Count("mechanics", filter=Q(mechanics__in=game_mechanics)) * mechanics_weight
+    )
+    all_games = all_games.annotate(people_score=Count("people", filter=Q(people__in=game_people)) * people_weight)
 
     if game.complexity:
         # Convert Decimal to float before arithmetic operations
         complexity_value = float(game.complexity)
         all_games = all_games.annotate(
             complexity_score=Case(
-                When(complexity__range=(complexity_value - 0.5, complexity_value + 0.5), then=0.1),
-                When(complexity__range=(complexity_value - 1.0, complexity_value + 1.0), then=0.05),
+                When(complexity__range=(complexity_value - 0.5, complexity_value + 0.5), then=complexity_weight),
+                When(complexity__range=(complexity_value - 1.0, complexity_value + 1.0), then=complexity_weight * 0.5),
                 default=Value(0),
                 output_field=FloatField(),
             )
         )
     else:
         all_games = all_games.annotate(complexity_score=Value(0, output_field=FloatField()))
+
     if game.expected_playtime:
         # Convert to float before arithmetic
         playtime_value = float(game.expected_playtime)
         all_games = all_games.annotate(
             playtime_score=Case(
-                When(expected_playtime__range=(playtime_value * 0.8, playtime_value * 1.2), then=0.05),
+                When(expected_playtime__range=(playtime_value * 0.8, playtime_value * 1.2), then=playtime_weight),
                 default=Value(0),
                 output_field=FloatField(),
             )
         )
     else:
         all_games = all_games.annotate(playtime_score=Value(0, output_field=FloatField()))
+
     if user and user.is_authenticated:
         played_game_ids = Match.objects.filter(players=user).values_list("game_id", flat=True)
         all_games = all_games.annotate(

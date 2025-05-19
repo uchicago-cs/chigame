@@ -62,4 +62,5 @@ urlpatterns = [
     path("labels/create/", views.create_notification_label, name="create-notification-label"),
     path("labels/<int:label_id>/notifications/", views.notifications_by_label, name="notifications-by-label"),
     path("inbox/<int:pk>/<str:category>/", views.user_inbox_view, name="user-inbox-category"),
+    path("<int:pk>/recommendation-preferences/", views.recommendation_preferences, name="recommendation-preferences"),
 ]

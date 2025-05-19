@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block title %}
+  Recommendation Preferences
+{% endblock title %}
+{% block content %}
+  <style>
+    .slider-container {
+      margin-bottom: 20px;
+    }
+
+    .slider {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 10px;
+      border-radius: 5px;
+      background: #d3d3d3;
+      outline: none;
+      opacity: 0.7;
+      -webkit-transition: .2s;
+      transition: opacity .2s;
+    }
+
+    .slider:hover {
+      opacity: 1;
+    }
+
+    .slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #800000;
+      cursor: pointer;
+    }
+
+    .slider::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #800000;
+      cursor: pointer;
+    }
+
+    .slider-value {
+      margin-left: 10px;
+      font-weight: bold;
+    }
+
+    .preference-description {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 5px;
+    }
+
+    .btn-primary {
+      background-color: #800000;
+      border-color: #800000;
+    }
+
+    .btn-primary:hover {
+      background-color: #600000;
+      border-color: #600000;
+    }
+
+    .card-header {
+      background-color: #f8f9fa;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .recommendation-info {
+      background-color: #f8f9fa;
+      border-radius: 5px;
+      padding: 15px;
+      margin-bottom: 20px;
+      border: 1px solid #ddd;
+    }
+  </style>
+  <div class="container mt-5">
+    <div class="row">
+      <div class="col-md-8 offset-md-2">
+        <div class="card">
+          <div class="card-header">
+            <h3>Customize Your Game Recommendations</h3>
+          </div>
+          <div class="card-body">
+            <div class="recommendation-info">
+              <p>
+                Adjust the sliders below to customize how games are recommended to you. Higher values mean that factor is more important in your recommendations.
+              </p>
+              <p>
+                After saving your preferences, game recommendations across the site will be personalized based on your settings.
+              </p>
+            </div>
+            <form method="post">
+              {% csrf_token %}
+              <div class="slider-container">
+                <label for="category_weight">
+                  Game Categories <span id="category_value" class="slider-value">{{ preferences.category_weight }}%</span>
+                </label>
+                <input type="range"
+                       class="slider"
+                       id="category_weight"
+                       name="category_weight"
+                       min="0"
+                       max="100"
+                       value="{{ preferences.category_weight }}"
+                       oninput="updateSliderValue('category_value', this.value)" />
+                <div class="preference-description">
+                  How much importance to give to matching game categories (like strategy, family, party games)
+                </div>
+              </div>
+              <div class="slider-container">
+                <label for="mechanics_weight">
+                  Game Mechanics <span id="mechanics_value" class="slider-value">{{ preferences.mechanics_weight }}%</span>
+                </label>
+                <input type="range"
+                       class="slider"
+                       id="mechanics_weight"
+                       name="mechanics_weight"
+                       min="0"
+                       max="100"
+                       value="{{ preferences.mechanics_weight }}"
+                       oninput="updateSliderValue('mechanics_value', this.value)" />
+                <div class="preference-description">
+                  How much importance to give to similar game mechanics (like deck building, worker placement, dice rolling)
+                </div>
+              </div>
+              <div class="slider-container">
+                <label for="designers_weight">
+                  Game Designers/Artists <span id="designers_value" class="slider-value">{{ preferences.designers_weight }}%</span>
+                </label>
+                <input type="range"
+                       class="slider"
+                       id="designers_weight"
+                       name="designers_weight"
+                       min="0"
+                       max="100"
+                       value="{{ preferences.designers_weight }}"
+                       oninput="updateSliderValue('designers_value', this.value)" />
+                <div class="preference-description">How much importance to give to games by the same designers or artists</div>
+              </div>
+              <div class="slider-container">
+                <label for="complexity_weight">
+                  Game Complexity <span id="complexity_value" class="slider-value">{{ preferences.complexity_weight }}%</span>
+                </label>
+                <input type="range"
+                       class="slider"
+                       id="complexity_weight"
+                       name="complexity_weight"
+                       min="0"
+                       max="100"
+                       value="{{ preferences.complexity_weight }}"
+                       oninput="updateSliderValue('complexity_value', this.value)" />
+                <div class="preference-description">How much importance to give to games with similar complexity levels</div>
+              </div>
+              <div class="slider-container">
+                <label for="playtime_weight">
+                  Game Playtime <span id="playtime_value" class="slider-value">{{ preferences.playtime_weight }}%</span>
+                </label>
+                <input type="range"
+                       class="slider"
+                       id="playtime_weight"
+                       name="playtime_weight"
+                       min="0"
+                       max="100"
+                       value="{{ preferences.playtime_weight }}"
+                       oninput="updateSliderValue('playtime_value', this.value)" />
+                <div class="preference-description">How much importance to give to games with similar playing time</div>
+              </div>
+              <div class="text-center mt-4">
+                <button type="submit" class="btn btn-primary">Save Preferences</button>
+                <a href="{% url 'users:user-profile' user_id %}"
+                   class="btn btn-secondary ml-2">Cancel</a>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    function updateSliderValue(elementId, value) {
+      document.getElementById(elementId).textContent = value + '%';
+    }
+  </script>
+{% endblock content %}

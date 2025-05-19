@@ -534,3 +534,22 @@ class NotificationLabel(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class RecommendationPreferences(models.Model):
+    """
+    Stores a user's recommendation preferences for personalized game recommendations.
+    Each preference is a weight (0-100) indicating importance of the factor.
+    """
+
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="recommendation_preferences")
+    category_weight = models.IntegerField(default=40, help_text="Weight for game categories (0-100)")
+    mechanics_weight = models.IntegerField(default=30, help_text="Weight for game mechanics (0-100)")
+    designers_weight = models.IntegerField(default=15, help_text="Weight for game designers/artists (0-100)")
+    complexity_weight = models.IntegerField(default=10, help_text="Weight for game complexity (0-100)")
+    playtime_weight = models.IntegerField(default=5, help_text="Weight for game playtime (0-100)")
+
+    @classmethod
+    def get_or_create_preferences(cls, user: User) -> "RecommendationPreferences":
+        preferences, created = cls.objects.get_or_create(user=user)
+        return preferences

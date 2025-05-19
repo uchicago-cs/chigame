@@ -799,3 +799,41 @@ def notifications_by_label(request, label_id):
         "notifications": notifications,
     }
     return render(request, "users/notifications_by_label.html", context)
+
+
+@login_required
+def recommendation_preferences(request, pk):
+    """
+    Allow users to customize their game recommendation preferences.
+
+    Args:
+        request (HttpRequest)
+        pk (int): The primary key of the user
+
+    Returns:
+        HttpResponse: Rendered template with recommendation preferences
+    """
+
+    if pk != request.user.pk:
+        messages.error(request, "You can only manage your own preferences")
+        return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
+
+    from .models import RecommendationPreferences
+
+    preferences = RecommendationPreferences.get_or_create_preferences(request.user)
+
+    if request.method == "POST":
+        try:
+            preferences.category_weight = min(100, max(0, int(request.POST.get("category_weight", 40))))
+            preferences.mechanics_weight = min(100, max(0, int(request.POST.get("mechanics_weight", 30))))
+            preferences.designers_weight = min(100, max(0, int(request.POST.get("designers_weight", 15))))
+            preferences.complexity_weight = min(100, max(0, int(request.POST.get("complexity_weight", 10))))
+            preferences.playtime_weight = min(100, max(0, int(request.POST.get("playtime_weight", 5))))
+            preferences.save()
+            messages.success(request, "Your recommendation preferences have been updated")
+        except ValueError:
+            messages.error(request, "Invalid preference values. Please enter numbers between 0 and 100.")
+
+    context = {"preferences": preferences, "user_id": pk}
+
+    return render(request, "users/recommendation_preferences.html", context)

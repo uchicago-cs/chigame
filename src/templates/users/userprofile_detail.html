@@ -139,11 +139,8 @@
                      class="btn btn-primary">Friend List</a>
                   <a href="{% url 'users:user-history' profile.user.pk %}"
                      class="btn btn-primary">Stats</a>
-                {% elif is_friend %}
-                  <a href="{% url 'users:remove-friend' profile.user.pk %}"
-                     class="btn btn-primary">Remove Friend</a>
-                  <a href="{% url 'users:user-history' profile.user.pk %}"
-                     class="btn btn-primary">Stats</a>
+                  <a href="{% url 'users:recommendation-preferences' profile.user.pk %}"
+                     class="btn btn-primary">Recommendation Preferences</a>
                 {% elif is_friend %}
                   <a href="{% url 'users:remove-friend' profile.user.pk %}"
                      class="btn btn-primary">Remove Friend</a>
