@@ -1,6 +1,8 @@
 from django.core.exceptions import ValidationError
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
 
 from .models import LiveChat, LiveChatMessage, LiveChatMessageReaction
 
@@ -36,7 +38,9 @@ def delete_message(request, message_id):
     return JsonResponse({"message": "Message deleted successfully"}, status=200)
 
 
-def react_to_message(request, message_id, content):
+@csrf_exempt
+@require_POST
+def react_to_message(request, message_id):
     """
     Reacts to a message in the database, creating a new reaction.
 
@@ -48,6 +52,7 @@ def react_to_message(request, message_id, content):
     Returns:
         A JSON response.
     """
+    content = request.POST.get("content")
     if not request.user.is_authenticated:
         return JsonResponse({"error": "Unauthorized"}, status=401)
 

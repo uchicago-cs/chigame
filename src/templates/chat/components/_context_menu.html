@@ -4,7 +4,7 @@
   <button class="btn btn-sm btn-light w-100" onclick="deleteMessage()">Pinning Messages</button>
   <button class="btn btn-sm btn-light w-100" onclick="replyToMessage()">Reply</button>
   <button class="btn btn-sm btn-light w-100" onclick="deleteMessage()">Edit Message</button>
-  <button class="btn btn-sm btnlight w-100" onclick="reactToMessage()">Add Reaction</button>
+  <button class="btn btn-sm btnlight w-100" onclick="reactToMessage('❤️')">Add Reactions</button>
   <button class="btn btn-sm btn-danger w-100" onclick="deleteMessage()">Delete</button>
 </div>
 <script>
@@ -68,19 +68,63 @@
    * Reacts to a message on the frontend.
    */
   function reactToMessage(content = "❤️") {
-    const messageId = replyToMessageId;
-    fetch(`/chat/message/${messageId}/react`, {
-        method: 'POST',
-        body: "message_id=${messageId}&content=${encodeURIComponent(emoji)}"
-      })
-      .then(response => response.json())
-      .then(data => {
-        if (data.status === "added") {
-          addReactionToMessage(messageId, content);
-        } else if (data.status === "removed") {
-          removeReactionFromMessage(messageId, content);
-        }
-      });
+    console.log("reacting to message");
+    try {
+      const messageId = replyToMessageId;
+      fetch(`/chat/message/${messageId}/react`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          body: `message_id=${messageId}&content=${encodeURIComponent(content)}`
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.status === "reacted") {
+            addReactionToMessage(messageId, content);
+          } else if (data.status === "unreacted") {
+            removeReactionFromMessage(messageId, content); // <- fixed name
+          }
+        });
+    } catch (e) {
+      console.error("ERROR: " + e.message);
+    }
     hideContextMenu();
+  }
+
+  function addReactionToMessage(messageId, content) {
+    const container = document.getElementById(`reactions-${messageId}`);
+    if (!container) return;
+
+    const existing = container.querySelector(`[data-reaction="${content}"]`);
+    if (existing) {
+      const countSpan = existing.querySelector('.reaction-count');
+      const count = parseInt(countSpan.textContent, 10);
+      countSpan.textContent = count + 1;
+    } else {
+      const span = document.createElement('span');
+      span.className = 'reaction-pill';
+      span.dataset.reaction = content;
+      span.dataset.messageId = messageId;
+      span.innerHTML = `${content} <span class="reaction-count">1</span>`;
+      span.onclick = () => reactToMessage(content);
+      container.appendChild(span);
+    }
+  }
+
+  function removeReactionFromMessage(messageId, content) {
+    const container = document.getElementById(`reactions-${messageId}`);
+    if (!container) return;
+
+    const existing = container.querySelector(`[data-reaction="${content}"]`);
+    if (existing) {
+      const countSpan = existing.querySelector('.reaction-count');
+      const count = parseInt(countSpan.textContent, 10);
+      if (count > 1) {
+        countSpan.textContent = count - 1;
+      } else {
+        existing.remove();
+      }
+    }
   }
 </script>
