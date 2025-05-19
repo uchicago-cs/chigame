@@ -34,15 +34,26 @@ from chigame.users.models import User
 
 from .filters import LobbyFilter
 from .forms import GameForm, IFGameForm, LobbyForm, ReviewForm
-
-from .models import Chat, Game, GameList, InteractiveFictionGame, Lobby, Match, Player, Review, Tournament, Checkers, CheckersBoard, CheckersTurn
+from .models import (
+    Chat,
+    Checkers,
+    CheckersBoard,
+    CheckersTurn,
+    Game,
+    GameList,
+    InteractiveFictionGame,
+    Lobby,
+    Match,
+    Player,
+    Review,
+    Tournament,
+)
 from .simulation_utils import (
     MultiStageSimulator,
     RoundRobinSimulator,
     TournamentSimulator,
     run_complete_tournament_simulation,
 )
-
 from .tables import LobbyTable
 
 
