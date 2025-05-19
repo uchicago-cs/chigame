@@ -244,7 +244,7 @@ function movePiece(piece, moveX, moveY) {
   // update the display state
   piece.sprite.x = MARGIN + piece.x * TILE_SIZE + TILE_SIZE / 2;
   piece.sprite.y = MARGIN + piece.y * TILE_SIZE + TILE_SIZE / 2;
-  
+
   // Log the current state
   const currentState = getBoardState();
   console.log("Current board state:", currentState);
@@ -321,7 +321,7 @@ function reloadBoardFromState(state) {
   pieces.forEach(p => p.sprite.destroy());
   pieces = [];
 
-  // Re-populate pieces
+  // Re-populate piece
   populatePiecesFromState(checkers.scene.scenes[0], state);
 }
 
@@ -341,4 +341,3 @@ function update() {
       .catch(err => console.error("Polling error:", err));
   }
 }
-
