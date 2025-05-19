@@ -133,6 +133,14 @@ class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
         return get_user(lookup_value)
 
 
+# Custom permission class for authentification
+class IsAuthenticatedOrReadOnly(BasePermission):
+    def has_permission(self, request, view):
+        if request.method in ["GET", "HEAD", "OPTIONS"]:
+            return True
+        return request.user and request.user.is_authenticated
+
+
 class MessageView(generics.CreateAPIView):
     queryset = Message.objects.all()
     serializer_class = MessageSerializer
