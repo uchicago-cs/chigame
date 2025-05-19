@@ -23,6 +23,9 @@ class Achievement(models.Model):
     threshold = models.FloatField(null=True, blank=True, default=1)
     # threshold is amount needed to earn achievement (e.g. 5.0 wins)
 
+    def __str__(self):
+        return f"{self.name} ({self.game})"
+
     class Meta:
         unique_together = ("name", "game")
 
@@ -38,6 +41,9 @@ class UserAchievement(models.Model):
     date_earned = models.DateTimeField()
     progress = models.FloatField(null=True, blank=True, default=1)
     # progress can be updated as user makes progress on an achievement with a threshold
+
+    def __str__(self):
+        return f"{self.user} - {self.achievement}"
 
     class Meta:
         unique_together = ("user", "achievement")
