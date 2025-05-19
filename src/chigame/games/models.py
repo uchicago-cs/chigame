@@ -746,7 +746,7 @@ class GameList(models.Model):
         return f"{self.name} ({self.created_by})"
 
 
-# ================ CHECKERS ================
+# ================ CHECKERS ===============
 
 
 class Checkers(models.Model):
