@@ -34,6 +34,8 @@ const COLORS = {
 let pieces = [];
 let selectedPiece = null;
 let currentPlayer = COLORS.red; // red starts first
+let redCaptured = 0; // Number of pieces that red has captured
+let blackCaptured = 0; // Number of pieces that black has captured
 // change to adjust the piece size, any value less than 2 would make the pieces
 // bigger than the tiles
 const RADIUS_SCALE_FACTOR = 2.5;
@@ -87,6 +89,9 @@ function create() {
   const playAgainNo = document.getElementById('playAgainNo');
   const easyBot = document.getElementById('toggle-bot');
 
+  // Score display
+  const score = document.getElementById('score');
+
   function resetGame() {
     // Clear all pieces
     pieces.forEach((piece) => piece.sprite.destroy());
@@ -98,6 +103,8 @@ function create() {
     currentPlayer = COLORS.red;
     drawOffered = false;
     drawOfferedBy = null;
+    redCaptured = 0;
+    blackCaptured = 0;
 
     // Reset UI
     gameOverPrompts.classList.remove('show');
@@ -108,6 +115,7 @@ function create() {
     drawBtn.textContent = 'Offer Draw';
     forfeitBtn.style.display = 'block';
     declineDrawBtn.style.display = 'none';
+    score.innerHTML = "Red: 0<br>Black: 0";
 
     // Repopulate the board using the stored scene reference
     populatePieces(scene);
@@ -333,6 +341,12 @@ function isValidMove(piece, moveX, moveY) {
   return false;
 }
 
+// Updates score on frontend
+function updateScore() {
+  const score = document.getElementById('score');
+  score.innerHTML = "Red: " + redCaptured + "<br>Black: " + blackCaptured;
+}
+
 function movePiece(piece, moveX, moveY) {
   const dx = moveX - piece.x;
   const dy = moveY - piece.y;
@@ -343,6 +357,12 @@ function movePiece(piece, moveX, moveY) {
     if (captured) {
       captured.sprite.destroy(); // delete the sprite (remove from display state)
       pieces = pieces.filter((p) => p !== captured); // remove it from the array (game state)
+      if (currentPlayer === COLORS.red) {
+        redCaptured++;
+      } else {
+        blackCaptured++;
+      }
+      updateScore();
 
       // Check for game over after capturing a piece
       checkGameOver();
