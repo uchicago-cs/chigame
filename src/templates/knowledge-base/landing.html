@@ -1,40 +1,67 @@
 {% extends "knowledge-base/base.html" %}
 
 {% block page-content %}
-  <div class="container py-4">
-    <h1 class="mb-4">Knowledge Base</h1>
-    <form method="get" class="row g-2 align-items-center mb-4">
-      <div class="col-md-4">
+  {% if unseen_feedbacks %}
+    <span>You have {{ unseen_feedbacks|length }} status update{{ unseen_feedbacks|length|pluralize }}!</span>
+    {% for feedback in unseen_feedbacks %}
+      <div>
+        Updated Feedback for Guide for {{ feedback.guide_id.game_id }}
+        (ID={{ feedback.guide_id.pk }}):
+        <a href="{% url 'feedback-detail' feedback.pk %}">View Details</a>
+      </div>
+    {% endfor %}
+  {% endif %}
+  <div class="knowledge-base container">
+    <div class="d-flex justify-content-between align-items-center pb-4">
+      <h1 class="m-0">Knowledge Base</h1>
+      <div class="d-flex gap-2">
+        {% if not request.user.is_authenticated %}
+          <a href="{% url 'account_login' %}" class="btn btn-primary">Login to Contribute</a>
+        {% else %}
+          {% if has_guides %}
+            <a href="{% url 'contributor-manage-guide' %}"
+               class="btn btn-outline-primary">Manage My Guides</a>
+          {% endif %}
+          <a href="{% url 'knowledge-base-guide-upload' %}"
+             class="btn btn-success">Upload a Guide</a>
+        {% endif %}
+      </div>
+    </div>
+    <!-- search bar -->
+    <form method="get"
+          class="d-flex flex-column g-2 align-items-end mb-4 gap-2">
+      <div class="w-100">
         <input type="text"
                name="q"
                value="{{ query }}"
-               class="form-control"
+               class="form-control w-100"
                placeholder="Search for a Guide" />
       </div>
-      <div class="col-md-3">
-        <select name="category" class="form-select">
-          <option value="">All Categories</option>
-          {% for cat in categories %}
-            <option value="{{ cat }}"
-                    {% if request.GET.category == cat.name %}selected{% endif %}>{{ cat }}</option>
-          {% endfor %}
-        </select>
-      </div>
-      <div class="col-md-3">
-        <select name="sort" class="form-select">
-          <option value="">Sort by: Most Recent Update</option>
-          <option value="az" {% if request.GET.sort == "az" %}selected{% endif %}>Game Name A-Z</option>
-          <option value="za" {% if request.GET.sort == "za" %}selected{% endif %}>Game Name Z-A</option>
-          <option value="old" {% if request.GET.sort == "old" %}selected{% endif %}>Oldest Update</option>
-        </select>
-      </div>
-      <div class="col-md-2 d-grid">
-        <button type="submit" class="btn btn-primary">Search</button>
+      <div class="d-flex align-items-center justify-content-between w-100">
+        <div class="d-flex gap-2">
+          <select name="category" class="form-select">
+            <option value="">All Categories</option>
+            {% for cat in categories %}
+              <option value="{{ cat }}"
+                      {% if request.GET.category == cat.name %}selected{% endif %}>{{ cat }}</option>
+            {% endfor %}
+          </select>
+          <select name="sort" class="form-select">
+            <option value="">Sort by: Most Recent Update</option>
+            <option value="az" {% if request.GET.sort == "az" %}selected{% endif %}>Game Name A-Z</option>
+            <option value="za" {% if request.GET.sort == "za" %}selected{% endif %}>Game Name Z-A</option>
+            <option value="old" {% if request.GET.sort == "old" %}selected{% endif %}>Oldest Update</option>
+          </select>
+        </div>
+        <div class="d-flex flex-row align-items-center gap-2">
+          <div>
+            <a href="{% url 'knowledge-base' %}"
+               class="btn btn-link p-0 text-decoration-none">Clear Search</a>
+          </div>
+          <button type="submit" class="btn btn-primary">Search</button>
+        </div>
       </div>
     </form>
-    <div class="mb-3">
-      <a href="{% url 'knowledge-base' %}" class="btn btn-link p-0">Clear Search</a>
-    </div>
     <div class="row row-cols-1 row-cols-md-3 g-4 mb-4">
       {% for guide in guides %}
         <div class="col">
@@ -64,18 +91,5 @@
         </div>
       {% endfor %}
     </div>
-    <div class="d-flex gap-3 mb-3">
-      <a href="{% url 'knowledge-base-guide-upload' %}"
-         class="btn btn-success">Upload a Guide</a>
-      {% if has_guides %}
-        <a href="{% url 'contributor-manage-guide' %}"
-           class="btn btn-outline-primary">Manage My Guides</a>
-      {% endif %}
-    </div>
-    {% if not user.is_authenticated %}
-      <div class="alert alert-warning mt-3">
-        Note: If you have contributed a guide and wish to check update, please log in first.
-      </div>
-    {% endif %}
   </div>
 {% endblock page-content %}
