@@ -94,7 +94,6 @@
   "pk": 1,
   "fields": {
     "user": 1,
-    "display_name": "Harriet",
     "bio": "Game enthusiast and moderator",
     "date_joined": "2023-10-30T03:31:56.761Z"
   }
@@ -104,7 +103,6 @@
   "pk": 2,
   "fields": {
     "user": 2,
-    "display_name": "Holly",
     "bio": "Casual gamer and friend",
     "date_joined": "2023-10-30T03:21:40.213Z"
   }
@@ -114,7 +112,6 @@
   "pk": 3,
   "fields": {
     "user": 3,
-    "display_name": "David",
     "bio": "Competitive player",
     "date_joined": "2023-10-30T03:22:35.174Z"
   }
@@ -124,7 +121,6 @@
   "pk": 4,
   "fields": {
     "user": 4,
-    "display_name": "Rain",
     "bio": "New to gaming but loving it",
     "date_joined": "2023-10-30T03:24:37.723Z"
   }
@@ -134,7 +130,6 @@
   "pk": 5,
   "fields": {
     "user": 5,
-    "display_name": "Jonathan",
     "bio": "Veteran gamer and strategist",
     "date_joined": "2023-10-30T03:24:56.555Z"
   }
