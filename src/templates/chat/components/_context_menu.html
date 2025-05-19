@@ -69,7 +69,7 @@
    */
   function reactToMessage(content = "❤️") {
     const messageId = replyToMessageId;
-    fetch(`/chat/message/${messageId}/delete`, {
+    fetch(`/chat/message/${messageId}/react`, {
         method: 'POST',
         body: "message_id=${messageId}&content=${encodeURIComponent(emoji)}"
       })
