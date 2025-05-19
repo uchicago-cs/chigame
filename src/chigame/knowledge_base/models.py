@@ -55,7 +55,7 @@ class ReviewFeedback(models.Model):
         User, on_delete=models.CASCADE, limit_choices_to={"moderator": True}
     )  # assume we delete this feedback if the reviewer deletes account
     comment = models.TextField(blank=True, null=True)
-    guide_id = models.ForeignKey(Guide, on_delete=models.CASCADE)
+    guide_id = models.ForeignKey(Guide, on_delete=models.CASCADE, related_name="feedbacks")
     status = models.IntegerField(
         choices=[
             (Guide.GuideStatus.ACCEPTED, "Accepted"),
@@ -64,3 +64,15 @@ class ReviewFeedback(models.Model):
         ]
     )
     timestamp = models.DateTimeField(auto_now_add=True)
+
+    # record whether the contributor has seen this feedback, useful for status update banner
+    seen = models.BooleanField(default=False)
+
+    # make sure the status can display in text rather than in pk
+    def get_status_display(self):
+        status_map = {
+            Guide.GuideStatus.ACCEPTED: "Accepted",
+            Guide.GuideStatus.REJECTED: "Rejected",
+            Guide.GuideStatus.REQUESTED_CHANGE: "Requested Change",
+        }
+        return status_map.get(self.status, "Invalid Status")
