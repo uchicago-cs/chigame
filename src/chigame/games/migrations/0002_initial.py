@@ -204,4 +204,17 @@ class Migration(migrations.Migration):
             name="sender",
             field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL),
         ),
+        migrations.CreateModel(
+            name="Message",
+            fields=[
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("content", models.TextField()),
+                ("timestamp", models.DateTimeField(auto_now_add=True)),
+                ("chat", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="games.chat")),
+                (
+                    "sender",
+                    models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL),
+                ),
+            ],
+        ),
     ]
