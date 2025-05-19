@@ -753,6 +753,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   toggleCoordinatesBtn.addEventListener('click', () => {
     coordsVisible = !coordsVisible;
+    toggleCoordinatesBtn.classList.add('selected');
 
     if (coordsVisible) {
       // get board position on screen
@@ -796,6 +797,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     } else {
       // remove coordinates
+      toggleCoordinatesBtn.classList.remove('selected');
       coordElements.forEach(el => document.body.removeChild(el));
       coordElements.length = 0;
     }
