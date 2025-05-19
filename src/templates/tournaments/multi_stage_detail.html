@@ -1,0 +1,158 @@
+{% load static %}
+
+<link rel="stylesheet"
+      type="text/css"
+      href="{% static 'tournament_styles.css' %}" />
+<style>
+  .simulation-actions {
+    margin-bottom: 20px;
+  }
+
+  .bracket-container {
+    display: flex;
+    flex-direction: column;
+  }
+</style>
+<div class="simulation-actions">
+  <form method="post" class="inline-form">
+    {% csrf_token %}
+    <input type="hidden" name="tournament_id" value="{{ tournament.id }}" />
+    <input type="hidden" name="action" value="simulate_round_robin_phase" />
+    <button type="submit" class="simulate-match-btn">Run Round Robin Phase</button>
+  </form>
+  {% if simulation_data.round_robin_complete %}
+    <form method="post" class="inline-form">
+      {% csrf_token %}
+      <input type="hidden" name="tournament_id" value="{{ tournament.id }}" />
+      <input type="hidden" name="action" value="simulate_knockout_phase" />
+      <button type="submit" class="simulate-match-btn">Run Knockout Phase</button>
+    </form>
+  {% endif %}
+  <form method="post" class="inline-form">
+    {% csrf_token %}
+    <input type="hidden" name="tournament_id" value="{{ tournament.id }}" />
+    <input type="hidden" name="action" value="run_full_simulation" />
+    <button type="submit" class="simulate-match-btn">Run Full Simulation</button>
+  </form>
+</div>
+<hr />
+{% if simulation_data.tournament_winner %}
+  <div class="tournament-winner">
+    <h3>🏆 Tournament Winner 🏆</h3>
+    {% for player in tournament.get_all_players %}
+      {% if player.id == simulation_data.tournament_winner %}
+        <p>
+          <strong>
+            {% if player.name %}
+              {{ player.name }}
+            {% else %}
+              {{ player.email }}
+            {% endif %}
+          </strong>
+        </p>
+      {% endif %}
+    {% endfor %}
+  </div>
+  <hr />
+{% endif %}
+<div class="tournament-bracket">
+  <h2>Knockout Phase (Single Elimination)</h2>
+  {% if simulation_data.knockout_rounds %}
+    <div class="bracket-container">
+      {% for round_num, matches in simulation_data.knockout_rounds.items %}
+        {% for match in matches %}
+          <div class="match">
+            <div class="match-players">
+              <strong>Winner:
+                {% for player in tournament.get_all_players %}
+                  {% if player.id == match.winner %}
+                    {% if player.name %}
+                      {{ player.name }}
+                    {% else %}
+                      {{ player.email }}
+                    {% endif %}
+                  {% endif %}
+                {% endfor %}
+              </strong>
+              <br />
+              <span>
+                {% for player in tournament.get_all_players %}
+                  {% if player.id == match.players.0.id %}
+                    {% if player.name %}
+                      {{ player.name }}
+                    {% else %}
+                      {{ player.email }}
+                    {% endif %}
+                  {% endif %}
+                {% endfor %}
+                vs
+                {% for player in tournament.get_all_players %}
+                  {% if player.id == match.players.1.id %}
+                    {% if player.name %}
+                      {{ player.name }}
+                    {% else %}
+                      {{ player.email }}
+                    {% endif %}
+                  {% endif %}
+                {% endfor %}
+              </span>
+            </div>
+          </div>
+          <hr />
+        {% endfor %}
+      {% endfor %}
+    </div>
+  {% else %}
+    <p>No knockout matches yet.</p>
+  {% endif %}
+</div>
+<hr />
+<div class="tournament-bracket">
+  <h2>Round Robin Phase</h2>
+  {% if simulation_data.round_robin_matches %}
+    <div class="bracket-container">
+      {% for match in simulation_data.round_robin_matches %}
+        <div class="match">
+          <div class="match-players">
+            <strong>Winner:
+              {% for player in tournament.get_all_players %}
+                {% if player.id == match.winner %}
+                  {% if player.name %}
+                    {{ player.name }}
+                  {% else %}
+                    {{ player.email }}
+                  {% endif %}
+                {% endif %}
+              {% endfor %}
+            </strong>
+            <br />
+            <span>
+              {% for player in tournament.get_all_players %}
+                {% if player.id == match.players.0.id %}
+                  {% if player.name %}
+                    {{ player.name }}
+                  {% else %}
+                    {{ player.email }}
+                  {% endif %}
+                {% endif %}
+              {% endfor %}
+              vs
+              {% for player in tournament.get_all_players %}
+                {% if player.id == match.players.1.id %}
+                  {% if player.name %}
+                    {{ player.name }}
+                  {% else %}
+                    {{ player.email }}
+                  {% endif %}
+                {% endif %}
+              {% endfor %}
+            </span>
+          </div>
+        </div>
+        <hr />
+      {% endfor %}
+    </div>
+  {% else %}
+    <p>No round robin matches yet.</p>
+  {% endif %}
+</div>

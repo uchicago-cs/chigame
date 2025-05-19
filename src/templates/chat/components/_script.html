@@ -1,6 +1,6 @@
 <script>
   const protocol = window.location.protocol === "https:" ? "wss://" : "ws://";
-  const chatId = "{{ chat.id }}"; // Make sure to pass chat.id from your view
+  const chatId = "{{ chat.id }}";
   const chatSocket = new WebSocket(
     protocol + window.location.host + "/ws/chat/" + chatId + "/"
   );
@@ -32,16 +32,95 @@
     );
   };
 
+  /**
+   * This function is called when a message is received from the server.
+   * It creates a new div element with the message and appends it to the chat container.
+   * It also scrolls to the bottom of the chat container.
+   *
+   * @param {MessageEvent} e - The message event.
+   */
   chatSocket.onmessage = function(e) {
     const data = JSON.parse(e.data);
-    var div = document.createElement("div");
-    div.className = "chat-message";
-    div.innerHTML = `<strong>${data.username}</strong>: ${data.message}`;
-    document.querySelector("#id_message_send_input").value = "";
-    document.querySelector("#id_chat_item_container").appendChild(div);
 
-    // Scroll to bottom of chat
-    const container = document.querySelector("#id_chat_item_container");
-    container.scrollTop = container.scrollHeight;
+    // Target consistent message container using ID
+    const messageList = document.querySelector("#message-container");
+
+    // Create message container
+    const messageContainer = document.createElement("div");
+    messageContainer.className = "mb-3 align-self-end";
+
+    // Create message bubble
+    const messageBubble = document.createElement("div");
+    messageBubble.className = "bg-success-subtle rounded p-2 shadow-sm";
+    messageBubble.style.maxWidth = "80%";
+
+    // Create message sender
+    const sender = document.createElement("div");
+    sender.className = "fw-bold small text-danger";
+    sender.textContent = data.username;
+
+    // Create message content
+    const content = document.createElement("div");
+    content.className = "mt-1";
+    content.textContent = data.message;
+
+    // Create message timestamp
+    const timestamp = document.createElement("div");
+    timestamp.className = "text-end text-muted small mt-1";
+    timestamp.textContent = new Date().toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+
+    // Assemble message
+    messageBubble.appendChild(sender);
+    messageBubble.appendChild(content);
+    messageBubble.appendChild(timestamp);
+    messageContainer.appendChild(messageBubble);
+
+    // Add message to container and clear input
+    messageList.appendChild(messageContainer);
+    document.querySelector("#id_message_send_input").value = "";
+
+    // Scroll to bottom of chat - using requestAnimationFrame to ensure DOM updates first
+    requestAnimationFrame(() => {
+      messageList.scrollTop = messageList.scrollHeight;
+    });
   };
+  // Toggle between centered and floating chat mode
+  const chatContainer = document.getElementById("chatContainer");
+  const toggleButton = document.getElementById("toggle-chat-mode");
+  const collapseButton = document.getElementById("collapse-chat");
+
+  if (collapseButton) {
+    collapseButton.addEventListener("click", () => {
+      chatContainer.classList.toggle("collapsed-chat");
+
+      // Flip arrow direction
+      const icon = collapseButton.querySelector("i");
+      if (icon) {
+        icon.classList.toggle("bi-chevron-down");
+        icon.classList.toggle("bi-chevron-up");
+      }
+    });
+  }
+
+  if (chatContainer && toggleButton) {
+    toggleButton.addEventListener("click", () => {
+      chatContainer.classList.toggle("floating-chat");
+      chatContainer.classList.toggle("centered-chat");
+
+      // Show collapse button only in floating mode
+      if (chatContainer.classList.contains("floating-chat")) {
+        if (collapseButton) {
+          collapseButton.classList.remove("d-none");
+        }
+      } else {
+        if (collapseButton) {
+          collapseButton.classList.add("d-none");
+        }
+        chatContainer.classList.remove("collapsed-chat");
+      }
+    });
+  }
 </script>

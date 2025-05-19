@@ -1,0 +1,44 @@
+{% extends "knowledge-base/base.html" %}
+
+{% load static %}
+
+<link rel="stylesheet" href="{% static 'css/knowledge-base-styles.css' %}" />
+{% block page-content %}
+  <h2>Manage Published Guides By Game</h2>
+  <table border="1">
+    <thead>
+      <tr>
+        <th>Game</th>
+        <th>Published Guide</th>
+        <th>Author</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for game in games %}
+        <tr>
+          <td>{{ game }}</td>
+          <td>
+            {% if game.published_guide_id %}
+              Guide ID={{ game.published_guide_id.pk }}
+              <a href="{% url 'knowledge-base-guide-detail' game.published_guide_id.pk %}">[View]</a>
+            {% else %}
+              N/A
+            {% endif %}
+          </td>
+          <td>
+            {% if game.published_guide_id %}
+              {{ game.published_guide_id.author }}
+            {% else %}
+              N/A
+            {% endif %}
+          </td>
+          <td>
+            <a href="{% url 'moderator-single-game' game.pk %}">Manage</a>
+          </td>
+        </tr>
+      {% endfor %}
+      {% if not games %}<td colspan="4">No games yet.</td>{% endif %}
+    </tbody>
+  </table>
+{% endblock page-content %}
