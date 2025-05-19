@@ -15,6 +15,7 @@ from django.views.generic import DetailView, ListView
 from chigame.games.models import Category, Game
 
 from .forms import MarkdownUploadForm
+from .markdown_extensions import HtmlSanitizerExtension, SectionWrapperExtension
 from .models import Guide, ReviewFeedback
 
 
@@ -68,6 +69,21 @@ class DefaultView(ListView):
         context["categories"] = Category.objects.filter(
             id__in=Game.objects.values_list("categories", flat=True).distinct()
         )
+        if self.request.user.is_authenticated:
+            unseen_feedbacks = []
+            submittedguides = Guide.objects.filter(author=self.request.user)
+            for guide in submittedguides:
+                feedbacks = guide.feedbacks.all()
+                if feedbacks:
+                    # now the status banner only supports the recentest feedback
+                    # for an uploaded guide object
+                    latest_feedback = feedbacks.order_by("-timestamp").first()
+                    if not latest_feedback.seen:
+                        unseen_feedbacks.append(latest_feedback)
+
+            context["unseen_feedbacks"] = unseen_feedbacks
+        else:
+            context["unseen_feedbacks"] = []
         return context
 
 
@@ -81,6 +97,11 @@ class GuideDetail(DetailView):
         guide = self.get_object()
 
         context["published"] = False
+
+        # Render the markdown text as actual markdown
+        md = markdown.Markdown(extensions=[SectionWrapperExtension(), HtmlSanitizerExtension(), "fenced_code"])
+        html_content = md.convert(guide.content)
+        context["rendered_content"] = html_content
 
         if guide.game_id.published_guide_id == guide:
             context["published"] = True
@@ -173,8 +194,16 @@ class FeedbackDetail(LoginRequiredMixin, DetailView):
 
     def get_object(self, queryset=None):
         feedback = super().get_object(queryset)
-        if feedback.guide_id.author != self.request.user:
+        if feedback.guide_id.author != self.request.user and not self.request.user.moderator:
             raise PermissionDenied
+
+        # update whether a ReviewFeedback object is seen by its author
+        # Note: Only seeing by its author (the contributor) can update the "seen"
+        # field! Seeing by a moderator wouldn't update it.
+        if self.request.user == feedback.guide_id.author and not feedback.seen:
+            feedback.seen = True
+            feedback.save()
+
         return feedback
 
 
