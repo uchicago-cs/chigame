@@ -121,7 +121,7 @@ class GameCreateView(UserPassesTestMixin, CreateView):
     def get_success_url(self):
         if self.object.twine_file and self.object.twine_file.name.endswith(".html"):
             return reverse("interactive-fiction-detail", kwargs={"pk": self.object.pk})
-    return reverse("game-detail", kwargs={"pk": self.object.pk})
+        return reverse("game-detail", kwargs={"pk": self.object.pk})
 
 
 class GameEditView(UserPassesTestMixin, UpdateView):
