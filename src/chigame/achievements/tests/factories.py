@@ -1,10 +1,10 @@
+import factory
 from django.utils import timezone
 from factory import Faker, LazyFunction, Sequence, SubFactory, post_generation
 from factory.django import DjangoModelFactory
 
-from chigame.achievements.models import Achievement, UserAchievement
+from chigame.achievements.models import Achievement, User, UserAchievement
 from chigame.api.tests.factories import GameFactory, LobbyFactory, UserFactory
-import factory
 
 from chigame.games.models import Match
 
