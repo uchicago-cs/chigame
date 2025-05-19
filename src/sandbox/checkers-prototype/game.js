@@ -801,3 +801,27 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
+
+// Mute button + “M” key shortcut
+document.addEventListener('DOMContentLoaded', () => {
+  const toggleMuteBtn = document.getElementById('toggle-mute');
+
+  // set initial label
+  toggleMuteBtn.textContent = checkers.sound.mute ? 'Unmute' : 'Mute';
+
+  toggleMuteBtn.addEventListener('click', () => {
+    // flip mute state first
+    checkers.sound.mute = !checkers.sound.mute;
+    // then update the label
+    toggleMuteBtn.textContent = checkers.sound.mute ? 'Mute' : 'Unmute';
+  });
+
+  // listen for “m” or “M” anywhere
+  document.addEventListener('keydown', (e) => {
+    if (e.key.toLowerCase() === 'm') {
+      // do exactly the same toggle logic:
+      checkers.sound.mute = !checkers.sound.mute;
+      toggleMuteBtn.textContent = checkers.sound.mute ? 'Mute' : 'Unmute';
+    }
+  });
+});
