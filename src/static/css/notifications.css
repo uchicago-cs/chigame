@@ -1,3 +1,29 @@
+.notification-hover:hover {
+  background-color: #f8f9fa;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.notification-container .button-container {
+  visibility: visible; /* Always show */
+}
+
+.notification-container.read {
+  background-color: #f0f0f0;
+  color: #6c757d; /* Bootstrap’s text-muted */
+}
+
+.notification-container.read a {
+  color: #6c757d !important;
+  text-decoration: none;
+}
+
+.notification-container.read .badge {
+  opacity: 0.7;
+}
+
+.icon-lg {
+    font-size: 1.2rem;
 
 .notifications-dropdown {
   width: 320px;
@@ -7,12 +33,73 @@
 }
 
 #notification-btn-wrapper button:hover {
-  background-color: rgba(0, 0, 0, 0.05); /* subtle light grey */
-  border-radius: 0.5rem; /* soft corners if needed */
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: 0.5rem;
 }
 
 #notification-btn-wrapper button {
   background-color: transparent;
   border: none;
   padding: 0.5rem;
+
+}
+
+
+.notification-dismiss-btn:hover {
+    background-color: transparent !important;
+    opacity: 1;
+}
+
+.notification-item {
+  margin-bottom: .3rem;
+}
+
+.notification-style-friend {
+  background-color: #f8f9fa;
+  border-left: 3px solid #7aa5d5;
+}
+.notification-style-group {
+  background-color: #f8f9fa;
+  border-left: 3px solid #85c799;
+}
+.notification-style-match {
+  background-color: #f8f9fa;
+  border-left: 3px solid #f0ad4e;
+}
+.notification-style-achievement {
+  background-color: #f8f9fa;
+  border-left: 3px solid #d9534f;
+}
+.notification-style-system {
+  background-color: #f8f9fa;
+  border-left: 3px solid #5bc0de;
+}
+.notification-style-default {
+  background-color: #ffffff;
+}
+
+.notification-unread .notification-strong {
+    font-weight: bold;
+    color: #000;
+}
+
+.notification-unread {
+    background-color: #e9ecef; /* A slightly more distinct background for unread */
+}
+
+.notification-icon {
+  padding-left: .4rem !important;
+}
+
+
+.notification-strong {
+    display: inline-block;
+    white-space: normal;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.dropdown {
+  border-radius: 4px;
+  padding: .1rem;
 }
