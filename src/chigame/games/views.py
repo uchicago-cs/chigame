@@ -131,7 +131,6 @@ class GameCreateView(UserPassesTestMixin, CreateView):
     model = Game
     form_class = GameForm
     template_name = "games/game_form.html"
-    success_url = reverse_lazy("game-list")  # URL to redirect after successful creation
     raise_exception = True  # if user is not staff member, raise exception
 
     # check if user is staff member
@@ -142,6 +141,20 @@ class GameCreateView(UserPassesTestMixin, CreateView):
         context = super().get_context_data(**kwargs)
         context["is_create"] = True
         return context
+
+    # Ensure the uploaded Twine .html file is saved to the Game model
+    def form_valid(self, form):
+        self.object = form.save(commit=False)
+        # ✅ Manually assign uploaded file
+        if self.request.FILES.get("twine_file"):
+            self.object.twine_file = self.request.FILES["twine_file"]
+        self.object.save()
+        return redirect(self.get_success_url())
+
+    def get_success_url(self):
+        if self.object.twine_file and self.object.twine_file.name.endswith(".html"):
+            return reverse("interactive-fiction-detail", kwargs={"pk": self.object.pk})
+        return reverse("game-detail", kwargs={"pk": self.object.pk})
 
 
 class GameEditView(UserPassesTestMixin, UpdateView):
@@ -481,6 +494,7 @@ class UploadFileView(View):
                 description="Uploaded Twine game",
                 min_players=1,
                 max_players=1,
+                complexity=1,
                 twine_file=f"twine_games/{filename}",
             )
 
