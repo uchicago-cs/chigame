@@ -9,14 +9,14 @@ from django.db.models.functions import Concat
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.safestring import mark_safe
-from django.views.generic import DetailView, ListView, TemplateView
 from django.views.decorators.http import require_POST
+from django.views.generic import DetailView, ListView, TemplateView
 
 from chigame.games.models import Category, Game
 
 from .forms import MarkdownUploadForm
 from .markdown_extensions import HtmlSanitizerExtension, SectionWrapperExtension
-from .models import Guide, ReviewFeedback, GeneralFeedback
+from .models import GeneralFeedback, Guide, ReviewFeedback
 
 
 # Viewers
