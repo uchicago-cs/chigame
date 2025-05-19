@@ -41,6 +41,8 @@ group_patterns = [
     path("", views.GroupListView.as_view(), name="api-group-list"),
     path("<int:pk>/", views.GroupDetailView.as_view(), name="api-group-detail"),
     path("<int:pk>/members/", views.GroupMembersView.as_view(), name="api-group-members"),
+    path("<int:pk>/join/", views.GroupJoinView.as_view(), name="api-group-join"),
+    path("<int:pk>/leave/", views.GroupLeaveView.as_view(), name="api-group-leave"),
 ]
 
 login_patterns = [
