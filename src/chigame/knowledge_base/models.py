@@ -66,6 +66,9 @@ class ReviewFeedback(models.Model):
     )
     timestamp = models.DateTimeField(auto_now_add=True)
 
+    # record whether the contributor has seen this feedback, useful for status update banner
+    seen = models.BooleanField(default=False)
+
     # make sure the status can display in text rather than in pk
     def get_status_display(self):
         status_map = {

@@ -4,7 +4,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, status
 from rest_framework.exceptions import ValidationError
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import BasePermission, IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -132,6 +132,14 @@ class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
         return get_user(lookup_value)
 
 
+# Custom permission class for authentification
+class IsAuthenticatedOrReadOnly(BasePermission):
+    def has_permission(self, request, view):
+        if request.method in ["GET", "HEAD", "OPTIONS"]:
+            return True
+        return request.user and request.user.is_authenticated
+
+
 class MessageView(generics.CreateAPIView):
     queryset = Message.objects.all()
     serializer_class = MessageSerializer
@@ -152,6 +160,11 @@ class GroupListView(generics.ListCreateAPIView):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
     pagination_class = PageNumberPagination
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def perform_create(self, serializer):
+        group = serializer.save(created_by=self.request.user)
+        group.members.add(self.request.user)
 
 
 class GroupDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -219,15 +232,18 @@ class ReviewCreateView(generics.CreateAPIView):
         if is_spam(review_text):
             raise ValidationError("Your review appears to be spam. Please revise your content.")
 
-        user_id = self.request.data.get("user")
+        # user_id = self.request.data.get("user")
         game_id = self.kwargs["pk"]
-        user = get_object_or_404(User, pk=user_id)
-        serializer.save(user=user, game_id=game_id)
+        game = get_object_or_404(Game, pk=game_id)
+        # user = get_object_or_404(User, pk=user_id)
+        # serializer.save(user=user, game_id=game_id)
+        serializer.save(user=self.request.user, game=game)
 
 
 class ReviewDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
+    queryset = Review.objects.none()
 
     def perform_destroy(self, instance):
         if instance.user != self.request.user:
