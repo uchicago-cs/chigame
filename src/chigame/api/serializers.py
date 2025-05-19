@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+from chigame.achievements.models import Achievement, UserAchievement
 from chigame.games.models import Category, Chat, Game, Lobby, Mechanic, Message, Review, Tournament, User
 from chigame.leaderboards.models import MetricScore
 from chigame.users.models import Group
@@ -26,7 +27,6 @@ class LobbySerializer(serializers.ModelSerializer):
             "time_constraint",
             "lobby_created",
         )
-        read_only_fields = ["created_by"]
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -35,6 +35,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ("id", "name", "username", "email", "password")
+        read_only_fields = ("user",)
 
     def create(self, validated_data):
         user = User.objects.create_user(
@@ -86,7 +87,8 @@ class MessageSerializer(serializers.ModelSerializer):
 class GroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = Group
-        fields = "__all__"
+        fields = ["id", "name", "description", "members", "group_admin_permissions"]
+        read_only_fields = ["created_by", "date_created"]
 
 
 class MessageFeedSerializer(serializers.ModelSerializer):
@@ -104,7 +106,20 @@ class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
         fields = ["id", "user", "title", "rating", "review", "is_public", "created_at"]
-        read_only_fields = ("user",)
+        read_only_fields = ["id", "created_at", "user"]
+
+
+class UserAchievementSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserAchievement
+        fields = ["id", "user", "pinned", "date_earned", "progress"]
+
+
+class AchievementSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Achievement
+        fields = ["id", "name", "description", "rarity", "threshold"]
+
 
 class MetricScoreSerializer(serializers.ModelSerializer):
     metric_id = serializers.IntegerField(write_only=True)
