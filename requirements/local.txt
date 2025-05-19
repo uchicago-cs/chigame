@@ -27,3 +27,5 @@ djangorestframework==3.14.0
 django-filter==23.3
 django-tables2
 django-filter
+djangorestframework-simplejwt
+django-cors-headers
