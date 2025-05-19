@@ -55,7 +55,7 @@ async function fetchInitialBoardState() {
   }
 }
 
-// ---INIT FUNCTIONS-----------------------------------------------------------
+// ---INIT FUNCTIONS------------------------------------------------------------
 function preload() { }
 
 async function create() {
@@ -340,4 +340,3 @@ function update() {
       .catch(err => console.error("Polling error:", err));
   }
 }
-
