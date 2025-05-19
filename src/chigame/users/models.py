@@ -153,6 +153,9 @@ class Group(models.Model):
     def __str__(self):
         return self.name
 
+    def __str__(self):
+        return self.name
+
 
 class GroupInvitation(models.Model):
     """
