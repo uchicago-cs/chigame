@@ -2,32 +2,13 @@
 
 {% block page-content %}
   {% if unseen_feedbacks %}
-    <div class="alert alert-primary" role="alert">
-      <h4 class="alert-heading">
-        You have {{ unseen_feedbacks|length }} status update{{ unseen_feedbacks|length|pluralize }}!
-      </h4>
-    </div>
-    <hr />
+    <span>You have {{ unseen_feedbacks|length }} status update{{ unseen_feedbacks|length|pluralize }}!</span>
     {% for feedback in unseen_feedbacks %}
-      {% if feedback.get_status_display == "Accepted" %}
-        <div class="alert alert-success" role="alert">
-          Your {{ feedback.guide_id.game_id }} Guide(ID={{ feedback.guide_id.pk }}) was accepted!
-          &nbsp;
-          <a href="{% url 'feedback-detail' feedback.pk %}" class="alert-link">View Details</a>
-        </div>
-      {% elif feedback.get_status_display == "Rejected" %}
-        <div class="alert alert-danger" role="alert">
-          Your {{ feedback.guide_id.game_id }} Guide(ID={{ feedback.guide_id.pk }}) was rejected!
-          &nbsp;
-          <a href="{% url 'feedback-detail' feedback.pk %}" class="alert-link">View Details</a>
-        </div>
-      {% else %}
-        <div class="alert alert-warning" role="alert">
-          Changes were requested on your {{ feedback.guide_id.game_id }} Guide(ID={{ feedback.guide_id.pk }}) !
-          &nbsp;
-          <a href="{% url 'feedback-detail' feedback.pk %}" class="alert-link">View Details</a>
-        </div>
-      {% endif %}
+      <div>
+        Updated Feedback for Guide for {{ feedback.guide_id.game_id }}
+        (ID={{ feedback.guide_id.pk }}):
+        <a href="{% url 'feedback-detail' feedback.pk %}">View Details</a>
+      </div>
     {% endfor %}
   {% endif %}
   <div class="knowledge-base container">
