@@ -1,8 +1,12 @@
+from datetime import timedelta
+
 import pytest
+from django.utils import timezone
 
 from chigame.achievements.models import UserAchievement
+from chigame.achievements.views import get_recent_achievements
 
-from .factories import AchievementFactory, MatchFactory, UserFactory
+from .factories import AchievementFactory, MatchFactory, UserFactory, UserAchievementFactory
 
 
 @pytest.mark.django_db
@@ -31,3 +35,41 @@ def test_achievement_advance():
             assert user_achievement.date_earned is None
         else:
             assert user_achievement.date_earned is None
+
+@pytest.mark.django_db
+def test_get_recent_achievements():
+    user = UserFactory()
+    # Create 6 achievements with different dates
+    for i in range(6):
+        UserAchievementFactory(user=user, date_earned=timezone.now() - timedelta(days=i))
+
+    recent = get_recent_achievements(user.id)
+
+    assert len(recent) == 5
+    assert all(isinstance(ua, UserAchievement) for ua in recent)
+    # Check they are ordered by most recent
+    assert recent[0].date_earned > recent[len(recent) - 1].date_earned
+
+
+@pytest.mark.django_db
+def test_get_recent_achievements_none():
+    user = UserFactory()
+    # No achievements created for this user
+    recent = get_recent_achievements(user.id)
+
+    assert len(recent) == 0
+
+
+@pytest.mark.django_db
+def test_get_recent_achievements_3():
+    user = UserFactory()
+    # Create 3 achievements with different dates
+    for i in range(3):
+        UserAchievementFactory(user=user, date_earned=timezone.now() - timedelta(days=i))
+
+    recent = get_recent_achievements(user.id)
+
+    assert len(recent) == 3
+    assert all(isinstance(ua, UserAchievement) for ua in recent)
+    # Check they are ordered by most recent
+    assert recent[0].date_earned > recent[len(recent) - 1].date_earned
