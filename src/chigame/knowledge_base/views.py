@@ -147,7 +147,9 @@ def ContributorMdUpload(request, pk=None):
             else:
                 game = form.cleaned_data["game"]  # the game user chooses
                 guide = Guide.objects.create(author=request.user, content=content, game_id=game, status=0)
-            messages.success(request, "Guide Uploaded Successfully!")
+
+            msg = f"Your {game} Guide was uploaded successfully!"
+            messages.info(request, msg)
             return redirect("contributor-manage-guide")
 
     else:
