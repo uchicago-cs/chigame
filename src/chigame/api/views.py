@@ -25,7 +25,8 @@ from chigame.api.serializers import (
     UserSerializer,
 )
 from chigame.api.spam_utils import is_spam
-from chigame.games.models import Game, Lobby, Message, Review
+from chigame.games.models import Game, Lobby, Message, Review, Tournament
+from chigame.games.simulation_utils import run_complete_tournament_simulation
 from chigame.users.models import Group, User
 
 
@@ -369,3 +370,21 @@ class AchievementCreateView(generics.CreateAPIView):
         return Response(
             {"message": "Achievement assigned to user!", "data": serializer.data}, status=status.HTTP_201_CREATED
         )
+
+
+class TournamentSimulationView(APIView):
+    """
+    POST /api/tournaments/{pk}/simulate/
+    Body: { "double_elimination": <bool> }
+    Returns a full simulated bracket JSON without touching the DB.
+    """
+
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def post(self, request, pk):
+        tournament = get_object_or_404(Tournament, pk=pk)
+        # read flag (default to single‐elim)
+        is_double = request.data.get("double_elimination", False)
+        # run the simulator
+        bracket = run_complete_tournament_simulation(tournament, is_double)
+        return Response(bracket, status=status.HTTP_200_OK)
