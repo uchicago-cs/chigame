@@ -8,7 +8,7 @@
     <!-- link css file -->
     <link rel="stylesheet" href="css/style.css" />
     <!-- imported fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnectgit" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap"
           rel="stylesheet" />
@@ -20,32 +20,37 @@
       <h1>CHIGAME</h1>
       <!-- add buttons to this div -->
       <div class="nav-btns">
+        <button id="forfeitBtn" class="btn">Forfeit</button>
+        <button id="drawBtn" class="btn">Offer Draw</button>
+        <button id="declineDrawBtn" class="btn">Decline Draw</button>
         <button class="btn"
                 onclick="window.open('https://github.com/uchicago-cs/chigame/wiki/Adding-Games-~-Checkers-Rules', '_blank')">
           Read Rules
         </button>
-        <button id="forfeitBtn" class="btn">Forfeit</button>
-        <button id="drawBtn" class="btn">Offer Draw</button>
-        <button id="declineDrawBtn" class="btn">Decline Draw</button>
-        <div id="gameOverMessage" class="game-over-message"></div>
-        <div id="playAgainPrompt" class="play-again-prompt hidden">
-          <p>Play Again?</p>
-          <div class="play-again-btns">
-            <button id="playAgainYes" class="btn">Yes</button>
-            <button id="playAgainNo" class="btn">No</button>
-          </div>
-        </div>
       </div>
     </nav>
+    <div id="gameOverPrompts">
+      <div id="gameOverMessage" class="game-over-message"></div>
+      <div id="playAgainPrompt" class="play-again-prompt hidden">
+        <p>Play Again?</p>
+        <div class="play-again-btns">
+          <button id="playAgainYes" class="btn">Yes</button>
+          <button id="playAgainNo" class="btn">No</button>
+        </div>
+      </div>
+    </div>
     <div class="main-content">
       <div id="game"></div>
     </div>
-    <!-- settings menu -->
-    <div id="settings-menu" class="settings-menu hidden">
-      <h2>Settings</h2>
-      <!-- Add settings options here -->
-      <button id="toggle-colorblind" class="settings-option">Toggle Colorblind Mode</button>
+    <div id="settings-container">
+      <!-- settings menu -->
+      <div id="settings-menu">
+        <div id="settings-buttons">
+          <!-- Add settings options here -->
+          <button id="toggle-colorblind" class="setting-btn">Toggle Colorblind Mode</button>
+        </div>
+      </div>
+      <div id="settings-tab">⚙️</div>
     </div>
-    <button id="settings-button" class="settings-button">⚙️</button>
   </body>
 </html>
