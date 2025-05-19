@@ -68,8 +68,6 @@ class GameDetailView(LoginRequiredMixin, FormMixin, DetailView):
     # for twine files, redirect to different IF view
     def dispatch(self, request, *args, **kwargs):
         self.object = self.get_object()
-        if self.object.twine_file.name.endswith(".html"):
-            return redirect("interactive-fiction-detail", pk=self.object.pk)
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
@@ -81,6 +79,9 @@ class GameDetailView(LoginRequiredMixin, FormMixin, DetailView):
         context["reviews"] = Review.objects.filter(game=self.object)
         context["popularity"] = self.object.reviews.count()
         context["avg_rating"] = self.object.reviews.filter(is_public=True).aggregate(Avg("rating"))["rating__avg"]
+
+        # FOR IF/twine GAMES
+        context["is_twine_game"] = self.object.twine_file.name.endswith(".html") if self.object.twine_file else False
         # Include the user's GameLists: default Favorites plus others
         if self.request.user.is_authenticated:
             favorites_list, _ = GameList.objects.get_or_create(name="Favorites", created_by=self.request.user)
@@ -407,12 +408,23 @@ class InteractiveFictionView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        game = get_object_or_404(Game, pk=kwargs["pk"])
 
-        context["game"] = game
+        latest_game = Game.objects.filter(twine_file__isnull=False).order_by("-id").first()
 
-        if game.twine_file:
-            context["uploaded_file_url"] = game.twine_file.url  # use actual uploaded Twine file
+        if not latest_game:
+            # fallback dummy game to prevent pk=None
+            latest_game = Game.objects.create(
+                name="Untitled IF Game",
+                description="Temporary IF placeholder",
+                min_players=1,
+                max_players=1,
+                complexity=1.0,
+            )
+
+        context["game"] = latest_game
+
+        if latest_game.twine_file:
+            context["uploaded_file_url"] = latest_game.twine_file.url
 
         return context
 
