@@ -412,12 +412,23 @@ class InteractiveFictionView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        game = get_object_or_404(Game, pk=kwargs["pk"])
 
-        context["game"] = game
+        latest_game = Game.objects.filter(twine_file__isnull=False).order_by("-id").first()
 
-        if game.twine_file:
-            context["uploaded_file_url"] = game.twine_file.url  # use actual uploaded Twine file
+        if not latest_game:
+            # fallback dummy game to prevent pk=None
+            latest_game = Game.objects.create(
+                name="Untitled IF Game",
+                description="Temporary IF placeholder",
+                min_players=1,
+                max_players=1,
+                complexity=1.0,
+            )
+
+        context["game"] = latest_game
+
+        if latest_game.twine_file:
+            context["uploaded_file_url"] = latest_game.twine_file.url
 
         return context
 
