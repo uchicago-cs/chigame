@@ -235,17 +235,16 @@
     {% block body %}
     {% endblock body %}
     <div class="container">
+      {% comment %}
       {% if messages %}
         {% for message in messages %}
           <div class="alert alert-dismissible {% if message.tags %}alert-{{ message.tags }}{% endif %}">
             {{ message }}
-            <button type="button"
-                    class="btn-close"
-                    data-bs-dismiss="alert"
-                    aria-label="Close"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
           </div>
         {% endfor %}
       {% endif %}
+      {% endcomment %}
       {% block content %}
         <p>Coming soon!</p>
       {% endblock content %}
