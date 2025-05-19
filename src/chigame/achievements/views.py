@@ -6,8 +6,6 @@ from chigame.users.models import User
 
 from .models import Achievement, UserAchievement
 
-from .models import UserAchievement
-
 
 def get_recent_achievements(pk, limit=5):
     """
