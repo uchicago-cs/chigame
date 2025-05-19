@@ -275,6 +275,13 @@ class ReviewPendingGuideView(LoginRequiredMixin, UserPassesTestMixin, DetailView
         context = self.get_context_data(object=self.object)
         context["feedback"] = feedback
         context["message"] = message
+
+        msg = f"Guide reviewed successfully! {self.object.author.username}'s {self.object.game_id.name} Guide was {action}ed."
+        if action == "request_changes":
+            msg = f"Guide reviewed successfully! You requested changes on {self.object.author.username}'s {self.object.game_id.name} Guide."
+
+        messages.info(request, msg, extra_tags="guide-reviewed")
+
         return self.render_to_response(context)
 
 
