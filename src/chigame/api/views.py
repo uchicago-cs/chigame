@@ -4,7 +4,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, status
 from rest_framework.exceptions import ValidationError
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import BasePermission, IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -133,6 +133,14 @@ class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
         return get_user(lookup_value)
 
 
+# Custom permission class for authentification
+class IsAuthenticatedOrReadOnly(BasePermission):
+    def has_permission(self, request, view):
+        if request.method in ["GET", "HEAD", "OPTIONS"]:
+            return True
+        return request.user and request.user.is_authenticated
+
+
 class MessageView(generics.CreateAPIView):
     queryset = Message.objects.all()
     serializer_class = MessageSerializer
@@ -153,6 +161,11 @@ class GroupListView(generics.ListCreateAPIView):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
     pagination_class = PageNumberPagination
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def perform_create(self, serializer):
+        group = serializer.save(created_by=self.request.user)
+        group.members.add(self.request.user)
 
 
 class GroupDetailView(generics.RetrieveUpdateDestroyAPIView):
