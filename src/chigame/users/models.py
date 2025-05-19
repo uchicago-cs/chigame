@@ -149,9 +149,6 @@ class Group(models.Model):
     created_by = models.ForeignKey(User, related_name="created_groups", on_delete=models.CASCADE)
     date_created = models.DateTimeField(auto_now_add=True)
     group_admin_permissions = False
-    
-    def __str__(self):
-        return self.name
 
     def __str__(self):
         return self.name
