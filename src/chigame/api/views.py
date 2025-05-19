@@ -178,7 +178,7 @@ class GroupListView(generics.ListCreateAPIView):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
     pagination_class = PageNumberPagination
-    permissions_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def perform_create(self, serializer):
         group = serializer.save(created_by=self.request.user)
