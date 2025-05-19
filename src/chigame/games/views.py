@@ -48,18 +48,16 @@ from .models import (
     Review,
     Tournament,
 )
-
 from .simulation_utils import (
     MultiStageSimulator,
     RoundRobinSimulator,
     TournamentSimulator,
     run_complete_tournament_simulation,
 )
-
 from .tables import LobbyTable
 
 
-# =============== Games CRUD and Search Views ===============
+# =============== Games CRUD and Search Views ================
 class GameListView(ListView):
     model = Game
     template_name = "games/game_grid.html"
