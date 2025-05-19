@@ -1,3 +1,5 @@
+from django.conf import settings
+from django.conf.urls.static import static
 from django.urls import path
 
 from . import views
@@ -52,3 +54,6 @@ urlpatterns = [
     path("checkers/<int:board_id>/update/", views.checkers_game_update_board_state, name="update_board_state"),
     path("checkers/<int:board_id>/state/", views.checkers_game_get_board_state, name="checkers-get-state"),
 ]
+# for an uploaded twine file this makes the files accessible at a url
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
