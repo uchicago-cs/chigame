@@ -27,20 +27,22 @@
             {% csrf_token %}
             {% for notification in notifications %}
               {% with notification_type=notification.type %}
+              <div class="inbox-item">
                 <li class="notification-container list-group-item d-flex justify-content-between align-items-center border shadow-sm notification-hover {% if notification.read %}read{% else %}unread{% endif %}"
                     oncontextmenu="openContextMenu(event, '{{ notification.id }}')">
                   <div class="ms-2 me-auto">
                     <label>
                       <input type="checkbox" name="notification[]" value="{{ notification.id }}" />
                     </label>
-                    {% if notification.message %}
-                      <a href="{% url 'users:notification-detail' notification.pk %}">{{ notification.message }}</a>
-                    {% else %}
-                      <a href="{% url 'users:notification-detail' notification.pk %}">{{ default_notification_messages | get_dict_val:notification_type }}</a>
-                    {% endif %}
+                    <a href="{% url 'users:notification-detail' notification.pk %}">
+                      <span class="notification-strong">
+                        {{ notification.get_rich_message|truncatewords:15 }}
+                      </span>
+                    </a>
                     <span class="badge bg-info ms-2">{{ notification.get_category_display }}</span>
                   </div>
-                  <div class="button-container d-flex gap-2">
+                </li>
+                <div class="button-container list-group-item d-flex justify-content-between align-items-center border shadow-sm">
                     {% if notification.read %}
                       <a href="{% url 'users:act-on-inbox-notification' notification.pk 'mark_unread' %}"
                          class="text-decoration-none text-primary"
@@ -66,11 +68,14 @@
                       <i class="bi bi-folder2-open"></i>
                     </a>
                   </div>
-                </li>
+                </div>
               {% endwith %}
             {% endfor %}
+            <br/>
+            <div class="bulk-op-buttons" >
             <button class="btn btn-primary" type="submit" name="delete_all" value="1">Delete All Marked</button>
             <button class="btn btn-primary" type="submit" name="mark_all" value="1">Mark All As Read</button>
+            </div>
           </form>
         </ul>
       </div>

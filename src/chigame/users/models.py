@@ -363,7 +363,7 @@ class Notification(models.Model):
                     sender_name = (
                         getattr(actor.sender, "username", None) or getattr(actor.sender, "name", None) or "Someone"
                     )
-                    return f"{sender_name} sent you a friend request."
+                    return f"{sender_name} sent you a friend request"
                 return default_message_for_type
 
             elif self.type == self.GROUP_INVITATION:
@@ -379,7 +379,7 @@ class Notification(models.Model):
                     )
                     group_name = actor.friend_group.name
                     return f"{sender_name} invited you to join the group '{group_name}'."
-                return self.message or "You have a group invitation."
+                return self.message or "You have a group invitation"
 
             # For all other notification types, use the existing message or the type-specific default
             return final_fallback_message

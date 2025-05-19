@@ -4,7 +4,12 @@
   transition: background-color 0.2s ease;
 }
 
-.notification-container .button-container {
+.button-container {
+  padding-left: 1rem;
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  align-content: center;
   visibility: visible; /* Always show */
 }
 
@@ -25,6 +30,16 @@
 .icon-lg {
     font-size: 1.2rem;
 }
+
+.inbox-item{
+  display:flex;
+  flex-direction: row;
+}
+
+.inbox-item .notification-container {
+  flex: 1;
+}
+
 
 .notifications-dropdown {
   width: 320px;
@@ -102,10 +117,16 @@
 
 
 .notification-strong {
+    margin-left: 10px;
     display: inline-block;
     white-space: normal;
     word-wrap: break-word;
     overflow-wrap: break-word;
+    text-decoration: none;
+}
+
+a {
+  text-decoration: none;
 }
 
 .dropdown {
