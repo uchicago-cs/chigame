@@ -30,10 +30,9 @@ the habit of running the `black` command to automatically reformat your code. Fo
 ```raw
 $ black src/chigame/games/views.py 
 reformatted src/chigame/games/views.py
-
 All done! ✨ 🍰 ✨
 1 file reformatted.
-```
+
 
 You can also enable automatic formatting on most code editors, so you don't
 have to run `black` manually. For VS Code, see [Fornatting Python in VS Code](https://code.visualstudio.com/docs/python/formatting).

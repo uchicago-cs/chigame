@@ -1,8 +1,10 @@
 import os
 import xml.etree.ElementTree as ET
+from datetime import datetime, timedelta
 from functools import wraps
 from random import choice
 
+import jwt
 import requests
 from django.conf import settings
 from django.contrib import messages
@@ -26,8 +28,8 @@ from django.views.generic.edit import FormMixin
 from chigame.users.models import User
 
 from .filters import LobbyFilter
-from .forms import GameForm, LobbyForm, ReviewForm
-from .models import Chat, Game, GameList, Lobby, Match, Player, Review, Tournament
+from .forms import GameForm, IFGameForm, LobbyForm, ReviewForm
+from .models import Chat, Game, GameList, InteractiveFictionGame, Lobby, Match, Player, Review, Tournament
 from .simulation_utils import TournamentSimulator, run_complete_tournament_simulation
 from .tables import LobbyTable
 
@@ -63,6 +65,11 @@ class GameDetailView(LoginRequiredMixin, FormMixin, DetailView):
     context_object_name = "game"
     form_class = ReviewForm
 
+    # for twine files, redirect to different IF view
+    def dispatch(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        return super().dispatch(request, *args, **kwargs)
+
     def get_success_url(self):
         return reverse("game-detail", kwargs={"pk": self.object.pk})
 
@@ -72,6 +79,9 @@ class GameDetailView(LoginRequiredMixin, FormMixin, DetailView):
         context["reviews"] = Review.objects.filter(game=self.object)
         context["popularity"] = self.object.reviews.count()
         context["avg_rating"] = self.object.reviews.filter(is_public=True).aggregate(Avg("rating"))["rating__avg"]
+
+        # FOR IF/twine GAMES
+        context["is_twine_game"] = self.object.twine_file.name.endswith(".html") if self.object.twine_file else False
         # Include the user's GameLists: default Favorites plus others
         if self.request.user.is_authenticated:
             favorites_list, _ = GameList.objects.get_or_create(name="Favorites", created_by=self.request.user)
@@ -107,11 +117,6 @@ class GameCreateView(UserPassesTestMixin, CreateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
-        # Game create and edit views share the same template, so this variable lets us know which is which
-        # Currently, this is being so that BGG autofilling is only available when creating a game
-        context["is_create"] = True
-
         return context
 
 
@@ -399,42 +404,66 @@ def search_results(request):
 
 # =============== Interactive Fiction Views ===============
 class InteractiveFictionView(TemplateView):
-    template_name = "games/game_detail.html"
+    template_name = "games/interactive-fiction/IF_game_create.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # creates a fake game object
-        fake_game = Game(
-            pk=9999,
-            name="Interactive Fiction Adventure",
-            description="Embark on an interactive text-based journey!",
-        )
-        context["game"] = fake_game
 
-        # check if there is an uploaded IF file
-        uploaded_file = self.request.session.get("uploaded_interactive_file")
-        if uploaded_file:
-            file_url = f"/media/{uploaded_file}"
-            context["uploaded_file_url"] = file_url
+        latest_game = Game.objects.filter(twine_file__isnull=False).order_by("-id").first()
+
+        if not latest_game:
+            # fallback dummy game to prevent pk=None
+            latest_game = Game.objects.create(
+                name="Untitled IF Game",
+                description="Temporary IF placeholder",
+                min_players=1,
+                max_players=1,
+                complexity=1.0,
+            )
+
+        context["game"] = latest_game
+
+        if latest_game.twine_file:
+            context["uploaded_file_url"] = latest_game.twine_file.url
+
+        return context
+
+
+class IFGameCreateView(UserPassesTestMixin, CreateView):
+    model = InteractiveFictionGame
+    form_class = IFGameForm
+    template_name = "games/interactive-fiction/IF_game_create.html"
+    success_url = reverse_lazy("game-list")
+
+    def test_func(self):
+        return self.request.user.is_staff
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
         return context
 
 
 class UploadFileView(View):
-    def post(self, request, pk):
+    def post(self, request, pk=None):
         uploaded_file = request.FILES.get("uploaded_file")
 
         if uploaded_file:
-            upload_path = os.path.join(settings.MEDIA_ROOT, "interactive_uploads")
-            os.makedirs(upload_path, exist_ok=True)
-
-            fs = FileSystemStorage(location=upload_path)
+            # Save the file to twine_games/
+            fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, "twine_games"))
             safe_filename = uploaded_file.name.replace(" ", "_")
-            fs.save(safe_filename, uploaded_file)
+            filename = fs.save(safe_filename, uploaded_file)
 
-            request.session["uploaded_interactive_file"] = f"interactive_uploads/{safe_filename}"
+            # Create a basic Game instance
+            game = Game.objects.create(
+                name=uploaded_file.name.replace(".html", ""),
+                description="Uploaded Twine game",
+                min_players=1,
+                max_players=1,
+                twine_file=f"twine_games/{filename}",
+            )
 
-            messages.success(request, "File uploaded successfully!")
-            return redirect("interactive-fiction")
+            messages.success(request, f"Game '{game.name}' uploaded successfully!")
+            return redirect("game-detail", pk=game.pk)
 
         messages.error(request, "No file selected.")
         return redirect("interactive-fiction")
@@ -1163,3 +1192,22 @@ def remove_from_gamelist(request, pk, list_pk):
     game_list = get_object_or_404(GameList, pk=list_pk, created_by=request.user)
     game_list.games.remove(game)
     return redirect("game-detail", pk=pk)
+
+
+# =============== Word Game Views ===============
+
+
+@login_required
+def wordle_game_page(request):
+    # Generate a short-lived JWT for secure identification
+    payload = {
+        "user_id": request.user.id,
+        "username": request.user.username,
+        "exp": datetime.now(timezone.utc) + timedelta(minutes=30),
+    }
+    token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
+
+    # GitHub Pages game URL + token
+    iframe_url = f"https://zhejiej.github.io/Words-Game//?token={token}"
+
+    return render(request, "games/wordle.html", {"iframe_url": iframe_url})
