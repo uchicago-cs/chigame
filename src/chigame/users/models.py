@@ -48,6 +48,9 @@ class User(AbstractUser):
     # a moderator can manage/approve game guides in Knowledge Base
     moderator = models.BooleanField(default=False)
 
+    # a toggle to determine if the user wants profanity filter on
+    profanity_filter = models.BooleanField(default=True)
+
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
 
