@@ -274,3 +274,5 @@ function getBoardState() {
 
   return board;
 }
+
+// checker linter

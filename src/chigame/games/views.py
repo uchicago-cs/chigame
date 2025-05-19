@@ -1231,6 +1231,9 @@ def wordle_game_page(request):
     return render(request, "games/wordle.html", {"iframe_url": iframe_url})
 
 
+# ============= Checkers ==============
+
+
 def checkers_game_view(request, pk):
     game = get_object_or_404(Checkers, id=pk)
     player = request.user
