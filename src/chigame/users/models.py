@@ -425,7 +425,7 @@ class Notification(models.Model):
             self.GROUP_INVITATION: "social",
             self.REMINDER: "updates",
             self.UPCOMING_MATCH: "updates",
-            self.MATCH_PROPOSAL: "updates",
+            self.MATCH_INVITATION: "updates",
             self.ACHIEVEMENT: "promotions",
         }
         return type_to_category.get(self.type, "inbox")
