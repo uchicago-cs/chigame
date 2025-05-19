@@ -318,11 +318,12 @@ function getBoardState() {
 
 // Updates score on frontend
 function updateScore() {
+  const redCount = pieces.filter(p => p.color === COLORS.red).length;
+  const blackCount = pieces.filter(p => p.color === COLORS.black).length;
+  const redCaptured = 12 - blackCount;
+  const blackCaptured = 12 - redCount;
+
   const score = document.getElementById('score');
-  const redOnBoard = pieces.filter(p => p.color === COLORS.red).length;
-  const blackOnBoard = pieces.filter(p => p.color === COLORS.black).length;
-  const redCaptured = 12 - redOnBoard;
-  const blackCaptured = 12 - blackOnBoard;
   score.innerHTML = `Red: ${redCaptured}<br>Black: ${blackCaptured}`;
 }
 
