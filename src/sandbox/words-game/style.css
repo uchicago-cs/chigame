@@ -1,3 +1,22 @@
+:root {
+    --bg-dark: #1c1c1c;
+    --bg-darker: #121212;
+    --primary: #800000; /* UChicago maroon */
+    --primary-hover: #9a0000;
+    --accent: #c5a873; /* UChicago gold/tan */
+    --text: #f8f9fa;
+    --text-secondary: #d2d2d2;
+    --card-bg: #2c2c2c;
+    --card-border: #3d3d3d;
+    --disabled: #6c757d;
+    --maroon-dark: #4F2121; /* Darker maroon */
+}
+
+@font-face {
+    font-family: 'PixelFont';
+    src: url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -5,63 +24,209 @@
 }
 
 body {
-    font-family: Arial, sans-serif;
-    background-color: #f8f8f8;
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--bg-dark);
+    color: var(--text);
     display: flex;
     flex-direction: column;
-    min-height: 100vh;
+    height: 100vh;
+    line-height: 1.4;
+    overflow: hidden;
+}
+
+#container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    justify-content: space-between;
 }
 
 main {
     flex: 1;
-    padding: 40px 20px;
+    padding: 1rem;
     text-align: center;
 }
 
-.name, .select{
+.name,
+.select {
     display: flex;
     justify-content: center;
 }
 
 h1 {
-    font-size: 48px;
-    margin-bottom: 20px;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 2.8rem;
+    font-weight: 700;
+    margin-bottom: 0.8rem;
+    color: var(--primary);
+    letter-spacing: 0.2rem;
+    text-shadow: 3px 3px 0px rgba(0, 0, 0, 0.3);
+    text-transform: uppercase;
 }
 
 h2 {
-    background-color: #ccc;
-    padding: 10px;
-    font-size: 32px;
-    margin-bottom: 40px;
+    background-color: var(--bg-darker);
+    padding: 0.5rem 1rem;
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+    border-radius: 0px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.1rem;
+    box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.2);
+    border-left: 4px solid var(--primary);
 }
 
 .game-modes {
-    display: flex;
-    justify-content: center;
-    gap: 40px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    margin-top: -2.5rem;
 }
 
 .mode {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: 15px;
+    background-color: var(--card-bg);
+    border-radius: 0px;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.2);
+    border: 2px solid var(--primary);
+    height: 100%;
+    max-height: 260px;
+}
+
+.mode:hover {
+    transform: translateY(-5px);
+    box-shadow: 6px 6px 0px rgba(0, 0, 0, 0.3);
+}
+
+.mode a {
+    display: block;
+    margin: 1rem auto 0.5rem;
+    width: 80%;
 }
 
 .mode-btn {
-    background-color: #a6ff8f;
+    background-color: var(--primary);
+    color: white;
     border: none;
-    padding: 15px 30px;
-    border-radius: 30px;
-    font-size: 24px;
+    width: 100%;
+    padding: 0.7rem;
+    border-radius: 0px;
+    font-size: 1.1rem;
+    font-weight: 600;
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: all 0.3s ease;
+    box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.3);
+    letter-spacing: 0.05rem;
+    text-transform: uppercase;
 }
 
 .mode-btn:hover {
-    background-color: #8fe37a;
+    background-color: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.4);
 }
 
-.mode p {
-    font-size: 20px;
+.mode-btn.disabled {
+    background-color: var(--disabled);
+    cursor: not-allowed;
+    box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.2);
+}
+
+.mode-btn.disabled:hover {
+    transform: none;
+    background-color: var(--disabled);
+}
+
+.mode-description {
+    padding: 0 1rem 1rem;
+    text-align: center;
+    overflow-y: auto;
+}
+
+.mode-description p {
+    margin-bottom: 0.5rem;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+.mode-description p:first-child {
+    color: var(--accent);
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+}
+
+footer {
+    padding: 0.8rem 0;
+    color: var(--accent);
+    font-size: 0.75rem;
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    h1 {
+        font-size: 2rem;
+    }
+
+    h2 {
+        font-size: 1rem;
+    }
+
+    .game-modes {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .mode-description p {
+        font-size: 0.75rem;
+    }
+}
+
+@media (max-height: 700px) {
+    h1 {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+    }
+
+    h2 {
+        padding: 0.3rem 0.8rem;
+        margin-bottom: 1rem;
+    }
+
+    .mode {
+        max-height: 220px;
+    }
+
+    .mode-btn {
+        padding: 0.5rem;
+    }
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+}
+
+.logo {
+    height: 60px;
+    margin-right: 0.5rem;
+}
+
+.name {
+    display: inline-block;
+}
+
+/* Add a style for the title container to reduce its bottom margin */
+#title {
+    margin-bottom: 0.5rem;
 }
