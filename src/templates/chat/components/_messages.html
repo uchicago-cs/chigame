@@ -69,12 +69,18 @@
   }
 
   .message-reply {
-    background-color: rgba(0, 0, 0, 0.05);
+    background-color: #f1f1f1;
     border-left: 3px solid #800000;
     padding: 8px;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
     border-radius: 4px;
-    font-size: 0.9em;
+    font-size: 0.85em;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+
+  .message-reply:hover {
+    background-color: #eaeaea;
   }
 
   .message-reply__sender {
@@ -84,6 +90,23 @@
 
   .message-reply__content {
     color: #666;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .highlight-reply {
+    animation: highlightFlash 0.8s ease-in-out;
+  }
+
+  @keyframes highlightFlash {
+    from {
+      background-color: #e0e0e0;
+    }
+
+    to {
+      background-color: inherit;
+    }
   }
 
   .context-menu {
@@ -103,11 +126,12 @@
     {% if messages %}
       {% for message in messages %}
         <div class="mb-3 {% if message.user == request.user %}align-self-end{% else %}align-self-start{% endif %}"
+             id="message-{{ message.id }}"
              data-message-id="{{ message.id }}"
              oncontextmenu="showContextMenu(event, {{ message.id }}, '{{ message.user.username }}', '{{ message.content }}'); return false;">
           <div class="{% if message.user == request.user %}bg-success-subtle{% else %}bg-white{% endif %} rounded p-2 shadow-sm">
             {% if message.reply_to %}
-              <div class="message-reply">
+              <div class="message-reply" data-reply-id="{{ message.reply_to.id }}">
                 <div class="message-reply__sender">{{ message.reply_to.user.username }}</div>
                 <div class="message-reply__content">{{ message.reply_to.content }}</div>
               </div>
@@ -165,4 +189,21 @@
     input.focus();
     hideContextMenu();
   }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.message-reply').forEach(function(replyBox) {
+      replyBox.addEventListener('click', function() {
+        const replyId = replyBox.getAttribute('data-reply-id');
+        const target = document.getElementById(`message-${replyId}`);
+        if (target) {
+          target.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center'
+          });
+          target.classList.add('highlight-reply');
+          setTimeout(() => target.classList.remove('highlight-reply'), 800);
+        }
+      });
+    });
+  });
 </script>
