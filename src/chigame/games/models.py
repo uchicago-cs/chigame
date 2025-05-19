@@ -745,7 +745,8 @@ class GameList(models.Model):
     def __str__(self):
         return f"{self.name} ({self.created_by})"
 
-# ================ CHECKERS ================
+
+# ================ CHECKERS =================
 
 
 class Checkers(models.Model):
