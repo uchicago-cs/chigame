@@ -30,6 +30,7 @@ urlpatterns = [
     path("knowledge-base/", include("chigame.knowledge_base.urls")),
     path("leaderboards/", include("chigame.leaderboards.urls")),
     path("achievements/", include("chigame.achievements.urls")),
+    path("achievements/api/", include("chigame.achievements.api.urls")),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 
