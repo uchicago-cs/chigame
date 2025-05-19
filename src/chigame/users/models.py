@@ -293,7 +293,13 @@ class Notification(models.Model):
         (TOURNAMENT_COMPLETED, "TOURNAMENT_COMPLETED"),
     )
 
-    DEFAULT_MESSAGES = {FRIEND_REQUEST: "You have a friend invitation"}
+    DEFAULT_MESSAGES = {FRIEND_REQUEST: "You have a friend invitation",
+                        REMINDER: "You have a reminder",
+                        UPCOMING_MATCH: "You have an upcoming match",
+                        MATCH_INVITATION: "You have a match invite",
+                        GROUP_INVITATION: "You have a group invitation",
+                        ACHIEVEMENT: "You have an achievement",
+    }
 
     category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default="inbox")
     receiver = models.ForeignKey(User, on_delete=models.CASCADE)
