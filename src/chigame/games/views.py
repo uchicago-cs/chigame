@@ -33,7 +33,6 @@ from rest_framework.response import Response
 from chigame.users.models import User
 
 from .filters import LobbyFilter
-
 from .forms import GameForm, IFGameForm, LobbyForm, ReviewForm
 from .models import (
     Chat,
@@ -1341,16 +1340,6 @@ def remove_from_gamelist(request, pk, list_pk):
     return redirect("game-detail", pk=pk)
 
 
-
-def checkers_game_view(request, pk):
-    game = get_object_or_404(Checkers, id=pk)
-    player = request.user  # You can refine this based on player_1/player_2 logic
-    turn_number = CheckersTurn.objects.filter(game=game).count() + 1
-
-    return render(
-        request, "games/game_checkers.html", {"game_id": game.id, "player_id": player.id, "turn_number": turn_number}
-    )
-
 # =============== Word Game Views ===============
 
 
@@ -1368,6 +1357,9 @@ def wordle_game_page(request):
     iframe_url = f"https://zhejiej.github.io/Words-Game//?token={token}"
 
     return render(request, "games/wordle.html", {"iframe_url": iframe_url})
+
+
+# ============== Checkers ===========
 
 
 @login_required
