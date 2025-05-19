@@ -278,9 +278,9 @@ class ReviewPendingGuideView(LoginRequiredMixin, UserPassesTestMixin, DetailView
         return self.render_to_response(context)
 
 
-
 def faq_view(request):
     return render(request, "knowledge-base/faq.html")
+
 
 class ModeratorListByGame(LoginRequiredMixin, UserPassesTestMixin, ListView):
     model = Game
