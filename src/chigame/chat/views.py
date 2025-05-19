@@ -1,3 +1,4 @@
+from django.db.models import Count, OuterRef, Subquery
 from django.shortcuts import get_object_or_404, render
 
 from .models import LiveChat, LiveChatMessage
@@ -15,5 +16,9 @@ def chat(request, chat_id):
 
 
 def live_chat_list(request):
-    chats = LiveChat.objects.filter(public=True)
+    latest_message = LiveChatMessage.objects.filter(live_chat=OuterRef("pk")).order_by("-sent_at")
+
+    chats = LiveChat.objects.filter(public=True).annotate(
+        user_count=Count("users"), last_message=Subquery(latest_message.values("content")[:1])
+    )
     return render(request, "chat/live-chat-list.html", {"chats": chats})
