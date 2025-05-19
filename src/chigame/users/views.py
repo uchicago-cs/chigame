@@ -13,7 +13,7 @@ from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_POST
 from django.views.generic import DetailView, RedirectView, UpdateView
 
-from chigame.games.models import Lobby, Player, Tournament
+from chigame.games.models import Game, Lobby, Player, Tournament
 
 from .models import (
     FriendInvitation,
@@ -175,7 +175,10 @@ def user_profile_detail_view(request, pk):
     if request.user.is_authenticated and request.user.pk == pk:
         # if user is accessing their own profile, create a profile if it doesn't exist
         profile = UserProfile.get_or_create_profile(request.user)
-        return render(request, "users/userprofile_detail.html", {"profile": profile})
+        available_games = Game.objects.exclude(id__in=profile.favorite_games.values_list("id", flat=True))
+        return render(
+            request, "users/userprofile_detail.html", {"profile": profile, "available_games": available_games}
+        )
     else:
         # fetch another user's profile
         try:
@@ -799,3 +802,55 @@ def notifications_by_label(request, label_id):
         "notifications": notifications,
     }
     return render(request, "users/notifications_by_label.html", context)
+
+
+@login_required
+@require_POST
+def add_favorite_game(request):
+    """
+    Add a game to the user's favorite games list.
+
+    Args:
+        The HTTP request containing the game_id in POST data
+
+    Returns:
+        Redirects back to the user's profile
+    """
+    game_id = request.POST.get("game_id")
+    if not game_id:
+        messages.error(request, "Please select a game to add.")
+        return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
+
+    try:
+        game = Game.objects.get(id=game_id)
+        profile = UserProfile.get_or_create_profile(request.user)
+        profile.favorite_games.add(game)
+        messages.success(request, f"{game.name} added to your favorite games.")
+    except Exception as e:
+        messages.error(request, f"Error adding game to favorites: {str(e)}")
+
+    return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
+
+
+@login_required
+@require_POST
+def remove_favorite_game(request, game_id):
+    """
+    Remove a game from the user's favorite games list.
+
+    Args:
+        request (HttpRequest): The HTTP request
+        game_id (int): The ID of the game to remove
+
+    Returns:
+        Redirects back to the user's profile
+    """
+    try:
+        game = Game.objects.get(id=game_id)
+        profile = UserProfile.get_or_create_profile(request.user)
+        profile.favorite_games.remove(game)
+        messages.success(request, f"{game.name} removed from your favorite games.")
+    except Exception as e:
+        messages.error(request, f"Error removing game from favorites: {str(e)}")
+
+    return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
