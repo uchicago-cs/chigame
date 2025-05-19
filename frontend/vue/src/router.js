@@ -3,6 +3,7 @@ import HomePage from './pages/HomePage.vue';
 import AboutPage from './pages/AboutPage.vue';
 import LoginPage from "./pages/LoginPage.vue";
 import ForumsPage from "./pages/ForumsPage.vue";
+import SignupPage from "./pages/SignupPage.vue";
 
 const routes = [
   { path: '/', component: HomePage },
@@ -12,6 +13,7 @@ const routes = [
     component: LoginPage
   },
   { path: '/forums', component: ForumsPage },
+  { path: '/signup', component: SignupPage },
 
 ];
 
