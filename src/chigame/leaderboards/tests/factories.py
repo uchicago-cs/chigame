@@ -4,7 +4,14 @@ from django.utils import timezone
 from factory.django import DjangoModelFactory
 
 from chigame.games.models import Game, Lobby, Match
-from chigame.leaderboards.models import Leaderboard, LeaderboardEntry, Metric, MetricScore, Region, LeaderboardPrivacySetting
+from chigame.leaderboards.models import (
+    Leaderboard,
+    LeaderboardEntry,
+    LeaderboardPrivacySetting,
+    Metric,
+    MetricScore,
+    Region,
+)
 from chigame.users.models import UserProfile
 
 AuthUser = get_user_model()
@@ -25,7 +32,6 @@ class UserProfileFactory(DjangoModelFactory):
         model = UserProfile
 
     user = factory.SubFactory(AuthUserFactory)
-    display_name = factory.Faker("user_name")
     bio = factory.Faker("sentence")
 
 
