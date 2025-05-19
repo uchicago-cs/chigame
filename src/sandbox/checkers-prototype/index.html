@@ -8,7 +8,7 @@
     <!-- link css file -->
     <link rel="stylesheet" href="css/style.css" />
     <!-- imported fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnectgit" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap"
           rel="stylesheet" />
@@ -27,6 +27,7 @@
         <button id="forfeitBtn" class="btn">Forfeit</button>
         <button id="drawBtn" class="btn">Offer Draw</button>
         <button id="declineDrawBtn" class="btn">Decline Draw</button>
+        <button id="toggle-bot" class="btn">Play vs Bot: ON</button>
         <div id="gameOverMessage" class="game-over-message"></div>
         <div id="playAgainPrompt" class="play-again-prompt hidden">
           <p>Play Again?</p>
@@ -40,12 +41,15 @@
     <div class="main-content">
       <div id="game"></div>
     </div>
-    <!-- settings menu -->
-    <div id="settings-menu" class="settings-menu hidden">
-      <h2>Settings</h2>
-      <!-- Add settings options here -->
-      <button id="toggle-colorblind" class="settings-option">Toggle Colorblind Mode</button>
+    <div id="settings-container">
+      <!-- settings menu -->
+      <div id="settings-menu">
+        <div id="settings-buttons">
+          <!-- Add settings options here -->
+          <button id="toggle-colorblind" class="setting-btn">Toggle Colorblind Mode</button>
+        </div>
+      </div>
+      <div id="settings-tab">⚙️</div>
     </div>
-    <button id="settings-button" class="settings-button">⚙️</button>
   </body>
 </html>
