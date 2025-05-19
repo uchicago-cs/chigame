@@ -48,14 +48,12 @@ from .models import (
     Review,
     Tournament,
 )
-
 from .simulation_utils import (
     MultiStageSimulator,
     RoundRobinSimulator,
     TournamentSimulator,
     run_complete_tournament_simulation,
 )
-
 from .tables import LobbyTable
 
 
@@ -1361,6 +1359,9 @@ def wordle_game_page(request):
     return render(request, "games/wordle.html", {"iframe_url": iframe_url})
 
 
+# ============== Checkers ============
+
+
 @login_required
 def checkers_game_view(request, pk):
     game = get_object_or_404(Checkers, id=pk)
@@ -1388,8 +1389,9 @@ def checkers_game_view(request, pk):
             [1, 0, 1, 0, 1, 0, 1, 0],
         ]
         # Save first turn
+        board = CheckersBoard.objects.create(state=default_state)
         CheckersTurn.objects.create(game=game, board=board, turn_number=1, player=game.player_1)
-        
+
     # Determine player ID for frontend
     player = game.player_1 if game.player_1.user == user else game.player_2
     turn_number = CheckersTurn.objects.filter(game=game).count() + 1
@@ -1424,6 +1426,7 @@ def checkers_game_update_board_state(request, board_id):
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
 @api_view(["GET"])
 def checkers_game_get_board_state(request, board_id):
     try:
@@ -1431,4 +1434,3 @@ def checkers_game_get_board_state(request, board_id):
         return Response({"state": board.state})
     except CheckersBoard.DoesNotExist:
         return Response({"error": "Board not found"}, status=404)
-

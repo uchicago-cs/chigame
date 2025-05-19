@@ -746,7 +746,7 @@ class GameList(models.Model):
         return f"{self.name} ({self.created_by})"
 
 
-# ================ CHECKERS ================
+# ================ CHECKERS =================
 
 
 class Checkers(models.Model):
@@ -775,6 +775,7 @@ class CheckersBoard(models.Model):
     """
     The Checkers board stores the game state using a list of bits
     """
+
     state = models.JSONField()  # store positions/pieces as a 2D array
 
     def __str__(self):
