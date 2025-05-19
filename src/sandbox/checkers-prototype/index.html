@@ -20,24 +20,25 @@
       <h1>CHIGAME</h1>
       <!-- add buttons to this div -->
       <div class="nav-btns">
+        <button id="forfeitBtn" class="btn">Forfeit</button>
+        <button id="drawBtn" class="btn">Offer Draw</button>
+        <button id="declineDrawBtn" class="btn">Decline Draw</button>
         <button class="btn"
                 onclick="window.open('https://github.com/uchicago-cs/chigame/wiki/Adding-Games-~-Checkers-Rules', '_blank')">
           Read Rules
         </button>
-        <button id="forfeitBtn" class="btn">Forfeit</button>
-        <button id="drawBtn" class="btn">Offer Draw</button>
-        <button id="declineDrawBtn" class="btn">Decline Draw</button>
-        <button id="toggle-bot" class="btn">Play vs Bot: ON</button>
-        <div id="gameOverMessage" class="game-over-message"></div>
-        <div id="playAgainPrompt" class="play-again-prompt hidden">
-          <p>Play Again?</p>
-          <div class="play-again-btns">
-            <button id="playAgainYes" class="btn">Yes</button>
-            <button id="playAgainNo" class="btn">No</button>
-          </div>
-        </div>
       </div>
     </nav>
+    <div id="gameOverPrompts">
+      <div id="gameOverMessage" class="game-over-message"></div>
+      <div id="playAgainPrompt" class="play-again-prompt hidden">
+        <p>Play Again?</p>
+        <div class="play-again-btns">
+          <button id="playAgainYes" class="btn">Yes</button>
+          <button id="playAgainNo" class="btn">No</button>
+        </div>
+      </div>
+    </div>
     <div class="main-content">
       <div id="game"></div>
     </div>
