@@ -15,7 +15,8 @@ canvas {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    margin-top: 5vh;
+    height: 95vh;
 }
 
 .navbar {
@@ -236,4 +237,22 @@ canvas {
     color: rgb(29, 210, 114);
     outline: 3px solid rgb(29, 210, 114);
     outline-offset: -3px;
+}
+
+#captured-pieces {
+    position: fixed;
+    right: 0px;
+    top: 50%;
+    transform: translate(0, -50%);
+    min-width: 100px;
+    max-width: 150px;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 1rem;
+    background-color: #a67c52;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+    border-radius: 1rem 0 0 1rem;
+    color: white;
+    font-size: 20px;
 }
