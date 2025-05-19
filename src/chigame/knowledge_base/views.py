@@ -149,7 +149,7 @@ def ContributorMdUpload(request, pk=None):
                 guide = Guide.objects.create(author=request.user, content=content, game_id=game, status=0)
 
             msg = f"Your {game} Guide was uploaded successfully!"
-            messages.info(request, msg)
+            messages.info(request, msg, extra_tags="guide-upload")
             return redirect("contributor-manage-guide")
 
     else:
