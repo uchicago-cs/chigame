@@ -1,12 +1,63 @@
 import pytest
+from django.core.exceptions import ValidationError
 
-from chigame.users.models import Notification, User
+from chigame.users.models import FriendInvitation, Notification, User, UserProfile
 
 from .factories import FriendInvitationFactory, FriendInvitationNotificationFactory, UserFactory
 
 
 def test_user_get_absolute_url(user: User):
     assert user.get_absolute_url() == f"/users/{user.pk}/"
+
+
+@pytest.mark.django_db
+def test_create_user_with_email_only():
+    # test that user can be created without username, just email
+    user = User.objects.create_user(email="test@example.com", password="testpass")
+    assert user.email == "test@example.com"
+    assert user.username is None
+
+
+@pytest.mark.django_db
+def test_validate_username():
+    # test that username cannot be completely numeric
+    user = User.objects.create_user(email="test@test.com", username="validname", password="test")
+    user.username = "123456"
+    with pytest.raises(ValidationError):
+        user.full_clean()
+        user.save()
+
+
+@pytest.mark.django_db
+def test_profile_creation():
+    # start with fresh user without profile and then create profile
+    user = UserFactory()
+    UserProfile.get_or_create_profile(user)
+    assert UserProfile.objects.filter(user=user).exists()
+
+
+@pytest.mark.django_db
+def test_one_active_one_deleted_invitation():
+    # Test there can be one active invitation and one deleted invitation
+    # There should be no uniqueness constraints on sender and receiver since
+    # there can be multiple deleted invitations!
+    sender = UserFactory()
+    receiver = UserFactory()
+
+    # Create a active invitation, delete it, then create a new one
+    old_invitation = FriendInvitationFactory(sender=sender, receiver=receiver, is_deleted=False)
+    old_invitation.is_deleted = True
+    old_invitation.save()
+
+    # Now create a new active invitation
+    new_invitation = FriendInvitationFactory(sender=sender, receiver=receiver, is_deleted=False)
+
+    assert new_invitation.sender == sender
+    assert new_invitation.receiver == receiver
+
+    # Only one active invitation
+    active_invitations = FriendInvitation.objects.filter(sender=sender, receiver=receiver, is_deleted=False)
+    assert active_invitations.count() == 1
 
 
 @pytest.mark.django_db

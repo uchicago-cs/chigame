@@ -6,7 +6,7 @@ from django.contrib.contenttypes.models import ContentType
 from factory import Faker, LazyAttribute, SubFactory, lazy_attribute, post_generation
 from factory.django import DjangoModelFactory
 
-from chigame.users.models import FriendInvitation, Notification
+from chigame.users.models import FriendInvitation, Notification, UserProfile
 
 
 class UserFactory(DjangoModelFactory):
@@ -34,6 +34,15 @@ class UserFactory(DjangoModelFactory):
         django_get_or_create = ["email"]
 
 
+class UserProfileFactory(DjangoModelFactory):
+    class Meta:
+        model = UserProfile
+
+    user = SubFactory(UserFactory)
+    bio = Faker("sentence", nb_words=35)
+    date_joined = Faker("date_time_this_year")
+
+
 class FriendInvitationFactory(DjangoModelFactory):
     class Meta:
         model = FriendInvitation
@@ -49,9 +58,12 @@ class FriendInvitationFactory(DjangoModelFactory):
     @staticmethod
     def get_different_user(sender):
         receiver = sender
-        while receiver.pk == sender.pk:
+        # 5 max attempts to avoid infinite loops
+        for _ in range(5):
             receiver = UserFactory()
-        return receiver
+            if receiver != sender:
+                return receiver
+        raise ValueError("Could not find a different receiver from sender.")
 
 
 class BaseNotificationFactory(DjangoModelFactory):

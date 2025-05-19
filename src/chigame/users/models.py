@@ -16,7 +16,7 @@ def validate_username(value):
     """
     Validate that the username is not all numeric.
     """
-    if value.isdigit():
+    if value and isinstance(value, str) and value.isdigit():
         raise ValidationError(_("Username cannot be all numbers."), code="invalid_username")
 
 
@@ -114,9 +114,6 @@ class FriendInvitation(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     objects = FriendInvitationManager()
     is_deleted = models.BooleanField(default=False)
-
-    class Meta:
-        unique_together = ("sender", "receiver")
 
     def accept_invitation(self):
         """
