@@ -793,6 +793,7 @@ class CheckersTurn(models.Model):
     board = models.ForeignKey(CheckersBoard, on_delete=models.CASCADE)
     turn_number = models.PositiveIntegerField()
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
+    snapshot = models.JSONField(null=True, blank=True)  # NEW field to store board state
 
     class Meta:
         unique_together = ("game", "turn_number")

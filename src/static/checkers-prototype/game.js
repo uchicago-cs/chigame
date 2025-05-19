@@ -264,6 +264,40 @@ function movePiece(piece, moveX, moveY) {
     })
     .catch((error) => console.error("Fetch error:", error));
 
+
+  // 2. Log the move
+  fetch(`/games/checkers/log_turn/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRFToken": getCSRFToken(),
+    },
+    body: JSON.stringify({
+      game: GAME_ID,
+      board: BOARD_ID,
+      player: PLAYER_ID,
+      turn_number: TURN_NUMBER,
+      snapshot: currentState,
+    }),
+  })
+    .then((res) => {
+      if (!res.ok) {
+        return res.text().then(text => {
+          throw new Error(`Server error: ${res.status}\n${text}`);
+        });
+      }
+      return res.json();
+    })
+    .then((data) => {
+      console.log("Turn logged.");
+      TURN_NUMBER++;
+    })
+    .catch((err) => {
+      console.error("Logging error:", err.message);
+    });
+
+
+
 }
 
 // helper function to get the piece

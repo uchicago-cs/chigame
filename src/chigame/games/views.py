@@ -25,8 +25,6 @@ from django.views import View
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, TemplateView, UpdateView
 from django.views.generic.edit import FormMixin
 from rest_framework import status
-
-# ============ new imports
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
@@ -48,6 +46,9 @@ from .models import (
     Review,
     Tournament,
 )
+
+# ============ new imports
+from .serializers import CheckersTurnSerializer
 from .simulation_utils import (
     MultiStageSimulator,
     RoundRobinSimulator,
@@ -1429,3 +1430,15 @@ def checkers_game_get_board_state(request, board_id):
         return Response({"state": board.state})
     except CheckersBoard.DoesNotExist:
         return Response({"error": "Board not found"}, status=404)
+
+
+@api_view(["POST"])
+def checkers_game_log_turn(request):
+    print("📥 Payload:", request.data)
+    serializer = CheckersTurnSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    else:
+        print("🔥 Serializer errors:", serializer.errors)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

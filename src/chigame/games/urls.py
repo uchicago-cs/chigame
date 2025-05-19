@@ -51,4 +51,5 @@ urlpatterns = [
     path("checkers/<int:pk>/", views.checkers_game_view, name="checkers-game"),
     path("checkers/<int:board_id>/update/", views.checkers_game_update_board_state, name="update_board_state"),
     path("checkers/<int:board_id>/state/", views.checkers_game_get_board_state, name="checkers-get-state"),
+    path("checkers/log_turn/", views.checkers_game_log_turn, name="checkers-log-turn"),
 ]
