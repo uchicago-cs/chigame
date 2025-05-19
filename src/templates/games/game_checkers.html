@@ -16,9 +16,17 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap"
           rel="stylesheet" />
     <script>
+      function getCSRFToken() {
+        return document.cookie.split('; ')
+          .find(row => row.startsWith('csrftoken'))
+          ?.split('=')[1];
+      }
+    </script>
+    <script>
       const GAME_ID = Number("{{ game_id }}");
       const PLAYER_ID = Number("{{ player_id }}");
       let TURN_NUMBER = Number("{{ turn_number }}");
+      const BOARD_ID = Number("{{ board_id }}");
     </script>
     <!-- linking to game.js -->
     <script src="{% static 'checkers-prototype/game.js' %}"></script>

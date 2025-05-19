@@ -44,11 +44,10 @@ urlpatterns = [
     path("tournaments/archived/", views.TournamentArchivedListView.as_view(), name="tournament-archived"),
     # placeholder game
     path("lobby/<int:pk>/coinflip", views.coin_flip_game, name="placeholder-game"),
-
     # checkers
     path("checkers/<int:pk>/", views.checkers_game_view, name="checkers-game"),
-    path("<int:pk>/", views.GameDetailView.as_view(), name="game-detail"),
+    path("checkers/<int:board_id>/update/", views.checkers_game_update_board_state, name="update_board_state"),
+    path("checkers/<int:board_id>/state/", views.checkers_game_get_board_state, name="checkers-get-state"),
     # Word Game
     path("wordle/", views.wordle_game_page, name="wordle-game"),
-
 ]

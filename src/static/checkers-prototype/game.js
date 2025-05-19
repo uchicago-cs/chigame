@@ -38,17 +38,40 @@ const RADIUS_SCALE_FACTOR = 2.5;
 // selected piece highlight stroke width
 const HIGHLIGHT_SIZE = 3;
 
-// ----------------------------------------------------------------------------
+// ------------------- Get Board State ----------------------------------------
+// From Database
 
-// ---INIT FUNCTIONS-----------------------------------------------------------
-function preload() {}
-
-function create() {
-  drawBoard(this);
-  populatePieces(this);
+async function fetchInitialBoardState() {
+  try {
+    const response = await fetch(`/games/checkers/${BOARD_ID}/state/`);
+    if (!response.ok) {
+      throw new Error("Failed to fetch board state");
+    }
+    const data = await response.json();
+    return data.state;
+  } catch (error) {
+    console.error("Error loading board state:", error);
+    return null;
+  }
 }
 
-function update() {}
+// ---INIT FUNCTIONS-----------------------------------------------------------
+function preload() { }
+
+async function create() {
+  const state = await fetchInitialBoardState();
+  if (state) {
+    drawBoard(this);
+    populatePiecesFromState(this, state);
+  } else {
+    console.warn("Using default board because state failed to load.");
+    drawBoard(this);
+    populatePieces(this); // fallback
+  }
+}
+
+function update() { }
+
 // ----------------------------------------------------------------------------
 
 // Draw the game board
@@ -156,6 +179,20 @@ function populatePieces(scene) {
   }
 }
 
+
+function populatePiecesFromState(scene, state) {
+  for (let y = 0; y < state.length; y++) {
+    for (let x = 0; x < state[y].length; x++) {
+      const cell = state[y][x];
+      if (cell === 1) {
+        createPiece(x, y, COLORS.red, scene);
+      } else if (cell === 2) {
+        createPiece(x, y, COLORS.black, scene);
+      }
+    }
+  }
+}
+
 // check if a move is valid
 function isValidMove(piece, moveX, moveY) {
   // calculate the change in y and x
@@ -207,6 +244,27 @@ function movePiece(piece, moveX, moveY) {
   // update the display state
   piece.sprite.x = MARGIN + piece.x * TILE_SIZE + TILE_SIZE / 2;
   piece.sprite.y = MARGIN + piece.y * TILE_SIZE + TILE_SIZE / 2;
+  
+  // Log the current state
+  const currentState = getBoardState();
+  console.log("Current board state:", currentState);
+
+  fetch(`/games/checkers/${BOARD_ID}/update/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ state: currentState }),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      if (!data.success) {
+        console.error("Failed to update board:", data.error);
+      } else {
+        console.log("Board updated successfully.");
+      }
+    })
+    .catch((error) => console.error("Fetch error:", error));
 }
 
 // helper function to get the piece
@@ -224,3 +282,63 @@ function endTurn() {
   // switch between red and black player turn
   currentPlayer = currentPlayer === COLORS.red ? COLORS.black : COLORS.red;
 }
+
+// Retrieves a 2D array representation of the board state where 0 are unoccupied
+// positions, 1 are red pieces, 2 are black pieces
+function getBoardState() {
+  const board = [];
+  for (let row = 0; row < BOARD_SIZE; row++) {
+    const newRow = [];
+    for (let col = 0; col < BOARD_SIZE; col++) {
+      newRow.push(0);
+    }
+    board.push(newRow);
+  }
+
+  for (const piece of pieces) {
+    const col = piece.x;
+    const row = piece.y;
+
+    if (row >= 0 && row < BOARD_SIZE && col >= 0 && col < BOARD_SIZE) {
+      if (piece.color == COLORS.red) {
+        board[row][col] = 1; // Red piece
+      } else {
+        board[row][col] = 2; // Black piece
+      }
+    }
+  }
+
+  return board;
+}
+
+// If you have more than one tab open it will automatically update by calling
+// from the server
+
+let lastKnownState = JSON.stringify(getBoardState());
+
+function reloadBoardFromState(state) {
+  // Clear existing pieces
+  pieces.forEach(p => p.sprite.destroy());
+  pieces = [];
+
+  // Re-populate pieces
+  populatePiecesFromState(checkers.scene.scenes[0], state);
+}
+
+function update() {
+  // Every 2 seconds, poll server for board state
+  if (!window.lastPollTime || Date.now() - window.lastPollTime > 2000) {
+    window.lastPollTime = Date.now();
+    fetch(`/games/checkers/${BOARD_ID}/state/`)
+      .then(res => res.json())
+      .then(data => {
+        const newState = JSON.stringify(data.state);
+        if (newState !== lastKnownState) {
+          lastKnownState = newState;
+          reloadBoardFromState(data.state);
+        }
+      })
+      .catch(err => console.error("Polling error:", err));
+  }
+}
+
