@@ -19,6 +19,11 @@ from .models import GeneralFeedback, Guide, ReviewFeedback
 
 # Viewers
 class DefaultView(ListView):
+    """
+    Landing page view that displays published guides.
+    Allows searching, filtering by category, and sorting of guides.
+    """
+
     model = Guide
     template_name = "knowledge-base/landing.html"
     context_object_name = "guides"
@@ -166,6 +171,11 @@ def DownloadGuide(request, pk):
 
 
 class FeedbackDetail(LoginRequiredMixin, DetailView):
+    """
+    Displays the details of a moderator's feedback on a guide.
+    This view is specifically for guide authors to see feedback about their guides.
+    """
+
     model = ReviewFeedback
     template_name = "knowledge-base/feedback_detail.html"
     context_object_name = "feedback"
@@ -248,12 +258,18 @@ class ReviewPendingGuideView(LoginRequiredMixin, UserPassesTestMixin, DetailView
         return self.render_to_response(context)
 
 
-class FeedbackView(TemplateView):
+class UserFeedbackView(TemplateView):
+    """
+    View for users to submit general feedback about the knowledge base system.
+    This is separate from guide-specific feedback (ReviewFeedback) and is meant
+    for general user experience feedback.
+    """
+
     template_name = "knowledge-base/feedback.html"
 
     def post(self, request, *args, **kwargs):
-        feedback_text = request.POST.get("feedback")
+        feedback_text = request.POST.get("feedback", "")
         if feedback_text:
             GeneralFeedback.objects.create(feedback=feedback_text)
-            return render(request, self.template_name, {"submitted": True})
-        return render(request, self.template_name)
+            messages.success(request, "Thank you for your feedback!")
+        return redirect("knowledge-base")

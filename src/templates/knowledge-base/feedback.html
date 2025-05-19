@@ -2,13 +2,23 @@
 
 {% load static %}
 
+{% block extra_css %}
+  <link rel="stylesheet"
+        href="{% static 'css/knowledge-base/feedback.css' %}" />
+{% endblock extra_css %}
 {% block page-content %}
-  <h2>Feedback</h2>
-  {% if submitted %}<p>Thank you for your feedback!</p>{% endif %}
+  <h2>Knowledge Base Feedback</h2>
+  <p class="feedback-description">
+    Please share your thoughts, suggestions, or report any issues you've encountered while using the Knowledge Base section of ChiGame.
+    Your feedback helps us improve the user experience for everyone.
+  </p>
   <form method="post">
     {% csrf_token %}
-    <textarea name="feedback" rows="4" required></textarea>
+    <textarea name="feedback"
+              rows="4"
+              required
+              placeholder="Enter your feedback here..."></textarea>
     <br />
-    <button type="submit">Submit</button>
+    <button type="submit">Submit Feedback</button>
   </form>
 {% endblock page-content %}
