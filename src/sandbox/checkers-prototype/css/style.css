@@ -60,14 +60,14 @@ canvas {
     cursor: pointer;
     position: relative;
     display: inline-block;
-    transition: transform 0.2s;
+    transition: transform 0.2s, filter 0.2s;
     box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
 }
 
 .btn:hover {
     box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
     transform: translateY(2px);
-    opacity: 0.8;
+    filter: brightness(0.9);
 }
 
 .game-over-message {
@@ -88,7 +88,7 @@ canvas {
 }
 
 .game-over-message.show {
-    display: block;
+    display: flex;
 }
 
 #declineDrawBtn {
@@ -131,67 +131,99 @@ canvas {
 }
 
 /* Settings Menu Styles */
-/* for the menu itself and the button to toggle it*/
-.settings-menu {
-    position: fixed;
-    bottom: 0;
+#settings-container::before {
+    position: absolute;
+    top: 0;
     left: 0;
-    width: 10%;
-    height: 90%;
-    background-color: #a67c52;
-    color: white;
-    padding: 1rem;
-    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
-    transform: translateX(-100%);
-    transition: transform 0.3s ease-in-out;
-    z-index: 1000;
+    z-index: 149;
+    width: 100%;
+    height: 20%;
+    border-radius: 0 20px 0 0;
+    background-color: white;
+    content: "";
 }
 
-.settings-menu h2 {
-    margin-top: 0;
-}
-
-.settings-button {
+#settings-container {
     position: fixed;
-    bottom: 20px;
-    left: 20px;
-    font-size: 24px;
-    border: none;
-    background-color: #a67c52;
-    color: white;
-    border-radius: 50%;
-    width: 50px;
-    height: 50px;
-    cursor: pointer;
+    bottom: -120px;
+    left: 50%;
+    z-index: 150;
+    transform: translateX(-50%);
+    width: 90vw;
+    border-radius: 0 1rem 0 0;
     box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
-    transition: transform 0.2s;
-    z-index: 1001;
+    color: black;
+    background-color: white;
+    transition: bottom 0.2s ease-in-out;
 }
 
-.settings-button:hover {
-    transform: scale(1.1);
+#settings-container.show {
+    bottom: 0;
 }
 
-.settings-menu.active {
-    transform: translateX(0);
+/* for the menu itself and the button to toggle it*/
+#settings-menu {
+    display: flex;
+    flex-direction: column;
+    justify-content: left;
+    align-items: left;
+    width: 100%;
+    padding: 1rem;
 }
 
-.settings-option {
-    display: inline-block;
-    font-size: 14px;
-    padding: 6px 10px;
-    margin: 0.25rem 0;
-    background-color: #d2b48c;
-    color: #3b2f2a;
+#settings-tab {
+    position: absolute;
+    top: -62px;
+    left: 0;
+    width: auto;
+    padding: 0.5rem 3rem;
     border: none;
-    border-radius: 6px;
-    white-space: nowrap;
-    cursor: pointer;
-    box-sizing: border-box;
-    transition: background-color 0.2s ease, transform 0.1s ease;
+    border-radius: 1rem 1rem 0 0;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+    background-color: white;
+    font-size: 35px;
+    text-align: center;
+    user-select: none;
 }
 
-.settings-option:hover {
-    background-color: #c59e71;
-    transform: translateX(2px);
+#settings-buttons {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1rem;
+}
+
+.setting-btn {
+    font-family: inherit;
+    font-size: 20px;
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+    padding: 15px 20px;
+    border: none;
+    border-radius: 50px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+    background-color: rgb(65, 65, 65);
+    color: white;
+    transition:
+        transform 0.2s,
+        filter 0.2s,
+        outline-offset 0s,
+        outline 0s,
+        background-color 0.1s,
+        color 0.1s;
+}
+
+.setting-btn:hover {
+    transform: translateY(2px);
+    filter: brightness(0.9);
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+#toggle-colorblind.selected {
+    background-color: transparent;
+    color: rgb(29, 210, 114);
+    outline: 3px solid rgb(29, 210, 114);
+    outline-offset: -3px;
 }
