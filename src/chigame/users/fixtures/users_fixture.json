@@ -90,6 +90,24 @@
   }
 },
 {
+  "model": "users.user",
+  "pk": 6,
+  "fields": {
+    "password": "argon2$argon2id$v=19$m=102400,t=2,p=8$Zzk2ZjFCTXl4RlJmOW1VU1JHa3QxZA$tiaFDXObRmwzYoVytjyCGFVfJnoqp1uYUOvCVUsUHpY",
+    "last_login": null,
+    "is_superuser": false,
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2023-10-30T03:25:56.552Z",
+    "name": "Harriet",
+    "email": "harriet@example.com",
+    "groups": [],
+    "user_permissions": [],
+    "tokens": 2,
+    "moderator": false
+  }
+},
+{
   "model": "users.userprofile",
   "pk": 1,
   "fields": {
@@ -135,21 +153,19 @@
   }
 },
 {
-  "model": "users.friendinvitation",
-  "pk": 1,
+  "model": "users.userprofile",
+  "pk": 6,
   "fields": {
-    "sender": 1,
-    "receiver": 2,
-    "accepted": true,
-    "timestamp": "2023-10-30T04:00:00.000Z",
-    "is_deleted": false
+    "user": 6,
+    "bio": "Gaming enthusiast and community member",
+    "date_joined": "2023-10-30T03:25:56.555Z"
   }
 },
 {
   "model": "users.friendinvitation",
-  "pk": 2,
+  "pk": 1,
   "fields": {
-    "sender": 1,
+    "sender": 2,
     "receiver": 3,
     "accepted": true,
     "timestamp": "2023-10-30T04:01:00.000Z",
@@ -158,7 +174,7 @@
 },
 {
   "model": "users.friendinvitation",
-  "pk": 3,
+  "pk": 2,
   "fields": {
     "sender": 2,
     "receiver": 4,
@@ -169,7 +185,7 @@
 },
 {
   "model": "users.friendinvitation",
-  "pk": 4,
+  "pk": 3,
   "fields": {
     "sender": 3,
     "receiver": 5,
@@ -180,12 +196,23 @@
 },
 {
   "model": "users.friendinvitation",
-  "pk": 5,
+  "pk": 4,
   "fields": {
     "sender": 4,
     "receiver": 5,
     "accepted": false,
     "timestamp": "2023-10-30T04:04:00.000Z",
+    "is_deleted": false
+  }
+},
+{
+  "model": "users.friendinvitation",
+  "pk": 5,
+  "fields": {
+    "sender": 4,
+    "receiver": 6,
+    "accepted": true,
+    "timestamp": "2023-10-30T04:05:00.000Z",
     "is_deleted": false
   }
 }
