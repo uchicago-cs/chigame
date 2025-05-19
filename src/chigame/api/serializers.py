@@ -118,3 +118,12 @@ class AchievementSerializer(serializers.ModelSerializer):
     class Meta:
         model = Achievement
         fields = ["id", "name", "description", "rarity", "threshold"]
+
+
+class PopUpInfoSerializer(serializers.Serializer):
+    min_players = serializers.IntegerField()
+    max_players = serializers.IntegerField()
+    complexity = serializers.FloatField()
+    min_playtime = serializers.IntegerField()
+    max_playtime = serializers.IntegerField()
+    description = serializers.CharField()

@@ -18,6 +18,7 @@ game_patterns = [
         name="api-user-achievement-assignment",
     ),
     path("<int:pk>/achievements/create/", views.AchievementCreateView.as_view(), name="api-game-achievement-create"),
+    path("<int:pk>/popups/", views.GamePopupsAPIView.as_view(), name="api-game-popups"),
 ]
 
 lobby_patterns = [

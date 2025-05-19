@@ -19,6 +19,7 @@ from chigame.api.serializers import (
     MechanicSerializer,
     MessageFeedSerializer,
     MessageSerializer,
+    PopUpInfoSerializer,
     ReviewSerializer,
     UserAchievementSerializer,
     UserSerializer,
@@ -320,3 +321,19 @@ class AchievementCreateView(generics.CreateAPIView):
         return Response(
             {"message": "Achievement assigned to user!", "data": serializer.data}, status=status.HTTP_201_CREATED
         )
+
+
+class GamePopupsAPIView(APIView):
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def get(self, request, pk):
+        game = get_object_or_404(Game, pk=pk)
+        data = {
+            "min_players": game.min_players,
+            "max_players": game.max_players,
+            "complexity": float(game.complexity or 0),
+            "min_playtime": game.min_playtime or 0,
+            "max_playtime": game.max_playtime or 0,
+            "description": game.description or "",
+        }
+        return Response(PopUpInfoSerializer(data).data)
