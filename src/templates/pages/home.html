@@ -12,6 +12,7 @@
   <!-- carousel styling-->
   <link rel="stylesheet" href="{% static 'css/carousel.css' %}" />
 {% endblock css %}
+
 {% block content %}
   <!-- First row of homepage for logged in users (Favorite Games and Friends List)-->
   {% if user.is_authenticated %}

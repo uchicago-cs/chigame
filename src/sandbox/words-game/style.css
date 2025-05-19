@@ -230,3 +230,26 @@ footer {
 #title {
     margin-bottom: 0.5rem;
 }
+
+.profile-section {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--card-bg);
+    border-radius: 0px;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.2);
+    border: 2px solid var(--primary);
+    margin: 1rem auto;
+    max-width: 300px;
+    padding: 1rem;
+}
+
+.profile-section h3 {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05rem;
+}
