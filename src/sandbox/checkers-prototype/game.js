@@ -68,6 +68,7 @@ function create() {
   });
 
   // Set up forfeit and draw buttons
+  const gameOverPrompts = document.getElementById('gameOverPrompts');
   const forfeitBtn = document.getElementById('forfeitBtn');
   const drawBtn = document.getElementById('drawBtn');
   const declineDrawBtn = document.getElementById('declineDrawBtn');
@@ -90,6 +91,7 @@ function create() {
     drawOfferedBy = null;
 
     // Reset UI
+    gameOverPrompts.classList.remove('show');
     gameOverMessage.textContent = '';
     gameOverMessage.classList.remove('show');
     playAgainPrompt.style.display = 'none';
@@ -110,20 +112,27 @@ function create() {
   forfeitBtn.addEventListener('click', () => {
     if (!gameOver && currentPlayer === COLORS.red) {
       gameOver = true;
+      gameOverPrompts.classList.add('show');
       gameOverMessage.textContent = 'Red player has forfeited! Black wins!';
       gameOverMessage.classList.add('show');
-      document.getElementById('playAgainPrompt').style.display = 'block';
+      document.getElementById('playAgainPrompt').style.display = 'flex';
+      document.getElementById('forfeitBtn').style.display = 'none';
+      document.getElementById('drawBtn').style.display = 'none';
     } else if (!gameOver && currentPlayer === COLORS.black) {
       gameOver = true;
+      gameOverPrompts.classList.add('show');
       gameOverMessage.textContent = 'Black player has forfeited! Red wins!';
       gameOverMessage.classList.add('show');
-      document.getElementById('playAgainPrompt').style.display = 'block';
+      document.getElementById('playAgainPrompt').style.display = 'flex';
+      document.getElementById('forfeitBtn').style.display = 'none';
+      document.getElementById('drawBtn').style.display = 'none';
     }
   });
 
   function resetDrawOffer() {
     drawOffered = false;
     drawOfferedBy = null;
+    gameOverPrompts.classList.remove('show');
     gameOverMessage.textContent = '';
     gameOverMessage.classList.remove('show');
     drawBtn.textContent = 'Offer Draw';
@@ -143,18 +152,20 @@ function create() {
         gameOverMessage.textContent =
           'Black player has offered a draw. Red player, please accept or decline.';
       }
+      gameOverPrompts.classList.add('show');
       gameOverMessage.classList.add('show');
       drawBtn.textContent = 'Accept Draw';
-      declineDrawBtn.style.display = 'block';
+      declineDrawBtn.style.display = 'flex';
     } else {
       // Accept Draw (second click)
       gameOver = true;
+      gameOverPrompts.classList.add('show');
       gameOverMessage.textContent = 'Draw accepted! Game over!';
       gameOverMessage.classList.add('show');
       drawBtn.style.display = 'none';
       declineDrawBtn.style.display = 'none';
       forfeitBtn.style.display = 'none';
-      document.getElementById('playAgainPrompt').style.display = 'block';
+      document.getElementById('playAgainPrompt').style.display = 'flex';
     }
   });
 
@@ -334,7 +345,6 @@ function movePiece(piece, moveX, moveY) {
   piece.y = moveY;
   piece.sprite.x = MARGIN + piece.x * TILE_SIZE + TILE_SIZE / 2;
   piece.sprite.y = MARGIN + piece.y * TILE_SIZE + TILE_SIZE / 2;
-
   console.log('Current board state:', getBoardState());
 }
 
@@ -345,18 +355,22 @@ function checkGameOver() {
 
   if (redPieces.length === 0) {
     gameOver = true;
+    const gameOverPrompts = document.getElementById('gameOverPrompts')
     const gameOverMessage = document.getElementById('gameOverMessage');
+    gameOverPrompts.classList.add('show');
     gameOverMessage.textContent = 'All red pieces captured! Black wins!';
     gameOverMessage.classList.add('show');
-    document.getElementById('playAgainPrompt').style.display = 'block';
+    document.getElementById('playAgainPrompt').style.display = 'flex';
     document.getElementById('drawBtn').style.display = 'none';
     document.getElementById('forfeitBtn').style.display = 'none';
   } else if (blackPieces.length === 0) {
     gameOver = true;
+    const gameOverPrompts = document.getElementById('gameOverPrompts')
     const gameOverMessage = document.getElementById('gameOverMessage');
+    gameOverPrompts.classList.add('show');
     gameOverMessage.textContent = 'All black pieces captured! Red wins!';
     gameOverMessage.classList.add('show');
-    document.getElementById('playAgainPrompt').style.display = 'block';
+    document.getElementById('playAgainPrompt').style.display = 'flex';
     document.getElementById('drawBtn').style.display = 'none';
     document.getElementById('forfeitBtn').style.display = 'none';
   }
@@ -459,6 +473,7 @@ function giveHint() {
 
   // reset draw offer if it was made by the current player
   if (drawOffered && drawOfferedBy === currentPlayer) {
+    const gameOverPrompts = document.getElementById('gameOverPrompts');
     const gameOverMessage = document.getElementById('gameOverMessage');
     const drawBtn = document.getElementById('drawBtn');
     const declineDrawBtn = document.getElementById('declineDrawBtn');
@@ -466,6 +481,7 @@ function giveHint() {
     drawOfferedBy = null;
     gameOverMessage.textContent = '';
     gameOverMessage.classList.remove('show');
+    gameOverPrompts.classList.remove('show');
     drawBtn.textContent = 'Offer Draw';
     declineDrawBtn.style.display = 'none';
   }
