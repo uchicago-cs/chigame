@@ -1,0 +1,35 @@
+{% extends "knowledge-base/base.html" %}
+
+{% load static %}
+
+<link rel="stylesheet" href="{% static 'css/knowledge-base-styles.css' %}" />
+{% block page-content %}
+  <div class="feedback-container">
+    <h3 class="feedback-title">
+      Feedback for "Guide for {{ feedback.guide_id.game_id.name }}"
+      <span class="guide-id">(Guide ID={{ feedback.guide_id.pk }})</span>
+    </h3>
+    <div>
+      <p class="feedback-status">
+        <span class="bold-label">Guide Author:</span> {{ feedback.guide_id.author }}
+      </p>
+      <p class="feedback-status">
+        <span class="bold-label">Status:</span>
+        <span class="bold-label maroon">{{ feedback.get_status_display }}</span>
+      </p>
+      <div class="feedback-comment">
+        <p class="bold-label">Comment:</p>
+        <p class="comment-text">
+          {% if feedback.comment %}
+            {{ feedback.comment }}
+          {% else %}
+            <span class="empty-comment">N/A</span>
+          {% endif %}
+        </p>
+      </div>
+      <p class="feedback-reviewer">
+        <span class="bold-label">Reviewer:</span> {{ feedback.reviewer }}
+      </p>
+    </div>
+  </div>
+{% endblock page-content %}
