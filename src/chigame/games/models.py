@@ -272,10 +272,10 @@ class Tournament(models.Model):
 
     name = models.CharField(max_length=255)
     game = models.ForeignKey(Game, on_delete=models.CASCADE)
-    registration_start_date = models.DateTimeField()  # the start date of the registration period
-    registration_end_date = models.DateTimeField()  # the end date of the registration period
-    tournament_start_date = models.DateTimeField()  # the start date of the tournament
-    tournament_end_date = models.DateTimeField()  # the end date of the tournament
+    registration_start_date = models.DateTimeField(null=True, blank=True)  # the start date of the registration period
+    registration_end_date = models.DateTimeField(null=True, blank=True)  # the end date of the registration period
+    tournament_start_date = models.DateTimeField(null=True, blank=True)  # the start date of the tournament
+    tournament_end_date = models.DateTimeField(null=True, blank=True)  # the end date of the tournament
     max_players = models.PositiveIntegerField()
     description = models.TextField()  # not limited to 255 characters
     rules = models.TextField()  # not limited to 255 characters
