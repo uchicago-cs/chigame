@@ -14,7 +14,7 @@
   padding-right: 2rem;
 }
 
-.knowledge-base-nav-container .breadcrumbs, .knowledge-base-nav-container .breadcrumbs * {
+.knowledge-base-4ddnav-container .breadcrumbs, .knowledge-base-nav-container .breadcrumbs * {
   color: #555 !important;
   text-decoration: none;
 }
@@ -22,7 +22,6 @@
 /* Other Knowledge Base Styles */
 .knowledge-base.container {
   max-width: 1000px;
-  min-height: 4000px;
 }
 
 .knowledge-base .nav a {
