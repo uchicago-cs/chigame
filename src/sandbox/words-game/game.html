@@ -160,55 +160,6 @@
       // TEMPORARY START: Temporary Login Option Script
       document.getElementById('tempLoginBtn').addEventListener('click', tempLogin);
       document.getElementById('tempLogoutBtn').addEventListener('click', tempLogout);
-
-      // Add save game button handler
-      document.getElementById('save-game-btn').addEventListener('click', async () => {
-        try {
-          await saveCurrentGameState();
-          showNotification('Game saved successfully!');
-        } catch (error) {
-          console.error('Save game error:', error);
-          const errorMessage = error.message || 'Failed to save game';
-          showNotification(errorMessage, 3000); // Show error for 3 seconds
-        }
-      });
-
-      function tempLogin() {
-        const username = document.getElementById('tempUsername').value.trim();
-        if (username) {
-          localStorage.setItem('tempUsername', username);
-          updateLoginUI(username);
-        }
-      }
-
-      function tempLogout() {
-        localStorage.removeItem('tempUsername');
-        updateLoginUI(null);
-      }
-
-      function updateLoginUI(username) {
-        const loginForm = document.getElementById('loginForm');
-        const userInfo = document.getElementById('user-info');
-        const currentUsername = document.getElementById('current-username');
-        
-        if (username) {
-          loginForm.style.display = 'none';
-          userInfo.style.display = 'flex';
-          currentUsername.textContent = username;
-        } else {
-          loginForm.style.display = 'flex';
-          userInfo.style.display = 'none';
-          document.getElementById('tempUsername').value = '';
-        }
-      }
-
-      // On page load, check for temp username
-      document.addEventListener('DOMContentLoaded', function() {
-        const saved = localStorage.getItem('tempUsername');
-        if (saved) {
-          updateLoginUI(saved);
-        }
-      });
       // TEMPORARY END: Temporary Login Option Script
     </script>
     <script src="game.js" defer></script>

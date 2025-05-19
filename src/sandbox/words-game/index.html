@@ -97,13 +97,11 @@
       function tempLogin() {
         const username = document.getElementById('tempUsername').value.trim();
         if (username) {
-          localStorage.setItem('tempUsername', username);
           updateLoginUI(username);
         }
       }
 
       function tempLogout() {
-        localStorage.removeItem('tempUsername');
         updateLoginUI(null);
       }
 
@@ -128,10 +126,7 @@
 
       // On page load, check for temp username
       document.addEventListener('DOMContentLoaded', function() {
-        const saved = localStorage.getItem('tempUsername');
-        if (saved) {
-          updateLoginUI(saved);
-        }
+        updateLoginUI(null);
       });
       // TEMPORARY END: Temporary Login Option Script
     </script>

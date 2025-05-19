@@ -1,7 +1,41 @@
+// Global notification function
+window.showNotification = function(message, duration = 1000) {
+    console.log('Showing notification:', message);
+    const notification = document.getElementById("notification");
+    console.log('Notification element:', notification);
+    if (!notification) {
+        console.error('Notification element not found!');
+        return;
+    }
+    notification.textContent = message;
+    notification.classList.add("show");
+    console.log('Added show class');
+
+    setTimeout(() => {
+        notification.classList.remove("show");
+        console.log('Removed show class');
+    }, duration);
+}
+
 window.addEventListener("load", async () => {
     const modal = document.getElementById("word-length-modal");
     const selector = document.getElementById("word-length-selector");
     const startBtn = document.getElementById("start-game-btn");
+    const saveGameBtn = document.getElementById("save-game-btn");
+
+    // Add save game button handler
+    saveGameBtn.addEventListener('click', async () => {
+        console.log('Save game button clicked');
+        try {
+            await saveCurrentGameState();
+            console.log('Game saved successfully');
+            showNotification('Game saved successfully!');
+        } catch (error) {
+            console.error('Save game error:', error);
+            const errorMessage = error.message || 'Failed to save game';
+            showNotification(errorMessage, 3000);
+        }
+    });
 
     startBtn.addEventListener("click", async () => {
         wordLength = parseInt(selector.value);
@@ -338,18 +372,6 @@ function calculateTileColors(guess, target) {
     return colors;
 }
 
-//Show Notification
-function showNotification(message, duration = 1000) {
-    const notification = document.getElementById("notification");
-    notification.textContent = message;
-
-    notification.classList.add("show");
-
-    setTimeout(() => {
-        notification.classList.remove("show");
-    }, duration);
-}
-
 //End Screen
 function showEndScreen(won) {
     const endScreen = document.getElementById("end-screen");
@@ -485,29 +507,48 @@ function updateLoginUI(username) {
     }
 }
 
-// Update the saveGameState function to use session authentication
+// Update the saveGameState function
 async function saveGameState(key, value) {
     try {
-        const response = await fetch('/api/game-state/save/', {
+        console.log('Sending request to save game state...');
+        const csrfToken = getCookie('csrftoken');
+        console.log('CSRF Token:', csrfToken);
+        
+        const response = await fetch('/games/api/game-state/save/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken')
+                'X-CSRFToken': csrfToken
             },
             credentials: 'include',
             body: JSON.stringify({ key, value })
         });
+        
+        // Log the full response for debugging
+        console.log('Response status:', response.status);
+        console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+        
+        // Get the response text first
+        const responseText = await response.text();
+        console.log('Raw response:', responseText);
+        
+        // Try to parse as JSON if possible
+        let data;
+        try {
+            data = JSON.parse(responseText);
+        } catch (e) {
+            console.error('Failed to parse response as JSON:', e);
+            throw new Error(`Server returned invalid JSON: ${responseText.substring(0, 100)}...`);
+        }
         
         if (response.status === 401) {
             throw new Error('Please log in to save your game');
         }
         
         if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error || 'Failed to save game state');
+            throw new Error(data.error || 'Failed to save game state');
         }
         
-        const data = await response.json();
         return data;
     } catch (error) {
         console.error('Error saving game state:', error);
@@ -584,12 +625,6 @@ async function saveCurrentGameState() {
         availableSpace: availableSpace
     };
     
-    // Check if user is logged in
-    const username = localStorage.getItem('tempUsername');
-    if (!username) {
-        throw new Error('Please log in to save your game');
-    }
-
     await saveGameState('current_game', JSON.stringify(gameState));
 }
 
