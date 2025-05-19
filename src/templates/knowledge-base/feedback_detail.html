@@ -11,6 +11,9 @@
     </h3>
     <div>
       <p class="feedback-status">
+        <span class="bold-label">Guide Author:</span> {{ feedback.guide_id.author }}
+      </p>
+      <p class="feedback-status">
         <span class="bold-label">Status:</span>
         <span class="bold-label maroon">{{ feedback.get_status_display }}</span>
       </p>

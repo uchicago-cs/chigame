@@ -280,6 +280,9 @@ class Player(models.Model):
     rating = models.DecimalField(max_digits=3, decimal_places=2, null=True, blank=True)
 
 
+# ==================================
+
+
 class MatchProposal(models.Model):
     """
     A proposal for a group of friends to have a match at a specific
@@ -722,6 +725,19 @@ class Tournament(models.Model):
 # a
 
 
+class Feedback(models.Model):
+    """
+    A feedback system submitted by users for a tournament.
+    """
+
+    id = models.AutoField(primary_key=True)
+    tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE, related_name="feedback")
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    rating = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
+    comment = models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
 class Announcement(models.Model):
     """
     An announcement, which can be sent to multiple users.
@@ -851,6 +867,7 @@ class GameList(models.Model):
         return f"{self.name} ({self.created_by})"
 
 
+
 @receiver(post_save, sender=Lobby)
 def update_match_timing(sender, instance, **kwargs):
     try:
@@ -866,3 +883,58 @@ def update_match_timing(sender, instance, **kwargs):
             match.calculate_duration()
     except Match.DoesNotExist:
         pass  # No match exists yet for this lobby
+
+# ================ CHECKERS ================
+
+
+class Checkers(models.Model):
+    """
+    A game of Checkers stores:
+      - the players and bots
+      - a timestamp of when the game begins and ends
+    """
+
+    player_1 = models.ForeignKey(Player, on_delete=models.CASCADE)
+    player_2 = models.ForeignKey(
+        Player, on_delete=models.CASCADE, null=True, blank=True, related_name="checkers_player_2"
+    )
+    # bot
+    winner = models.ForeignKey(
+        Player, on_delete=models.SET_NULL, null=True, blank=True, related_name="checkers_winner"
+    )
+    start_time = models.DateTimeField()
+    end_time = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"Player 1 {self.player_1} in Checkers {self.id}"
+
+
+class CheckersBoard(models.Model):
+    """
+    The Checkers board stores the game state using a list of bits
+    """
+
+    state = models.JSONField()  # store positions/pieces as a 2D array
+    # state_bits = models.IntegerField() # stores positions as bits
+
+    def __str__(self):
+        return f"Board {self.id}"
+
+
+class CheckersTurn(models.Model):
+    """
+    Tracks a Checkers game's board state, the current turn, and the player making
+    the turn
+    """
+
+    game = models.ForeignKey(Checkers, on_delete=models.CASCADE, related_name="turns")
+    board = models.ForeignKey(CheckersBoard, on_delete=models.CASCADE)
+    turn_number = models.PositiveIntegerField()
+    player = models.ForeignKey(Player, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ("game", "turn_number")
+
+    def __str__(self):
+        return f"Turn {self.turn_number} of Checkers Game {self.game.id}"
+
