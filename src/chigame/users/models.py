@@ -305,6 +305,7 @@ class Notification(models.Model):
     message = models.CharField(max_length=255, blank=True, null=True)
     objects = NotificationQuerySet.as_manager()
     bookmarked = models.BooleanField(default=False)
+    labels = models.ManyToManyField("NotificationLabel", blank=True, related_name="notifications")
 
     class Meta:
         unique_together = ["receiver", "actor_content_type", "actor_object_id", "type"]
@@ -329,6 +330,75 @@ class Notification(models.Model):
     def renew_notification(self):
         self.last_sent = timezone.now()
         self.save()
+
+    def get_style_key(self):
+        # For Mapping integer types to the stringsC SS expects
+        type_map = {
+            self.FRIEND_REQUEST: "friend",
+            self.REMINDER: "system",
+            self.UPCOMING_MATCH: "match",
+            self.MATCH_PROPOSAL: "match",
+            self.GROUP_INVITATION: "group",
+            self.ACHIEVEMENT: "achievement",
+        }
+        return type_map.get(self.type, "default")
+
+    def get_rich_message(self):
+        actor = self.actor
+
+        # Default message: Use pre-set message, then type-specific default, then generic default
+        default_message_for_type = self.DEFAULT_MESSAGES.get(self.type, "You have a new notification.")
+        final_fallback_message = self.message or default_message_for_type
+
+        if not actor:
+            return final_fallback_message
+
+        try:
+            if self.type == self.FRIEND_REQUEST:
+                if hasattr(actor, "sender") and actor.sender:
+                    # Try to get username, fallback to name, then to "Someone"
+                    sender_name = (
+                        getattr(actor.sender, "username", None) or getattr(actor.sender, "name", None) or "Someone"
+                    )
+                    return f"{sender_name} sent you a friend request."
+                return default_message_for_type
+
+            elif self.type == self.GROUP_INVITATION:
+                if (
+                    hasattr(actor, "sender")
+                    and actor.sender
+                    and hasattr(actor, "friend_group")
+                    and actor.friend_group
+                    and hasattr(actor.friend_group, "name")
+                ):
+                    sender_name = (
+                        getattr(actor.sender, "username", None) or getattr(actor.sender, "name", None) or "Someone"
+                    )
+                    group_name = actor.friend_group.name
+                    return f"{sender_name} invited you to join the group '{group_name}'."
+                return self.message or "You have a group invitation."
+
+            # For all other notification types, use the existing message or the type-specific default
+            return final_fallback_message
+
+        except AttributeError:
+            return final_fallback_message  # Safe fallback in case of unexpected errors
+
+    def get_icon_class(self):
+        if self.type == self.FRIEND_REQUEST:
+            return "bi-person-plus-fill"
+        elif self.type == self.GROUP_INVITATION:
+            return "bi-people-fill"
+        elif self.type == self.UPCOMING_MATCH:
+            return "bi-calendar-event-fill"
+        elif self.type == self.MATCH_PROPOSAL:
+            return "bi-joystick"
+        elif self.type == self.ACHIEVEMENT:
+            return "bi-star-fill"
+        elif self.type == self.REMINDER:
+            return "bi-info-circle-fill"
+        else:
+            return "bi-bell-fill"
 
 
 class BaseNotificationHandler:
@@ -450,3 +520,14 @@ class TournamentCompletedNotification(BaseNotificationHandler):
 
     def get_redirect_str(self):
         return reverse("tournaments:tournament-detail", kwargs={"pk": self.notification.actor.tournament.pk})
+
+class NotificationLabel(models.Model):
+    name = models.CharField(max_length=50)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="notification_labels")
+
+    class Meta:
+        unique_together = ("name", "user")
+
+    def __str__(self):
+        return self.name
+
