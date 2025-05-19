@@ -34,6 +34,18 @@
           <a href="{% url 'index' %}" class="nav-btn">Home</a>
           <button id="how-to-play-btn" class="nav-btn">How to Play ▼</button>
           <button id="settings-btn" class="nav-btn">⚙</button>
+          <!-- TEMPORARY START: Temporary Login Option -->
+          <div id="login-container" style="display: inline-flex; align-items: center; gap: 0.3rem; margin-left: 0.5rem;">
+            <form id="loginForm" onsubmit="event.preventDefault(); tempLogin();" style="display: inline-flex; align-items: center; gap: 0.3rem;">
+              <input type="text" id="tempUsername" placeholder="Enter username" style="padding: 0.3rem; border-radius: 3px; border: 1px solid #ccc; background: var(--bg-dark); color: var(--text);" />
+              <button type="submit" style="padding: 0.3rem 0.7rem; border-radius: 3px; background: var(--primary); color: white; border: none;">Login</button>
+            </form>
+            <div id="user-info" style="display: none; align-items: center; gap: 0.5rem;">
+              <span id="current-username" style="color: var(--text);"></span>
+              <button onclick="tempLogout()" style="padding: 0.3rem 0.7rem; border-radius: 3px; background: var(--primary); color: white; border: none;">Logout</button>
+            </div>
+          </div>
+          <!-- TEMPORARY END: Temporary Login Option -->
         </div>
         <div class="logo-title">
           <h1 class="name">WORDS</h1>
@@ -143,6 +155,45 @@
       const urlParams = new URLSearchParams(window.location.search);
       const mode = urlParams.get('mode');
       window.gameMode = mode;
+
+      // TEMPORARY START: Temporary Login Option Script
+      function tempLogin() {
+        const username = document.getElementById('tempUsername').value.trim();
+        if (username) {
+          localStorage.setItem('tempUsername', username);
+          updateLoginUI(username);
+        }
+      }
+
+      function tempLogout() {
+        localStorage.removeItem('tempUsername');
+        updateLoginUI(null);
+      }
+
+      function updateLoginUI(username) {
+        const loginForm = document.getElementById('loginForm');
+        const userInfo = document.getElementById('user-info');
+        const currentUsername = document.getElementById('current-username');
+        
+        if (username) {
+          loginForm.style.display = 'none';
+          userInfo.style.display = 'flex';
+          currentUsername.textContent = username;
+        } else {
+          loginForm.style.display = 'flex';
+          userInfo.style.display = 'none';
+          document.getElementById('tempUsername').value = '';
+        }
+      }
+
+      // On page load, check for temp username
+      document.addEventListener('DOMContentLoaded', function() {
+        const saved = localStorage.getItem('tempUsername');
+        if (saved) {
+          updateLoginUI(saved);
+        }
+      });
+      // TEMPORARY END: Temporary Login Option Script
     </script>
     <script src="game.js" defer></script>
   </body>
