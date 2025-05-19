@@ -28,6 +28,8 @@ const COLORS = {
   black: 0x000000,
   red: 0xff0000,
   white: 0xffffff,
+  colorblind_blue: 0x1e88e5,
+  colorblind_orange: 0xffc107,
 };
 let pieces = [];
 let selectedPiece = null;
@@ -121,42 +123,34 @@ function drawBoard(scene) {
 }
 
 function createPiece(x, y, color, scene) {
-  // create a piece
   const piece = {
     x,
     y,
     color,
+    owner: color, // Store original owner color
     sprite: scene.add.circle(
-      // same center position as when we create the board tiles/squares
       MARGIN + x * TILE_SIZE + TILE_SIZE / 2,
       MARGIN + y * TILE_SIZE + TILE_SIZE / 2,
-      // circle radius
       TILE_SIZE / RADIUS_SCALE_FACTOR,
       color
     ),
   };
 
-  // make the piece clickable
   piece.sprite.setInteractive();
   piece.sprite.on('pointerdown', () => {
-    // deselect and remove highlight if click a selected piece
-    if (selectedPiece === piece) {
+    if (!selectedPiece && piece.owner === currentPlayer) {
+      selectedPiece = piece;
+      piece.sprite.setStrokeStyle(HIGHLIGHT_SIZE, COLORS.white);
+    } else if (selectedPiece === piece) {
       selectedPiece.sprite.setStrokeStyle();
       selectedPiece = null;
-
-      // if player selects their own pieces (does nothing if they click on opponent pieces)
-    } else if (piece.color === currentPlayer) {
-      // clear previous selected piece
-      if (selectedPiece) {
-        selectedPiece.sprite.setStrokeStyle();
-      }
-      // highligt the current piece that is being selected and set them as 'selectedPiece'
+    } else if (piece.owner === currentPlayer) {
+      selectedPiece.sprite.setStrokeStyle();
       selectedPiece = piece;
       piece.sprite.setStrokeStyle(HIGHLIGHT_SIZE, COLORS.white);
     }
   });
 
-  // push to array
   pieces.push(piece);
 }
 
@@ -318,8 +312,12 @@ function getBoardState() {
 
 // Updates score on frontend
 function updateScore() {
-  const redCount = pieces.filter(p => p.color === COLORS.red).length;
-  const blackCount = pieces.filter(p => p.color === COLORS.black).length;
+  const redColors = [COLORS.red, COLORS.colorblind_orange];
+  const blackColors = [COLORS.black, COLORS.colorblind_blue];
+
+  const redCount = pieces.filter(p => redColors.includes(p.owner)).length;
+  const blackCount = pieces.filter(p => blackColors.includes(p.owner)).length;
+
   const redCaptured = 12 - blackCount;
   const blackCaptured = 12 - redCount;
 
@@ -359,3 +357,106 @@ function update() {
       .catch(err => console.error("Polling error:", err));
   }
 }
+
+// Event Listener for Settings Menu
+document.addEventListener('DOMContentLoaded', () => {
+  const settingsContainer = document.getElementById('settings-container');
+
+  settingsContainer.addEventListener('mouseover', () => {
+    settingsContainer.classList.add('show');
+  });
+
+  settingsContainer.addEventListener('mouseout', () => {
+    settingsContainer.classList.remove('show');
+  });
+});
+
+// Function to change the color of all pieces
+function changePieceColor(newColorOne, newColorTwo) {
+  const firstPieceColor = pieces[0].owner;
+  pieces.forEach((piece) => {
+    if (piece.owner === firstPieceColor) {
+      piece.color = newColorOne;
+      piece.sprite.setFillStyle(newColorOne);
+    } else {
+      piece.color = newColorTwo;
+      piece.sprite.setFillStyle(newColorTwo);
+    }
+  });
+}
+
+// Event listener for the toggle colorblind button
+document.addEventListener('DOMContentLoaded', () => {
+  const changeColorButton = document.getElementById('toggle-colorblind');
+  changeColorButton.addEventListener('click', () => {
+    const firstPieceColor = pieces[0].color;
+    // if the first piece is a default color, change to colorblind colors
+    if (firstPieceColor === COLORS.red || firstPieceColor === COLORS.black) {
+      changePieceColor(COLORS.colorblind_blue, COLORS.colorblind_orange);
+      changeColorButton.classList.add('selected');
+    }
+    // if the first piece is a colorblind color, change to default colors
+    else {
+      changePieceColor(COLORS.black, COLORS.red);
+      changeColorButton.classList.remove('selected');
+
+    }
+  });
+});
+
+// Coordinates overlay button
+document.addEventListener('DOMContentLoaded', () => {
+  const toggleCoordinatesBtn = document.getElementById('toggle-coordinates');
+  let coordsVisible = false;
+  const coordElements = [];
+
+  toggleCoordinatesBtn.addEventListener('click', () => {
+    coordsVisible = !coordsVisible;
+
+    if (coordsVisible) {
+      // get board position on screen
+      const gameDiv = document.getElementById('game');
+      const rect = gameDiv.getBoundingClientRect();
+
+      // for each index, create a top label and a left label
+      for (let i = 0; i < BOARD_SIZE; i++) {
+        // Column label
+        const colLabel = document.createElement('div');
+        colLabel.textContent = i + 1;
+        Object.assign(colLabel.style, {
+          position: 'absolute',
+          left: `${rect.left + MARGIN + i * TILE_SIZE + TILE_SIZE / 2}px`,
+          top: `${rect.top - 20}px`,
+          transform: 'translateX(-50%)',
+          fontFamily: '"Outfit", sans-serif',
+          color: '#3b2f2a',
+          userSelect: 'none',
+          pointerEvents: 'none',
+        });
+        document.body.appendChild(colLabel);
+        coordElements.push(colLabel);
+
+        // Row label
+        const rowLabel = document.createElement('div');
+        rowLabel.textContent = i + 1;
+        Object.assign(rowLabel.style, {
+          position: 'absolute',
+          left: `${rect.left - 20}px`,
+          top: `${rect.top + MARGIN + i * TILE_SIZE + TILE_SIZE / 2}px`,
+          transform: 'translateY(-50%)',
+          fontFamily: '"Outfit", sans-serif',
+          color: '#3b2f2a',
+          userSelect: 'none',
+          pointerEvents: 'none',
+        });
+        document.body.appendChild(rowLabel);
+        coordElements.push(rowLabel);
+      }
+
+    } else {
+      // remove coordinates
+      coordElements.forEach(el => document.body.removeChild(el));
+      coordElements.length = 0;
+    }
+  });
+});
