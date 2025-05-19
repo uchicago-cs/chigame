@@ -472,6 +472,7 @@ class UploadFileView(View):
                 description="Uploaded Twine game",
                 min_players=1,
                 max_players=1,
+                complexity=1,
                 twine_file=f"twine_games/{filename}",
             )
 
