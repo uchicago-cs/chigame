@@ -1,8 +1,10 @@
 import os
 import xml.etree.ElementTree as ET
+from datetime import datetime, timedelta
 from functools import wraps
 from random import choice
 
+import jwt
 import requests
 from django.conf import settings
 from django.contrib import messages
@@ -27,9 +29,14 @@ from django.views.generic.edit import FormMixin
 from chigame.users.models import User
 
 from .filters import LobbyFilter
-from .forms import GameForm, LobbyForm, ReviewForm
-from .models import Chat, Game, GameList, Lobby, Match, Player, Review, Tournament
-from .simulation_utils import TournamentSimulator, run_complete_tournament_simulation
+from .forms import GameForm, IFGameForm, LobbyForm, ReviewForm
+from .models import Chat, Game, GameList, InteractiveFictionGame, Lobby, Match, Player, Review, Tournament
+from .simulation_utils import (
+    MultiStageSimulator,
+    RoundRobinSimulator,
+    TournamentSimulator,
+    run_complete_tournament_simulation,
+)
 from .tables import LobbyTable
 
 
@@ -48,7 +55,7 @@ class GameListView(ListView):
         queryset = (
             super()
             .get_queryset()
-            .annotate(avg_rating=Avg("review__rating"), popularity=Count("review__is_public"))
+            .annotate(avg_rating=Avg("reviews__rating"), popularity=Count("reviews__is_public"))
             .annotate(rating_percentage=ExpressionWrapper((F("avg_rating") / 5) * 100, output_field=FloatField()))
         )
         sort = self.request.GET.get("sort_by", "name-asc")
@@ -64,6 +71,11 @@ class GameDetailView(LoginRequiredMixin, FormMixin, DetailView):
     context_object_name = "game"
     form_class = ReviewForm
 
+    # for twine files, redirect to different IF view
+    def dispatch(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        return super().dispatch(request, *args, **kwargs)
+
     def get_success_url(self):
         return reverse("game-detail", kwargs={"pk": self.object.pk})
 
@@ -71,6 +83,11 @@ class GameDetailView(LoginRequiredMixin, FormMixin, DetailView):
         context = super().get_context_data(**kwargs)
         context["form"] = self.get_form()
         context["reviews"] = Review.objects.filter(game=self.object)
+        context["popularity"] = self.object.reviews.count()
+        context["avg_rating"] = self.object.reviews.filter(is_public=True).aggregate(Avg("rating"))["rating__avg"]
+
+        # FOR IF/twine GAMES
+        context["is_twine_game"] = self.object.twine_file.name.endswith(".html") if self.object.twine_file else False
         # Include the user's GameLists: default Favorites plus others
         if self.request.user.is_authenticated:
             favorites_list, _ = GameList.objects.get_or_create(name="Favorites", created_by=self.request.user)
@@ -106,11 +123,7 @@ class GameCreateView(UserPassesTestMixin, CreateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
-        # Game create and edit views share the same template, so this variable lets us know which is which
-        # Currently, this is being so that BGG autofilling is only available when creating a game
         context["is_create"] = True
-
         return context
 
 
@@ -130,11 +143,7 @@ class GameEditView(UserPassesTestMixin, UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
-        # Game create and edit views share the same template, so this variable lets us know which is which
-        # Currently, this is being so that BGG autofilling is only available when creating a game
         context["is_create"] = False
-
         return context
 
 
@@ -398,42 +407,66 @@ def search_results(request):
 
 # =============== Interactive Fiction Views ===============
 class InteractiveFictionView(TemplateView):
-    template_name = "games/game_detail.html"
+    template_name = "games/interactive-fiction/IF_game_create.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # creates a fake game object
-        fake_game = Game(
-            pk=9999,
-            name="Interactive Fiction Adventure",
-            description="Embark on an interactive text-based journey!",
-        )
-        context["game"] = fake_game
 
-        # check if there is an uploaded IF file
-        uploaded_file = self.request.session.get("uploaded_interactive_file")
-        if uploaded_file:
-            file_url = f"/media/{uploaded_file}"
-            context["uploaded_file_url"] = file_url
+        latest_game = Game.objects.filter(twine_file__isnull=False).order_by("-id").first()
+
+        if not latest_game:
+            # fallback dummy game to prevent pk=None
+            latest_game = Game.objects.create(
+                name="Untitled IF Game",
+                description="Temporary IF placeholder",
+                min_players=1,
+                max_players=1,
+                complexity=1.0,
+            )
+
+        context["game"] = latest_game
+
+        if latest_game.twine_file:
+            context["uploaded_file_url"] = latest_game.twine_file.url
+
+        return context
+
+
+class IFGameCreateView(UserPassesTestMixin, CreateView):
+    model = InteractiveFictionGame
+    form_class = IFGameForm
+    template_name = "games/interactive-fiction/IF_game_create.html"
+    success_url = reverse_lazy("game-list")
+
+    def test_func(self):
+        return self.request.user.is_staff
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
         return context
 
 
 class UploadFileView(View):
-    def post(self, request, pk):
+    def post(self, request, pk=None):
         uploaded_file = request.FILES.get("uploaded_file")
 
         if uploaded_file:
-            upload_path = os.path.join(settings.MEDIA_ROOT, "interactive_uploads")
-            os.makedirs(upload_path, exist_ok=True)
-
-            fs = FileSystemStorage(location=upload_path)
+            # Save the file to twine_games/
+            fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, "twine_games"))
             safe_filename = uploaded_file.name.replace(" ", "_")
-            fs.save(safe_filename, uploaded_file)
+            filename = fs.save(safe_filename, uploaded_file)
 
-            request.session["uploaded_interactive_file"] = f"interactive_uploads/{safe_filename}"
+            # Create a basic Game instance
+            game = Game.objects.create(
+                name=uploaded_file.name.replace(".html", ""),
+                description="Uploaded Twine game",
+                min_players=1,
+                max_players=1,
+                twine_file=f"twine_games/{filename}",
+            )
 
-            messages.success(request, "File uploaded successfully!")
-            return redirect("interactive-fiction")
+            messages.success(request, f"Game '{game.name}' uploaded successfully!")
+            return redirect("game-detail", pk=game.pk)
 
         messages.error(request, "No file selected.")
         return redirect("interactive-fiction")
@@ -542,6 +575,16 @@ class TournamentDetailView(DetailView):
     template_name = "tournaments/tournament_detail.html"
     context_object_name = "tournament"
 
+    def get_simulation_type(self, request, tournament_id):
+        if request.session.get(f"tournament_{tournament_id}_round_robin_mode", False):
+            return "round_robin"
+        elif request.session.get(f"tournament_{tournament_id}_multi_stage_mode", False):
+            return "multi_stage"
+        elif request.session.get(f"tournament_{tournament_id}_double_elimination", False):
+            return "double"
+        else:
+            return "single"
+
     def get(self, request, *args, **kwargs):
         super().get(request, *args, **kwargs)
         tournament = Tournament.objects.get(id=self.kwargs["pk"])
@@ -551,219 +594,300 @@ class TournamentDetailView(DetailView):
             messages.error(request, "You are not authorized to view this tournament.")
             return redirect("tournament-list")
 
-        if tournament.matches.count() == 0 and (
-            tournament.status == "registration closed" or tournament.status == "tournament in progress"
-        ):
-            # if the tournament matches have not been created
+        if tournament.matches.count() == 0 and tournament.status in ["registration closed", "tournament in progress"]:
             tournament.create_tournaments_brackets()
-        tournament.check_and_end_tournament()  # check if the tournament has ended
+        tournament.check_and_end_tournament()
 
-        # Check if simulation mode is active
         simulation_mode = request.session.get(f"tournament_{tournament.id}_simulation_mode", False)
+        simulation_type = self.get_simulation_type(request, tournament.id)
         context = self.get_context_data()
         context["simulation_mode"] = simulation_mode
+        context["simulation_type"] = simulation_type
 
-        # If simulation mode is active, add simulation data to context
         if simulation_mode:
             simulator_data = request.session.get(f"tournament_{tournament.id}_simulator_data", None)
             if not simulator_data:
-                # Initialize simulation
-                simulator = TournamentSimulator(tournament)
-                simulator.set_tournament_type(
-                    request.session.get(f"tournament_{tournament.id}_double_elimination", False)
-                )
-                simulator.initialize_simulation()
-                request.session[f"tournament_{tournament.id}_simulator_data"] = simulator.get_bracket_data()
-                context["simulation_data"] = simulator.get_bracket_data()
-            else:
-                context["simulation_data"] = simulator_data
+                if simulation_type == "single":
+                    simulator = TournamentSimulator(tournament)
+                    simulator.set_tournament_type(False)
+                    simulator.initialize_simulation()
+                    simulator_data = simulator.get_bracket_data()
+
+                elif simulation_type == "double":
+                    simulator = TournamentSimulator(tournament)
+                    simulator.set_tournament_type(True)
+                    simulator.initialize_simulation()
+                    simulator_data = simulator.get_bracket_data()
+
+                elif simulation_type == "round_robin":
+                    simulator = RoundRobinSimulator(list(tournament.players.all()))
+                    simulator.simulate_all_matches()
+                    simulator_data = simulator.get_bracket_data()
+
+                elif simulation_type == "multi_stage":
+                    simulator = MultiStageSimulator(list(tournament.players.all()))
+                    simulator_data = simulator.get_bracket_data()
+
+                request.session[f"tournament_{tournament.id}_simulator_data"] = simulator_data
+                request.session.modified = True
+
+            context["simulation_data"] = simulator_data
 
         return self.render_to_response(context)
 
     def post(self, request, *args, **kwargs):
-        # This method is called when the user clicks the "Join Tournament" or
-        # "Withdraw" button
         tournament = Tournament.objects.get(id=request.POST.get("tournament_id"))
+        simulation_type = self.get_simulation_type(request, tournament.id)
+        action = request.POST.get("action")
 
-        # Handle simulation actions
-        if request.POST.get("action") == "toggle_simulation_mode":
-            # Toggle simulation mode
+        if action == "toggle_simulation_mode":
             current_mode = request.session.get(f"tournament_{tournament.id}_simulation_mode", False)
             request.session[f"tournament_{tournament.id}_simulation_mode"] = not current_mode
 
-            # Clear any existing simulation data
             if f"tournament_{tournament.id}_simulator_data" in request.session:
                 del request.session[f"tournament_{tournament.id}_simulator_data"]
 
             messages.success(request, f"Simulation mode {'deactivated' if current_mode else 'activated'}")
             return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
 
-        elif request.POST.get("action") == "set_tournament_type":
-            # Set tournament type (single or double elimination)
-            is_double_elimination = request.POST.get("tournament_type") == "double"
+        elif action == "set_tournament_type":
+            tournament_type = request.POST.get("tournament_type")
+            is_double_elimination = tournament_type == "double"
+
             request.session[f"tournament_{tournament.id}_double_elimination"] = is_double_elimination
+            request.session[f"tournament_{tournament.id}_round_robin_mode"] = tournament_type == "round_robin"
+            request.session[f"tournament_{tournament.id}_multi_stage_mode"] = tournament_type == "multi_stage"
 
-            # Clear any existing simulation data
             if f"tournament_{tournament.id}_simulator_data" in request.session:
                 del request.session[f"tournament_{tournament.id}_simulator_data"]
 
-            messages.success(
-                request, f"Tournament type set to {'Double' if is_double_elimination else 'Single'} Elimination"
-            )
-            return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
-
-        elif request.POST.get("action") == "simulate_match":
-            # Simulate a specific match
-            match_id = request.POST.get("match_id")
-
-            # Get the simulator data from the session
-            simulator_data = request.session.get(f"tournament_{tournament.id}_simulator_data", None)
-            if not simulator_data:
-                messages.error(request, "Simulation data not found. Please restart the simulation.")
-                return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
-
-            # Create a simulator instance and load the data
-            simulator = TournamentSimulator(tournament)
-            simulator.set_tournament_type(request.session.get(f"tournament_{tournament.id}_double_elimination", False))
-            simulator.initialize_simulation()
-
-            # Update the simulator with the current state
-            simulator.simulated_matches = {}
-            for round_num, brackets in simulator_data["rounds"].items():
-                for bracket_type, matches in brackets.items():
-                    for match in matches:
-                        # Ensure match ID is a string
-                        match_id_in_data = str(match["id"])
-                        match_data = {
-                            "match": None,
-                            "players": [
-                                user
-                                for user in tournament.players.all()
-                                if user.id in [p["id"] for p in match["players"]]
-                            ],
-                            "winner": next(
-                                (user for user in tournament.players.all() if user.id == match["winner"]), None
-                            ),
-                            "loser": next(
-                                (user for user in tournament.players.all() if user.id == match["loser"]), None
-                            ),
-                            "round": int(round_num),
-                            "bracket": bracket_type,
-                        }
-                        simulator.simulated_matches[match_id_in_data] = match_data
-
-            simulator.current_round = simulator_data["current_round"]
-
-            # Simulate the match
-            if match_id not in simulator.simulated_matches:
-                messages.error(request, f"Match ID {match_id} not found in simulation data")
-                return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
-
-            winner, loser = simulator.simulate_match_outcome(match_id)
-
-            # Save the updated simulator data
-            updated_data = simulator.get_bracket_data()
-            request.session[f"tournament_{tournament.id}_simulator_data"] = updated_data
             request.session.modified = True
 
-            if winner:
-                messages.success(request, f"Match simulated successfully. Winner: {winner.username}")
-            else:
-                messages.error(request, "Failed to simulate match. No winner determined.")
+            messages.success(request, f"Tournament type set to {tournament_type.replace('_', ' ').title()}")
             return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
 
-        elif request.POST.get("action") == "advance_round":
-            # Advance to the next round
-            simulator_data = request.session.get(f"tournament_{tournament.id}_simulator_data", None)
-            if not simulator_data:
-                messages.error(request, "Simulation data not found. Please restart the simulation.")
+        # round robin simulation
+        elif simulation_type == "round_robin":
+            if request.POST.get("action") == "start_simulation":
+                simulator = RoundRobinSimulator(list(tournament.players.all()))
+                simulator.simulate_all_matches()
+                simulation_data = simulator.get_bracket_data()
+                request.session[f"tournament_{tournament.id}_simulator_data"] = simulation_data
+                request.session.modified = True
+
+                messages.success(request, "Round Robin simulation started!")
                 return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
 
-            # Create a simulator instance and load the data
-            simulator = TournamentSimulator(tournament)
-            simulator.set_tournament_type(request.session.get(f"tournament_{tournament.id}_double_elimination", False))
+            elif request.POST.get("action") == "re-run_simulation":
+                if f"tournament_{tournament.id}_simulator_data" in request.session:
+                    del request.session[f"tournament_{tournament.id}_simulator_data"]
 
-            # Update the simulator with the current state
-            simulator.simulated_matches = {}
-            for round_num, brackets in simulator_data["rounds"].items():
-                for bracket_type, matches in brackets.items():
-                    for match in matches:
-                        match_data = {
-                            "match": None,
-                            "players": [
-                                user
-                                for user in tournament.players.all()
-                                if user.id in [p["id"] for p in match["players"]]
-                            ],
-                            "winner": next(
-                                (user for user in tournament.players.all() if user.id == match["winner"]), None
-                            ),
-                            "loser": next(
-                                (user for user in tournament.players.all() if user.id == match["loser"]), None
-                            ),
-                            "round": int(round_num),
-                            "bracket": bracket_type,
-                        }
-                        simulator.simulated_matches[str(match["id"])] = match_data
+                messages.success(request, "Simulation reset")
+                return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
 
-            simulator.current_round = simulator_data["current_round"]
+        # multi-stage simulation
+        elif simulation_type == "multi_stage":
+            if action == "simulate_round_robin_phase":
+                simulator = MultiStageSimulator(list(tournament.players.all()))
+                simulator.simulate_round_robin_only()
+                request.session[f"tournament_{tournament.id}_simulator_data"] = simulator.get_bracket_data()
+                request.session.modified = True
 
-            # Check if all matches in the current round have winners
-            current_round_matches = [
-                m for m in simulator.simulated_matches.values() if m["round"] == simulator.current_round
-            ]
+                messages.success(request, "Round Robin Phase simulated!")
+                return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
 
-            all_matches_have_winners = all(m["winner"] is not None for m in current_round_matches)
+            elif action == "simulate_knockout_phase":
+                simulator_data = request.session.get(f"tournament_{tournament.id}_simulator_data")
+                if not simulator_data or not simulator_data.get("round_robin_complete"):
+                    messages.error(request, "Please complete the Round Robin Phase first.")
+                    return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
 
-            if not all_matches_have_winners:
-                messages.error(
-                    request, "Cannot advance to next round until all matches in the current round have winners."
+                simulator = MultiStageSimulator(list(tournament.players.all()))
+                simulator.round_robin_simulated = True
+                simulator.results = {}
+                for match in simulator_data["round_robin_matches"]:
+                    if match["winner"]:
+                        p1_id = match["players"][0]["id"]
+                        p2_id = match["players"][1]["id"]
+                        winner_id = match["winner"]
+                        simulator.results[(p1_id, p2_id)] = winner_id
+
+                simulator.simulate_knockout_only()
+
+                request.session[f"tournament_{tournament.id}_simulator_data"] = simulator.get_bracket_data()
+                request.session.modified = True
+
+                messages.success(request, "Knockout Phase simulated!")
+                return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
+
+            elif action == "run_full_simulation":
+                simulator = MultiStageSimulator(list(tournament.players.all()))
+                simulator.simulate_tournament()
+
+                request.session[f"tournament_{tournament.id}_simulator_data"] = simulator.get_bracket_data()
+                request.session.modified = True
+
+                messages.success(request, "Full tournament simulation completed!")
+                return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
+
+        # single and double elimination simulation
+        elif simulation_type == "single" or simulation_type == "double":
+            if request.POST.get("action") == "simulate_match":
+                # Simulate a specific match
+                match_id = request.POST.get("match_id")
+
+                # Get the simulator data from the session
+                simulator_data = request.session.get(f"tournament_{tournament.id}_simulator_data", None)
+                if not simulator_data:
+                    messages.error(request, "Simulation data not found. Please restart the simulation.")
+                    return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
+
+                # Create a simulator instance and load the data
+                simulator = TournamentSimulator(tournament)
+                simulator.set_tournament_type(
+                    request.session.get(f"tournament_{tournament.id}_double_elimination", False)
                 )
+                simulator.initialize_simulation()
+
+                # Update the simulator with the current state
+                simulator.simulated_matches = {}
+                for round_num, brackets in simulator_data["rounds"].items():
+                    for bracket_type, matches in brackets.items():
+                        for match in matches:
+                            # Ensure match ID is a string
+                            match_id_in_data = str(match["id"])
+                            match_data = {
+                                "match": None,
+                                "players": [
+                                    user
+                                    for user in tournament.players.all()
+                                    if user.id in [p["id"] for p in match["players"]]
+                                ],
+                                "winner": next(
+                                    (user for user in tournament.players.all() if user.id == match["winner"]), None
+                                ),
+                                "loser": next(
+                                    (user for user in tournament.players.all() if user.id == match["loser"]), None
+                                ),
+                                "round": int(round_num),
+                                "bracket": bracket_type,
+                            }
+                            simulator.simulated_matches[match_id_in_data] = match_data
+
+                simulator.current_round = simulator_data["current_round"]
+
+                # Simulate the match
+                if match_id not in simulator.simulated_matches:
+                    messages.error(request, f"Match ID {match_id} not found in simulation data")
+                    return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
+
+                winner, loser = simulator.simulate_match_outcome(match_id)
+
+                # Save the updated simulator data
+                updated_data = simulator.get_bracket_data()
+                request.session[f"tournament_{tournament.id}_simulator_data"] = updated_data
+                request.session.modified = True
+
+                if winner:
+                    messages.success(request, f"Match simulated successfully. Winner: {winner.username}")
+                else:
+                    messages.error(request, "Failed to simulate match. No winner determined.")
                 return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
 
-            # Create next round matches
-            next_round_matches = simulator.create_next_round_matches()
+            elif request.POST.get("action") == "advance_round":
+                # Advance to the next round
+                simulator_data = request.session.get(f"tournament_{tournament.id}_simulator_data", None)
+                if not simulator_data:
+                    messages.error(request, "Simulation data not found. Please restart the simulation.")
+                    return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
 
-            if not next_round_matches:
-                messages.info(request, "Tournament has reached its conclusion. No more rounds to advance to.")
+                # Create a simulator instance and load the data
+                simulator = TournamentSimulator(tournament)
+                simulator.set_tournament_type(
+                    request.session.get(f"tournament_{tournament.id}_double_elimination", False)
+                )
+
+                # Update the simulator with the current state
+                simulator.simulated_matches = {}
+                for round_num, brackets in simulator_data["rounds"].items():
+                    for bracket_type, matches in brackets.items():
+                        for match in matches:
+                            match_data = {
+                                "match": None,
+                                "players": [
+                                    user
+                                    for user in tournament.players.all()
+                                    if user.id in [p["id"] for p in match["players"]]
+                                ],
+                                "winner": next(
+                                    (user for user in tournament.players.all() if user.id == match["winner"]), None
+                                ),
+                                "loser": next(
+                                    (user for user in tournament.players.all() if user.id == match["loser"]), None
+                                ),
+                                "round": int(round_num),
+                                "bracket": bracket_type,
+                            }
+                            simulator.simulated_matches[str(match["id"])] = match_data
+
+                simulator.current_round = simulator_data["current_round"]
+
+                # Check if all matches in the current round have winners
+                current_round_matches = [
+                    m for m in simulator.simulated_matches.values() if m["round"] == simulator.current_round
+                ]
+
+                all_matches_have_winners = all(m["winner"] is not None for m in current_round_matches)
+
+                if not all_matches_have_winners:
+                    messages.error(
+                        request, "Cannot advance to next round until all matches in the current round have winners."
+                    )
+                    return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
+
+                # Create next round matches
+                next_round_matches = simulator.create_next_round_matches()
+
+                if not next_round_matches:
+                    messages.info(request, "Tournament has reached its conclusion. No more rounds to advance to.")
+                    return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
+
+                # For double elimination, check if we need to create the final match
+                if simulator.is_double_elimination:
+                    # Check if we've reached the final match condition
+                    winners_bracket = [m for m in simulator.simulated_matches.values() if m["bracket"] == "winners"]
+                    losers_bracket = [m for m in simulator.simulated_matches.values() if m["bracket"] == "losers"]
+
+                    if (len(winners_bracket) > 0 and all(m["winner"] for m in winners_bracket)) and (
+                        len(losers_bracket) > 0 and all(m["winner"] for m in losers_bracket)
+                    ):
+                        # Create the final match
+                        simulator.create_final_match()
+
+                # Save the updated simulator data
+                updated_data = simulator.get_bracket_data()
+                request.session[f"tournament_{tournament.id}_simulator_data"] = updated_data
+                request.session.modified = True
+
+                messages.success(request, f"Advanced to round {simulator.current_round}")
                 return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
 
-            # For double elimination, check if we need to create the final match
-            if simulator.is_double_elimination:
-                # Check if we've reached the final match condition
-                winners_bracket = [m for m in simulator.simulated_matches.values() if m["bracket"] == "winners"]
-                losers_bracket = [m for m in simulator.simulated_matches.values() if m["bracket"] == "losers"]
+            elif request.POST.get("action") == "reset_simulation":
+                # Reset the simulation
+                if f"tournament_{tournament.id}_simulator_data" in request.session:
+                    del request.session[f"tournament_{tournament.id}_simulator_data"]
 
-                if (len(winners_bracket) > 0 and all(m["winner"] for m in winners_bracket)) and (
-                    len(losers_bracket) > 0 and all(m["winner"] for m in losers_bracket)
-                ):
-                    # Create the final match
-                    simulator.create_final_match()
+                messages.success(request, "Simulation reset")
+                return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
 
-            # Save the updated simulator data
-            updated_data = simulator.get_bracket_data()
-            request.session[f"tournament_{tournament.id}_simulator_data"] = updated_data
-            request.session.modified = True
+            elif request.POST.get("action") == "run_full_simulation":
+                # Run a complete simulation
+                is_double_elimination = request.session.get(f"tournament_{tournament.id}_double_elimination", False)
+                simulation_data = run_complete_tournament_simulation(tournament, is_double_elimination)
+                request.session[f"tournament_{tournament.id}_simulator_data"] = simulation_data
 
-            messages.success(request, f"Advanced to round {simulator.current_round}")
-            return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
-
-        elif request.POST.get("action") == "reset_simulation":
-            # Reset the simulation
-            if f"tournament_{tournament.id}_simulator_data" in request.session:
-                del request.session[f"tournament_{tournament.id}_simulator_data"]
-
-            messages.success(request, "Simulation reset")
-            return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
-
-        elif request.POST.get("action") == "run_full_simulation":
-            # Run a complete simulation
-            is_double_elimination = request.session.get(f"tournament_{tournament.id}_double_elimination", False)
-            simulation_data = run_complete_tournament_simulation(tournament, is_double_elimination)
-            request.session[f"tournament_{tournament.id}_simulator_data"] = simulation_data
-
-            messages.success(request, "Full tournament simulation completed")
-            return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
+                messages.success(request, "Full tournament simulation completed")
+                return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
 
         elif request.POST.get("action") == "join":
             success = tournament.tournament_sign_up(request.user)
@@ -797,7 +921,43 @@ class TournamentDetailView(DetailView):
                 raise Exception("Invalid return value")
 
         elif request.POST.get("action") == "join_match":
-            pass  # allow players to join their own matches
+            # Get the user's current match in the tournament
+            user_matches = tournament.matches.filter(players=request.user)
+            if not user_matches.exists():
+                messages.error(request, "You don't have any matches in this tournament.")
+                return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
+
+            # Get the first match (there should only be one active match per player)
+            match = user_matches.first()
+
+            # Check if the match is already in progress
+            if match.lobby.match_status == Lobby.Viewable:
+                messages.error(request, "This match is already in progress.")
+                return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
+
+            # Check if the match is already finished
+            if match.lobby.match_status == Lobby.Finished:
+                messages.error(request, "This match has already finished.")
+                return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
+
+            # Add user to lobby members if not already there
+            if request.user not in match.lobby.members.all():
+                match.lobby.members.add(request.user)
+                match.lobby.save()
+                messages.success(request, "You have joined the match lobby.")
+
+            # Check if all players are ready
+            if match.players.count() == match.lobby.members.count():
+                # Start the match
+                match.lobby.match_status = Lobby.Viewable
+                match.lobby.save()
+                messages.success(request, "Match has started!")
+            else:
+                messages.info(
+                    request,
+                    f"Waiting for other players to join... ({match.lobby.members.count()}/{match.players.count()})",
+                )
+
             return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
 
         elif request.POST.get("action") == "spectate":
@@ -1012,8 +1172,7 @@ class TournamentArchivedListView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["archived_tournament_list"] = self.get_all_archived()
-        # Additional context can be added if needed
+        context["tournament_list"] = self.get_all_archived()
         return context
 
     def get_all_archived(self):
@@ -1177,3 +1336,22 @@ def remove_from_gamelist(request, pk, list_pk):
     game_list = get_object_or_404(GameList, pk=list_pk, created_by=request.user)
     game_list.games.remove(game)
     return redirect("game-detail", pk=pk)
+
+
+# =============== Word Game Views ===============
+
+
+@login_required
+def wordle_game_page(request):
+    # Generate a short-lived JWT for secure identification
+    payload = {
+        "user_id": request.user.id,
+        "username": request.user.username,
+        "exp": datetime.now(timezone.utc) + timedelta(minutes=30),
+    }
+    token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
+
+    # GitHub Pages game URL + token
+    iframe_url = f"https://zhejiej.github.io/Words-Game//?token={token}"
+
+    return render(request, "games/wordle.html", {"iframe_url": iframe_url})
