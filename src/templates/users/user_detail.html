@@ -19,6 +19,43 @@
           margin-bottom: 25px;
           list-style-type: none;
         }
+
+        .slim-input,
+        .slim-btn {
+          max-width: 300px;
+          padding: 10px 12px;
+          border: 1px solid #ccc;
+          border-radius: 6px;
+          font-size: 15px;
+          transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        .slim-input:focus,
+        .slim-btn:focus {
+          outline: none;
+          border-color: #800000;
+          box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.2);
+        }
+
+        .slim-btn {
+          background-color: #800000;
+          color: white;
+          text-align: center;
+          border: none;
+          cursor: pointer;
+        }
+
+        .slim-btn:hover {
+          background-color: #800000;
+        }
+
+        .slim-btn:active {
+          background-color: #470000;
+        }
+
+        .btn-sm {
+          margin-left: 10px;
+        }
       </style>
       <div class="row">
         <div class="col-sm-12">
@@ -29,16 +66,42 @@
               </li>
             {% endif %}
             <li class="list-item">
-              Name: {{ object.name }}
-              <a class="btn btn-primary" href="{% url 'users:update' %}" role="button">Update Name</a>
+              Name
+              <form method="post" action="{% url 'users:update-name' %}">
+                {% csrf_token %}
+                <input type="text"
+                       name="name"
+                       value="{{ form.name.value|default:object.name }}"
+                       placeholder="New name"
+                       class="slim-input" />
+                <button type="submit" class="btn btn-primary btn-sm slim-btn">Update Name</button>
+              </form>
             </li>
             <li class="list-item">
-              Email: {{ object.email }}
-              <a class="btn btn-primary"
-                 href="{% url 'account_email' %}"
-                 role="button">Update E-Mail</a>
+              Username
+              <form method="post" action="{% url 'users:update-username' %}">
+                {% csrf_token %}
+                <input type="text"
+                       name="username"
+                       value="{{ form.username.value|default:object.username }}"
+                       placeholder="New username"
+                       class="slim-input" />
+                <button type="submit" class="btn btn-primary btn-sm slim-btn">Update Username</button>
+              </form>
             </li>
-            <li class="list-item">Bio: {{ object.userprofile.bio }}</li>
+            <li class="list-item">
+              Email
+              <div>
+                <input type="text"
+                       name="email"
+                       value="{{ object.email }}"
+                       readonly
+                       class="slim-input" />
+                <a class="btn btn-primary btn-sm slim-btn"
+                   href="{% url 'account_email' %}"
+                   role="button">Change Email</a>
+              </div>
+            </li>
             <li class="list-item">Date Joined: {{ object.date_joined }}</li>
             <!-- Your Stuff: Custom user template URLs -->
             {% if object.is_staff %}

@@ -1,47 +1,95 @@
 {% extends "knowledge-base/base.html" %}
 
 {% block page-content %}
-  <h1>Guide List</h1>
-  <form method="get">
-    <input type="text"
-           name="q"
-           value="{{ query }}"
-           placeholder="Search for a Guide" />
-    <select name="category">
-      <option value="">All Categories</option>
-      {% for cat in categories %}
-        <option value="{{ cat }}"
-                {% if request.GET.category == cat.name %}selected{% endif %}>{{ cat }}</option>
-      {% endfor %}
-    </select>
-    <select name="sort">
-      <option value="">Sort by: Most Recent Update</option>
-      <option value="az" {% if request.GET.sort == "az" %}selected{% endif %}>Game Name A-Z</option>
-      <option value="za" {% if request.GET.sort == "za" %}selected{% endif %}>Game Name Z-A</option>
-      <option value="old" {% if request.GET.sort == "old" %}selected{% endif %}>Oldest Update</option>
-    </select>
-    <button type="submit">Search</button>
-  </form>
-  <!-- Clear Search Button -->
-  <a href="{% url 'knowledge-base' %}">Clear Search</a>
-  <div class="grid-container">
-    {% for guide in guides %}
-      <div class="game-card">
-        <a href="#">Guide for {{ guide.game_id }}</a>
-        <!-- should replace the link with the guide details link in the issue on guide page-->
+  {% if unseen_feedbacks %}
+    <span>You have {{ unseen_feedbacks|length }} status update{{ unseen_feedbacks|length|pluralize }}!</span>
+    {% for feedback in unseen_feedbacks %}
+      <div>
+        Updated Feedback for Guide for {{ feedback.guide_id.game_id }}
+        (ID={{ feedback.guide_id.pk }}):
+        <a href="{% url 'feedback-detail' feedback.pk %}">View Details</a>
       </div>
-    {% empty %}
-      <p>No guides found.</p>
     {% endfor %}
+  {% endif %}
+  <div class="knowledge-base container">
+    <div class="d-flex justify-content-between align-items-center pb-4">
+      <h1 class="m-0">Knowledge Base</h1>
+      <div class="d-flex gap-2">
+        {% if not request.user.is_authenticated %}
+          <a href="{% url 'account_login' %}" class="btn btn-primary">Login to Contribute</a>
+        {% else %}
+          {% if has_guides %}
+            <a href="{% url 'contributor-manage-guide' %}"
+               class="btn btn-outline-primary">Manage My Guides</a>
+          {% endif %}
+          <a href="{% url 'knowledge-base-guide-upload' %}"
+             class="btn btn-success">Upload a Guide</a>
+        {% endif %}
+      </div>
+    </div>
+    <!-- search bar -->
+    <form method="get"
+          class="d-flex flex-column g-2 align-items-end mb-4 gap-2">
+      <div class="w-100">
+        <input type="text"
+               name="q"
+               value="{{ query }}"
+               class="form-control w-100"
+               placeholder="Search for a Guide" />
+      </div>
+      <div class="d-flex align-items-center justify-content-between w-100">
+        <div class="d-flex gap-2">
+          <select name="category" class="form-select">
+            <option value="">All Categories</option>
+            {% for cat in categories %}
+              <option value="{{ cat }}"
+                      {% if request.GET.category == cat.name %}selected{% endif %}>{{ cat }}</option>
+            {% endfor %}
+          </select>
+          <select name="sort" class="form-select">
+            <option value="">Sort by: Most Recent Update</option>
+            <option value="az" {% if request.GET.sort == "az" %}selected{% endif %}>Game Name A-Z</option>
+            <option value="za" {% if request.GET.sort == "za" %}selected{% endif %}>Game Name Z-A</option>
+            <option value="old" {% if request.GET.sort == "old" %}selected{% endif %}>Oldest Update</option>
+          </select>
+        </div>
+        <div class="d-flex flex-row align-items-center gap-2">
+          <div>
+            <a href="{% url 'knowledge-base' %}"
+               class="btn btn-link p-0 text-decoration-none">Clear Search</a>
+          </div>
+          <button type="submit" class="btn btn-primary">Search</button>
+        </div>
+      </div>
+    </form>
+    <div class="row row-cols-1 row-cols-md-3 g-4 mb-4">
+      {% for guide in guides %}
+        <div class="col">
+          <div class="card h-100 shadow-sm">
+            <div class="card-body">
+              <h5 class="card-title">
+                <a href="{% url 'knowledge-base-guide-detail' guide.pk %}"
+                   class="text-decoration-none">Guide for {{ guide.game_id }}</a>
+              </h5>
+              <p class="card-text mb-1">
+                {% with categories=guide.game_id.categories.all %}
+                  {% if categories %}
+                    <span class="badge bg-secondary me-1">{{ categories.0 }}</span>
+                    {% if categories|length > 1 %}<small class="text-muted">and {{ categories|length|add:"-1" }} more</small>{% endif %}
+                  {% endif %}
+                {% endwith %}
+              </p>
+              <p class="card-text">
+                <small class="text-muted">Last updated: {{ guide.recent_upload|date:"Y-m-d H:i" }}</small>
+              </p>
+            </div>
+          </div>
+        </div>
+      {% empty %}
+        <div class="col-12">
+          <div class="alert alert-info text-center">No guides found.</div>
+        </div>
+      {% endfor %}
+    </div>
   </div>
-  <a href="{% url 'knowledge-base-guide-upload' %}">Upload a Guide</a>
-  <!-- should replace this link with the "upload guide" link -->
-  <br />
-  {% if has_guides %}
-    <a href="{% url 'contributor-manage-guide' %}">Manage My Guides</a>
-  {% endif %}
-  <!-- should replace this link with the "manage my guide" link -->
-  {% if not user.is_authenticated %}
-    <p>Note: If you have contributed a guide and wish to check update, please log in first.</p>
-  {% endif %}
 {% endblock page-content %}
