@@ -8,7 +8,7 @@ from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnl
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from chigame.achievements.models import Achievement
+from chigame.achievements.models import Achievement, UserAchievement
 from chigame.api.filters import GameFilter
 from chigame.api.serializers import (
     AchievementSerializer,
@@ -20,6 +20,7 @@ from chigame.api.serializers import (
     MessageFeedSerializer,
     MessageSerializer,
     ReviewSerializer,
+    UserAchievementSerializer,
     UserSerializer,
 )
 from chigame.api.spam_utils import is_spam
@@ -93,6 +94,11 @@ class LobbyListView(generics.ListCreateAPIView):
     serializer_class = LobbySerializer
     pagination_class = PageNumberPagination
 
+    permission_classes = [IsAuthenticatedOrReadOnly]  # similar to GameListView
+
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user)
+
 
 class LobbyDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Lobby.objects.all()
@@ -136,10 +142,10 @@ class MessageView(generics.CreateAPIView):
         if is_spam(content):
             raise ValidationError("Your message appears to be spam.")
 
-        serializer.save()
+        # serializer.save()
+        serializer.save(sender=self.request.user)
 
-
-# Need Livechat in order to use this endpoint
+    # Need Livechat in order to use this endpoint
 
 
 class GroupListView(generics.ListCreateAPIView):
@@ -174,6 +180,8 @@ class UserGroupsView(generics.ListAPIView):
 
 
 class MessageFeedView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def post(self, request, *args, **kwargs):
         # Get data from the frontend
         token_id = request.data.get("token_id")
@@ -211,15 +219,18 @@ class ReviewCreateView(generics.CreateAPIView):
         if is_spam(review_text):
             raise ValidationError("Your review appears to be spam. Please revise your content.")
 
-        user_id = self.request.data.get("user")
+        # user_id = self.request.data.get("user")
         game_id = self.kwargs["pk"]
-        user = get_object_or_404(User, pk=user_id)
-        serializer.save(user=user, game_id=game_id)
+        game = get_object_or_404(Game, pk=game_id)
+        # user = get_object_or_404(User, pk=user_id)
+        # serializer.save(user=user, game_id=game_id)
+        serializer.save(user=self.request.user, game=game)
 
 
 class ReviewDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
+    queryset = Review.objects.none()
 
     def perform_destroy(self, instance):
         if instance.user != self.request.user:
@@ -233,6 +244,42 @@ class ReviewDetailView(generics.RetrieveUpdateDestroyAPIView):
         if user != self.request.user:
             raise PermissionDenied("You do not have permission to edit this review.")
         serializer.save()
+
+
+class AchievementListView(generics.ListAPIView):
+    serializer_class = AchievementSerializer
+
+    def get_queryset(self):
+        game_id = self.kwargs["pk"]
+        return Achievement.objects.filter(game__id=game_id)
+
+
+class UserAchievementCreateView(generics.CreateAPIView):
+    serializer_class = UserAchievementSerializer
+
+    def perform_create(self, serializer):
+        achievement_id = self.kwargs["pk"]
+        serializer.save(achievement_id=achievement_id)
+
+    def create(self, request, *args, **kwargs):
+        user_id = self.request.data.get("user")
+        user = get_object_or_404(User, pk=user_id)
+        achievement = Achievement.objects.get(id=self.kwargs["pk"])
+
+        if UserAchievement.objects.filter(achievement=achievement, user=user).exists():
+            return Response(
+                {"error": f"This achievement already exists for user '{user.email}'"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        self.perform_create(serializer)
+
+        return Response(
+            {"message": "Achievement created successfully!", "data": serializer.data}, status=status.HTTP_201_CREATED
+        )
 
 
 class AchievementCreateView(generics.CreateAPIView):
@@ -258,5 +305,5 @@ class AchievementCreateView(generics.CreateAPIView):
         self.perform_create(serializer)
 
         return Response(
-            {"message": "Achievement created successfully!", "data": serializer.data}, status=status.HTTP_201_CREATED
+            {"message": "Achievement assigned to user!", "data": serializer.data}, status=status.HTTP_201_CREATED
         )

@@ -45,4 +45,6 @@ urlpatterns = [
     # placeholder game
     path("lobby/<int:pk>/coinflip", views.coin_flip_game, name="placeholder-game"),
     path("<int:pk>/", views.GameDetailView.as_view(), name="game-detail"),
+    # Word Game
+    path("wordle/", views.wordle_game_page, name="wordle-game"),
 ]
