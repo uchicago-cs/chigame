@@ -6,7 +6,7 @@ from chigame.users.models import User
 
 class Achievement(models.Model):
     """
-    An award or acknowledgement offered by a game
+    An award or acknowledgement offered by a game.
     """
 
     class Rarity(models.IntegerChoices):
@@ -17,9 +17,17 @@ class Achievement(models.Model):
 
     name = models.TextField()
     description = models.TextField(null=True, blank=True)
-    spoiler = models.BooleanField()
+    spoiler = models.BooleanField(default=False)
     rarity = models.IntegerField(choices=Rarity.choices)
     game = models.ForeignKey(Game, on_delete=models.CASCADE)
+    threshold = models.FloatField(null=True, blank=True, default=1)
+    # threshold is amount needed to earn achievement (e.g. 5.0 wins)
+
+    def __str__(self):
+        return f"{self.name} ({self.game})"
+
+    class Meta:
+        unique_together = ("name", "game")
 
 
 class UserAchievement(models.Model):
@@ -29,8 +37,14 @@ class UserAchievement(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     achievement = models.ForeignKey(Achievement, on_delete=models.CASCADE)
-    pinned = models.BooleanField()
-    date_earned = models.DateTimeField()
+    pinned = models.BooleanField(default=False)
+    date_earned = models.DateTimeField(null=True, blank=True)
+    last_updated = models.DateTimeField(auto_now=True)
+    progress = models.FloatField(null=True, blank=True, default=1)
+    # progress can be updated if achievement has a threshold
+
+    def __str__(self):
+        return f"{self.user} - {self.achievement}"
 
     class Meta:
         unique_together = ("user", "achievement")
