@@ -18,9 +18,22 @@ def chat(request, chat_id):
 def live_chat_list(request):
     latest_message = LiveChatMessage.objects.filter(live_chat=OuterRef("pk")).order_by("-sent_at")
 
-    chats = LiveChat.objects.filter(public=True).annotate(
+    public_chats = LiveChat.objects.filter(public=True).annotate(
         user_count=Count("users"),
         last_message=Subquery(latest_message.values("content")[:1]),
         last_message_time=Subquery(latest_message.values("sent_at")[:1]),
     )
-    return render(request, "chat/live-chat-list.html", {"chats": chats})
+
+    private_chats = LiveChat.objects.filter(public=False, users=request.user).annotate(
+        user_count=Count("users"),
+        last_message=Subquery(latest_message.values("content")[:1]),
+        last_message_time=Subquery(latest_message.values("sent_at")[:1]),
+    )
+    return render(
+        request,
+        "chat/live-chat-list.html",
+        {
+            "public_chats": public_chats,
+            "private_chats": private_chats,
+        },
+    )
