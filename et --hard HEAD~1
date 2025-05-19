@@ -1,0 +1,32 @@
+[33m8b14d598[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32musers/groups[m[33m, [m[1;31morigin/users/groups[m[33m)[m fixing tests
+[33m7b8161ce[m Merge branch 'dev' into users/groups
+[33ma9253ab0[m[33m ([m[1;31morigin/dev[m[33m, [m[1;31morigin/HEAD[m[33m)[m [Interactive Fiction] Solves the IF page Primary Key Error (#1057)
+[33m7768b2be[m [Knowledge Base] Make knowledge base frontend more user friendly (#1050)
+[33me7f5f797[m [knowledge-base] Add QOL features to fixture and clean plaintext README (#1042)
+[33m40393f39[m [knowledge-base] Add Moderator Single Game Guide Management Backend (#1043)
+[33m892eb61e[m Merge pull request #1027 from uchicago-cs/users/enhance-notifications
+[33mea25cb19[m[33m ([m[1;31morigin/users/enhance-notifications[m[33m)[m Merge branch 'dev' into users/enhance-notifications
+[33m9e22f083[m Merge pull request #1016 from uchicago-cs/users/custom-notifications
+[33m1287f2ab[m[33m ([m[1;31morigin/users/custom-notifications[m[33m)[m Merge branch 'dev' into users/custom-notifications
+[33maa8b1733[m Merge pull request #1035 from uchicago-cs/word-game-cleanup
+[33m35c86e97[m[33m ([m[1;31morigin/word-game-cleanup[m[33m)[m Merge branch 'dev' into word-game-cleanup
+[33mc0ade969[m Merge pull request #1028 from uchicago-cs/word-game-game-ui-redesign
+[33maf710e1d[m Merge branch 'dev' into word-game-game-ui-redesign
+[33me9f71033[m Merge pull request #1025 from uchicago-cs/word-game-home-page-redesign
+[33mbbb6aa7d[m Merge branch 'dev' into word-game-home-page-redesign
+[33m7a979661[m [User Profiles + Friending] Unified previous and custom notification systems for PR #1016
+[33mffd98bfb[m [User Profiles + Friending] Unified previous and custom notification systems for PR #1016
+[33m0fba8105[m Cleaning up code
+[33m0f01a1e0[m[33m ([m[1;31morigin/knowledge-base/viewer/single-guide-frontend[m[33m)[m [API] Add unit tests for spam filtering in review submission (#824)
+[33md83025cf[m [knowledge-base] Normal User Landing Page (#932)
+[33m97c4d26a[m [knowledge-base] Added redirect functionality to Contributor Upload Form (#954)
+[33m6d215674[m [Interactive Fiction] Fixing misredirection (#995)
+[33m7b015121[m [users] fixed linting #1008
+[33m02250d68[m [Word Game] Redesigned game and solo html files
+[33m494fe825[m [users] fixed styling error with read/unread msgs #1008
+[33m51eb2757[m [Word Game] html url fixes
+[33ma2cf9bc1[m [Word Game] Redesigned index.html and style.css
+[33m8083ee11[m Merge pull request #943 from uchicago-cs/achievements/demo-game
+[33m3d3bbbeb[m[33m ([m[1;31morigin/achievements/demo-game[m[33m)[m Merge branch 'dev' into achievements/demo-game
+[33m14c11805[m [API] Enforce authentication on POST requests for lobbies and chat messages (#1007)
+[33m6ec192f9[m Merge branch 'dev' into users/custom-notifications
