@@ -418,6 +418,23 @@ class Notification(models.Model):
         else:
             return "bi-bell-fill"
 
+    def get_default_category(self):
+        """Get the default category for this notification type."""
+        type_to_category = {
+            self.FRIEND_REQUEST: "social",
+            self.GROUP_INVITATION: "social",
+            self.REMINDER: "updates",
+            self.UPCOMING_MATCH: "updates",
+            self.MATCH_PROPOSAL: "updates",
+            self.ACHIEVEMENT: "promotions",
+        }
+        return type_to_category.get(self.type, "inbox")
+
+    def save(self, *args, **kwargs):
+        if not self.category or self.category == "inbox":
+            self.category = self.get_default_category()
+        super().save(*args, **kwargs)
+
 
 class BaseNotificationHandler:
     def __init__(self, notification):
