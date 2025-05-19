@@ -30,7 +30,7 @@ from chigame.users.models import User
 from .filters import LobbyFilter
 
 from .forms import GameForm, IFGameForm, LobbyForm, ReviewForm
-from .models import Chat, Checkers, CheckersTurn Game, GameList, InteractiveFictionGame, Lobby, Match, Player, Review, Tournament
+from .models import Chat, Checkers, CheckersTurn, Game, GameList, InteractiveFictionGame, Lobby, Match, Player, Review, Tournament
 from .simulation_utils import TournamentSimulator, run_complete_tournament_simulation
 from .tables import LobbyTable
 
