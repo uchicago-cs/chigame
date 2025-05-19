@@ -5,8 +5,11 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils import timezone
+from django.contrib.auth import get_user_model
 
 from chigame.users.models import Group, Notification, User
+
+User = get_user_model()
 
 
 class Game(models.Model):
@@ -761,3 +764,20 @@ class GameData(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.game.name}: {self.key}"
+
+
+class KeyValueStore(models.Model):
+    key = models.CharField(max_length=255, unique=True)
+    value = models.TextField()
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['key']),
+            models.Index(fields=['user']),
+        ]
+
+    def __str__(self):
+        return f"{self.key}: {self.value[:50]}..."

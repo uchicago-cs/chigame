@@ -24,14 +24,17 @@ from django.utils.timezone import now
 from django.views import View
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, TemplateView, UpdateView
 from django.views.generic.edit import FormMixin
+from django.views.decorators.http import require_http_methods
+from django.contrib.auth import login, logout
 
 from chigame.users.models import User
 
 from .filters import LobbyFilter
 from .forms import GameForm, IFGameForm, LobbyForm, ReviewForm
-from .models import Chat, Game, GameList, InteractiveFictionGame, Lobby, Match, Player, Review, Tournament
+from .models import Chat, Game, GameList, InteractiveFictionGame, Lobby, Match, Player, Review, Tournament, KeyValueStore
 from .simulation_utils import TournamentSimulator, run_complete_tournament_simulation
 from .tables import LobbyTable
+import json
 
 
 # =============== Games CRUD and Search Views ===============
@@ -529,27 +532,21 @@ class TournamentListView(ListView):
             elif success == 1:
                 messages.error(request, "You have not joined this tournament")
                 return redirect(reverse_lazy("tournament-list"))
-            elif success == 3:
-                messages.error(request, "The registration period for this tournament has ended")
+            elif request.POST.get("action") == "archive":
+                tournament.set_archive(True)
+                messages.success(request, "You have successfully archived this tournament")
                 return redirect(reverse_lazy("tournament-list"))
+
+            elif request.POST.get("action") == "unarchive":
+                tournament.set_archive(False)
+                messages.success(request, "You have successfully unarchived this tournament")
+                return redirect(reverse_lazy("tournament-list"))
+
+            elif request.POST.get("action") == "switch_archive":
+                return redirect(reverse_lazy("tournament-archived"))
+
             else:
-                raise Exception("Invalid return value")
-
-        elif request.POST.get("action") == "archive":
-            tournament.set_archive(True)
-            messages.success(request, "You have successfully archived this tournament")
-            return redirect(reverse_lazy("tournament-list"))
-
-        elif request.POST.get("action") == "unarchive":
-            tournament.set_archive(False)
-            messages.success(request, "You have successfully unarchived this tournament")
-            return redirect(reverse_lazy("tournament-list"))
-
-        elif request.POST.get("action") == "switch_archive":
-            return redirect(reverse_lazy("tournament-archived"))
-
-        else:
-            raise ValueError("Invalid action")
+                raise ValueError("Invalid action")
 
     # check if user is staff member
     def test_func(self):
@@ -1200,3 +1197,96 @@ def wordle_game_page(request):
     iframe_url = f"http://localhost:3000/index.html?token={token}"
 
     return render(request, "games/wordle.html", {"iframe_url": iframe_url})
+
+
+@require_http_methods(["POST"])
+def temporary_login(request):
+    try:
+        data = json.loads(request.body)
+        username = data.get('username')
+        
+        if not username:
+            return JsonResponse({'error': 'Username is required'}, status=400)
+            
+        # Create a temporary user if it doesn't exist
+        user, created = User.objects.get_or_create(
+            username=username,
+            defaults={
+                'is_active': True,
+                'is_staff': False,
+                'is_superuser': False
+            }
+        )
+        
+        # Log the user in
+        login(request, user)
+        
+        return JsonResponse({
+            'status': 'success',
+            'username': user.username
+        })
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+@require_http_methods(["POST"])
+def temporary_logout(request):
+    try:
+        logout(request)
+        return JsonResponse({'status': 'success'})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+@require_http_methods(["POST"])
+def save_game_state(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Authentication required'}, status=401)
+        
+    try:
+        data = json.loads(request.body)
+        key = data.get('key')
+        value = data.get('value')
+        
+        if not key or not value:
+            return JsonResponse({'error': 'Key and value are required'}, status=400)
+        
+        # Create or update the key-value pair
+        KeyValueStore.objects.update_or_create(
+            key=key,
+            user=request.user,
+            defaults={'value': value}
+        )
+        
+        return JsonResponse({'status': 'success'})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+@require_http_methods(["GET"])
+@login_required
+def get_game_state(request):
+    try:
+        key = request.GET.get('key')
+        if not key:
+            return JsonResponse({'error': 'Key is required'}, status=400)
+        
+        try:
+            kv_store = KeyValueStore.objects.get(key=key, user=request.user)
+            return JsonResponse({'value': kv_store.value})
+        except KeyValueStore.DoesNotExist:
+            return JsonResponse({'value': None})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+@require_http_methods(["DELETE"])
+@login_required
+def delete_game_state(request):
+    try:
+        key = request.GET.get('key')
+        if not key:
+            return JsonResponse({'error': 'Key is required'}, status=400)
+        
+        KeyValueStore.objects.filter(key=key, user=request.user).delete()
+        return JsonResponse({'status': 'success'})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)

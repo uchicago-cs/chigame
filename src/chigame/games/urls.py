@@ -47,4 +47,9 @@ urlpatterns = [
     path("<int:pk>/", views.GameDetailView.as_view(), name="game-detail"),
     # Word Game
     path("wordle/", views.wordle_game_page, name="wordle-game"),
+    path('api/game-state/save/', views.save_game_state, name='save_game_state'),
+    path('api/game-state/get/', views.get_game_state, name='get_game_state'),
+    path('api/game-state/delete/', views.delete_game_state, name='delete_game_state'),
+    path('api/temporary-login/', views.temporary_login, name='temporary_login'),
+    path('api/temporary-logout/', views.temporary_logout, name='temporary_logout'),
 ]

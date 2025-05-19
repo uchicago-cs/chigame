@@ -48,12 +48,17 @@ settingsBtn.addEventListener('click', () => {
     howToPlayText.classList.add('hidden');
     howToPlayBtn.textContent = "How to Play ▼";
 });
+
+// Global variables
+let currentWord = "";
 let guessedWords = [[]];
 let availableSpace = 1;
-let word = "";
+let wordLength = 5;
 let guessedWordCount = 0;
-let allowedWords = [];
 let gameOver = false;
+let allowedWords = [];
+let word = "";
+
 const url = "https://api.dictionaryapi.dev/api/v2/entries/en/";
 
 //color constants
@@ -418,3 +423,195 @@ volumeSlider.addEventListener("input", function () {
     setVolume(volume);
     console.log("Volume set to:", volume);
 });
+
+// Temporary login/logout functions
+async function tempLogin() {
+    const username = document.getElementById('tempUsername').value.trim();
+    if (!username) return;
+
+    try {
+        const response = await fetch('/api/temporary-login/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            credentials: 'include',
+            body: JSON.stringify({ username })
+        });
+
+        // Update UI regardless of response type
+        updateLoginUI(username);
+        showNotification('Logged in successfully!');
+    } catch (error) {
+        console.error('Login error:', error);
+        showNotification('Login failed', 3000);
+    }
+}
+
+async function tempLogout() {
+    try {
+        const response = await fetch('/api/temporary-logout/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            credentials: 'include'
+        });
+
+        // Update UI regardless of response type
+        updateLoginUI(null);
+        showNotification('Logged out successfully!');
+    } catch (error) {
+        console.error('Logout error:', error);
+        showNotification('Logout failed', 3000);
+    }
+}
+
+function updateLoginUI(username) {
+    const loginForm = document.getElementById('loginForm');
+    const userInfo = document.getElementById('user-info');
+    const currentUsername = document.getElementById('current-username');
+    
+    if (username) {
+        loginForm.style.display = 'none';
+        userInfo.style.display = 'flex';
+        currentUsername.textContent = username;
+    } else {
+        loginForm.style.display = 'flex';
+        userInfo.style.display = 'none';
+        document.getElementById('tempUsername').value = '';
+    }
+}
+
+// Update the saveGameState function to use session authentication
+async function saveGameState(key, value) {
+    try {
+        const response = await fetch('/api/game-state/save/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            credentials: 'include',
+            body: JSON.stringify({ key, value })
+        });
+        
+        if (response.status === 401) {
+            throw new Error('Please log in to save your game');
+        }
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to save game state');
+        }
+        
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Error saving game state:', error);
+        throw error;
+    }
+}
+
+// Update the loadGameState function to use session authentication
+async function loadGameState(key) {
+    try {
+        const response = await fetch(`/api/game-state/get/?key=${encodeURIComponent(key)}`, {
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            credentials: 'include'
+        });
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.error || 'Failed to load game state');
+        }
+        return data.value;
+    } catch (error) {
+        console.error('Error loading game state:', error);
+        throw error;
+    }
+}
+
+// Update the deleteGameState function to use session authentication
+async function deleteGameState(key) {
+    try {
+        const response = await fetch(`/api/game-state/delete/?key=${encodeURIComponent(key)}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            credentials: 'include'
+        });
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.error || 'Failed to delete game state');
+        }
+        return data;
+    } catch (error) {
+        console.error('Error deleting game state:', error);
+        throw error;
+    }
+}
+
+// Helper function to get CSRF token
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Example usage in your game:
+// Save game state
+async function saveCurrentGameState() {
+    const gameState = {
+        currentWord: currentWord,
+        guesses: guessedWords,
+        gameOver: gameOver,
+        wordLength: wordLength,
+        guessedWordCount: guessedWordCount,
+        availableSpace: availableSpace
+    };
+    
+    // Check if user is logged in
+    const username = localStorage.getItem('tempUsername');
+    if (!username) {
+        throw new Error('Please log in to save your game');
+    }
+
+    await saveGameState('current_game', JSON.stringify(gameState));
+}
+
+// Load game state
+async function loadSavedGameState() {
+    try {
+        const savedState = await loadGameState('current_game');
+        if (savedState) {
+            const gameState = JSON.parse(savedState);
+            // Restore game state
+            currentWord = gameState.currentWord;
+            guesses = gameState.guesses;
+            gameOver = gameState.gameOver;
+            // Restore any other game state
+            updateBoard();
+        }
+    } catch (error) {
+        console.error('Failed to load saved game:', error);
+    }
+}
+
+// Delete game state
+async function clearSavedGameState() {
+    await deleteGameState('current_game');
+}

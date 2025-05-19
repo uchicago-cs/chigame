@@ -33,16 +33,17 @@
         <div class="nav-buttons">
           <a href="{% url 'index' %}" class="nav-btn">Home</a>
           <button id="how-to-play-btn" class="nav-btn">How to Play ▼</button>
+          <button id="save-game-btn" class="nav-btn">Save Game</button>
           <button id="settings-btn" class="nav-btn">⚙</button>
           <!-- TEMPORARY START: Temporary Login Option -->
           <div id="login-container" style="display: inline-flex; align-items: center; gap: 0.3rem; margin-left: 0.5rem;">
             <form id="loginForm" onsubmit="event.preventDefault(); tempLogin();" style="display: inline-flex; align-items: center; gap: 0.3rem;">
               <input type="text" id="tempUsername" placeholder="Enter username" style="padding: 0.3rem; border-radius: 3px; border: 1px solid #ccc; background: var(--bg-dark); color: var(--text);" />
-              <button type="submit" style="padding: 0.3rem 0.7rem; border-radius: 3px; background: var(--primary); color: white; border: none;">Login</button>
+              <button type="submit" id="tempLoginBtn" style="padding: 0.3rem 0.7rem; border-radius: 3px; background: var(--primary); color: white; border: none;">Login</button>
             </form>
             <div id="user-info" style="display: none; align-items: center; gap: 0.5rem;">
               <span id="current-username" style="color: var(--text);"></span>
-              <button onclick="tempLogout()" style="padding: 0.3rem 0.7rem; border-radius: 3px; background: var(--primary); color: white; border: none;">Logout</button>
+              <button id="tempLogoutBtn" onclick="tempLogout()" style="padding: 0.3rem 0.7rem; border-radius: 3px; background: var(--primary); color: white; border: none;">Logout</button>
             </div>
           </div>
           <!-- TEMPORARY END: Temporary Login Option -->
@@ -157,6 +158,21 @@
       window.gameMode = mode;
 
       // TEMPORARY START: Temporary Login Option Script
+      document.getElementById('tempLoginBtn').addEventListener('click', tempLogin);
+      document.getElementById('tempLogoutBtn').addEventListener('click', tempLogout);
+
+      // Add save game button handler
+      document.getElementById('save-game-btn').addEventListener('click', async () => {
+        try {
+          await saveCurrentGameState();
+          showNotification('Game saved successfully!');
+        } catch (error) {
+          console.error('Save game error:', error);
+          const errorMessage = error.message || 'Failed to save game';
+          showNotification(errorMessage, 3000); // Show error for 3 seconds
+        }
+      });
+
       function tempLogin() {
         const username = document.getElementById('tempUsername').value.trim();
         if (username) {
