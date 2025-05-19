@@ -1,8 +1,6 @@
 import os
 import xml.etree.ElementTree as ET
-
 from datetime import datetime, timedelta
-
 from functools import wraps
 from random import choice
 
@@ -1339,7 +1337,6 @@ def remove_from_gamelist(request, pk, list_pk):
     return redirect("game-detail", pk=pk)
 
 
-
 # a
 class MatchStatsView(DetailView):
     model = Tournament
@@ -1373,6 +1370,7 @@ class MatchStatsView(DetailView):
         }
 
         return render(request, "tournaments/tournament_match_stats.html", context)
+
 
 # =============== Word Game Views ===============
 
@@ -1463,4 +1461,3 @@ def checkers_game_get_board_state(request, board_id):
         return Response({"state": board.state})
     except CheckersBoard.DoesNotExist:
         return Response({"error": "Board not found"}, status=404)
-

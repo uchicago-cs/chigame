@@ -829,6 +829,7 @@ class Message(models.Model):
 
 class Review(models.Model):
     "Represents a game review"
+
     title = models.TextField(blank=True, null=True)
     review = models.TextField(blank=True, null=True)
     rating = models.DecimalField(
@@ -867,7 +868,6 @@ class GameList(models.Model):
         return f"{self.name} ({self.created_by})"
 
 
-
 @receiver(post_save, sender=Lobby)
 def update_match_timing(sender, instance, **kwargs):
     try:
@@ -883,6 +883,7 @@ def update_match_timing(sender, instance, **kwargs):
             match.calculate_duration()
     except Match.DoesNotExist:
         pass  # No match exists yet for this lobby
+
 
 # ================ CHECKERS ================
 
@@ -937,4 +938,3 @@ class CheckersTurn(models.Model):
 
     def __str__(self):
         return f"Turn {self.turn_number} of Checkers Game {self.game.id}"
-
