@@ -296,8 +296,6 @@ function movePiece(piece, moveX, moveY) {
       console.error("Logging error:", err.message);
     });
 
-
-
 }
 
 // helper function to get the piece
@@ -359,8 +357,8 @@ function reloadBoardFromState(state) {
 }
 
 function update() {
-  // Every 2 seconds, poll server for board state
-  if (!window.lastPollTime || Date.now() - window.lastPollTime > 2000) {
+  // Every 1 second, poll server for board state
+  if (!window.lastPollTime || Date.now() - window.lastPollTime > 1000) {
     window.lastPollTime = Date.now();
     fetch(`/games/checkers/${BOARD_ID}/state/`)
       .then(res => res.json())
