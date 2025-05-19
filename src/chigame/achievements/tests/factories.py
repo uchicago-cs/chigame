@@ -1,22 +1,10 @@
 import factory
-from django.utils import timezone
-from factory import Faker, LazyFunction, Sequence, SubFactory, post_generation
+from factory import Sequence, SubFactory
 from factory.django import DjangoModelFactory
 
-from chigame.achievements.models import Achievement, User, UserAchievement
+from chigame.achievements.models import Achievement, UserAchievement
 from chigame.api.tests.factories import GameFactory, LobbyFactory, UserFactory
-
 from chigame.games.models import Match
-
-
-# General user factory
-class UserFactory(DjangoModelFactory):
-    class Meta:
-        model = User
-
-    username = factory.Faker("user_name")
-    email = factory.Faker("email")
-    password = factory.PostGenerationMethodCall("set_password", "password")
 
 
 class AchievementFactory(DjangoModelFactory):
@@ -75,14 +63,3 @@ class AchievementFactory(DjangoModelFactory):
     rarity = Achievement.Rarity.COMMON
     game = SubFactory(GameFactory)
     threshold = 1.0
-
-
-class UserAchievementFactory(DjangoModelFactory):
-    class Meta:
-        model = UserAchievement
-
-    user = SubFactory(UserFactory)
-    achievement = SubFactory(AchievementFactory)
-    pinned = False
-    date_earned = LazyFunction(timezone.now)
-    progress = 1.0
