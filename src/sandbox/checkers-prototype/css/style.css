@@ -268,13 +268,6 @@ canvas {
 }
 
 #resize-slider {
-    width: 100%;
+    width: 150px;
     max-width: 100%;
-    box-sizing: border-box;
-}
-
-#resize-slider {
-    width: 100%;
-    max-width: 100%;
-    box-sizing: border-box;
 }
