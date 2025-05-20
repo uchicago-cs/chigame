@@ -209,7 +209,7 @@
              required />
     </div>
     <div>
-      <label for="id_author">Author Name</label>
+      <label for="id_author">Author Name:</label>
       <input type="text"
              name="author"
              id="id_author"
@@ -223,7 +223,7 @@
       </textarea>
     </div>
     <div>
-      <label for="id_genre">Genre</label>
+      <label for="id_genre">Genre:</label>
       <select name="genre" id="id_genre">
         {% for genre in form.genre.field.queryset %}
           <option value="{{ genre.pk }}"
@@ -232,14 +232,7 @@
       </select>
     </div>
     <div>
-      <label for="id_content_warnings">Content Warnings</label>
-      <input type="text"
-             name="content_warnings"
-             id="id_content_warnings"
-             value="{{ form.content_warnings.value }}" />
-    </div>
-    <div>
-      <label for="id_labels">Game Labels</label>
+      <label for="id_labels">Game Labels:</label>
       <select id="id_labels" name="labels" multiple>
         <!-- Tone & Mood -->
         <optgroup label="Tone & Mood">
@@ -357,7 +350,6 @@
       or click to browse
     </div>
     <input type="file" id="myFile" name="uploaded_file" class="if-file-input" />
-    <button type="submit" class="btn-success">Upload Game</button>
   </form>
   <h3>Publish Story</h3>
   <a href="{{ uploaded_file_url }}" target="_blank" class="btn-success">Play Uploaded Game</a>
