@@ -6,7 +6,7 @@ from django.utils import timezone
 from chigame.achievements.models import UserAchievement
 from chigame.achievements.views import get_recent_achievements
 
-from .factories import AchievementFactory, MatchFactory, UserFactory, UserAchievementFactory
+from .factories import AchievementFactory, MatchFactory, UserAchievementFactory, UserFactory
 
 
 @pytest.mark.django_db
@@ -35,6 +35,7 @@ def test_achievement_advance():
             assert user_achievement.date_earned is None
         else:
             assert user_achievement.date_earned is None
+
 
 @pytest.mark.django_db
 def test_get_recent_achievements():
