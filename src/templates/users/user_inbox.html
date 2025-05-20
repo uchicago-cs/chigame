@@ -77,10 +77,12 @@
               {% endwith %}
             {% endfor %}
             <br/>
-            <div class="bulk-op-buttons" >
-            <button class="btn btn-primary" type="submit" name="delete_all" value="1">Delete All Marked</button>
-            <button class="btn btn-primary" type="submit" name="mark_all" value="1">Mark All As Read</button>
-            </div>
+            {% if notifications %}
+              <div class="bulk-op-buttons" >
+              <button class="btn btn-primary" type="submit" name="delete_all" value="1">Delete All Marked</button>
+              <button class="btn btn-primary" type="submit" name="mark_all" value="1">Mark All As Read</button>
+              </div>
+            {% endif %}
           </form>
         </ul>
       </div>
