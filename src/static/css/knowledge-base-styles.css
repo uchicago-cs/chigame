@@ -38,36 +38,13 @@
 }
 
 /* In Contributor Manage Guide Page */
-.contributor-title {
-  padding-bottom: 10px;
+.contributor-header-box{
+    display: flex;
+    justify-content: space-between;
 }
 
-/* a {
-  color: #7F1616;
-} */
-
-
-#contributor-manage-guide {
-    width: 95%;
-    height: fit-content;
-    margin: 20px 0;
-    border-collapse: collapse;
-    border: 1px solid black;
-}
-
-#contributor-manage-guide th{
-    background: #BFBFBF;
-    text-align: left;
-    font-size: large;
-    padding:15px
-}
-
-#contributor-manage-guide td{
-    border-top: 1px solid black;
-    border-bottom: 1px solid black;
-    padding: 10px;
-    text-align: left;
-    font-size: medium;
+.create-guide-btn {
+    margin-bottom:1rem !important;
 }
 
 
