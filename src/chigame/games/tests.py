@@ -1,10 +1,12 @@
 from datetime import timedelta
 
+from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
-from .models import Feedback, Game, Tournament, User
+from .models import Category, Feedback, Game, Lobby, Match, Mechanic, Person, Player, Tournament
+from .views import get_recommended_games
 
 
 class FeedbackTests(TestCase):
@@ -131,3 +133,101 @@ class FeedbackTests(TestCase):
         update_url_other = reverse("update-feedback", args=[fb2.id])
         response = self.client.post(update_url_other, {"content": "Hack", "rating": 2})
         self.assertEqual(response.status_code, 403)
+
+
+User = get_user_model()
+
+
+class RecommendationSystemTest(TestCase):
+    def setUp(self):
+        # Create test categories
+        self.category1 = Category.objects.create(name="Strategy")
+        self.category2 = Category.objects.create(name="Card Game")
+        self.category3 = Category.objects.create(name="Fantasy")
+
+        # Create test mechanics
+        self.mechanic1 = Mechanic.objects.create(name="Deck Building")
+        self.mechanic2 = Mechanic.objects.create(name="Worker Placement")
+
+        # Create test people
+        self.person1 = Person.objects.create(name="Game Designer 1", person_role=1)
+
+        # Create test games with various attributes - now with descriptions
+        self.game1 = Game.objects.create(
+            name="Base Game",
+            description="This is the base game for testing",
+            min_players=2,
+            max_players=4,
+            complexity=3.5,
+            expected_playtime=60,
+        )
+        self.game1.categories.add(self.category1, self.category2)
+        self.game1.mechanics.add(self.mechanic1)
+        self.game1.people.add(self.person1)
+
+        self.game2 = Game.objects.create(
+            name="Similar Game",
+            description="This game is very similar to the base game",
+            min_players=2,
+            max_players=4,
+            complexity=3.2,
+            expected_playtime=70,
+        )
+        self.game2.categories.add(self.category1, self.category2)
+        self.game2.mechanics.add(self.mechanic1)
+        self.game2.people.add(self.person1)
+
+        self.game3 = Game.objects.create(
+            name="Somewhat Similar",
+            description="This game is somewhat similar to the base game",
+            min_players=3,
+            max_players=6,
+            complexity=4.0,
+            expected_playtime=90,
+        )
+        self.game3.categories.add(self.category1)
+        self.game3.mechanics.add(self.mechanic2)
+
+        self.game4 = Game.objects.create(
+            name="Less Similar",
+            description="This game is less similar to the base game",
+            min_players=1,
+            max_players=2,
+            complexity=2.0,
+            expected_playtime=30,
+        )
+        self.game4.categories.add(self.category3)
+
+        # atest user
+        self.user = User.objects.create_user(username="testuser", email="testuser@example.com", password="testpass")
+
+    def test_recommendation_order(self):
+        """Test that games are recommended in correct order based on similarity"""
+        recommendations = get_recommended_games(self.game1)
+        self.assertEqual(list(recommendations), [self.game2, self.game3, self.game4])
+
+    def test_played_games_penalty(self):
+        """Test that played games are deprioritized but not excluded"""
+        # Create a lobby first (required for match)
+        lobby = Lobby.objects.create(
+            name="Test Lobby",
+            game=self.game2,
+            created_by=self.user,
+            min_players=1,
+            max_players=4,
+            match_status=1,  # Assuming 1 is 'Lobbied' status
+        )
+
+        # Now create the match with this lobby
+        match = Match.objects.create(
+            game=self.game2, lobby=lobby, date_played="2023-01-01T12:00:00Z"  # Use the lobby we created
+        )
+        match.players.add(self.user)
+
+        # Create player for this match
+        Player.objects.create(user=self.user, match=match, outcome=Player.WIN)
+
+        # Game2 should still be recommended but at a lower position
+        recommendations = get_recommended_games(self.game1, user=self.user)
+        self.assertIn(self.game2, recommendations)
+        self.assertEqual(list(recommendations)[0], self.game3)  # game3 should now be first
