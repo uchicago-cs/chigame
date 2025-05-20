@@ -15,6 +15,7 @@ from chigame.api.serializers import (
     AchievementSerializer,
     CategorySerializer,
     FeedbackSerializer,
+    GameReviewStatsSerializer,
     GameSerializer,
     GroupSerializer,
     LobbySerializer,
@@ -27,6 +28,7 @@ from chigame.api.serializers import (
 )
 from chigame.api.spam_utils import is_spam
 from chigame.games.models import Feedback, Game, Lobby, Message, Review, Tournament
+from chigame.games.simulation_utils import run_complete_tournament_simulation
 from chigame.users.models import Group, User
 
 
@@ -372,6 +374,24 @@ class AchievementCreateView(generics.CreateAPIView):
         )
 
 
+class TournamentSimulationView(APIView):
+    """
+    POST /api/tournaments/{pk}/simulate/
+    Body: { "double_elimination": <bool> }
+    Returns a full simulated bracket JSON without touching the DB.
+    """
+
+    permission_classes = []
+
+    def post(self, request, pk):
+        tournament = get_object_or_404(Tournament, pk=pk)
+        # read flag (default to single‐elim)
+        is_double = request.data.get("double_elimination", False)
+        # run the simulator
+        bracket = run_complete_tournament_simulation(tournament, is_double)
+        return Response(bracket, status=status.HTTP_200_OK)
+
+
 class FeedbackListCreateView(generics.ListCreateAPIView):
     serializer_class = FeedbackSerializer
     permission_classes = []
@@ -407,3 +427,23 @@ class FeedbackDetailView(generics.RetrieveUpdateDestroyAPIView):
         if instance.user != user:
             raise PermissionDenied("You can only delete your own feedback.")
         instance.delete()
+
+
+class GameReviewStatsAPIView(APIView):
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def get(self, request, pk):
+        game = get_object_or_404(Game, pk=pk)
+        reviews = game.reviews.filter(is_public=True)
+
+        ratings = reviews.exclude(rating__isnull=True).values_list("rating", flat=True)
+
+        avg_rating = round(sum(ratings) / len(ratings), 2) if ratings else None
+        popularity = reviews.count()
+
+        data = {
+            "average_rating": avg_rating,
+            "popularity": popularity,
+        }
+
+        return Response(GameReviewStatsSerializer(data).data)

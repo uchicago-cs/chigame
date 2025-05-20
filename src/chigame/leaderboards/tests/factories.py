@@ -4,7 +4,14 @@ from django.utils import timezone
 from factory.django import DjangoModelFactory
 
 from chigame.games.models import Game, Lobby, Match
-from chigame.leaderboards.models import Leaderboard, LeaderboardEntry, Metric, MetricScore, Region
+from chigame.leaderboards.models import (
+    Leaderboard,
+    LeaderboardEntry,
+    LeaderboardPrivacySetting,
+    Metric,
+    MetricScore,
+    Region,
+)
 from chigame.users.models import UserProfile
 
 AuthUser = get_user_model()
@@ -105,3 +112,40 @@ class MetricScoreFactory(DjangoModelFactory):
     user = factory.SelfAttribute("leaderboard_entry.user")
     metric = factory.SubFactory(MetricFactory)
     match = factory.SubFactory(MatchFactory)
+
+
+# This makes a default privacy setting for other factories to inherit
+class LeaderboardPrivacySettingFactory(DjangoModelFactory):
+    class Meta:
+        model = LeaderboardPrivacySetting
+
+    complete_opt_out = False
+    display_as_anonymous = False
+    user = factory.SubFactory(UserProfileFactory)
+    game = None
+    leaderboard = None
+
+
+class GlobalPrivacySettingFactory(LeaderboardPrivacySettingFactory):
+    """
+    Factory for global privacy settings (no game, no leaderboard)
+    """
+
+    pass
+
+
+class GamePrivacySettingFactory(LeaderboardPrivacySettingFactory):
+    """
+    Factory for game-level privacy settings (has game, no leaderboard)
+    """
+
+    game = factory.SubFactory(GameFactory)
+
+
+class LeaderboardSpecificPrivacySettingFactory(LeaderboardPrivacySettingFactory):
+    """
+    Factory for leaderboard-specific privacy settings (has game and leaderboard)
+    """
+
+    leaderboard = factory.SubFactory(LeaderboardFactory)
+    game = factory.SelfAttribute("leaderboard.game")
