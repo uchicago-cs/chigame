@@ -1,6 +1,16 @@
 {% extends "knowledge-base/base.html" %}
 
 {% block page-content %}
+  {% if unseen_feedbacks %}
+    <span>You have {{ unseen_feedbacks|length }} status update{{ unseen_feedbacks|length|pluralize }}!</span>
+    {% for feedback in unseen_feedbacks %}
+      <div>
+        Updated Feedback for Guide for {{ feedback.guide_id.game_id }}
+        (ID={{ feedback.guide_id.pk }}):
+        <a href="{% url 'feedback-detail' feedback.pk %}">View Details</a>
+      </div>
+    {% endfor %}
+  {% endif %}
   <div class="knowledge-base container">
     <div class="d-flex justify-content-between align-items-center pb-4">
       <h1 class="m-0">Knowledge Base</h1>
