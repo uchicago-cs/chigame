@@ -5,22 +5,22 @@
     protocol + window.location.host + "/ws/chat/" + chatId + "/"
   );
 
-  chatSocket.onopen = function (e) {
+  chatSocket.onopen = function(e) {
     console.log("Connected to chat room:", chatId);
   };
 
-  chatSocket.onclose = function (e) {
+  chatSocket.onclose = function(e) {
     console.log("Disconnected from chat room:", chatId);
   };
 
   document.querySelector("#id_message_send_input").focus();
-  document.querySelector("#id_message_send_input").onkeyup = function (e) {
+  document.querySelector("#id_message_send_input").onkeyup = function(e) {
     if (e.key === "Enter") {
       document.querySelector("#id_message_send_button").click();
     }
   };
 
-  document.querySelector("#id_message_send_button").onclick = function (e) {
+  document.querySelector("#id_message_send_button").onclick = function(e) {
     var messageInput = document.querySelector("#id_message_send_input").value;
     if (messageInput.trim() === "") return;
 
@@ -45,7 +45,7 @@
    *
    * @param {MessageEvent} e - The message event.
    */
-  chatSocket.onmessage = function (e) {
+  chatSocket.onmessage = function(e) {
     const data = JSON.parse(e.data);
 
     // Target consistent message container using ID
@@ -63,13 +63,13 @@
       str.replace(
         /[&<>'"]/g,
         (char) =>
-          ({
-            "&": "&amp;",
-            "<": "&lt;",
-            ">": "&gt;",
-            "'": "&#39;",
-            '"': "&quot;",
-          }[char])
+        ({
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          "'": "&#39;",
+          '"': "&quot;",
+        } [char])
       );
 
     const escapedUsername = escapeHtml(data.username);
