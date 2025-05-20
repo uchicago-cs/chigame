@@ -10,16 +10,21 @@
         <div class="list-group">
           {% for key, label in category_choices %}
             <a href="{% url 'users:user-inbox-category' pk=pk category=key %}"
-               class=" inbox-category list-group-item list-group-item-action {% if active_category == key %}active{% endif %}">
+              class="inbox-category list-group-item list-group-item-action {% if active_category == key %}active{% endif %}">
               {{ label }}
             </a>
           {% endfor %}
+
+          <!-- Deleted Notifications section -->
+          <a href="{% url 'users:user-inbox-category' pk=pk category='deleted' %}"
+            class="inbox-category list-group-item list-group-item-action {% if active_category == 'deleted' %}active{% endif %}">
+            Deleted
+          </a>
         </div>
       </div>
+        
       <!-- Main Content (Right) -->
       <div class="col-md-9">
-        <a href="{% url 'users:deleted-notifications' pk=request.user.pk %}"
-           class="btn btn-primary">Show Deleted Notifications</a>
         <br />
         <br />
         <ul class="list-group">
@@ -27,62 +32,85 @@
             {% csrf_token %}
             {% for notification in notifications %}
               {% with notification_type=notification.type %}
-              <div class="inbox-item">
-                <li class="notification-container list-group-item d-flex justify-content-between align-items-center border shadow-sm notification-hover {% if notification.read %}read{% else %}unread{% endif %}"
-                    oncontextmenu="openContextMenu(event, '{{ notification.id }}')">
-                  <div class="message-row ms-2 me-auto">
-                    <div class="d-flex align-items-center gap-2">
-                    <label>
-                      <input type="checkbox" name="notification[]" value="{{ notification.id }}" />
-                    </label>
+                <div class="inbox-item">
+                  <li class="notification-container list-group-item d-flex justify-content-between align-items-center border shadow-sm notification-hover {% if notification.read %}read{% else %}unread{% endif %}"
+                      {% if active_category != 'deleted' %}
+                        oncontextmenu="openContextMenu(event, '{{ notification.id }}')"
+                      {% endif %}>
+                    <div class="message-row ms-2 me-auto">
+                      <div class="d-flex align-items-center gap-2">
+                        {% if active_category != 'deleted' %}
+                          <label>
+                            <input type="checkbox" name="notification[]" value="{{ notification.id }}" />
+                          </label>
+                        {% else %}
+                          <label><input type="checkbox" disabled /></label>
+                        {% endif %}
 
-                    <small class="sender-minimal me-2">{{ notification.get_sender_display }}</small>
+                        <small class="sender-minimal me-2">{{ notification.get_sender_display }}</small>
 
-                    <a class="message-title" href="{% url 'users:notification-detail' notification.pk %}">
-                      <span >
-                        {{ notification.get_rich_message|truncatewords:15 }}
-                      </span>
-                    </a>
-                  </div>
-                    <span class="badge bg-info ms-2">{{ notification.get_category_display }}</span>
-                  </div>
-                </li>
-                <div class="button-container list-group-item d-flex justify-content-between align-items-center border shadow-sm">
-                    {% if notification.read %}
-                      <a href="{% url 'users:act-on-inbox-notification' notification.pk 'mark_unread' %}"
-                         class="text-decoration-none text-primary"
-                         title="Mark as Unread">
-                        <i class="bi bi-envelope icon-lg"></i>
+                        {% if active_category != 'deleted' %}
+                          <a class="message-title" href="{% url 'users:notification-detail' notification.pk %}">
+                            <span>{{ notification.get_rich_message|truncatewords:15 }}</span>
+                          </a>
+                        {% else %}
+                          <span class="text-muted">{{ notification.get_rich_message|truncatewords:15 }}</span>
+                        {% endif %}
+                      </div>
+
+                      <span class="badge bg-info ms-2">{{ notification.get_category_display }}</span>
+                    </div>
+                  </li>
+
+                  <div class="button-container list-group-item d-flex justify-content-between align-items-center border shadow-sm">
+                    {% if active_category == "deleted" %}
+                      <a href="{% url 'users:act-on-inbox-notification' notification.pk 'move_to_inbox' %}"
+                        class="text-decoration-none text-primary"
+                        title="Restore">
+                        <i class="bi bi-inbox icon-lg"></i>
                       </a>
                     {% else %}
-                      <a href="{% url 'users:act-on-inbox-notification' notification.pk 'mark_read' %}"
-                         class="text-decoration-none text-primary"
-                         title="Mark as Read">
-                        <i class="bi bi-envelope-open icon-lg"></i>
+                      {% if notification.read %}
+                        <a href="{% url 'users:act-on-inbox-notification' notification.pk 'mark_unread' %}"
+                          class="text-decoration-none text-primary"
+                          title="Mark as Unread">
+                          <i class="bi bi-envelope icon-lg"></i>
+                        </a>
+                      {% else %}
+                        <a href="{% url 'users:act-on-inbox-notification' notification.pk 'mark_read' %}"
+                          class="text-decoration-none text-primary"
+                          title="Mark as Read">
+                          <i class="bi bi-envelope-open icon-lg"></i>
+                        </a>
+                      {% endif %}
+
+                      <a href="{% url 'users:act-on-inbox-notification' notification.pk 'delete' %}"
+                        class="text-danger text-decoration-none"
+                        title="Delete">
+                        <i class="bi bi-trash icon-lg"></i>
+                      </a>
+
+                      <a href="#"
+                        onclick="openContextMenuFromButton(event, '{{ notification.id }}'); return false;"
+                        class="text-muted text-decoration-none"
+                        title="Move">
+                        <i class="bi bi-folder2-open"></i>
                       </a>
                     {% endif %}
-                    <a href="{% url 'users:act-on-inbox-notification' notification.pk 'delete' %}"
-                       class="text-danger text-decoration-none"
-                       title="Delete">
-                      <i class="bi bi-trash icon-lg"></i>
-                    </a>
-                    <a href="#"
-                       onclick="openContextMenuFromButton(event, '{{ notification.id }}'); return false;"
-                       class="text-muted text-decoration-none"
-                       title="Move">
-                      <i class="bi bi-folder2-open"></i>
-                    </a>
                   </div>
                 </div>
               {% endwith %}
             {% endfor %}
+
             <br/>
-            {% if notifications %}
-              <div class="bulk-op-buttons" >
-              <button class="btn btn-primary" type="submit" name="delete_all" value="1">Delete All Marked</button>
-              <button class="btn btn-primary" type="submit" name="mark_all" value="1">Mark All As Read</button>
+            {% if notifications and active_category != 'deleted' %}
+              <br/>
+              <div class="bulk-op-buttons">
+                <button class="btn btn-primary" type="submit" name="delete_all" value="1">Delete All Marked</button>
+                <button class="btn btn-primary" type="submit" name="mark_all" value="1">Mark All As Read</button>
               </div>
             {% endif %}
+
           </form>
         </ul>
       </div>

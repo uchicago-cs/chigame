@@ -433,33 +433,24 @@ def user_inbox_view(request, pk, category="inbox"):
     """
     Displays a user's inbox containing notifications. The user can only access
     their own inbox.
-
-    Args:
-        request (HttpRequest)
-        pk (int): The primary key of the user
-
-    Returns:
-        HttpResponse: Rendered template with user inbox context including
-            - pk: The primary key of the user
-            - user: The user
-            - notifications: The notifications in the user's inbox
-            - default_notification_messages: The default notification messages
-            for each notification type
     """
-
     if pk != request.user.pk:
         messages.error(request, "Not your inbox")
         return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
 
     user = request.user
 
-    if category and category in dict(Notification.CATEGORY_CHOICES):
+    # Handle deleted notifications
+    if category == "deleted":
+        notifications = Notification.objects.filter_by_receiver(user, deleted=True)
+    elif category and category in dict(Notification.CATEGORY_CHOICES):
         notifications = Notification.objects.filter_by_receiver(user).filter_by_category(category)
     else:
         notifications = Notification.objects.filter_by_receiver(user)
 
     default_notification_messages = Notification.DEFAULT_MESSAGES
     user_labels = NotificationLabel.objects.filter(user=user)
+
     context = {
         "pk": pk,
         "user": user,
@@ -470,11 +461,7 @@ def user_inbox_view(request, pk, category="inbox"):
         "category_choices": Notification.CATEGORY_CHOICES,
     }
 
-    if pk == user.id:
-        return render(request, "users/user_inbox.html", context)
-    else:
-        messages.error(request, "Not your inbox")
-        return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
+    return render(request, "users/user_inbox.html", context)
 
 
 @login_required
