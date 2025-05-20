@@ -38,11 +38,6 @@ window.addEventListener("load", async () => {
 });
 
 //Buttons (How To Play and Settings)!
-=======
-        handlePhysicalKeyboardInput();
-    });
-});
-
 const howToPlayBtn = document.getElementById('how-to-play-btn');
 const howToPlayText = document.getElementById('how-to-play-text');
 const settingsBtn = document.getElementById('settings-btn');
@@ -157,8 +152,8 @@ const COLOR_CORRECT = "rgb(83, 141, 78)";
 const COLOR_OFF = "rgb(181, 159, 59)";
 const COLOR_WRONG = "rgb(40, 58, 60)";
 
-//Loads the words from WORDS.txt to the game
-function loadWords() {    return fetch(`${wordLength}WORDS.txt`)
+function loadWords() {
+    return fetch(`${wordLength}WORDS.txt`)
         .then(response => response.text())
         .then(text => {
             allowedWords = text.split('\n').map(w => w.trim().toLowerCase());
@@ -224,28 +219,6 @@ function setupKeyboard() {
     }
 }
 
-//Sends key to board when pressed on your physical keyboard
-function handlePhysicalKeyboardInput() {
-    document.addEventListener('keydown', (e) => {
-        const key = e.key.toLowerCase();
-
-        if (key === "enter") {
-            handleSubmitWord();
-            return;
-        }
-
-        if (key === "backspace") {
-            handleDeleteLetter();
-            return;
-        }
-
-        if (/^[a-z]$/.test(key)) {
-            updateGuessedWords(key);
-        }
-    });
-}
-
-//Returns current word you're using
 function getCurrentWordArr() {
     const numberOfGuessedWords = guessedWords.length;
     return guessedWords[numberOfGuessedWords - 1];
@@ -398,7 +371,6 @@ async function handleSubmitWord() {
         return;
     }
 
-
     if (guessedWords.length === 6) {
         showNotification(`The word was "${word}"`);
         playSound(loseSound);
@@ -495,6 +467,7 @@ function showEndScreen(won) {
 document.getElementById("restart-btn").addEventListener("click", () => {
     location.reload();
 });
+
 
 function shakeRow(rowIndex) {
     for (let i = 0; i < wordLength; i++) {
