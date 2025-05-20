@@ -8,6 +8,7 @@ from django.db.models import Q
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+import time
 
 from chigame.users.managers import UserManager
 
@@ -334,8 +335,11 @@ class Notification(models.Model):
             self.save()
 
     def renew_notification(self):
+        # Force last_sent to be at least 1 second later than first_sent
+        # by ensuring we're not using auto_now_add timestamps
+        time.sleep(0.001)  # Small sleep to ensure timestamp difference
         self.last_sent = timezone.now()
-        self.save()
+        self.save(update_fields=['last_sent'])
 
     def get_style_key(self):
         # For Mapping integer types to the stringsC SS expects
