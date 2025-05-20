@@ -149,6 +149,9 @@ class Group(models.Model):
     date_created = models.DateTimeField(auto_now_add=True)
     group_admin_permissions = False
 
+    def __str__(self):
+        return self.name
+
 
 class GroupInvitation(models.Model):
     """
