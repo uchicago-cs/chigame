@@ -423,7 +423,7 @@ class GameDataDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     def perform_update(self, serializer):
         serializer.save(user=self.request.user)
-=======
+
 class TournamentSimulationView(APIView):
     """
     POST /api/tournaments/{pk}/simulate/
