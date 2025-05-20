@@ -11,13 +11,14 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_POST
-from django.views.generic import DetailView, RedirectView, UpdateView
+from django.views.generic import DetailView, ListView, RedirectView, UpdateView
 
 from chigame.games.models import Lobby, Player, Tournament
 
 from .models import (
     FriendInvitation,
     FriendRequestNotification,
+    Group,
     GroupInvitationNotification,
     MatchInvitationNotification,
     Notification,
@@ -799,3 +800,13 @@ def notifications_by_label(request, label_id):
         "notifications": notifications,
     }
     return render(request, "users/notifications_by_label.html", context)
+
+
+class GroupListView(ListView):
+    model = Group
+    template_name = "users/group_list.html"
+
+
+class GroupDetailView(DetailView):
+    model = Group
+    template_name = "users/group_detail.html"

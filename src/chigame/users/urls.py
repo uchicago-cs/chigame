@@ -62,4 +62,7 @@ urlpatterns = [
     path("labels/create/", views.create_notification_label, name="create-notification-label"),
     path("labels/<int:label_id>/notifications/", views.notifications_by_label, name="notifications-by-label"),
     path("inbox/<int:pk>/<str:category>/", views.user_inbox_view, name="user-inbox-category"),
+    # Group paths
+    path("groups/", views.GroupListView.as_view(), name="group-list"),
+    path("groups/<int:pk>/", views.GroupDetailView.as_view(), name="group-detail"),
 ]
