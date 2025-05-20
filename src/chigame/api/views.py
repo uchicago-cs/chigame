@@ -379,7 +379,7 @@ class TournamentSimulationView(APIView):
     Returns a full simulated bracket JSON without touching the DB.
     """
 
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = []
 
     def post(self, request, pk):
         tournament = get_object_or_404(Tournament, pk=pk)

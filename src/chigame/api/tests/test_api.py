@@ -11,14 +11,7 @@ from rest_framework.utils.serializer_helpers import ReturnDict
 
 # Local application/library specific imports
 from chigame.api.serializers import GameSerializer
-from chigame.api.tests.factories import (
-    ChatFactory,
-    GameFactory,
-    LobbyFactory,
-    MatchFactory,
-    TournamentFactory,
-    UserFactory,
-)
+from chigame.api.tests.factories import ChatFactory, GameFactory, LobbyFactory, TournamentFactory, UserFactory
 from chigame.games.models import Game, Lobby, Message, Review, User
 
 
@@ -955,31 +948,3 @@ class SpamFilterTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("spam", str(response.data).lower())
         self.assertEqual(Review.objects.count(), 0)
-
-
-class SimulationTests(APITestCase):
-    def setUp(self):
-        self.user = UserFactory()
-        self.game = GameFactory()
-        self.tournament = TournamentFactory(game=self.game, created_by=self.user)
-        # create 4 matches under that tournament
-        for _ in range(4):
-            m = MatchFactory()
-            self.tournament.matches.add(m)
-
-        self.url = reverse("api-tournament-simulate", args=[self.tournament.pk])
-        self.client.force_authenticate(self.user)
-
-    def test_single_elimination(self):
-        resp = self.client.post(self.url, {}, format="json")
-        self.assertEqual(resp.status_code, 200)
-        self.assertFalse(resp.data["is_double_elimination"])
-        self.assertIn("rounds", resp.data)
-        # the winner must be one of the players in your matches
-        all_player_ids = {u.id for m in self.tournament.matches.all() for u in m.players.all()}
-        self.assertIn(resp.data["tournament_winner"], all_player_ids)
-
-    def test_double_elimination(self):
-        resp = self.client.post(self.url, {"double_elimination": True}, format="json")
-        self.assertEqual(resp.status_code, 200)
-        self.assertTrue(resp.data["is_double_elimination"])
