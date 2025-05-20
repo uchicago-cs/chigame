@@ -50,6 +50,8 @@ const isPlayerTwo = PLAYER_ID === 2;
 const RADIUS_SCALE_FACTOR = 2.5;
 // selected piece highlight stroke width
 const HIGHLIGHT_SIZE = 3;
+// potential hightlighted tiles
+let highlightedTiles = [];
 
 // ------------------- Get Board State ----------------------------------------
 // From Database
@@ -172,17 +174,54 @@ function createPiece(x, y, logicalColor, scene) {
     if (!selectedPiece && piece.owner === getCurrentPlayerOwner()) {
       selectedPiece = piece;
       piece.sprite.setStrokeStyle(HIGHLIGHT_SIZE, COLORS.white);
+      highlightValidMoves(scene, piece);
     } else if (selectedPiece === piece) {
       selectedPiece.sprite.setStrokeStyle();
       selectedPiece = null;
+      clearHighlightedTiles();
     } else if (piece.owner === getCurrentPlayerOwner()) {
       selectedPiece.sprite.setStrokeStyle();
       selectedPiece = piece;
       piece.sprite.setStrokeStyle(HIGHLIGHT_SIZE, COLORS.white);
+      highlightValidMoves(scene, piece);
     }
   });
 
   pieces.push(piece);
+}
+
+// helper function to highlight the valid moves for the selected piece
+function highlightValidMoves(scene, piece) {
+  clearHighlightedTiles(); // remove any previous highlights
+
+  // iterate through the board
+  for (let y = 0; y < BOARD_SIZE; y++) {
+    for (let x = 0; x < BOARD_SIZE; x++) {
+      // check that the tile is not occupied and is a valid move
+      if (!getPiece(x, y) && isValidMove(piece, x, y)) {
+        // add a slighlty transparent white square on top of that tile to make
+        // the tile appear highlighted
+        const highlight = scene.add.rectangle(
+          MARGIN + x * TILE_SIZE + TILE_SIZE / 2,
+          MARGIN + y * TILE_SIZE + TILE_SIZE / 2,
+          TILE_SIZE,
+          TILE_SIZE,
+          0xffffff,
+          0.3
+        );
+        // add the game object to the array (so we can keep track and delete later)
+        highlightedTiles.push(highlight);
+      }
+    }
+  }
+}
+
+// helper function to clear all the highlighted tiles
+function clearHighlightedTiles() {
+  // remove each rect from the screen and then pop the reference from the array
+  while (highlightedTiles.length > 0) {
+    highlightedTiles.pop().destroy();
+  }
 }
 
 
@@ -323,6 +362,7 @@ function endTurn() {
   selectedPiece = null;
   // switch between red and black player turn
   currentTurnColor = (currentTurnColor === COLORS.red) ? COLORS.black : COLORS.red;
+  clearHighlightedTiles();
 }
 
 // Retrieves a 2D array representation of the board state where 0 are unoccupied
