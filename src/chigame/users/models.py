@@ -343,7 +343,7 @@ class Notification(models.Model):
             self.FRIEND_REQUEST: "friend",
             self.REMINDER: "system",
             self.UPCOMING_MATCH: "match",
-            self.MATCH_PROPOSAL: "match",
+            self.MATCH_INVITATION: "match",
             self.GROUP_INVITATION: "group",
             self.ACHIEVEMENT: "achievement",
         }
@@ -397,7 +397,7 @@ class Notification(models.Model):
             return "bi-people-fill"
         elif self.type == self.UPCOMING_MATCH:
             return "bi-calendar-event-fill"
-        elif self.type == self.MATCH_PROPOSAL:
+        elif self.type == self.MATCH_INVITATION:
             return "bi-joystick"
         elif self.type == self.ACHIEVEMENT:
             return "bi-star-fill"
