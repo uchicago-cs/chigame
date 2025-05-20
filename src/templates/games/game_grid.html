@@ -99,6 +99,14 @@
       white-space: nowrap;
       pointer-events: none;
     }
+
+    .search-query-display {
+      font-size: 1rem;
+      padding-top: 0.5rem;
+      padding-bottom: 1rem;
+      display: flex;
+      align-items: center;
+    }
   </style>
   <!-- Sorting and Filtering Bar -->
   <div class="d-flex align-items-center justify-content-between mb-3">
@@ -176,6 +184,14 @@
       </form>
     </div>
   </div>
+  {% if query_input %}
+    <div class="search-query-display me-auto ms-2">
+      <span class="text-muted">Results for:</span>
+      <span class="fw-bold">{{ query_input }}</span>
+      <a href="{% url 'game-list' %}"
+         class="btn btn-sm btn-outline-secondary ms-2">View All Games</a>
+    </div>
+  {% endif %}
   <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
     {% for game in page_obj %}
       <div class="col">
