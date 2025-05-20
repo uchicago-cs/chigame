@@ -290,6 +290,8 @@ class ModeratorListByGame(LoginRequiredMixin, UserPassesTestMixin, ListView):
 
     def get_queryset(self):
         queryset = Game.objects.all()
+        for game in queryset:
+            game.count_published = game.guide_set.filter(status=Guide.GuideStatus.ACCEPTED).count()
         return queryset
 
     # called when UserPassesTestMixin

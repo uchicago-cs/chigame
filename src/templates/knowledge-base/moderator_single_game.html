@@ -39,14 +39,12 @@
               Not Published
             {% endif %}
           </td>
-          <td class="d-flex gap-2 flex-column">
-            <a class="btn btn-outline-primary"
-               href="{% url 'download-guide' guide.pk %}">Download</a>
+          <td class="d-flex gap-2 flex-column justify-content-end">
             <form action="{% url 'moderator-set-publish-guide' game_pk=game.pk guide_pk=guide.pk %}"
                   method="post"
                   class="d-flex justify-content-end">
               {% csrf_token %}
-              <button type="submit" class="btn btn-primary">
+              <button type="submit" class="btn btn-primary w-100">
                 {% if game.published_guide_id == guide %}
                   Remove as active
                 {% elif game.published_guide_id %}
@@ -56,6 +54,8 @@
                 {% endif %}
               </button>
             </form>
+            <a class="btn btn-outline-primary d-inline-block"
+               href="{% url 'download-guide' guide.pk %}">Download</a>
           </td>
         </tr>
       {% endfor %}

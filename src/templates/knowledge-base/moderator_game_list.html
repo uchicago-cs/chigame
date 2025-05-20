@@ -19,7 +19,7 @@
                   <p class="m-0 fs-6 text-muted">By {{ game.published_guide_id.author.email }}</p>
                 {% else %}
                   <p class="m-0">No guide active</p>
-                  <p class="m-0">{{ game.guide_set.count }} accepted guides</p>
+                  <p class="m-0">{{ game.count_published }} accepted guides</p>
                 {% endif %}
               </div>
             </div>
