@@ -33,6 +33,9 @@ urlpatterns = [
     path("bgg_search_by_name/", views.bgg_search_by_name, name="bgg_search_by_name"),
     path("search/", views.search_results, name="game-search-results"),
     path("<int:pk>/reviews/", views.ReviewListView.as_view(), name="game-review-list"),
+    # matches
+    path("<int:pk>/match/create/", views.MatchCreateView.as_view(), name="match-create"),
+    path("lobby/<int:pk>/code/", views.MatchCodeView.as_view(), name="match-code"),
     # interactive fiction
     path("interactive-fiction/", views.InteractiveFictionView.as_view(), name="interactive-fiction"),
     path("<int:pk>/upload/", UploadFileView.as_view(), name="upload-file"),
