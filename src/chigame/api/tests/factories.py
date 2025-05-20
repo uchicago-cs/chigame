@@ -5,7 +5,8 @@ from django.utils import timezone
 from factory import Faker, Iterator, LazyAttribute, LazyFunction, Sequence, SubFactory, post_generation
 from factory.django import DjangoModelFactory
 
-from chigame.games.models import Category, Chat, Game, Lobby, Match, Mechanic, Tournament
+
+from chigame.games.models import Category, Chat, Feedback, Game, Lobby, Match, Mechanic, Tournament
 from chigame.users.models import User
 
 
@@ -144,6 +145,7 @@ class LobbyFactory(DjangoModelFactory):
                 self.members.add(UserFactory())
 
 
+
 class MatchFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Match
@@ -160,3 +162,12 @@ class MatchFactory(factory.django.DjangoModelFactory):
         users = extracted or UserFactory.create_batch(2)
         for u in users:
             self.players.add(u)
+
+class FeedbackFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Feedback
+
+    tournament = factory.SubFactory(TournamentFactory)
+    user = factory.SubFactory(UserFactory)
+    rating = 4
+    comment = "This is a test comment"

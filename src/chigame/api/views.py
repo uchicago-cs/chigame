@@ -394,10 +394,11 @@ class TournamentSimulationView(APIView):
 class FeedbackListCreateView(generics.ListCreateAPIView):
     serializer_class = FeedbackSerializer
     permission_classes = []
+    pagination_class = PageNumberPagination
 
     def get_queryset(self):
         tournament_id = self.kwargs["pk"]
-        return Feedback.objects.filter(tournament__id=tournament_id)
+        return Feedback.objects.filter(tournament__id=tournament_id).order_by("-created_at")
 
     def perform_create(self, serializer):
         tournament_id = self.kwargs["pk"]
