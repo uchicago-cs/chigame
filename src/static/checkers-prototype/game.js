@@ -42,7 +42,8 @@ let playerColors = {
 
 let pieces = [];
 let selectedPiece = null;
-let currentPlayer = COLORS.red; // red starts first
+let myColor = PLAYER_ID === 1 ? COLORS.red : COLORS.black;
+let currentTurnColor = CURRENT_TURN_PLAYER_ID === 1 ? COLORS.red : COLORS.black;
 // change to adjust the piece size, any value less than 2 would make the pieces
 // bigger than the tiles
 const RADIUS_SCALE_FACTOR = 2.5;
@@ -115,6 +116,9 @@ function drawBoard(scene) {
       tile.on('pointerdown', () => {
         // does nothing if no pieces were selected
         if (!selectedPiece) return;
+        // Prevents moving other player's piece
+        if (selectedPiece.ownerId !== PLAYER_ID) return;
+
 
         // see if there are any pieces at the selected square
         const targetPiece = getPiece(x, y);
@@ -131,24 +135,32 @@ function drawBoard(scene) {
   }
 }
 
+
 function createPiece(x, y, logicalColor, scene) {
   const owner = logicalColor === COLORS.red ? PLAYER_RED : PLAYER_BLACK;
+  const ownerId = owner === PLAYER_RED ? 1 : 2; // You can use Django to inject real IDs
 
   const piece = {
     x,
     y,
     owner,
-    color: playerColors[owner],  // use current visual color
+    ownerId, // <--- Add this to store which player owns the piece
+    color: playerColors[owner],
     sprite: scene.add.circle(
       MARGIN + x * TILE_SIZE + TILE_SIZE / 2,
       MARGIN + y * TILE_SIZE + TILE_SIZE / 2,
       TILE_SIZE / RADIUS_SCALE_FACTOR,
-      playerColors[owner] // use this for visual fill
+      playerColors[owner]
     ),
   };
 
   piece.sprite.setInteractive();
   piece.sprite.on('pointerdown', () => {
+    if (!selectedPiece && piece.ownerId !== PLAYER_ID) {
+      // Not your piece
+      return;
+    }
+
     if (!selectedPiece && piece.owner === getCurrentPlayerOwner()) {
       selectedPiece = piece;
       piece.sprite.setStrokeStyle(HIGHLIGHT_SIZE, COLORS.white);
@@ -166,9 +178,8 @@ function createPiece(x, y, logicalColor, scene) {
 }
 
 
-
 function getCurrentPlayerOwner() {
-  return currentPlayer === COLORS.red || currentPlayer === COLORS.colorblind_orange
+  return currentTurnColor === COLORS.red || currentTurnColor === COLORS.colorblind_orange
     ? PLAYER_RED
     : PLAYER_BLACK;
 }
@@ -240,6 +251,10 @@ function isValidMove(piece, moveX, moveY) {
 function movePiece(piece, moveX, moveY) {
   updateScore();
 
+  if (PLAYER_ID !== CURRENT_TURN_PLAYER_ID) {
+    return;
+  }
+
   const dx = moveX - piece.x;
   const dy = moveY - piece.y;
 
@@ -269,7 +284,10 @@ function movePiece(piece, moveX, moveY) {
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ state: currentState }),
+    body: JSON.stringify({
+      state: currentState,
+      next_player_id: PLAYER_ID === 1 ? 2 : 1,
+    }),
   })
     .then((response) => response.json())
     .then((data) => {
@@ -296,8 +314,7 @@ function endTurn() {
   }
   selectedPiece = null;
   // switch between red and black player turn
-  currentPlayer =
-    getCurrentPlayerOwner() === PLAYER_RED ? COLORS.black : COLORS.red;
+  currentTurnColor = (currentTurnColor === COLORS.red) ? COLORS.black : COLORS.red;
 }
 
 // Retrieves a 2D array representation of the board state where 0 are unoccupied
@@ -364,6 +381,8 @@ function update() {
       .then(res => res.json())
       .then(data => {
         const newState = JSON.stringify(data.state);
+        CURRENT_TURN_PLAYER_ID = data.current_turn_player_id;
+        currentTurnColor = CURRENT_TURN_PLAYER_ID === 1 ? COLORS.red : COLORS.black;
         if (newState !== lastKnownState) {
           lastKnownState = newState;
           reloadBoardFromState(data.state);
