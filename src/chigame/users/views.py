@@ -721,22 +721,25 @@ def move_notification(request, pk):
 
 @login_required
 def create_notification_label(request):
-    """
-    Handles the creation of a new notification label for the logged-in user.
-
-    If the request method is POST and a label name is provided, it creates a new
-    NotificationLabel object associated with the user. If the label name is empty,
-    it displays an error message. Finally, it redirects the user back to their inbox.
-    """
     if request.method == "POST":
         label_name = request.POST.get("label_name")
         if label_name:
-            NotificationLabel.objects.get_or_create(user=request.user, name=label_name)
-            messages.success(request, "Label created successfully.")
+            label, created = NotificationLabel.objects.get_or_create(user=request.user, name=label_name)
+            if created:
+                messages.success(request, f"Label '{label_name}' created successfully.")
+            else:
+                messages.info(request, f"Label '{label_name}' already exists.")
         else:
             messages.error(request, "Label name cannot be empty.")
-    return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
+    return redirect(reverse("users:manage-labels-page")) 
 
+@login_required
+def manage_labels_page_view(request):
+    user_labels = NotificationLabel.objects.filter(user=request.user).order_by('name')
+    context = {
+        "labels": user_labels,
+    }
+    return render(request, "users/manage_labels.html", context)
 
 @login_required
 def assign_label_to_notification(request, notification_id):
@@ -769,19 +772,35 @@ def assign_label_to_notification(request, notification_id):
 def notifications_by_label(request, label_id):
     """
     Retrieves and displays all notifications associated with a specific label
-    belonging to the logged-in user.
-
-    It fetches the NotificationLabel object and then retrieves all notifications
-    that have been assigned this label. These are then passed to a template for
-    rendering.
-
-    Args:
-        label_id (int): The ID of the notification label to filter by.
+    belonging to the logged-in user, excluding deleted ones.
     """
     label = get_object_or_404(NotificationLabel, pk=label_id, user=request.user)
-    notifications = label.notifications.all()
+    # Fetch only visible (non-deleted) notifications for the current user that have this label
+    notifications = label.notifications.filter(
+        receiver=request.user,
+        visible=True  # <-- This is the crucial addition
+    ).order_by('-first_sent')
+
+    all_user_labels = NotificationLabel.objects.filter(user=request.user).order_by('name')
+
     context = {
         "label": label,
         "notifications": notifications,
+        "active_category": f"label-{label.id}", 
+        "category_choices": Notification.CATEGORY_CHOICES,
+        "labels": all_user_labels,
+        "pk": request.user.pk,
     }
     return render(request, "users/notifications_by_label.html", context)
+
+@login_required
+@require_POST
+def delete_notification_label(request, label_id):
+
+    label = get_object_or_404(NotificationLabel, pk=label_id, user=request.user)
+    label_name = label.name
+    
+    label.delete()
+    
+    messages.success(request, f"Label '{label_name}' deleted successfully.")
+    return redirect(reverse("users:manage-labels-page"))
