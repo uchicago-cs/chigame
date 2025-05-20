@@ -31,6 +31,15 @@ const COLORS = {
   colorblind_blue: 0x1e88e5,
   colorblind_orange: 0xffc107,
 };
+
+const PLAYER_RED = 'RED';
+const PLAYER_BLACK = 'BLACK';
+
+let playerColors = {
+  [PLAYER_RED]: COLORS.red,
+  [PLAYER_BLACK]: COLORS.black,
+};
+
 let pieces = [];
 let selectedPiece = null;
 let currentPlayer = COLORS.red; // red starts first
@@ -122,29 +131,31 @@ function drawBoard(scene) {
   }
 }
 
-function createPiece(x, y, color, scene) {
+function createPiece(x, y, logicalColor, scene) {
+  const owner = logicalColor === COLORS.red ? PLAYER_RED : PLAYER_BLACK;
+
   const piece = {
     x,
     y,
-    color,
-    owner: color, // Store original owner color
+    owner,
+    color: playerColors[owner],  // use current visual color
     sprite: scene.add.circle(
       MARGIN + x * TILE_SIZE + TILE_SIZE / 2,
       MARGIN + y * TILE_SIZE + TILE_SIZE / 2,
       TILE_SIZE / RADIUS_SCALE_FACTOR,
-      color
+      playerColors[owner] // use this for visual fill
     ),
   };
 
   piece.sprite.setInteractive();
   piece.sprite.on('pointerdown', () => {
-    if (!selectedPiece && piece.owner === currentPlayer) {
+    if (!selectedPiece && piece.owner === getCurrentPlayerOwner()) {
       selectedPiece = piece;
       piece.sprite.setStrokeStyle(HIGHLIGHT_SIZE, COLORS.white);
     } else if (selectedPiece === piece) {
       selectedPiece.sprite.setStrokeStyle();
       selectedPiece = null;
-    } else if (piece.owner === currentPlayer) {
+    } else if (piece.owner === getCurrentPlayerOwner()) {
       selectedPiece.sprite.setStrokeStyle();
       selectedPiece = piece;
       piece.sprite.setStrokeStyle(HIGHLIGHT_SIZE, COLORS.white);
@@ -152,6 +163,14 @@ function createPiece(x, y, color, scene) {
   });
 
   pieces.push(piece);
+}
+
+
+
+function getCurrentPlayerOwner() {
+  return currentPlayer === COLORS.red || currentPlayer === COLORS.colorblind_orange
+    ? PLAYER_RED
+    : PLAYER_BLACK;
 }
 
 function populatePieces(scene) {
@@ -198,7 +217,7 @@ function isValidMove(piece, moveX, moveY) {
   // with our current orientation, red pieces always move up and black pieces move down
   // may need to fix this once we introduce multiplayer, which would require
   // us to flip the board for different players
-  const direction = piece.color === COLORS.red ? -1 : 1; // in js, y=0 at the top
+  const direction = piece.owner === PLAYER_RED ? -1 : 1; // in js, y=0 at the top
 
   // Normal move (1 step diagonally)
   if (Math.abs(dx) === 1 && dy === direction) {
@@ -210,9 +229,7 @@ function isValidMove(piece, moveX, moveY) {
     // get the piece that was jumped over
     const captured = getPiece(piece.x + dx / 2, piece.y + dy / 2);
     // make sure there exists a piece that was jumped over, and it most be an opposing piece
-    return (
-      captured && captured.color !== piece.color // must be an opponent piece
-    );
+    return captured && captured.owner !== piece.owner;
   }
 
   // return false if it's not a normal or jump move
@@ -279,7 +296,8 @@ function endTurn() {
   }
   selectedPiece = null;
   // switch between red and black player turn
-  currentPlayer = currentPlayer === COLORS.red ? COLORS.black : COLORS.red;
+  currentPlayer =
+    getCurrentPlayerOwner() === PLAYER_RED ? COLORS.black : COLORS.red;
 }
 
 // Retrieves a 2D array representation of the board state where 0 are unoccupied
@@ -299,7 +317,7 @@ function getBoardState() {
     const row = piece.y;
 
     if (row >= 0 && row < BOARD_SIZE && col >= 0 && col < BOARD_SIZE) {
-      if (piece.color == COLORS.red) {
+      if (piece.owner == PLAYER_RED) {
         board[row][col] = 1; // Red piece
       } else {
         board[row][col] = 2; // Black piece
@@ -312,11 +330,8 @@ function getBoardState() {
 
 // Updates score on frontend
 function updateScore() {
-  const redColors = [COLORS.red, COLORS.colorblind_orange];
-  const blackColors = [COLORS.black, COLORS.colorblind_blue];
-
-  const redCount = pieces.filter(p => redColors.includes(p.owner)).length;
-  const blackCount = pieces.filter(p => blackColors.includes(p.owner)).length;
+  const redCount = pieces.filter(p => p.owner === PLAYER_RED).length;
+  const blackCount = pieces.filter(p => p.owner === PLAYER_BLACK).length;
 
   const redCaptured = 12 - blackCount;
   const blackCaptured = 12 - redCount;
@@ -372,16 +387,14 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Function to change the color of all pieces
-function changePieceColor(newColorOne, newColorTwo) {
-  const firstPieceColor = pieces[0].owner;
+function changePieceColor(newBlack, newRed) {
+  playerColors[PLAYER_BLACK] = newBlack;
+  playerColors[PLAYER_RED] = newRed;
+
   pieces.forEach((piece) => {
-    if (piece.owner === firstPieceColor) {
-      piece.color = newColorOne;
-      piece.sprite.setFillStyle(newColorOne);
-    } else {
-      piece.color = newColorTwo;
-      piece.sprite.setFillStyle(newColorTwo);
-    }
+    const newColor = playerColors[piece.owner];
+    piece.color = newColor;
+    piece.sprite.setFillStyle(newColor);
   });
 }
 
