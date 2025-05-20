@@ -41,25 +41,10 @@
       background-size: cover;
       filter: blur(10px);
     }
-
-    .search-query-display {
-      font-size: 1rem;
-      padding-top: 0.5rem;
-      display: flex;
-      align-items: center;
-    }
   </style>
   <!-- Sorting and Filtering Bar -->
   <div class="d-flex align-items-center justify-content-between mb-3">
     <h1 class="display-1 mt-3 mb-3">Games</h1>
-    {% if query_input %}
-      <div class="search-query-display me-auto ms-2">
-        <span class="text-muted">Results for:</span>
-        <span class="fw-bold">{{ query_input }}</span>
-        <a href="{% url 'game-list' %}"
-           class="btn btn-sm btn-outline-secondary ms-2">View All Games</a>
-      </div>
-    {% endif %}
     <div class="d-flex align-items-center">
       <a href="{% url 'favorite-list' %}"
          class="btn btn-outline-primary me-3 mt-3">My Favorites</a>
