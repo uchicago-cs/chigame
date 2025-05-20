@@ -150,7 +150,14 @@
         collapseButton.classList.remove("d-none");
       } else {
         collapseButton.classList.add("d-none");
-        chatContainer.classList.remove("collapsed-chat");
+        
+        if (collapseButton) {
+          collapseButton.classList.remove("d-none");
+        }
+      } else {
+        if (collapseButton) {
+          collapseButton.classList.add("d-none");
+        }
       }
     });
   }
