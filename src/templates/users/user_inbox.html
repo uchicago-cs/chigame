@@ -25,10 +25,14 @@
         
       <!-- Main Content (Right) -->
       <div class="col-md-9">
-        <br />
-        <br />
         <ul class="list-group">
           <form method="post" action="{% url 'users:bulk-inbox' %}">
+            {% if notifications and active_category != 'deleted' %}
+              <div class="bulk-op-buttons">
+                <button class="btn btn-primary" type="submit" name="delete_all" value="1">Delete All Marked</button>
+                <button class="btn btn-primary" type="submit" name="mark_all" value="1">Mark All As Read</button>
+              </div>
+            {% endif %}
             {% csrf_token %}
             {% for notification in notifications %}
               {% with notification_type=notification.type %}
@@ -64,31 +68,34 @@
 
                   <div class="button-container list-group-item d-flex justify-content-between align-items-center border shadow-sm">
                     {% if active_category == "deleted" %}
-                      <a href="{% url 'users:act-on-inbox-notification' notification.pk 'move_to_inbox' %}"
+                      <a href="{% url 'users:act-on-inbox-notification' notification.pk 'move_to_inbox' %}?next={{ active_category }}"
                         class="text-decoration-none text-primary"
                         title="Restore">
                         <i class="bi bi-inbox icon-lg"></i>
                       </a>
                     {% else %}
                       {% if notification.read %}
-                        <a href="{% url 'users:act-on-inbox-notification' notification.pk 'mark_unread' %}"
+                        <a href="{% url 'users:act-on-inbox-notification' notification.pk 'mark_unread' %}?next={{ active_category }}
+"
                           class="text-decoration-none text-primary"
                           title="Mark as Unread">
                           <i class="bi bi-envelope icon-lg"></i>
                         </a>
                       {% else %}
-                        <a href="{% url 'users:act-on-inbox-notification' notification.pk 'mark_read' %}"
+                        <a href="{% url 'users:act-on-inbox-notification' notification.pk 'mark_read' %}?next={{ active_category }}
+"
                           class="text-decoration-none text-primary"
                           title="Mark as Read">
                           <i class="bi bi-envelope-open icon-lg"></i>
                         </a>
                       {% endif %}
 
-                      <a href="{% url 'users:act-on-inbox-notification' notification.pk 'delete' %}"
-                        class="text-danger text-decoration-none"
-                        title="Delete">
-                        <i class="bi bi-trash icon-lg"></i>
-                      </a>
+                        <a href="{% url 'users:act-on-inbox-notification' notification.pk 'delete' %}?next={{ active_category }}"
+                          class="text-danger text-decoration-none"
+                          title="Delete">
+                          <i class="bi bi-trash icon-lg"></i>
+                        </a>
+
 
                       <a href="#"
                         onclick="openContextMenuFromButton(event, '{{ notification.id }}'); return false;"
@@ -101,16 +108,6 @@
                 </div>
               {% endwith %}
             {% endfor %}
-
-            <br/>
-            {% if notifications and active_category != 'deleted' %}
-              <br/>
-              <div class="bulk-op-buttons">
-                <button class="btn btn-primary" type="submit" name="delete_all" value="1">Delete All Marked</button>
-                <button class="btn btn-primary" type="submit" name="mark_all" value="1">Mark All As Read</button>
-              </div>
-            {% endif %}
-
           </form>
         </ul>
       </div>

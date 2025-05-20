@@ -256,3 +256,7 @@ a {
   color: rgba(108, 117, 125, 0.3);  /* lighter than text */
   margin-left: 0.4rem;
 }
+
+.bulk-op-buttons {
+  margin-bottom: 10px;
+}

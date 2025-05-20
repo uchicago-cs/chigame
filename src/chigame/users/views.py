@@ -597,22 +597,16 @@ def notification_detail(request, pk):
 def act_on_inbox_notification(request, pk, action):
     """
     Allow a user to perform actions (mark as read/unread, delete) on a notification in their inbox.
-
-    Args:
-        request (HttpRequest)
-        pk (int): The primary key of the notification
-        action (str): The action to perform on the notification
-
-    Returns:
-        HttpResponse: Redirects to the user's inbox
-        Error messages: When trying to perform actions on a non-existent notification or
-        when trying to perform actions on someone else's notifications
     """
+    # Get the category to return to, defaulting to 'inbox'
+    next_category = request.GET.get("next", "inbox")
+
     try:
         notification = Notification.objects.get(pk=pk)
         if notification.receiver.pk != request.user.pk:
             messages.error(request, "You can not perform actions on this notification")
-            return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
+            return redirect(reverse("users:user-inbox-category", kwargs={"pk": request.user.pk, "category": next_category}))
+
         if action == "mark_read":
             notification.mark_as_read()
         elif action == "mark_unread":
@@ -623,7 +617,9 @@ def act_on_inbox_notification(request, pk, action):
             notification.mark_as_unread()
     except Notification.DoesNotExist:
         messages.error(request, "Something went wrong. This notification does not exist")
-    return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
+
+    return redirect(reverse("users:user-inbox-category", kwargs={"pk": request.user.pk, "category": next_category}))
+
 
 
 @login_required
