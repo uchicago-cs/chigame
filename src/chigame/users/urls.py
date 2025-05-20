@@ -1,5 +1,6 @@
 from django.urls import path
 
+from chigame.achievements.views import user_achievements
 from chigame.api.views import UserGroupsView
 from chigame.users.views import (
     accept_friend_invitation,
@@ -62,4 +63,16 @@ urlpatterns = [
     path("labels/create/", views.create_notification_label, name="create-notification-label"),
     path("labels/<int:label_id>/notifications/", views.notifications_by_label, name="notifications-by-label"),
     path("inbox/<int:pk>/<str:category>/", views.user_inbox_view, name="user-inbox-category"),
+    path("achievements", user_achievements, name="user-achievements"),
+    path("achievements/<int:game_id>", user_achievements, name="user-achievements-game"),
+    path("achievements/all/<int:status>", user_achievements, name="user-achievements-status"),
+    path("achievements/<int:game_id>/<int:status>", user_achievements, name="user-achievements-game-status"),
+    path("<int:pk>/achievements", user_achievements, name="other-user-achievements"),
+    path("<int:pk>/achievements/<int:game_id>", user_achievements, name="other-user-achievements-game"),
+    path("<int:pk>/achievements/all/<int:status>", user_achievements, name="other-user-achievements-status"),
+    path(
+        "<int:pk>/achievements/<int:game_id>/<int:status>",
+        user_achievements,
+        name="other-user-achievements-game-status",
+    ),
 ]

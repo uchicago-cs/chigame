@@ -1,3 +1,5 @@
+from enum import Enum
+
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, render
 
@@ -11,16 +13,28 @@ def demo_game(request):
     return render(request, "achievements/demo_game.html")
 
 
+class AchievementType(Enum):
+    """
+    Enum for how much progress a user has made towards an achievement.
+    """
+
+    UNLOCKED = 1
+    PROGRESS = 2
+    NO_PROGRESS = 3
+    ALL = 4
+
+
 @login_required
-def user_achievements(request, username=None):
+def user_achievements(request, pk=None, status=AchievementType.ALL, game_id=None):
     """
     Display a user's achievements page.
-    If username is provided, show that user's achievements.
+    If pk is provided, show that user's achievements.
     Otherwise, show the logged-in user's achievements.
+    The status and game_id parameters are meant for a currently unimplemented filter feature.
     """
-    if username:
+    if pk:
         # If a username is provided in the URL, get that user's profile
-        target_user = get_object_or_404(User, username=username)  # Renamed to avoid confusion with request.user
+        target_user = get_object_or_404(User, pk=pk)  # Renamed to avoid confusion with request.user
         viewing_own_profile = target_user == request.user
     else:
         # If no username is provided, show the logged-in user's achievements
