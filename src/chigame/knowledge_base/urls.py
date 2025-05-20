@@ -7,6 +7,7 @@ from .views import (
     DownloadGuide,
     FeedbackDetail,
     GuideDetail,
+    LikeUnlikeGuide,
     ModeratorGuidesPending,
     ModeratorListByGame,
     ModeratorSetPublishedGuide,
@@ -17,6 +18,7 @@ from .views import (
 urlpatterns = [
     path("", DefaultView.as_view(), name="knowledge-base"),
     path("guides/<int:pk>", GuideDetail.as_view(), name="knowledge-base-guide-detail"),
+    path("guides/<int:pk>/set-liked", LikeUnlikeGuide, name="like-unlike-guide"),
     path("moderation", ModeratorGuidesPending.as_view(), name="knowledge-base-moderator"),
     path("moderation/review/<int:pk>", ReviewPendingGuideView.as_view(), name="moderator-review-guide"),
     path("manage-my-guides", ContributorManageGuide.as_view(), name="contributor-manage-guide"),

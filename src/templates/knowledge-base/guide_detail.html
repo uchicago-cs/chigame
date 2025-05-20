@@ -43,4 +43,12 @@
     {{ guide.game_id }}, please go back to the
     <a href="{% url 'knowledge-base' %}">knowledge base landing page</a>.
   {% endif %}
+  <form method="post" action="{% url 'like-unlike-guide' guide.pk %}">
+    {% csrf_token %}
+    {% if request.user in guide.likes.all %}
+      <button type="submit">👍 Unlike</button>
+    {% else %}
+      <button type="submit">👍 Like</button>
+    {% endif %}
+  </form>
 {% endblock page-content %}

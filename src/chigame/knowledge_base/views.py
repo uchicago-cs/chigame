@@ -338,3 +338,18 @@ def ModeratorSetPublishedGuide(request, game_pk, guide_pk):
 
     game.save()
     return redirect("moderator-single-game", game_pk)  # or wherever you want to redirect
+
+
+@require_POST
+@login_required
+def LikeUnlikeGuide(request, pk):
+    guide = get_object_or_404(Guide, pk=pk)
+    liked = guide.likes.filter(pk=request.user.pk).exists()
+    # if originally like, then unlike it
+    if liked:
+        guide.likes.remove(request.user)
+    # if originally unlike, then like it
+    else:
+        guide.likes.add(request.user)
+
+    return redirect("knowledge-base-guide-detail", pk)
