@@ -67,4 +67,6 @@ urlpatterns = [
     path("groups/<int:pk>/", views.GroupDetailView.as_view(), name="group-detail"),
     path("groups/create/", views.GroupCreateView.as_view(), name="group-create"),
     path("groups/<int:pk>/delete/", views.GroupDeleteView.as_view(), name="group-delete"),
+    path("groups/<int:pk>/join/", views.GroupJoinView.as_view(), name="group-join"),
+    path("groups/<int:pk>/leave/", views.GroupLeaveView.as_view(), name="group-leave"),
 ]

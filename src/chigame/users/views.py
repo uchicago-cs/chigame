@@ -12,7 +12,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_POST
-from django.views.generic import DetailView, RedirectView, UpdateView
+from django.views.generic import DetailView, RedirectView, UpdateView, View
 from django.views.generic.edit import CreateView, DeleteView
 from django_tables2 import SingleTableView
 
@@ -855,3 +855,43 @@ class GroupDeleteView(LoginRequiredMixin, DeleteView):
         if obj.created_by != request.user:
             raise PermissionDenied
         return super().dispatch(request, *args, **kwargs)
+
+
+class GroupJoinView(LoginRequiredMixin, View):
+    template_name = "users/group_join.html"
+
+    def get(self, request, *args, **kwargs):
+        group = get_object_or_404(Group, pk=kwargs["pk"])
+        if request.user in group.members.all():
+            messages.error(request, "You are already a member of this group.")
+            return redirect(reverse("users:group-detail", kwargs={"pk": group.pk}))
+        return render(request, self.template_name, {"group": group})
+
+    def post(self, request, *args, **kwargs):
+        group = get_object_or_404(Group, pk=kwargs["pk"])
+        if request.user in group.members.all():
+            messages.error(request, "You are already a member of this group.")
+        else:
+            group.members.add(request.user)
+            messages.success(request, "You have successfully joined the group.")
+        return redirect(reverse("users:group-detail", kwargs={"pk": group.pk}))
+
+
+class GroupLeaveView(LoginRequiredMixin, View):
+    template_name = "users/group_leave.html"
+
+    def get(self, request, *args, **kwargs):
+        group = get_object_or_404(Group, pk=kwargs["pk"])
+        if request.user not in group.members.all():
+            messages.error(request, "You are not a member of this group.")
+            return redirect(reverse("users:group-detail", kwargs={"pk": group.pk}))
+        return render(request, self.template_name, {"group": group})
+
+    def post(self, request, *args, **kwargs):
+        group = get_object_or_404(Group, pk=kwargs["pk"])
+        if request.user not in group.members.all():
+            messages.error(request, "You are not a member of this group.")
+        else:
+            group.members.remove(request.user)
+            messages.success(request, "You have successfully left the group.")
+        return redirect(reverse("users:group-detail", kwargs={"pk": group.pk}))

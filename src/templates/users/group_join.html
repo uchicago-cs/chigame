@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h1>Join Group</h1>
+  <form method="post" action="{% url 'users:group-join' group.id %}">
+    {% csrf_token %}
+    <p>Are you sure you want to join the group "{{ group.name }}"?</p>
+    <button type="submit" class="btn btn-danger">Join Group</button>
+    <a href="{% url 'users:group-detail' group.id %}"
+       class="btn btn-secondary">Cancel</a>
+  </form>
+{% endblock content %}
