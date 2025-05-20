@@ -20,18 +20,20 @@
 }
 
 /* Other Knowledge Base Styles */
+
+
 .knowledge-base.container {
   max-width: 1000px;
 }
 
-.knowledge-base .nav a {
+/*.knowledge-base .nav a {
   color: gray;
   text-decoration: none;
 }
 
 .knowledge-base .nav {
   margin-bottom: 20px;
-}
+}*/
 
 .knowledge-base .page-content {
   padding: 10px;
@@ -39,6 +41,30 @@
 
 .landing-page-feedback-alert-header {
     margin-bottom: 0;
+}
+
+.status-updates-num{
+    font-weight: bold;
+}
+
+.view-details-link{
+    float:right;
+    padding-right:1%;
+}
+
+.landing-page-accepted{
+    color:green;
+    font-weight: bold;
+}
+
+.landing-page-rejected{
+    color:red;
+    font-weight: bold;
+}
+
+.landing-page-changes-requested{
+    color:#FFA500;
+    font-weight: bold;
 }
 
 /* In Contributor Manage Guide Page */
