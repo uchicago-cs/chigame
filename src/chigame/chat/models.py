@@ -101,8 +101,7 @@ class LiveChatPollVote(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     class Meta:
-        constraints = [
-            models.UniqueConstraint(fields=["poll", "option", "user"], name="unique_poll_option_user")
-        ]
+        constraints = [models.UniqueConstraint(fields=["poll", "option", "user"], name="unique_poll_option_user")]
+
     def __str__(self):
         return f"{self.user} voted for {self.option} in Poll {self.poll}"
