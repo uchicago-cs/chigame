@@ -1,18 +1,20 @@
-from django.core.exceptions import PermissionDenied
-from django.shortcuts import get_object_or_404
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.shortcuts import get_object_or_404, redirect
+from django.views import View
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, status
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import SAFE_METHODS, BasePermission, IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from chigame.achievements.models import Achievement
+from chigame.achievements.models import Achievement, UserAchievement
 from chigame.api.filters import GameFilter
 from chigame.api.serializers import (
     AchievementSerializer,
     CategorySerializer,
+    FeedbackSerializer,
     GameSerializer,
     GroupSerializer,
     LobbySerializer,
@@ -20,10 +22,11 @@ from chigame.api.serializers import (
     MessageFeedSerializer,
     MessageSerializer,
     ReviewSerializer,
+    UserAchievementSerializer,
     UserSerializer,
 )
 from chigame.api.spam_utils import is_spam
-from chigame.games.models import Game, Lobby, Message, Review
+from chigame.games.models import Feedback, Game, Lobby, Message, Review, Tournament
 from chigame.users.models import Group, User
 
 
@@ -93,6 +96,11 @@ class LobbyListView(generics.ListCreateAPIView):
     serializer_class = LobbySerializer
     pagination_class = PageNumberPagination
 
+    permission_classes = [IsAuthenticatedOrReadOnly]  # similar to GameListView
+
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user)
+
 
 class LobbyDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Lobby.objects.all()
@@ -126,6 +134,14 @@ class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
         return get_user(lookup_value)
 
 
+# Custom permission class for authentification
+class IsAuthenticatedOrReadOnly(BasePermission):
+    def has_permission(self, request, view):
+        if request.method in ["GET", "HEAD", "OPTIONS"]:
+            return True
+        return request.user and request.user.is_authenticated
+
+
 class MessageView(generics.CreateAPIView):
     queryset = Message.objects.all()
     serializer_class = MessageSerializer
@@ -136,21 +152,54 @@ class MessageView(generics.CreateAPIView):
         if is_spam(content):
             raise ValidationError("Your message appears to be spam.")
 
-        serializer.save()
+        # serializer.save()
+        serializer.save(sender=self.request.user)
+
+    # Need Livechat in order to use this endpoint
 
 
-# Need Livechat in order to use this endpoint
+class IsAuthenticatedOrReadOnly(BasePermission):
+    def has_permission(self, request, view):
+        if request.method in SAFE_METHODS:
+            return True
+        return request.user and request.user.is_authenticated
+
+
+class IsGroupAdminOrReadOnly(BasePermission):
+    def has_permission(self, request, view):
+        if request.method in SAFE_METHODS:
+            return True
+        group = view.get_object()
+        return request.user == group.created_by or group.members.filter(id=request.user.id).exists()
 
 
 class GroupListView(generics.ListCreateAPIView):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
     pagination_class = PageNumberPagination
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def perform_create(self, serializer):
+        group = serializer.save(created_by=self.request.user)
+        group.members.add(self.request.user)
 
 
 class GroupDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly, IsGroupAdminOrReadOnly]
+
+    def perform_update(self, request, *args, **kwargs):
+        group = self.get_object()
+        if not group.group_admin_permissions and request.user != group.created_by:
+            raise PermissionDenied("You do not have permission to update this group.")
+        return super().perform_update(request, *args, **kwargs)
+
+    def perform_destroy(self, request, *args, **kwargs):
+        group = self.get_object()
+        if group.created_by != self.request.user:
+            raise PermissionDenied("You do not have permission to delete this group.")
+        return super().perform_destroy(request, *args, **kwargs)
 
 
 class GroupMembersView(generics.ListAPIView):
@@ -173,7 +222,29 @@ class UserGroupsView(generics.ListAPIView):
         return groups
 
 
+class GroupJoinView(LoginRequiredMixin, View):
+    def post(self, request, group_id):
+        group = get_object_or_404(Group, id=group_id)
+        user = request.user
+
+        if not group.members.filter(id=user.id).exists():
+            group.members.add(user)
+        return redirect("api-group-detail", pk=group_id)
+
+
+class GroupLeaveView(LoginRequiredMixin, View):
+    def post(self, request, group_id):
+        group = get_object_or_404(Group, id=group_id)
+        user = request.user
+
+        if group.members.filter(id=user.id).exists():
+            group.members.remove(user)
+        return redirect("api-group-detail", pk=group_id)
+
+
 class MessageFeedView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def post(self, request, *args, **kwargs):
         # Get data from the frontend
         token_id = request.data.get("token_id")
@@ -211,15 +282,18 @@ class ReviewCreateView(generics.CreateAPIView):
         if is_spam(review_text):
             raise ValidationError("Your review appears to be spam. Please revise your content.")
 
-        user_id = self.request.data.get("user")
+        # user_id = self.request.data.get("user")
         game_id = self.kwargs["pk"]
-        user = get_object_or_404(User, pk=user_id)
-        serializer.save(user=user, game_id=game_id)
+        game = get_object_or_404(Game, pk=game_id)
+        # user = get_object_or_404(User, pk=user_id)
+        # serializer.save(user=user, game_id=game_id)
+        serializer.save(user=self.request.user, game=game)
 
 
 class ReviewDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
+    queryset = Review.objects.none()
 
     def perform_destroy(self, instance):
         if instance.user != self.request.user:
@@ -233,6 +307,42 @@ class ReviewDetailView(generics.RetrieveUpdateDestroyAPIView):
         if user != self.request.user:
             raise PermissionDenied("You do not have permission to edit this review.")
         serializer.save()
+
+
+class AchievementListView(generics.ListAPIView):
+    serializer_class = AchievementSerializer
+
+    def get_queryset(self):
+        game_id = self.kwargs["pk"]
+        return Achievement.objects.filter(game__id=game_id)
+
+
+class UserAchievementCreateView(generics.CreateAPIView):
+    serializer_class = UserAchievementSerializer
+
+    def perform_create(self, serializer):
+        achievement_id = self.kwargs["pk"]
+        serializer.save(achievement_id=achievement_id)
+
+    def create(self, request, *args, **kwargs):
+        user_id = self.request.data.get("user")
+        user = get_object_or_404(User, pk=user_id)
+        achievement = Achievement.objects.get(id=self.kwargs["pk"])
+
+        if UserAchievement.objects.filter(achievement=achievement, user=user).exists():
+            return Response(
+                {"error": f"This achievement already exists for user '{user.email}'"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        self.perform_create(serializer)
+
+        return Response(
+            {"message": "Achievement created successfully!", "data": serializer.data}, status=status.HTTP_201_CREATED
+        )
 
 
 class AchievementCreateView(generics.CreateAPIView):
@@ -258,5 +368,42 @@ class AchievementCreateView(generics.CreateAPIView):
         self.perform_create(serializer)
 
         return Response(
-            {"message": "Achievement created successfully!", "data": serializer.data}, status=status.HTTP_201_CREATED
+            {"message": "Achievement assigned to user!", "data": serializer.data}, status=status.HTTP_201_CREATED
         )
+
+
+class FeedbackListCreateView(generics.ListCreateAPIView):
+    serializer_class = FeedbackSerializer
+    permission_classes = []
+    pagination_class = PageNumberPagination
+
+    def get_queryset(self):
+        tournament_id = self.kwargs["pk"]
+        return Feedback.objects.filter(tournament__id=tournament_id).order_by("-created_at")
+
+    def perform_create(self, serializer):
+        tournament_id = self.kwargs["pk"]
+        tournament = get_object_or_404(Tournament, id=tournament_id)
+        user = User.objects.first()
+        serializer.save(user=user, tournament=tournament)
+
+
+class FeedbackDetailView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = FeedbackSerializer
+    permission_classes = []
+
+    def get_queryset(self):
+        return Feedback.objects.all()
+
+    def perform_update(self, serializer):
+        feedback = self.get_object()
+        user = User.objects.first()
+        if feedback.user != user:
+            raise PermissionDenied("You can only update your own feedback.")
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        user = User.objects.first()
+        if instance.user != user:
+            raise PermissionDenied("You can only delete your own feedback.")
+        instance.delete()
