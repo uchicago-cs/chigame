@@ -9,7 +9,7 @@ This module provides functionality to recommend players for tournaments based on
 """
 
 from chigame.games.models import Player, Tournament
-from chigame.users.models import User, UserProfile
+from chigame.users.models import User
 
 
 class TournamentRecommendationService:
@@ -101,13 +101,9 @@ class TournamentRecommendationService:
         if not self.owner:
             return 0
 
-        try:
-            owner_profile = UserProfile.objects.get(user=self.owner)
-            # check if user is in the owner's friends
-            if user in owner_profile.friends.all():
-                return 10
-        except UserProfile.DoesNotExist:
-            pass
+        # The friends relationship is on the User model, not UserProfile
+        if user in self.owner.friends.all():
+            return 10
 
         return 0
 
