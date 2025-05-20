@@ -9,7 +9,7 @@
   <h1>Create a New Group</h1>
   <form class="form-horizontal"
         method="post"
-        action="{% url 'group-create' %}">
+        action="{% url 'users:group-create' %}">
     {% csrf_token %}
     {{ form|crispy }}
     <div class="control-group">
