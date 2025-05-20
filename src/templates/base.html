@@ -199,15 +199,19 @@
                       {% if header_notifications %}
                         {% for n in header_notifications %}
                           <a href="{% url 'users:notification-detail' n.pk %}"
-                             class="dropdown-item text-reset text-decoration-none"
+                             class="notification-item dropdown dropdown-item text-reset text-decoration-none {% if not n.read %}notification-unread{% endif %} notification-style-{{ n.get_style_key }}"
                              id="notification-{{ n.id }}">
                             <div class="d-flex justify-content-between align-items-start">
-                              <div>
-                                <strong>{{ n.message|default:"You have a new notification" }}</strong>
-                                <br />
-                                <small class="text-muted">{{ n.last_sent|timesince }} ago</small>
+                              {# Icon  #}
+                              <div class="notification-icon d-flex align-items-start">
+                                <i class="{{ n.get_icon_class }} me-2"></i>
+                                <div>
+                                  <span class="notification-strong">{{ n.get_rich_message|truncatewords:15 }}</span>
+                                  <br />
+                                  <small class="text-muted">{{ n.last_sent|timesince }} ago</small>
+                                </div>
                               </div>
-                              <button class="btn-close btn-sm ms-2"
+                              <button class="notification-dismiss-btn btn-close btn-sm ms-2"
                                       title="Dismiss"
                                       onclick="event.preventDefault(); dismissNotification({{ n.id }})"></button>
                             </div>
@@ -224,22 +228,23 @@
             </div>
           </div>
         </div>
+        {% block nav_extension %}
+        {% endblock nav_extension %}
       </nav>
     </div>
     {% block body %}
     {% endblock body %}
     <div class="container">
+      {% comment %}
       {% if messages %}
         {% for message in messages %}
           <div class="alert alert-dismissible {% if message.tags %}alert-{{ message.tags }}{% endif %}">
             {{ message }}
-            <button type="button"
-                    class="btn-close"
-                    data-bs-dismiss="alert"
-                    aria-label="Close"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
           </div>
         {% endfor %}
       {% endif %}
+      {% endcomment %}
       {% block content %}
         <p>Coming soon!</p>
       {% endblock content %}

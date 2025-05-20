@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from chigame.achievements.models import Achievement, UserAchievement
-from chigame.games.models import Category, Chat, Game, Lobby, Mechanic, Message, Review, Tournament, User
+from chigame.games.models import Category, Chat, Feedback, Game, Lobby, Mechanic, Message, Review, Tournament, User
 from chigame.users.models import Group
 
 
@@ -34,6 +34,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ("id", "name", "username", "email", "password")
+        read_only_fields = ("user",)
 
     def create(self, validated_data):
         user = User.objects.create_user(
@@ -85,7 +86,8 @@ class MessageSerializer(serializers.ModelSerializer):
 class GroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = Group
-        fields = "__all__"
+        fields = ["id", "name", "description", "members", "group_admin_permissions"]
+        read_only_fields = ["created_by", "date_created"]
 
 
 class MessageFeedSerializer(serializers.ModelSerializer):
@@ -103,6 +105,7 @@ class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
         fields = ["id", "user", "title", "rating", "review", "is_public", "created_at"]
+        read_only_fields = ["id", "created_at", "user"]
 
 
 class UserAchievementSerializer(serializers.ModelSerializer):
@@ -115,3 +118,16 @@ class AchievementSerializer(serializers.ModelSerializer):
     class Meta:
         model = Achievement
         fields = ["id", "name", "description", "rarity", "threshold"]
+
+
+class FeedbackSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Feedback
+        fields = ["id", "tournament", "user", "rating", "comment", "created_at"]
+        read_only_fields = ["id", "created_at", "user", "tournament"]
+
+
+class GameReviewStatsSerializer(serializers.Serializer):
+    average_rating = serializers.DecimalField(max_digits=3, decimal_places=2, required=False)
+    popularity = serializers.IntegerField()
+    read_only_fields = ["id", "created_at", "user", "tournament"]
