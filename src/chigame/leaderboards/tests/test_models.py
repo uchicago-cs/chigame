@@ -1,6 +1,6 @@
 import datetime
-import pytest
 
+import pytest
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.db import transaction
@@ -10,28 +10,26 @@ from django.utils import timezone
 
 # Core application models under test
 from chigame.games.models import Game, Lobby, Match
-from chigame.leaderboards.models import Leaderboard, LeaderboardEntry, Metric, MetricScore, LeaderboardPrivacySetting
+from chigame.leaderboards.models import Leaderboard, LeaderboardEntry, LeaderboardPrivacySetting, Metric, MetricScore
 from chigame.users.models import UserProfile
 
 # Import factory definitions for model instantiation
 from .factories import (
     AuthUserFactory,
     GameFactory,
+    GamePrivacySettingFactory,
+    GlobalPrivacySettingFactory,
     LeaderboardEntryFactory,
     LeaderboardFactory,
+    LeaderboardSpecificPrivacySettingFactory,
     LobbyFactory,
     MatchFactory,
     MetricFactory,
     MetricScoreFactory,
     RegionFactory,
     UserProfileFactory,
-    GamePrivacySettingFactory,
-    GlobalPrivacySettingFactory,
-    LeaderboardSpecificPrivacySettingFactory,
 )
 
-# Provide display_name property for UserProfile __str__ tests
-UserProfile.display_name = property(lambda self: self.user.username)
 AuthUser = get_user_model()
 
 
@@ -85,14 +83,14 @@ class ModelTests(TestCase):
         self.assertEqual(str(self.leaderboard), self.leaderboard.name)
 
     def test_entry_str(self):
-        expected = f"{self.user_profile.user.username} - Rank {self.entry.rank}"
+        expected = f"{self.user_profile.user.name} - Rank {self.entry.rank}"
         self.assertEqual(str(self.entry), expected)
 
     def test_metric_str(self):
         self.assertEqual(str(self.metric), self.metric.name)
 
     def test_metric_score_str(self):
-        expected = f"{self.user_profile.user.username} - {self.metric.name}: {self.metric_score.score}"
+        expected = f"{self.user_profile.user.name} - {self.metric.name}: {self.metric_score.score}"
         self.assertEqual(str(self.metric_score), expected)
 
     # Validation of required fields via full_clean()
