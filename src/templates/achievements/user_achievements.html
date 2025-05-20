@@ -67,7 +67,9 @@
       border-radius: 5px;
       margin-bottom: 20px;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      width: 65%;
     }
+
     .stats-container {
       display: flex;
       justify-content: space-between;
@@ -149,6 +151,7 @@
         float: none;
       }
     }
+
     .search-box {
       padding: 10px;
       margin-bottom: 20px;
@@ -555,7 +558,7 @@
              data-progress="{{ overall_stats.progress|floatformat:1 }}"></div>
       </div>
     </div>
-        <div class="recent-achievements-tab">Recent Achievements</div>
+    <div class="recent-achievements-tab">Recent Achievements</div>
     <div class="recent-achievements-box">
       <div class="recent-achievements-content">
         {% for user_achievement in recent_achievements %}

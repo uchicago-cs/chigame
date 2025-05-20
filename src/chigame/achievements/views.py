@@ -23,7 +23,7 @@ def demo_game(request):
 
 
 @login_required
-def user_achievements (request, pk=None, status=AchievementType.ALL, game_id=None):
+def user_achievements(request, pk=None):
     """
     Display a user's achievements page.
     If pk is provided, show that user's achievements.
@@ -185,7 +185,7 @@ def user_achievements (request, pk=None, status=AchievementType.ALL, game_id=Non
             "progress": overall_progress,
         },
         "pinned_achievements": pinned_achievements_qs,
-        "recent_achievements": recent_achievements
+        "recent_achievements": recent_achievements,
     }
 
     return render(request, "achievements/user_achievements.html", context)
