@@ -5,7 +5,7 @@ from django.utils import timezone
 from factory import Faker, Iterator, LazyAttribute, LazyFunction, Sequence, SubFactory, post_generation
 from factory.django import DjangoModelFactory
 
-from chigame.games.models import Category, Chat, Game, Lobby, Mechanic, Tournament
+from chigame.games.models import Category, Chat, Feedback, Game, Lobby, Mechanic, Tournament
 from chigame.users.models import User
 
 
@@ -142,3 +142,13 @@ class LobbyFactory(DjangoModelFactory):
             # we add random users to the members field
             for members in range(random.randint(self.min_players, self.max_players)):
                 self.members.add(UserFactory())
+
+
+class FeedbackFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Feedback
+
+    tournament = factory.SubFactory(TournamentFactory)
+    user = factory.SubFactory(UserFactory)
+    rating = 4
+    comment = "This is a test comment"
