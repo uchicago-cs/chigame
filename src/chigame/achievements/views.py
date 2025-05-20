@@ -12,21 +12,18 @@ def demo_game(request):
 
 
 @login_required
-def user_achievements(request, username=None):
+def user_achievements(request, user_id=None):
     """
     Display a user's achievements page.
     If username is provided, show that user's achievements.
     Otherwise, show the logged-in user's achievements.
     """
-    if username:
-        # If a username is provided in the URL, get that user's profile
-        target_user = get_object_or_404(User, username=username)  # Renamed to avoid confusion with request.user
+    if user_id:
+        target_user = User.objects.get(id=user_id)
         viewing_own_profile = target_user == request.user
     else:
-        # If no username is provided, show the logged-in user's achievements
         target_user = request.user
         viewing_own_profile = True
-
     # Get all games
     games = Game.objects.all()
 
