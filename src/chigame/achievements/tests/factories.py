@@ -1,19 +1,10 @@
 import factory
+from factory import Sequence, SubFactory
 from factory.django import DjangoModelFactory
 
-from chigame.achievements.models import Achievement, User, UserAchievement
-from chigame.api.tests.factories import GameFactory, LobbyFactory
+from chigame.achievements.models import Achievement, UserAchievement
+from chigame.api.tests.factories import GameFactory, LobbyFactory, UserFactory
 from chigame.games.models import Match
-
-
-# General user factory
-class UserFactory(DjangoModelFactory):
-    class Meta:
-        model = User
-
-    username = factory.Faker("user_name")
-    email = factory.Faker("email")
-    password = factory.PostGenerationMethodCall("set_password", "password")
 
 
 class AchievementFactory(DjangoModelFactory):
@@ -60,3 +51,15 @@ class MatchFactory(DjangoModelFactory):
         else:
             # Add
             self.players.add(UserFactory())
+
+
+class AchievementFactory(DjangoModelFactory):
+    class Meta:
+        model = Achievement
+
+    name = Sequence(lambda n: f"Achievement {n}")
+    description = "Test description"
+    spoiler = False
+    rarity = Achievement.Rarity.COMMON
+    game = SubFactory(GameFactory)
+    threshold = 1.0
