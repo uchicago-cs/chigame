@@ -18,6 +18,7 @@ urlpatterns = [
     # urls to handle api requests
     path("api/", include("chigame.api.urls")),
     path("games/", include("chigame.games.urls")),
+    path("chat/", include("chigame.chat.urls")),
     path("account/", include("django.contrib.auth.urls")),
     # Django-machina forum
     # https://django-machina.readthedocs.io/en/latest/getting_started.html#urls-configuration
@@ -27,6 +28,9 @@ urlpatterns = [
     path("forums/", include("chigame.forums.base.urls")),
     # Knowledge-base URLs
     path("knowledge-base/", include("chigame.knowledge_base.urls")),
+    path("leaderboards/", include("chigame.leaderboards.urls")),
+    path("achievements/", include("chigame.achievements.urls")),
+    path("achievements/api/", include("chigame.achievements.api.urls")),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 
