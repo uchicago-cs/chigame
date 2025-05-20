@@ -9,4 +9,6 @@ class Migration(migrations.Migration):
         ("chat", "0004_merge_20250519_2131"),
     ]
 
-    operations = []
+    operations = [
+        # Simple merge migration - no operations needed
+    ]

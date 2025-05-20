@@ -9,4 +9,6 @@ class Migration(migrations.Migration):
         ("chat", "0003_livechatmessagereaction"),
     ]
 
-    operations = []
+    operations = [
+        # Simple merge migration - no operations needed
+    ]
