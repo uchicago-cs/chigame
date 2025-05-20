@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% load custom_filters %} 
+
+{% block title %}Notifications - {{ label.name }}{% endblock title %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-3 mb-4">
+            <div class="list-group">
+              {% for key, cat_label_text in category_choices %}
+                <a href="{% url 'users:user-inbox-category' pk=pk category=key %}"
+                  class="inbox-category list-group-item list-group-item-action {% if active_category == key %}active{% endif %}">
+                  {{ cat_label_text }}
+                </a>
+              {% endfor %}
+              <a href="{% url 'users:user-inbox-category' pk=pk category='deleted' %}"
+                class="inbox-category list-group-item list-group-item-action {% if active_category == 'deleted' %}active{% endif %}">
+                Deleted
+              </a>
+            </div>
+            <div class="mt-4">
+              <h5>Labels</h5>
+              <a href="{% url 'users:manage-labels-page' %}" class="btn btn-sm btn-outline-primary mb-2 d-block">Manage All Labels</a>
+              {% if labels %}
+                <ul class="list-group list-group-flush">
+                  {% for sidebar_label_obj in labels %}
+                    <li class="list-group-item py-1 px-0 border-0 {% if sidebar_label_obj.id == label.id %}active{% endif %}">
+                       <a href="{% url 'users:notifications-by-label' sidebar_label_obj.id %}" class="text-decoration-none d-block ps-2 {% if sidebar_label_obj.id != label.id %}text-body{% endif %}">{{ sidebar_label_obj.name }}</a>
+                    </li>
+                  {% endfor %}
+                </ul>
+              {% else %}
+                <p class="ms-2"><small>No labels created yet.</small></p>
+              {% endif %}
+            </div>
+        </div>
+
+        <div class="col-md-9">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3>Notifications labeled: <span class="badge bg-primary rounded-pill fs-6 align-middle">{{ label.name }}</span></h3>
+                <div>
+                    <a href="{% url 'users:user-inbox' pk=request.user.pk %}" class="btn btn-outline-secondary btn-sm">Back to Inbox</a>
+                    <a href="{% url 'users:manage-labels-page' %}" class="btn btn-outline-info btn-sm">Manage Labels</a>
+                </div>
+            </div>
+            <hr>
+
+            {% if notifications %}
+                <ul class="list-group">
+                    {% for notification in notifications %}
+                        {% with notification_type=notification.type %}
+                            <div class="inbox-item mb-2">
+                                <li class="notification-container list-group-item d-flex justify-content-between align-items-center border shadow-sm {% if notification.read %}read{% else %}unread{% endif %}"
+                                    <div class="message-row ms-2 me-auto">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <small class="sender-minimal me-2 text-muted">{{ notification.get_sender_display }}</small>
+                                            <a class="message-title text-decoration-none {% if not notification.read %}text-dark fw-bold{% else %}text-muted{% endif %}" href="{% url 'users:notification-detail' notification.pk %}">
+                                                <span>{{ notification.get_rich_message|truncatewords:15 }}</span>
+                                            </a>
+                                        </div>
+                                        <small class="d-block mt-1">
+                                            <span class="badge bg-light text-dark border me-1">{{ notification.get_category_display }}</span>
+                                            {% for other_label in notification.labels.all %}
+                                                {% if other_label.id != label.id %} 
+                                                    <span class="badge bg-secondary me-1">{{ other_label.name }}</span>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </small>
+                                    </div>
+                                    <small class="ms-3 text-muted flex-shrink-0">{{ notification.first_sent|timesince }} ago</small>
+                                </li>
+                            </div>
+                        {% endwith %}
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <div class="alert alert-info" role="alert">
+                    No notifications found with the label "<strong>{{ label.name }}</strong>".
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+/* Styles for read/unread and hover. You can expand this or use a shared CSS file. */
+.read {
+    background-color: #f8f9fa; /* Lighter background for read items */
+}
+.unread .message-title span { /* Example: If you want unread titles to be bolder within the span */
+    /* font-weight: 600; /* This is an alternative to adding fw-bold directly in the class */
+}
+.notification-container:hover {
+    background-color: #e9ecef; /* Hover effect */
+}
+/* Ensure text-muted looks as expected */
+.text-muted {
+    color: #6c757d !important; /* Bootstrap's muted color */
+}
+</style>
+
+{% endblock content %}
