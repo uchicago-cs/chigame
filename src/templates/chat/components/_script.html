@@ -55,8 +55,9 @@
     const messageContainer = document.createElement("div");
     messageContainer.className = `mb-3 ${data.user_id === "{{ request.user.id }}" ? "align-self-end" : "align-self-start"}`;
     messageContainer.setAttribute("data-message-id", data.message_id);
-    messageContainer.setAttribute("oncontextmenu", `showContextMenu(event, ${data.message_id}, '${data.username}', '${data.message}'); return false;`);
-
+    const escapedUsername = escapeHTML(data.username);
+    const escapedMessage = escapeHTML(data.message);
+    messageContainer.setAttribute("oncontextmenu", `showContextMenu(event, ${data.message_id}, '${escapedUsername}', '${escapedMessage}'); return false;`);
     // Create message bubble
     const messageBubble = document.createElement("div");
     messageBubble.className = `${data.user_id === "{{ request.user.id }}" ? "bg-success-subtle" : "bg-white"} rounded p-2 shadow-sm`;
