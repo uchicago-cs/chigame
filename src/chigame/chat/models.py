@@ -78,7 +78,7 @@ class LiveChatPoll(models.Model):
 
     live_chat = models.ForeignKey(LiveChat, on_delete=models.CASCADE)
     question = models.TextField(null=False)
-    options = models.ManyToManyField(LiveChatPollOption, related_name="polls")
+    options = models.ManyToManyField(LiveChatPollOption, related_name="polls", blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
