@@ -89,12 +89,19 @@
         if (!input) return;
 
         function showFileName(file) {
-          zone.innerHTML = `
+        zone.innerHTML = `
             <div>
-              <strong>Selected file:</strong><br />
-              ${file.name}<br />
+            <strong>Selected file:</strong><br />
+            ${file.name}<br />
+            <button type="button" class="deselect-btn">Deselect File</button>
             </div>
-          `;
+        `;
+
+        // handle a click to deselect
+        zone.querySelector('.deselect-btn').addEventListener('click', () => {
+            input.value = '';
+            zone.innerHTML = 'Drag & drop a ".html" file here<br />or click to browse';
+        });
         }
 
         function isHtmlFile(file) {
