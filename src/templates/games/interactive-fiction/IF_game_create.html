@@ -97,9 +97,9 @@
               </div>
           `;
           zone.querySelector('.deselect-btn').addEventListener('click', (e) => {
-              e.stopPropagation(); // prevents file navigator from showing up exactly
-              input.value = '';
-              zone.innerHTML = 'Drag & drop a file here<br />or click to browse';
+            e.stopPropagation(); // prevents file navigator from showing up exactly
+            input.value = '';
+            zone.innerHTML = 'Drag & drop a file here<br />or click to browse';
           });
         }
 
