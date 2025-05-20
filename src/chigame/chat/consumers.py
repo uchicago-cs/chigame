@@ -6,6 +6,7 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from chigame.users.models import User
 
 from .models import LiveChat, LiveChatMessage
+from .utils import ProfanityFilter
 
 
 class ChatConsumer(AsyncWebsocketConsumer):
@@ -14,6 +15,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
     It allows users to connect to a chat room and send messages to other users
     in the room.
     """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.profanity_filter = ProfanityFilter()
 
     @database_sync_to_async
     def get_live_chat(self, chat_id):
@@ -120,6 +125,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             text_data (str): The message data received from the client.
         """
         text_data_json = json.loads(text_data)
+        
         msg_type = text_data_json.get("type", "send")
         if msg_type == "send":
             message = text_data_json["message"]
@@ -142,20 +148,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "reply_to_content": message_data["reply_to_content"],
                 },
             )
-        elif msg_type == "delete":
-            message_id = text_data_json["message_id"]
-            user_id = text_data_json["user_id"]
-
-            try:
-                # must need to call .delete() so you cant use message id
-                msg = await database_sync_to_async(LiveChatMessage.objects.get)(id=message_id, user_id=user_id)
-                await database_sync_to_async(msg.delete)()
-                await self.channel_layer.group_send(
-                    self.roomGroupName,
-                    {"type": "deleteMessage", "message_id": message_id, "user_id": user_id},
-                )
-            except LiveChatMessage.DoesNotExist:
-                print("error")
 
     async def sendMessage(self, event):
         """
@@ -175,19 +167,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "reply_to": event["reply_to"],
                     "reply_to_username": event["reply_to_username"],
                     "reply_to_content": event["reply_to_content"],
-                }
-            )
-        )
-
-    async def deleteMessage(self, event):
-        message_id = event["message_id"]
-        user_id = event["user_id"]
-        await self.send(
-            text_data=json.dumps(
-                {
-                    "type": "delete",
-                    "message": message_id,
-                    "user_id": user_id,
                 }
             )
         )
