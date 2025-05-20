@@ -16,14 +16,14 @@ class Migration(migrations.Migration):
             model_name="livechatmessage",
             name="reply_to",
             field=models.ForeignKey(
-                blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to="chat.livechatmessage"
+                blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to="chat.livechatmessage"
             ),
         ),
         migrations.CreateModel(
             name="LiveChatMessageReaction",
             fields=[
                 ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-                ("content", models.CharField(max_length=10)),
+                ("content", models.CharField(help_text="Up to 10 emoji characters", max_length=10)),
                 ("message", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="chat.livechatmessage")),
                 ("user", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
