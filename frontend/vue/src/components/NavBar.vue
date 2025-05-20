@@ -11,6 +11,7 @@
       <li><router-link to="/games">Games</router-link></li>
       <li><router-link to="/forums">Forums</router-link></li>
       <li><router-link to="/lobbies">Lobbies</router-link></li>
+      <li><router-link to="/profile">Profile</router-link></li>
     </ul>
 
     <div class="search-bar">
