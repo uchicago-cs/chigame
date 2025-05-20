@@ -48,6 +48,9 @@ class User(AbstractUser):
     # a moderator can manage/approve game guides in Knowledge Base
     moderator = models.BooleanField(default=False)
 
+    # a toggle to determine if the user wants profanity filter on
+    profanity_filter = models.BooleanField(default=True)
+
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
 
@@ -141,10 +144,14 @@ class Group(models.Model):
     """
 
     name = models.TextField()
+    description = models.TextField(blank=True)
     members = models.ManyToManyField(User)
     created_by = models.ForeignKey(User, related_name="created_groups", on_delete=models.CASCADE)
-
     date_created = models.DateTimeField(auto_now_add=True)
+    group_admin_permissions = False
+
+    def __str__(self):
+        return self.name
 
 
 class GroupInvitation(models.Model):
@@ -266,17 +273,27 @@ class Notification(models.Model):
     FRIEND_REQUEST = 1
     REMINDER = 2
     UPCOMING_MATCH = 3
-    MATCH_PROPOSAL = 4
+    MATCH_INVITATION = 4
     GROUP_INVITATION = 5
     ACHIEVEMENT = 6
+    TOURNAMENT_INVITATION = 7
+    TOURNAMENT_INVITATION_ACCEPTED = 8
+    TOURNAMENT_STARTING = 9
+    TOURNAMENT_ROUND_COMPLETED = 10
+    TOURNAMENT_COMPLETED = 11
 
     NOTIFICATION_TYPES = (
         (FRIEND_REQUEST, "FRIEND_REQUEST"),
         (REMINDER, "REMINDER"),
         (UPCOMING_MATCH, "UPCOMING_MATCH"),
-        (MATCH_PROPOSAL, "MATCH_PROPOSAL"),
+        (MATCH_INVITATION, "MATCH_INVITATION"),
         (GROUP_INVITATION, "GROUP_INVITATION"),
         (ACHIEVEMENT, "ACHIEVEMENT"),
+        (TOURNAMENT_INVITATION, "TOURNAMENT_INVITATION"),
+        (TOURNAMENT_INVITATION_ACCEPTED, "TOURNAMENT_INVITATION_ACCEPTED"),
+        (TOURNAMENT_STARTING, "TOURNAMENT_STARTING"),
+        (TOURNAMENT_ROUND_COMPLETED, "TOURNAMENT_ROUND_COMPLETED"),
+        (TOURNAMENT_COMPLETED, "TOURNAMENT_COMPLETED"),
     )
 
     DEFAULT_MESSAGES = {FRIEND_REQUEST: "You have a friend invitation"}
@@ -411,9 +428,9 @@ class FriendRequestNotification(BaseNotificationHandler):
         return reverse("users:user-profile", kwargs={"pk": self.notification.actor.sender.pk})
 
 
-class MatchProposalNotification(BaseNotificationHandler):
+class MatchInvitationNotification(BaseNotificationHandler):
     """
-    Handles redirection logic for match proposal notifications. Redirects the
+    Handles redirection logic for match invitation notifications. Redirects the
     user to the lobby of the match upon interaction.
     """
 
@@ -449,6 +466,66 @@ class UpcomingMatchNotification(BaseNotificationHandler):
 
     def get_redirect_str(self):
         return reverse("games:lobby-details", kwargs={"pk": self.notification.actor.lobby.pk})
+
+
+class AchievementNotification(BaseNotificationHandler):
+    """
+    Handles redirection logic for achievement notifications. Redirects the
+    user to the ___ page upon interaction.
+    """
+
+    def get_redirect_str(self):
+        raise NotImplementedError("Achievement notifications do not have a redirect URL")
+
+
+class TournamentInvitationNotification(BaseNotificationHandler):
+    """
+    Handles redirection logic for tournament invitation notifications. Redirects the
+    user to the ___ page upon interaction.
+    """
+
+    def get_redirect_str(self):
+        return reverse("tournaments:tournament-detail", kwargs={"pk": self.notification.actor.tournament.pk})
+
+
+class TournamentInvitationAcceptedNotification(BaseNotificationHandler):
+    """
+    Handles redirection logic for tournament invitation notifications. Redirects the
+    user to the ___ page upon interaction.
+    """
+
+    def get_redirect_str(self):
+        return reverse("tournaments:tournament-detail", kwargs={"pk": self.notification.actor.tournament.pk})
+
+
+class TournamentStartingNotification(BaseNotificationHandler):
+    """
+    Handles redirection logic for tournament starting notifications. Redirects the
+    user to the ___ page upon interaction.
+    """
+
+    def get_redirect_str(self):
+        return reverse("tournaments:tournament-detail", kwargs={"pk": self.notification.actor.tournament.pk})
+
+
+class TournamentRoundCompletedNotification(BaseNotificationHandler):
+    """
+    Handles redirection logic for tournament round completed notifications. Redirects the
+    user to the ___ page upon interaction.
+    """
+
+    def get_redirect_str(self):
+        return reverse("tournaments:tournament-detail", kwargs={"pk": self.notification.actor.tournament.pk})
+
+
+class TournamentCompletedNotification(BaseNotificationHandler):
+    """
+    Handles redirection logic for tournament completed notifications. Redirects the
+    user to the ___ page upon interaction.
+    """
+
+    def get_redirect_str(self):
+        return reverse("tournaments:tournament-detail", kwargs={"pk": self.notification.actor.tournament.pk})
 
 
 class NotificationLabel(models.Model):
