@@ -23,16 +23,17 @@ def demo_game(request):
 
 
 @login_required
-def user_achievements(request, username=None):
+def user_achievements (request, pk=None, status=AchievementType.ALL, game_id=None):
     """
     Display a user's achievements page.
-    If username is provided, show that user's achievements.
+    If pk is provided, show that user's achievements.
     Otherwise, show the logged-in user's achievements.
     """
-    if username:
+    if pk:
         # If a username is provided in the URL, get that user's profile
-        target_user = get_object_or_404(User, username=username)  # Renamed to avoid confusion with request.user
+        target_user = get_object_or_404(User, pk=pk)  # Renamed to avoid confusion with request.user
         viewing_own_profile = target_user == request.user
+        recent_achievements = get_recent_achievements(target_user.pk, limit=5)
     else:
         # If no username is provided, show the logged-in user's achievements
         target_user = request.user
@@ -184,6 +185,7 @@ def user_achievements(request, username=None):
             "progress": overall_progress,
         },
         "pinned_achievements": pinned_achievements_qs,
+        "recent_achievements": recent_achievements
     }
 
     return render(request, "achievements/user_achievements.html", context)
