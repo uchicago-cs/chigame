@@ -3,10 +3,10 @@ from datetime import timedelta
 import pytest
 from django.utils import timezone
 
-from chigame.achievements.models import UserAchievement, Achievement
+from chigame.achievements.models import Achievement, UserAchievement
 from chigame.achievements.views import get_recent_achievements
 
-from .factories import MatchFactory, UserAchievementFactory, UserFactory, AchievementFactory
+from .factories import AchievementFactory, MatchFactory, UserAchievementFactory, UserFactory
 
 
 @pytest.mark.django_db
@@ -23,6 +23,7 @@ def test_get_achievement():
     achievement = AchievementFactory.create()
     game = achievement.game
     assert Achievement.get_achievement(name=achievement.name, game=game) == achievement
+
 
 @pytest.mark.django_db
 def test_get_recent_achievements():
