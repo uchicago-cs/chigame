@@ -288,7 +288,7 @@ class ReviewPendingGuideView(LoginRequiredMixin, UserPassesTestMixin, DetailView
 
         messages.info(request, msg, extra_tags="guide-reviewed")
 
-        return self.render_to_response(context)
+        return redirect("knowledge-base-moderator")
 
 
 class ModeratorListByGame(LoginRequiredMixin, UserPassesTestMixin, ListView):
