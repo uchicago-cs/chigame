@@ -2,7 +2,10 @@
 
 # Create your tests here.
 # Compare this snippet from src/chigame/api/tests.py:
+from datetime import timedelta
+
 from django.urls import reverse
+from django.utils import timezone
 
 # Related third party imports
 from rest_framework import status
@@ -11,8 +14,15 @@ from rest_framework.utils.serializer_helpers import ReturnDict
 
 # Local application/library specific imports
 from chigame.api.serializers import GameSerializer
-from chigame.api.tests.factories import ChatFactory, GameFactory, LobbyFactory, TournamentFactory, UserFactory
-from chigame.games.models import Game, Lobby, Message, Review, User
+from chigame.api.tests.factories import (
+    ChatFactory,
+    FeedbackFactory,
+    GameFactory,
+    LobbyFactory,
+    TournamentFactory,
+    UserFactory,
+)
+from chigame.games.models import Feedback, Game, Lobby, Message, Review, User
 
 
 class GameTests(APITestCase):
@@ -948,3 +958,70 @@ class SpamFilterTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("spam", str(response.data).lower())
         self.assertEqual(Review.objects.count(), 0)
+
+
+class FeedbackTests(APITestCase):
+    def setUp(self):
+        self.user = UserFactory()
+        self.game = GameFactory()
+
+        now = timezone.now()
+
+        self.tournament = TournamentFactory(
+            game=self.game,
+            created_by=self.user,
+            registration_start_date=now + timedelta(days=1),
+            registration_end_date=now + timedelta(days=2),
+            tournament_start_date=now + timedelta(days=3),
+            tournament_end_date=now + timedelta(days=4),
+        )
+
+        # self.tournament = TournamentFactory(game=self.game, created_by=self.user)
+        self.endpoint = reverse("api-feedback-list-create", args=[self.tournament.id])
+        self.client.force_authenticate(user=self.user)
+
+    def test_create_feedback(self):
+        self.client.force_authenticate(user=self.user)
+
+        data = {"rating": 5, "comment": "Awesome tournament!"}
+        response = self.client.post(self.endpoint, data, format="json")
+
+        print(response.status_code)
+        print(response.data)
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data["rating"], data["rating"])
+        self.assertEqual(response.data["comment"], data["comment"])
+        self.assertEqual(response.data["tournament"], self.tournament.id)
+        self.assertEqual(response.data["user"], self.user.id)
+
+    def test_list_feedback_ordering(self):
+        FeedbackFactory(tournament=self.tournament, user=self.user, rating=3, comment="First comment")
+        FeedbackFactory(tournament=self.tournament, user=self.user, rating=4, comment="Second comment")
+
+        response = self.client.get(self.endpoint)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        results = response.data["results"]
+        self.assertEqual(len(results), 2)
+        # Check reverse chronological order by created_at
+        self.assertGreaterEqual(results[0]["created_at"], results[1]["created_at"])
+
+    def test_update_feedback(self):
+        feedback = FeedbackFactory(tournament=self.tournament, user=self.user, rating=2)
+        detail_url = reverse("api-feedback-detail", args=[feedback.id])
+
+        data = {"rating": 4, "comment": "Updated comment"}
+
+        response = self.client.patch(detail_url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["rating"], 4)
+        self.assertEqual(response.data["comment"], "Updated comment")
+
+    def test_delete_feedback(self):
+        feedback = FeedbackFactory(tournament=self.tournament, user=self.user, rating=2)
+        detail_url = reverse("api-feedback-detail", args=[feedback.id])
+
+        response = self.client.delete(detail_url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(Feedback.objects.filter(id=feedback.id).exists())
