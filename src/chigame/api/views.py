@@ -26,8 +26,8 @@ from chigame.api.serializers import (
     UserSerializer,
 )
 from chigame.api.spam_utils import is_spam
-from chigame.games.simulation_utils import run_complete_tournament_simulation
 from chigame.games.models import Feedback, Game, Lobby, Message, Review, Tournament
+from chigame.games.simulation_utils import run_complete_tournament_simulation
 from chigame.users.models import Group, User
 
 
@@ -373,7 +373,6 @@ class AchievementCreateView(generics.CreateAPIView):
         )
 
 
-
 class TournamentSimulationView(APIView):
     """
     POST /api/tournaments/{pk}/simulate/
@@ -390,6 +389,7 @@ class TournamentSimulationView(APIView):
         # run the simulator
         bracket = run_complete_tournament_simulation(tournament, is_double)
         return Response(bracket, status=status.HTTP_200_OK)
+
 
 class FeedbackListCreateView(generics.ListCreateAPIView):
     serializer_class = FeedbackSerializer
