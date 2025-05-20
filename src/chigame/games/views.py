@@ -24,12 +24,30 @@ from django.utils.timezone import now
 from django.views import View
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, TemplateView, UpdateView
 from django.views.generic.edit import FormMixin
+from rest_framework import status
+
+# ============ new imports
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 
 from chigame.users.models import User
 
 from .filters import LobbyFilter
 from .forms import GameForm, IFGameForm, LobbyForm, ReviewForm
-from .models import Chat, Game, GameList, InteractiveFictionGame, Lobby, Match, Player, Review, Tournament
+from .models import (
+    Chat,
+    Checkers,
+    CheckersBoard,
+    CheckersTurn,
+    Game,
+    GameList,
+    InteractiveFictionGame,
+    Lobby,
+    Match,
+    Player,
+    Review,
+    Tournament,
+)
 from .simulation_utils import (
     MultiStageSimulator,
     RoundRobinSimulator,
@@ -119,7 +137,6 @@ class GameCreateView(UserPassesTestMixin, CreateView):
     model = Game
     form_class = GameForm
     template_name = "games/game_form.html"
-    success_url = reverse_lazy("game-list")  # URL to redirect after successful creation
     raise_exception = True  # if user is not staff member, raise exception
 
     # check if user is staff member
@@ -130,6 +147,20 @@ class GameCreateView(UserPassesTestMixin, CreateView):
         context = super().get_context_data(**kwargs)
         context["is_create"] = True
         return context
+
+    # Ensure the uploaded Twine .html file is saved to the Game model
+    def form_valid(self, form):
+        self.object = form.save(commit=False)
+        # ✅ Manually assign uploaded file
+        if self.request.FILES.get("twine_file"):
+            self.object.twine_file = self.request.FILES["twine_file"]
+        self.object.save()
+        return redirect(self.get_success_url())
+
+    def get_success_url(self):
+        if self.object.twine_file and self.object.twine_file.name.endswith(".html"):
+            return reverse("interactive-fiction-detail", kwargs={"pk": self.object.pk})
+        return reverse("game-detail", kwargs={"pk": self.object.pk})
 
 
 class GameEditView(UserPassesTestMixin, UpdateView):
@@ -552,6 +583,7 @@ class UploadFileView(View):
                 description="Uploaded Twine game",
                 min_players=1,
                 max_players=1,
+                complexity=1,
                 twine_file=f"twine_games/{filename}",
             )
 
@@ -1430,3 +1462,75 @@ def wordle_game_page(request):
     iframe_url = f"https://zhejiej.github.io/Words-Game//?token={token}"
 
     return render(request, "games/wordle.html", {"iframe_url": iframe_url})
+
+
+@login_required
+def checkers_game_view(request, pk):
+    game = get_object_or_404(Checkers, id=pk)
+    user = request.user
+
+    # Match players from the fixture
+    if game.player_1.user != user and game.player_2.user != user:
+        return HttpResponseForbidden("You are not a player in this game.")
+
+    # ✅ Get the latest board state
+    latest_turn = CheckersTurn.objects.filter(game=game).order_by("-turn_number").first()
+
+    if latest_turn:
+        board = latest_turn.board
+    else:
+        default_state = [
+            [0, 2, 0, 2, 0, 2, 0, 2],
+            [2, 0, 2, 0, 2, 0, 2, 0],
+            [0, 2, 0, 2, 0, 2, 0, 2],
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [1, 0, 1, 0, 1, 0, 1, 0],
+            [0, 1, 0, 1, 0, 1, 0, 1],
+            [1, 0, 1, 0, 1, 0, 1, 0],
+        ]
+        board = CheckersBoard.objects.create(state=default_state)
+        CheckersTurn.objects.create(game=game, board=board, turn_number=1, player=game.player_1)
+
+    # Determine player ID for frontend
+    player = game.player_1 if game.player_1.user == user else game.player_2
+    turn_number = CheckersTurn.objects.filter(game=game).count() + 1
+
+    return render(
+        request,
+        "games/game_checkers.html",
+        {
+            "game_id": game.id,
+            "board_id": board.id,
+            "player_id": player.id,
+            "turn_number": turn_number,
+        },
+    )
+
+
+@api_view(["POST"])
+def checkers_game_update_board_state(request, board_id):
+    try:
+        board = CheckersBoard.objects.get(pk=board_id)
+        new_state = request.data.get("state")
+
+        if new_state is None:
+            return Response({"error": "Missing 'state'"}, status=status.HTTP_400_BAD_REQUEST)
+
+        board.state = new_state
+        board.save()
+        return Response({"success": True})
+
+    except CheckersBoard.DoesNotExist:
+        return Response({"error": "Board not found"}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["GET"])
+def checkers_game_get_board_state(request, board_id):
+    try:
+        board = CheckersBoard.objects.get(pk=board_id)
+        return Response({"state": board.state})
+    except CheckersBoard.DoesNotExist:
+        return Response({"error": "Board not found"}, status=404)
