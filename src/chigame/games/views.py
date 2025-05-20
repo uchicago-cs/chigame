@@ -567,6 +567,19 @@ class IFGameCreateView(UserPassesTestMixin, CreateView):
         return context
 
 
+class GameDeleteView(DeleteView):
+    model = Game
+    template_name = "games/game_confirm_delete.html"
+    success_url = reverse_lazy("game-list")
+
+    def dispatch(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        # Only staff members can delete games
+        if not request.user.is_staff:
+            return HttpResponseForbidden("You don't have permission to delete this game.")
+        return super().dispatch(request, *args, **kwargs)
+
+
 class UploadFileView(View):
     def post(self, request, pk=None):
         uploaded_file = request.FILES.get("uploaded_file")
