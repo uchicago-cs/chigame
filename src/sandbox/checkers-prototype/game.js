@@ -263,6 +263,11 @@ function createPiece(x, y, color, scene) {
   // make the piece clickable
   piece.sprite.setInteractive();
   piece.sprite.on('pointerdown', () => {
+    const settingsContainer = document.getElementById('settings-container');
+
+    // don't allow piece selection if menu is open;
+    if (settingsContainer.classList.contains('show')) return;
+
     // don't allow piece selection if game is over
     if (gameOver) return;
 
