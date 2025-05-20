@@ -1,9 +1,8 @@
 from rest_framework import serializers
 
 from chigame.achievements.models import Achievement, UserAchievement
-from chigame.games.models import Category, Chat, Game, Lobby, Mechanic, Message, Review, Tournament, User
-from chigame.leaderboards.models import MetricScore
 from chigame.games.models import Category, Chat, Feedback, Game, Lobby, Mechanic, Message, Review, Tournament, User
+from chigame.leaderboards.models import MetricScore
 from chigame.users.models import Group
 
 
@@ -121,6 +120,7 @@ class AchievementSerializer(serializers.ModelSerializer):
         model = Achievement
         fields = ["id", "name", "description", "rarity", "threshold"]
 
+
 class MetricScoreSerializer(serializers.ModelSerializer):
     metric_id = serializers.IntegerField(write_only=True)
     match_id = serializers.IntegerField(write_only=True)
@@ -134,6 +134,7 @@ class MetricScoreSerializer(serializers.ModelSerializer):
         if value < 0:
             raise serializers.ValidationError("Score must be a positive integer.")
         return value
+
 
 class FeedbackSerializer(serializers.ModelSerializer):
     class Meta:

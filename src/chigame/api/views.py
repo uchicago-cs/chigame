@@ -29,9 +29,8 @@ from chigame.api.serializers import (
     UserSerializer,
 )
 from chigame.api.spam_utils import is_spam
-from chigame.games.models import Game, Lobby, Message, Review
-from chigame.leaderboards.models import LeaderboardEntry, Match, Metric, MetricScore
 from chigame.games.models import Feedback, Game, Lobby, Message, Review, Tournament
+from chigame.leaderboards.models import LeaderboardEntry, Match, Metric, MetricScore
 from chigame.users.models import Group, User, UserProfile
 
 
@@ -376,6 +375,7 @@ class AchievementCreateView(generics.CreateAPIView):
             {"message": "Achievement assigned to user!", "data": serializer.data}, status=status.HTTP_201_CREATED
         )
 
+
 class MetricScoreView(generics.ListCreateAPIView):
     """
     View to handle MetricScore creation and retrieval.
@@ -419,7 +419,7 @@ class MetricScoreView(generics.ListCreateAPIView):
             leaderboard_entry=leaderboard_entry,
         )
 
-        
+
 class FeedbackListCreateView(generics.ListCreateAPIView):
     serializer_class = FeedbackSerializer
     permission_classes = []
@@ -455,4 +455,3 @@ class FeedbackDetailView(generics.RetrieveUpdateDestroyAPIView):
         if instance.user != user:
             raise PermissionDenied("You can only delete your own feedback.")
         instance.delete()
-
