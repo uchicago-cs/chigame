@@ -1037,6 +1037,7 @@ class SimulationTests(APITestCase):
         if len(final_matches) > 0:
             self.assertIn("players", final_matches[0])
 
+
 class FeedbackTests(APITestCase):
     def setUp(self):
         self.user = UserFactory()
