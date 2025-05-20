@@ -15,6 +15,7 @@ from chigame.api.serializers import (
     AchievementSerializer,
     CategorySerializer,
     FeedbackSerializer,
+    GameReviewStatsSerializer,
     GameSerializer,
     GroupSerializer,
     LobbySerializer,
@@ -375,10 +376,11 @@ class AchievementCreateView(generics.CreateAPIView):
 class FeedbackListCreateView(generics.ListCreateAPIView):
     serializer_class = FeedbackSerializer
     permission_classes = []
+    pagination_class = PageNumberPagination
 
     def get_queryset(self):
         tournament_id = self.kwargs["pk"]
-        return Feedback.objects.filter(tournament__id=tournament_id)
+        return Feedback.objects.filter(tournament__id=tournament_id).order_by("-created_at")
 
     def perform_create(self, serializer):
         tournament_id = self.kwargs["pk"]
@@ -406,3 +408,23 @@ class FeedbackDetailView(generics.RetrieveUpdateDestroyAPIView):
         if instance.user != user:
             raise PermissionDenied("You can only delete your own feedback.")
         instance.delete()
+
+
+class GameReviewStatsAPIView(APIView):
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def get(self, request, pk):
+        game = get_object_or_404(Game, pk=pk)
+        reviews = game.reviews.filter(is_public=True)
+
+        ratings = reviews.exclude(rating__isnull=True).values_list("rating", flat=True)
+
+        avg_rating = round(sum(ratings) / len(ratings), 2) if ratings else None
+        popularity = reviews.count()
+
+        data = {
+            "average_rating": avg_rating,
+            "popularity": popularity,
+        }
+
+        return Response(GameReviewStatsSerializer(data).data)
