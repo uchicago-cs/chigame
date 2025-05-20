@@ -125,7 +125,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             text_data (str): The message data received from the client.
         """
         text_data_json = json.loads(text_data)
-        
+
         msg_type = text_data_json.get("type", "send")
         if msg_type == "send":
             message = text_data_json["message"]
