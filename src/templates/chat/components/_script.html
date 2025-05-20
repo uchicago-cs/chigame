@@ -5,22 +5,22 @@
     protocol + window.location.host + "/ws/chat/" + chatId + "/"
   );
 
-  chatSocket.onopen = function(e) {
+  chatSocket.onopen = function (e) {
     console.log("Connected to chat room:", chatId);
   };
 
-  chatSocket.onclose = function(e) {
+  chatSocket.onclose = function (e) {
     console.log("Disconnected from chat room:", chatId);
   };
 
   document.querySelector("#id_message_send_input").focus();
-  document.querySelector("#id_message_send_input").onkeyup = function(e) {
+  document.querySelector("#id_message_send_input").onkeyup = function (e) {
     if (e.key === "Enter") {
       document.querySelector("#id_message_send_button").click();
     }
   };
 
-  document.querySelector("#id_message_send_button").onclick = function(e) {
+  document.querySelector("#id_message_send_button").onclick = function (e) {
     var messageInput = document.querySelector("#id_message_send_input").value;
     if (messageInput.trim() === "") return;
 
@@ -28,7 +28,7 @@
       JSON.stringify({
         message: messageInput,
         user_id: "{{ request.user.id }}",
-        reply_to: replyToMessageId
+        reply_to: replyToMessageId,
       })
     );
 
@@ -45,7 +45,7 @@
    *
    * @param {MessageEvent} e - The message event.
    */
-  chatSocket.onmessage = function(e) {
+  chatSocket.onmessage = function (e) {
     const data = JSON.parse(e.data);
 
     // Target consistent message container using ID
@@ -53,22 +53,38 @@
 
     // Create message container
     const messageContainer = document.createElement("div");
-    messageContainer.className = `mb-3 ${data.user_id === "{{ request.user.id }}" ? "align-self-end" : "align-self-start"}`;
+    messageContainer.className = `mb-3 ${
+      data.user_id === "{{ request.user.id }}"
+        ? "align-self-end"
+        : "align-self-start"
+    }`;
     messageContainer.setAttribute("data-message-id", data.message_id);
-    const escapeHtml = (str) => str.replace(/[&<>'"]/g, (char) => ({
-      '&': '&amp;',
-      '<': '&lt;',
-      '>': '&gt;',
-      "'": '&#39;',
-      '"': '&quot;'
-    } [char]));
+    const escapeHtml = (str) =>
+      str.replace(
+        /[&<>'"]/g,
+        (char) =>
+          ({
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            "'": "&#39;",
+            '"': "&quot;",
+          }[char])
+      );
 
     const escapedUsername = escapeHtml(data.username);
     const escapedMessage = escapeHtml(data.message);
-    messageContainer.setAttribute("oncontextmenu", `showContextMenu(event, ${data.message_id}, '${escapedUsername}', '${escapedMessage}'); return false;`);
+    messageContainer.setAttribute(
+      "oncontextmenu",
+      `showContextMenu(event, ${data.message_id}, '${escapedUsername}', '${escapedMessage}'); return false;`
+    );
     // Create message bubble
     const messageBubble = document.createElement("div");
-    messageBubble.className = `${data.user_id === "{{ request.user.id }}" ? "bg-success-subtle" : "bg-white"} rounded p-2 shadow-sm`;
+    messageBubble.className = `${
+      data.user_id === "{{ request.user.id }}"
+        ? "bg-success-subtle"
+        : "bg-white"
+    } rounded p-2 shadow-sm`;
     messageBubble.style.maxWidth = "80%";
 
     // Add reply preview if this is a reply
@@ -103,8 +119,8 @@
     const timestamp = document.createElement("div");
     timestamp.className = "text-end text-muted small mt-1";
     timestamp.textContent = new Date().toLocaleTimeString([], {
-      hour: '2-digit',
-      minute: '2-digit'
+      hour: "2-digit",
+      minute: "2-digit",
     });
 
     // Assemble message
@@ -150,14 +166,6 @@
         collapseButton.classList.remove("d-none");
       } else {
         collapseButton.classList.add("d-none");
-
-        if (collapseButton) {
-          collapseButton.classList.remove("d-none");
-        }
-      } else {
-        if (collapseButton) {
-          collapseButton.classList.add("d-none");
-        }
       }
     });
   }
