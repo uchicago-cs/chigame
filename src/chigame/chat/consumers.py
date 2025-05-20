@@ -8,6 +8,7 @@ from django.core.cache import cache
 from chigame.users.models import User
 
 from .models import LiveChat, LiveChatMessage
+from .utils import ProfanityFilter
 
 # Rate limiting constants
 MESSAGES_PER_SECOND = 1  # Maximum messages allowed per second
@@ -21,6 +22,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
     It allows users to connect to a chat room and send messages to other users
     in the room.
     """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.profanity_filter = ProfanityFilter()
 
     @database_sync_to_async
     def get_live_chat(self, chat_id):
@@ -161,11 +166,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
             )
             return
 
+        # the filtered message is sent to the group - this is where the censorship happens
         await self.channel_layer.group_send(
             self.room_group_name,
             {
                 "type": "sendMessage",
-                "message": message,
+                "message": filtered_message,
                 "user_id": user_id,
                 "username": username,
             },
