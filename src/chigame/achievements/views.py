@@ -68,7 +68,7 @@ def get_pinned_achievements(request):
     }
     return JsonResponse(data)
 
-  
+
 def user_achievements(request, username=None):
     """
     Display a user's achievements page.
