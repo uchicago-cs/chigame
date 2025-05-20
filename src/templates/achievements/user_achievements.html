@@ -68,7 +68,87 @@
       margin-bottom: 20px;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     }
+    .stats-container {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      align-items: stretch;
+    }
 
+    .recent-achievements-tab {
+      position: absolute;
+      top: 15%;
+      right: 15%;
+      width: 20%;
+      background-color: var(--accent);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 0.25rem 0.25rem 0 0;
+      margin: 0;
+      font-size: 1em;
+      font-weight: normal;
+      box-sizing: border-box;
+      text-align: center;
+      z-index: 2;
+    }
+
+
+    .recent-achievements-box {
+      position: absolute;
+      top: 21%;
+      right: 15%;
+      width: 20%;
+      background-color: var(--card-bg);
+      border-radius: 0 0 5px 5px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      z-index: 1;
+    }
+
+
+    .recent-achievements-content {
+      padding: 10px;
+      max-height: 180px;
+      overflow-y: auto;
+    }
+
+    .recent-achievement-item {
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      font-size: 0.9em;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .recent-achievement-item:last-child {
+      border-bottom: none;
+    }
+
+    .recent-achievement-name {
+      font-weight: 500;
+      margin-right: 5px;
+    }
+
+    .recent-achievement-game {
+      color: #666;
+      font-style: italic;
+    }
+
+    .recent-achievement-time {
+      color: #888;
+      font-size: 0.85em;
+      white-space: nowrap;
+    }
+
+    @media (max-width: 768px) {
+
+      .user-stats,
+      .recent-achievements {
+        width: 100%;
+        float: none;
+      }
+    }
     .search-box {
       padding: 10px;
       margin-bottom: 20px;
@@ -473,6 +553,25 @@
       <div class="progress-bar">
         <div class="progress-fill-dynamic"
              data-progress="{{ overall_stats.progress|floatformat:1 }}"></div>
+      </div>
+    </div>
+        <div class="recent-achievements-tab">Recent Achievements</div>
+    <div class="recent-achievements-box">
+      <div class="recent-achievements-content">
+        {% for user_achievement in recent_achievements %}
+          <div class="recent-achievement-item">
+            <div>
+              <span class="recent-achievement-name">{{ user_achievement.achievement.name }}</span>
+              <span class="recent-achievement-game">in {{ user_achievement.achievement.game.name }}</span>
+            </div>
+            <span class="recent-achievement-time"
+                  title="{{ user_achievement.date_earned|date:"F j, Y, g:i a" }}">
+              {{ user_achievement.date_earned|timesince }} ago
+            </span>
+          </div>
+        {% empty %}
+          <p>No recent achievements found.</p>
+        {% endfor %}
       </div>
     </div>
     <ul class="nav-tabs">
