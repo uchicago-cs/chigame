@@ -301,36 +301,6 @@
       overflow-wrap: break-word;
     }
 
-    .expand-button {
-      display: inline-block;
-      color: var(--accent);
-      background-color: rgba(13, 110, 253, 0.1);
-      padding: 2px 8px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 0.85em;
-      border: none;
-      position: absolute;
-      right: 10px;
-      margin-left: 12px;
-      top: 40px;
-    }
-
-    .expand-button.hidden {
-      display: none;
-    }
-
-    .expand-button:hover {
-      background-color: rgba(13, 110, 253, 0.2);
-    }
-
-    /* When expanded, show full text */
-    .expanded .achievement-desc {
-      white-space: normal;
-      overflow: visible;
-      max-height: none;
-    }
-
     .pin-button {
       background-color: transparent;
       border: none;
