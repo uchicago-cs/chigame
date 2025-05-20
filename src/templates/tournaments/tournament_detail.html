@@ -2,11 +2,141 @@
 
 {% load static %}
 
-{% block extrahead %}
+{% block title %}
+  Tournament Details - {{ tournament.name }}
+{% endblock title %}
+{% block css %}
+  {{ block.super }}
   <link rel="stylesheet"
         type="text/css"
-        href="{% static 'tournament_styles.css' %}" />
-{% endblock extrahead %}
+        href="{% static 'css/tournament_styles.css' %}" />
+  <style>
+    .simulation-controls {
+      margin: 20px 0;
+      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      background-color: #f9f9f9;
+    }
+
+    .simulation-toggle {
+      display: inline-block;
+      padding: 8px 15px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-right: 10px;
+    }
+
+    .simulation-toggle.active {
+      background-color: #f44336;
+    }
+
+    .tournament-type {
+      margin: 10px 0;
+    }
+
+    .simulation-actions {
+      margin-top: 15px;
+    }
+
+    .simulation-actions button {
+      margin-right: 10px;
+      padding: 5px 10px;
+      background-color: #2196F3;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .tournament-bracket {
+      margin-top: 20px;
+    }
+
+    .round {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-around;
+      width: 200px;
+      margin-right: 40px;
+    }
+
+    .bracket-container {
+      display: flex;
+      overflow-x: auto;
+      padding: 20px 0;
+    }
+
+    .match {
+      margin: 10px 0;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      background-color: white;
+      position: relative;
+    }
+
+    .match.winners {
+      border-color: #4CAF50;
+    }
+
+    .match.losers {
+      border-color: #f44336;
+    }
+
+    .match.final {
+      border-color: #FFD700;
+      background-color: #FFFDE7;
+    }
+
+    .match-player {
+      padding: 5px;
+      margin: 2px 0;
+    }
+
+    .match-player.winner {
+      background-color: #E8F5E9;
+      font-weight: bold;
+    }
+
+    .match-player.loser {
+      color: #999;
+    }
+
+    .simulate-match-btn {
+      margin-top: 5px;
+      padding: 2px 5px;
+      font-size: 12px;
+      background-color: #2196F3;
+      color: white;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+
+    .bracket-title {
+      font-weight: bold;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    .tournament-winner {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #FFFDE7;
+      border: 2px solid #FFD700;
+      border-radius: 5px;
+      text-align: center;
+    }
+
+    .inline-form {
+      display: inline;
+    }
+  </style>
+{% endblock css %}
 {% block content %}
   <div class="tournament-header">
     <h1 class="tournament-name">
@@ -50,6 +180,71 @@
       {% endif %}
     {% endif %}
   </div>
+  <!-- Tournament Simulation Controls -->
+  <div class="simulation-controls">
+    <h2>Tournament Simulation</h2>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="tournament_id" value="{{ tournament.id }}" />
+      <input type="hidden" name="action" value="toggle_simulation_mode" />
+      <button type="submit"
+              class="simulation-toggle {% if simulation_mode %}active{% endif %}">
+        {% if simulation_mode %}
+          Deactivate
+        {% else %}
+          Activate
+        {% endif %}
+        Simulation Mode
+      </button>
+    </form>
+    {% if simulation_mode %}
+      <div class="tournament-type">
+        <form method="post">
+          {% csrf_token %}
+          <input type="hidden" name="tournament_id" value="{{ tournament.id }}" />
+          <input type="hidden" name="action" value="set_tournament_type" />
+          <label>
+            <input type="radio"
+                   name="tournament_type"
+                   value="single"
+                   {% if simulation_type == "single" %}checked{% endif %} />
+            Single Elimination
+          </label>
+          <label>
+            <input type="radio"
+                   name="tournament_type"
+                   value="double"
+                   {% if simulation_type == "double" %}checked{% endif %} />
+            Double Elimination
+          </label>
+          <label>
+            <input type="radio"
+                   name="tournament_type"
+                   value="round_robin"
+                   {% if simulation_type == "round_robin" %}checked{% endif %} />
+            Round Robin
+          </label>
+          <label>
+            <input type="radio"
+                   name="tournament_type"
+                   value="multi_stage"
+                   {% if simulation_type == "multi_stage" %}checked{% endif %} />
+            Multi-Stage
+          </label>
+          <button type="submit">Set Tournament Type</button>
+        </form>
+      </div>
+    {% endif %}
+    {% if simulation_mode %}
+      {% if simulation_type == "single" or simulation_type == "double" %}
+        {% include "tournaments/single_double_detail.html" %}
+      {% elif simulation_type == "round_robin" %}
+        {% include "tournaments/round_robin_detail.html" %}
+      {% elif simulation_type == "multi_stage" %}
+        {% include "tournaments/multi_stage_detail.html" %}
+      {% endif %}
+    {% endif %}
+  </div>
   <p>Game: {{ tournament.game }}</p>
   <p>Registration Start Date: {{ tournament.registration_start_date }}</p>
   <p>Registration End Date: {{ tournament.registration_end_date }}</p>
@@ -90,27 +285,43 @@
       {% endfor %}
     </ul>
   {% endif %}
-  <!-- You can add more fields as needed -->
   <p>Matches:</p>
   {% if tournament.get_all_matches %}
-    <ul>
+    <ul class="match-list">
       {% for match in tournament.get_all_matches %}
-        <li>
-          <p>
-            Match (
-            {% for player in match.players.all %}
-              {% if player.name %}
-                <a href="{% url 'users:detail' player.id %}">{{ player.name }}</a>
-              {% else %}
-                <a href="{% url 'users:detail' player.id %}">{{ player.email }}</a>
-              {% endif %}
-              {% if not forloop.last %}vs.{% endif %}
-            {% empty %}
-              Forfeited
-            {% endfor %}
-            )
-          </p>
-          <!-- You can add more fields as needed -->
+        <li class="match-item">
+          <div class="match-info">
+            <p class="match-players">
+              Match (
+              {% for player in match.players.all %}
+                {% if player.name %}
+                  <a href="{% url 'users:detail' player.id %}">{{ player.name }}</a>
+                {% else %}
+                  <a href="{% url 'users:detail' player.id %}">{{ player.email }}</a>
+                {% endif %}
+                {% if not forloop.last %}vs.{% endif %}
+              {% empty %}
+                Forfeited
+              {% endfor %}
+              )
+            </p>
+            <p class="match-status">Status: {{ match.lobby.get_match_status_display }}</p>
+            {% if match.lobby.match_status == match.lobby.Viewable %}
+              <p class="match-in-progress">Match in progress</p>
+            {% elif match.lobby.match_status == match.lobby.Finished %}
+              <p class="match-finished">Match finished</p>
+            {% else %}
+              <p class="match-waiting">Waiting for players ({{ match.lobby.members.count }}/{{ match.players.count }})</p>
+            {% endif %}
+            {% if user in match.players.all and tournament.status == "tournament in progress" and match.lobby.match_status != match.lobby.Viewable %}
+              <form method="post" class="join-match-form">
+                {% csrf_token %}
+                <input type="hidden" name="tournament_id" value="{{ tournament.id }}" />
+                <input type="hidden" name="action" value="join_match" />
+                <button type="submit" class="join-match-button">Join Match</button>
+              </form>
+            {% endif %}
+          </div>
         </li>
       {% endfor %}
     </ul>
@@ -152,7 +363,6 @@
       <button>{{ tournament.name }} Chat</button>
     </a>
   {% endif %}
-  <!-- You can add more fields as needed -->
   {% if user.is_staff %}
     <p>
       <a href="{% url 'tournament-delete' tournament.id %}">Delete</a>

@@ -1,0 +1,23 @@
+{
+  "name": "my-vue-app",
+  "version": "1.0.0",
+  "description": "A simple Vue.js application with a navigation bar",
+  "main": "src/main.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "serve": "vite preview"
+  },
+  "dependencies": {
+    "axios": "^1.9.0",
+    "vue": "^3.2.0",
+    "vue-router": "^4.5.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.2.3",
+    "vite": "^6.3.2"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT"
+}

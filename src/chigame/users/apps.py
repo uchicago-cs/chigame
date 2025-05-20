@@ -8,6 +8,6 @@ class UsersConfig(AppConfig):
 
     def ready(self):
         try:
-            import chigame.users.signals  # noqa: F401
+            import chigame.users.signals  # noqa: F401, only way to make the linter happy
         except ImportError:
             pass

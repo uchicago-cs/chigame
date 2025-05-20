@@ -66,8 +66,14 @@ class BaseNotificationFactory(DjangoModelFactory):
             Notification.FRIEND_REQUEST,
             Notification.REMINDER,
             Notification.UPCOMING_MATCH,
-            Notification.MATCH_PROPOSAL,
+            Notification.MATCH_INVITATION,
             Notification.GROUP_INVITATION,
+            Notification.ACHIEVEMENT,
+            Notification.TOURNAMENT_INVITATION,
+            Notification.TOURNAMENT_INVITATION_ACCEPTED,
+            Notification.TOURNAMENT_STARTING,
+            Notification.TOURNAMENT_ROUND_COMPLETED,
+            Notification.TOURNAMENT_COMPLETED,
         ],
     )
     read = False

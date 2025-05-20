@@ -1,6 +1,7 @@
 """
 Base settings to build other settings files upon.
 """
+
 from pathlib import Path
 
 import environ
@@ -62,10 +63,14 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 ROOT_URLCONF = "config.urls"
 # https://docs.djangoproject.com/en/dev/ref/settings/#wsgi-application
 WSGI_APPLICATION = "config.wsgi.application"
+# https://docs.djangoproject.com/en/dev/ref/settings/#asgi-application
+ASGI_APPLICATION = "config.asgi.application"
 
 # APPS
 # ------------------------------------------------------------------------------
 DJANGO_APPS = [
+    "daphne",  # Daphne must be listed before django.contrib.staticfiles
+    "channels",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
@@ -77,6 +82,8 @@ DJANGO_APPS = [
     "rest_framework",
     "django_filters",
     "django_tables2",
+    "rest_framework_simplejwt",
+    "corsheaders",
 ]
 THIRD_PARTY_APPS = [
     "crispy_forms",
@@ -108,8 +115,11 @@ LOCAL_APPS = [
     "chigame.games",
     # Additional apps go here
     "chigame.api",
+    "chigame.achievements",
     "chigame.forums.base",
     "chigame.knowledge_base",
+    "chigame.leaderboards",
+    "chigame.chat",
     # Overridden django-machina apps
     "chigame.forums.forum_conversation",
 ]
@@ -156,6 +166,7 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.locale.LocaleMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -164,6 +175,7 @@ MIDDLEWARE = [
     "allauth.account.middleware.AccountMiddleware",
     # https://django-machina.readthedocs.io/en/latest/getting_started.html#django-settings
     "machina.apps.forum_permission.middleware.ForumPermissionMiddleware",
+    "chigame.forums.middleware.ForumAccessMiddleware",
 ]
 
 # STATIC
@@ -222,6 +234,7 @@ TEMPLATES = [
                 "chigame.users.context_processors.allauth_settings",
                 # https://django-machina.readthedocs.io/en/latest/getting_started.html#django-settings
                 "machina.core.context_processors.metadata",
+                "chigame.users.context_processors.user_notifications",
             ],
             "loaders": [
                 # https://django-machina.readthedocs.io/en/latest/getting_started.html#django-settings
@@ -329,7 +342,15 @@ SOCIALACCOUNT_FORMS = {"signup": "chigame.users.forms.UserSocialSignupForm"}
 REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 10,
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ],
 }
+
+CORS_ALLOWED_ORIGINS = [
+    # Vue frontend URL
+    "http://localhost:5173",
+]
 
 # DJANGO-MACHINA SETTINGS
 # ------------------------------------------------------------------------------
@@ -383,3 +404,13 @@ MACHINA_DEFAULT_AUTHENTICATED_USER_FORUM_PERMISSIONS = [
     "can_vote_in_polls",
     "can_download_file",
 ]
+
+# CHANNELS
+# ------------------------------------------------------------------------------
+# https://channels.readthedocs.io/en/stable/topics/channel_layers.html
+CHANNEL_LAYERS = {"default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}}
+
+
+# for interactive fiction -  game hosting media url
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
