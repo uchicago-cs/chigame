@@ -696,11 +696,13 @@ def upload_profile_photo(request):
 def move_notification(request, pk):
     notification = get_object_or_404(Notification, pk=pk, receiver=request.user)
     new_category = request.POST.get("category")
+    next_category = request.POST.get("next") or "inbox"  # fallback to inbox if not provided
+
     if new_category and new_category in dict(Notification.CATEGORY_CHOICES):
         notification.category = new_category
         notification.save()
         messages.success(request, f"Notification moved to {new_category}.")
-        return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
+        return redirect("users:user-inbox-category", pk=request.user.pk, category=next_category)
 
     label_id = request.POST.get("label_id")
     if label_id:
@@ -710,10 +712,11 @@ def move_notification(request, pk):
             messages.success(request, "Label assigned to notification.")
         except NotificationLabel.DoesNotExist:
             messages.error(request, "Label not found or does not belong to you.")
-        return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
+        return redirect("users:user-inbox-category", pk=request.user.pk, category=next_category)
 
     messages.error(request, "Invalid category or label.")
-    return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
+    return redirect("users:user-inbox-category", pk=request.user.pk, category=next_category)
+
 
 
 @login_required

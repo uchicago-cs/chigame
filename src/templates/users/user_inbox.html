@@ -117,6 +117,7 @@
                                 <form method="POST" action="{% url 'users:move-notification' notification.pk %}">
                                   {% csrf_token %}
                                   <input type="hidden" name="category" value="{{ key }}">
+                                  <input type="hidden" name="next" value="{{ active_category }}">
                                   <button type="submit" class="dropdown-item">{{ label }}</button>
                                 </form>
                               </li>
