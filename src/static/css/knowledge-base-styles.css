@@ -6,6 +6,7 @@
   position: sticky;
   top: 0;
   z-index: 99;
+  background-color: red;
 }
 
 .knowledge-base-nav-container > div {
@@ -35,6 +36,10 @@
 
 .knowledge-base .page-content {
   padding: 10px;
+}
+
+.landing-page-feedback-alert-header {
+    margin-bottom: 0;
 }
 
 /* In Contributor Manage Guide Page */
@@ -151,8 +156,6 @@ a.upload-button:active {
 .maroon {
   color: #7F1616;
 }
-
-
 
 /* This is added for backend viewer landing page. Pls replace this when styling
  in front end. */
