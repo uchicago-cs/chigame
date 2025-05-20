@@ -3,8 +3,7 @@
 {% load static %}
 
 {% block title %}
-  ChiGame - {{ user_profile.username
-  }}'s Achievements
+  ChiGame - {{ user_profile.name}}'s Achievements
 {% endblock title %}
 {% block css %}
   {{ block.super }}
@@ -24,11 +23,11 @@
       <div class="user-avatar">
         {% if user_profile.avatar %}
           <img src="{{ user_profile.avatar.url }}"
-               alt="{{ user_profile.username }}'s avatar" />
+               alt="{{ user_profile.name }}'s avatar" />
         {% else %}
           <span class="large-avatar">
-            {% if user_profile.username %}
-              {{ user_profile.username|first|upper }}
+            {% if user_profile.name %}
+              {{ user_profile.name|first|upper }}
             {% elif user_profile.email %}
               {{ user_profile.email|first|upper }}
             {% else %}
@@ -38,7 +37,7 @@
         {% endif %}
       </div>
       <div>
-        <h3>{{ user_profile.username }}'s Achievements</h3>
+        <h3>{{ user_profile.name }}'s Achievements</h3>
         <p>Member since {{ join_date }}</p>
       </div>
       {% if not viewing_own_profile %}
