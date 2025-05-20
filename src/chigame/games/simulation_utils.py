@@ -243,6 +243,8 @@ class TournamentSimulator:
         Returns:
             The User object of the tournament winner, or None if the tournament is not complete
         """
+        if not self.simulated_matches:
+            return None
         if self.is_double_elimination and self.simulated_final_match:
             return self.simulated_final_match["winner"]
 
