@@ -18,6 +18,7 @@ game_patterns = [
         name="api-user-achievement-assignment",
     ),
     path("<int:pk>/achievements/create/", views.AchievementCreateView.as_view(), name="api-game-achievement-create"),
+    path("<int:pk>/review-stats/", views.GameReviewStatsAPIView.as_view(), name="api-game-review-stats"),
 ]
 
 lobby_patterns = [
@@ -35,12 +36,17 @@ user_patterns = [
 tournament_patterns = [
     path("chat/", views.MessageView.as_view(), name="api-chat-list"),
     path("chat/feed/", views.MessageFeedView.as_view(), name="api-chat-detail"),
+    path("<int:pk>/simulate/", views.TournamentSimulationView.as_view(), name="api-tournament-simulate"),
+    path("<int:pk>/feedback/", views.FeedbackListCreateView.as_view(), name="api-feedback-list-create"),
+    path("feedback/<int:pk>/", views.FeedbackDetailView.as_view(), name="api-feedback-detail"),
 ]
 
 group_patterns = [
     path("", views.GroupListView.as_view(), name="api-group-list"),
     path("<int:pk>/", views.GroupDetailView.as_view(), name="api-group-detail"),
     path("<int:pk>/members/", views.GroupMembersView.as_view(), name="api-group-members"),
+    path("<int:pk>/join/", views.GroupJoinView.as_view(), name="api-group-join"),
+    path("<int:pk>/leave/", views.GroupLeaveView.as_view(), name="api-group-leave"),
 ]
 
 login_patterns = [
