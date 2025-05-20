@@ -8,8 +8,10 @@
     <ul class="nav-links">
       <li><router-link to="/">Home</router-link></li>
       <li><router-link to="/about">About</router-link></li>
+      <li><router-link to="/games">Games</router-link></li>
       <li><router-link to="/forums">Forums</router-link></li>
       <li><router-link to="/lobbies">Lobbies</router-link></li>
+      <li><router-link to="/profile">Profile</router-link></li>
     </ul>
 
     <div class="search-bar">
