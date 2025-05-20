@@ -260,3 +260,35 @@ a {
 .bulk-op-buttons {
   margin-bottom: 10px;
 }
+
+.dropdown-item {
+  position: relative;
+  padding: 8px;
+  cursor: pointer;
+}
+
+.dropdown-submenu {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 100%;
+  background: white;
+  border: 1px solid #ccc;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  z-index: 1001;
+}
+
+.dropdown-item:hover>.dropdown-submenu {
+  display: block;
+}
+
+.dropdown-submenu li {
+  padding: 8px;
+  cursor: pointer;
+}
+
+.dropdown-submenu li:hover {
+  background-color: #f0f0f0;
+}

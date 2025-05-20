@@ -112,14 +112,12 @@
 
                             <!-- Move to Category -->
                             <li class="dropdown-header">Move to Category</li>
-                            {% for key, label in category_choices %}
+                            {% for key, dd_cat_label_text in category_choices %}  
                               <li>
-                                <form method="POST" action="{% url 'users:move-notification' notification.pk %}">
-                                  {% csrf_token %}
-                                  <input type="hidden" name="category" value="{{ key }}">
-                                  <input type="hidden" name="next" value="{{ active_category }}">
-                                  <button type="submit" class="dropdown-item">{{ label }}</button>
-                                </form>
+                                <button type="button" class="dropdown-item"
+                                        onclick="jsMoveNotification('{{ notification.pk }}', '{{ key }}', '{{ active_category }}', '{% url 'users:move-notification' notification.pk %}')">
+                                  {{ dd_cat_label_text }}
+                                </button>
                               </li>
                             {% endfor %}
 
@@ -127,13 +125,12 @@
 
                             <!-- Assign Label -->
                             <li class="dropdown-header">Assign Label</li>
-                            {% for label in labels %}
+                            {% for label_obj_dd in labels %}
                               <li>
-                                <form method="POST" action="{% url 'users:assign-label-to-notification' notification.pk %}">
-                                  {% csrf_token %}
-                                  <input type="hidden" name="label_id" value="{{ label.id }}">
-                                  <button type="submit" class="dropdown-item">{{ label.name }}</button>
-                                </form>
+                                <button type="button" class="dropdown-item"
+                                        onclick="jsAssignLabel('{{ notification.pk }}', '{{ label_obj_dd.id }}', '{% url 'users:assign-label-to-notification' notification.pk %}')">
+                                  {{ label_obj_dd.name }}
+                                </button>
                               </li>
                             {% endfor %}
                           </ul>
@@ -149,119 +146,59 @@
       </div>
     </div>
   </div>
-  <div id="contextMenu" class="context-menu">
-    <ul>
-      <li class="dropdown-item">
-        Move ▸
-        <ul class="dropdown-submenu">
-          {% for key, label in notifications.first.CATEGORY_CHOICES %}
-            <li onclick="changeCategory('{{ key }}')">{{ label }}</li>
-          {% endfor %}
-        </ul>
-      </li>
-    </ul>
-  </div>
   <meta name="csrf-token" content="{{ csrf_token }}" />
-  <style>
-    .context-menu {
-      display: none;
-      position: absolute;
-      background: white;
-      border: 1px solid #ccc;
-      z-index: 1000;
-    }
-
-    .dropdown-item {
-      position: relative;
-      padding: 8px;
-      cursor: pointer;
-    }
-
-    .dropdown-submenu {
-      display: none;
-      position: absolute;
-      top: 0;
-      left: 100%;
-      background: white;
-      border: 1px solid #ccc;
-      list-style: none;
-      padding: 0;
-      margin: 0;
-      z-index: 1001;
-    }
-
-    .dropdown-item:hover>.dropdown-submenu {
-      display: block;
-    }
-
-    .dropdown-submenu li {
-      padding: 8px;
-      cursor: pointer;
-    }
-
-    .dropdown-submenu li:hover {
-      background-color: #f0f0f0;
-    }
-  </style>
   <script>
-    const notificationItems = document.querySelectorAll('.notification-container');
-    notificationItems.forEach(function(notificationItem) {
-      const buttonContainer = notificationItem.querySelector('.button-container');
-      buttonContainer.style.display = "none";
-      notificationItem.addEventListener("mouseover", function(event) {
-        if (buttonContainer) {
-          buttonContainer.style.display = 'flex';
-        }
-      });
+    function jsMoveNotification(notificationPk, targetCategory, currentCategory, actionUrl) {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        const formData = new FormData();
+        formData.append('category', targetCategory);
+        formData.append('next', currentCategory);
 
-      notificationItem.addEventListener("mouseout", function(event) {
-        if (buttonContainer) {
-          buttonContainer.style.display = 'none';
-        }
-      });
-    });
-
-    let selectedNotificationId = null;
-
-    function openContextMenu(event, notifId) {
-      event.preventDefault();
-      selectedNotificationId = notifId;
-
-      const menu = document.getElementById("contextMenu");
-      menu.style.left = `${event.pageX}px`;
-      menu.style.top = `${event.pageY}px`;
-      menu.style.display = "block";
-    }
-
-    function changeCategory(category) {
-      const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-      fetch(`/users/notifications/${selectedNotificationId}/move/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'X-CSRFToken': csrfToken,
-        },
-        body: new URLSearchParams({
-          category: category
+        fetch(actionUrl, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken
+            },
+            body: formData
         })
-      }).then(() => {
-        window.location.reload();
-      });
-      document.getElementById("contextMenu").style.display = "none";
+        .then(response => {
+            if (response.ok) {
+                window.location.href = response.url;
+            } else {
+                console.error('Move notification failed. Status:', response.status);
+                alert('Failed to move notification. Please try again.');
+            }
+        })
+        .catch(error => {
+            console.error('Error during move notification:', error);
+            alert('An error occurred while moving notification. Please try again.');
+        });
     }
 
-    document.addEventListener('click', () => {
-      document.getElementById("contextMenu").style.display = "none";
-    });
+    function jsAssignLabel(notificationPk, labelId, actionUrl) {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        const formData = new FormData();
+        formData.append('label_id', labelId); 
 
-    function openContextMenuFromButton(event, notifId) {
-      event.stopPropagation(); // Prevent document click from hiding the menu
-      selectedNotificationId = notifId;
-
-      const menu = document.getElementById("contextMenu");
-      menu.style.left = `${event.pageX}px`;
-      menu.style.top = `${event.pageY}px`;
-      menu.style.display = "block";
+        fetch(actionUrl, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken
+            },
+            body: formData
+        })
+        .then(response => {
+            if (response.ok) {
+                window.location.href = response.url;
+            } else {
+                console.error('Assign label failed. Status:', response.status);
+                alert('Failed to assign label. Please try again.');
+            }
+        })
+        .catch(error => {
+            console.error('Error during assign label:', error);
+            alert('An error occurred while assigning label. Please try again.');
+        });
     }
   </script>
 {% endblock content %}
