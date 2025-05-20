@@ -97,12 +97,47 @@
                         </a>
 
 
-                      <a href="#"
-                        onclick="openContextMenuFromButton(event, '{{ notification.id }}'); return false;"
-                        class="text-muted text-decoration-none"
-                        title="Move">
-                        <i class="bi bi-folder2-open"></i>
-                      </a>
+                        <!-- Custom dropdown triggered by icon link -->
+                        <div class="dropdown">
+                          <a href="#"
+                            class="text-muted text-decoration-none"
+                            title="Move"
+                            role="button"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                            <i class="bi bi-folder2-open icon-lg"></i>
+                          </a>
+
+                          <ul class="dropdown-menu dropdown-menu-end">
+
+                            <!-- Move to Category -->
+                            <li class="dropdown-header">Move to Category</li>
+                            {% for key, label in category_choices %}
+                              <li>
+                                <form method="POST" action="{% url 'users:move-notification' notification.pk %}">
+                                  {% csrf_token %}
+                                  <input type="hidden" name="category" value="{{ key }}">
+                                  <button type="submit" class="dropdown-item">{{ label }}</button>
+                                </form>
+                              </li>
+                            {% endfor %}
+
+                            <li><hr class="dropdown-divider"></li>
+
+                            <!-- Assign Label -->
+                            <li class="dropdown-header">Assign Label</li>
+                            {% for label in labels %}
+                              <li>
+                                <form method="POST" action="{% url 'users:assign-label-to-notification' notification.pk %}">
+                                  {% csrf_token %}
+                                  <input type="hidden" name="label_id" value="{{ label.id }}">
+                                  <button type="submit" class="dropdown-item">{{ label.name }}</button>
+                                </form>
+                              </li>
+                            {% endfor %}
+                          </ul>
+                        </div>
+
                     {% endif %}
                   </div>
                 </div>
