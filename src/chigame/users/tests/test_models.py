@@ -3,7 +3,13 @@ from django.core.exceptions import ValidationError
 
 from chigame.users.models import FriendInvitation, Notification, User, UserProfile
 
-from .factories import FriendInvitationFactory, FriendInvitationNotificationFactory, UserFactory
+from .factories import (
+    FriendInvitationFactory,
+    FriendInvitationNotificationFactory,
+    GroupFactory,
+    GroupInvitationFactory,
+    UserFactory,
+)
 
 
 def test_user_get_absolute_url(user: User):
@@ -58,6 +64,55 @@ def test_one_active_one_deleted_invitation():
     # Only one active invitation
     active_invitations = FriendInvitation.objects.filter(sender=sender, receiver=receiver, is_deleted=False)
     assert active_invitations.count() == 1
+
+
+@pytest.mark.django_db
+def test_friendinvitation_accept_invitation():
+    # Test that after accepting invitation, sender and receiver become friends
+    sender = UserFactory()
+    receiver = UserFactory()
+    invitation = FriendInvitationFactory(sender=sender, receiver=receiver, is_deleted=False)
+    invitation.accept_invitation()
+    assert invitation.accepted is True
+    assert sender.friends.filter(pk=receiver.pk).exists()
+    assert receiver.friends.filter(pk=sender.pk).exists()
+
+
+@pytest.mark.django_db
+def test_friendinvitation_delete_invitation():
+    # Test that after deleting invitation, sender and receiver are not friends
+    # Also ensure that the invitation is soft deleted
+    sender = UserFactory()
+    receiver = UserFactory()
+    invitation = FriendInvitationFactory(sender=sender, receiver=receiver, is_deleted=False)
+    invitation.delete()
+    assert invitation.is_deleted is True
+    assert not sender.friends.filter(pk=receiver.pk).exists()
+    assert not receiver.friends.filter(pk=sender.pk).exists()
+
+
+@pytest.mark.django_db
+def test_groupinvitation_accept_invitation():
+    # Test that after accepting group invitation, receiver is added to group
+    sender = UserFactory()
+    receiver = UserFactory()
+    group = GroupFactory(created_by=sender)
+    invitation = GroupInvitationFactory(friend_group=group, sender=sender, receiver=receiver, is_deleted=False)
+    invitation.accept_invitation()
+    assert invitation.accepted is True
+    assert group.members.filter(pk=receiver.pk).exists()
+
+
+@pytest.mark.django_db
+def test_groupinvitation_delete_invitation():
+    # Test that after deleting invitation, receiver is not in group
+    sender = UserFactory()
+    receiver = UserFactory()
+    group = GroupFactory(created_by=sender)
+    invitation = GroupInvitationFactory(sender=sender, receiver=receiver, is_deleted=False)
+    invitation.delete()
+    assert invitation.is_deleted is True
+    assert not group.members.filter(pk=receiver.pk).exists()
 
 
 @pytest.mark.django_db
