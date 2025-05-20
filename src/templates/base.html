@@ -206,7 +206,7 @@
                               <div class="notification-icon d-flex align-items-start">
                                 <i class="{{ n.get_icon_class }} me-2"></i>
                                 <div>
-                                  <span class="notification-strong">{{ n.get_rich_message|truncatewords:15 }}</span>
+                                  <span class="dropdown-notification-strong">{{ n.get_sender_display }} {{ n.get_rich_message|truncatewords:15 }}</span>
                                   <br />
                                   <small class="text-muted">{{ n.last_sent|timesince }} ago</small>
                                 </div>

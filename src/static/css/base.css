@@ -44,7 +44,7 @@ a.nav-link:hover {
   border: none;
   color: #fff;
   padding: 0.5rem 1.25rem;
-  border-radius: 0.25rem; /* 4px */
+  border-radius: 0.25rem;
   font-weight: 500;
   transition: background-color 0.2s ease, box-shadow 0.2s ease;
 }

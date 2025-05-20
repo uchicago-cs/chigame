@@ -55,6 +55,12 @@
   flex: 1;
 }
 
+.message-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
 
 .notifications-dropdown {
   width: 320px;
@@ -117,7 +123,7 @@
   background-color: #ffffff;
 }
 
-.notification-unread .notification-strong {
+.notification-unread .dropdown-notification-strong {
     font-weight: bold;
     color: #000;
 }
@@ -131,13 +137,14 @@
 }
 
 
-.notification-strong {
+.dropdown-notification-strong {
     margin-left: 10px;
     display: inline-block;
     white-space: normal;
     word-wrap: break-word;
     overflow-wrap: break-word;
     text-decoration: none;
+    color:black;
 }
 
 a {
@@ -147,4 +154,28 @@ a {
 .dropdown {
   border-radius: 4px;
   padding: .1rem;
+}
+
+.message-title{
+    text-decoration: none;
+    color:black;
+}
+
+.message-title:hover{
+    color: #800000;
+}
+
+.sender-minimal {
+  font-size: 0.9rem;
+  color: #333;           /* dark but softer than full black */
+  font-weight: 600;      /* medium weight */
+  letter-spacing: 0.1px;
+  margin-left: 0.25rem;
+  margin-right: 0.35rem;
+}
+
+.sender-minimal::after {
+  content: " |";
+  color: rgba(108, 117, 125, 0.3);  /* lighter than text */
+  margin-left: 0.4rem;
 }
