@@ -279,6 +279,10 @@ class ReviewPendingGuideView(LoginRequiredMixin, UserPassesTestMixin, DetailView
         return redirect("knowledge-base-moderator")
 
 
+def faq_view(request):
+    return render(request, "knowledge-base/faq.html")
+
+
 class ModeratorListByGame(LoginRequiredMixin, UserPassesTestMixin, ListView):
     model = Game
     template_name = "knowledge-base/moderator_game_list.html"
