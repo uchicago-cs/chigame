@@ -524,6 +524,9 @@ class TournamentListView(ListView):
 
     def get(self, request, *args, **kwargs):
         super().get(request, *args, **kwargs)
+        print("get tournament list")
+        print(self.object_list)
+        print(self.get_queryset())
         for tournament in self.object_list:
             tournament.check_and_end_tournament()  # check if the tournament has ended
         return self.render_to_response(self.get_context_data())
@@ -1368,6 +1371,7 @@ def tournament_feedback_list(request, tournament_id):
 
     # Retrieve feedback for the tournament
     feedback_list = Feedback.objects.filter(tournament=tournament).order_by("-created_at")
+    print("feedback list", feedback_list)
     return render(
         request,
         "tournaments/tournament_feedback_list.html",
