@@ -214,5 +214,35 @@
     "date_joined": "2023-10-26T13:53:08.045Z",
     "friends": []
   }
+},
+{
+  "model": "users.group",
+  "pk": 1,
+  "fields": {
+    "name": "Default Group",
+    "description": "This is a default group for users.",
+    "created_by": 1,
+    "date_created": "2023-10-30T03:31:56.761Z"
+  }
+},
+{
+  "model": "users.group",
+  "pk": 2,
+  "fields": {
+    "name": "Adventure Gamers",
+    "description": "This is a group for people that love adventure games.",
+    "created_by": 1,
+    "date_created": "2023-10-30T03:31:56.761Z"
+  }
+},
+{
+  "model": "users.group",
+  "pk": 3,
+  "fields": {
+    "name": "Generic Word Game Lovers",
+    "description": "This is a group for people that love generic word game.",
+    "created_by": 1,
+    "date_created": "2023-10-30T03:31:56.761Z"
+  }
 }
 ]
