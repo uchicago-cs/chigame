@@ -98,6 +98,10 @@ main {
     justify-content: center;
 }
 
+#change-length-btn {
+    font-size: 0.8rem;
+}
+
 .nav-btn:hover {
     background-color: var(--primary-hover);
     transform: translateY(-2px);
@@ -586,7 +590,7 @@ h1 {
     box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.4);
 }
 
-/* Settings */
+
 .settings-screen {
     background-color: var(--card-bg);
     color: var(--text);
@@ -671,6 +675,7 @@ h1 {
     visibility: visible;
 }
 
+
 body.dark-mode {
     --card-bg: #c4c4c4;
     --text: #000000;
@@ -683,53 +688,4 @@ body.dark-mode {
 body.colorblind-mode {
     --primary: #0000FF;
     --accent: #FF8000;
-}
-
-/* Login Container */
-.login-container {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  margin-left: 0.5rem;
-}
-
-/* Login Form */
-.login-form {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-}
-
-/* Username Input */
-.login-input {
-  padding: 0.3rem;
-  border-radius: 3px;
-  border: 1px solid #ccc;
-  background: var(--bg-dark);
-  color: var(--text);
-}
-
-/* Login Button */
-.login-button {
-  padding: 0.3rem 0.7rem;
-  border-radius: 3px;
-  background: var(--primary);
-  color: white;
-  border: none;
-}
-
-/* User Info */
-.user-info {
-  display: none;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-/* Logout Button */
-.logout-button {
-  padding: 0.3rem 0.7rem;
-  border-radius: 3px;
-  background: var(--primary);
-  color: white;
-  border: none;
 }

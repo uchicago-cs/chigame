@@ -4,6 +4,26 @@ window.addEventListener("load", async () => {
     const startBtn = document.getElementById("start-game-btn");
 
     startBtn.addEventListener("click", async () => {
+        // Reset game state if we're changing length in the middle of a game
+        // Reset game state
+        guessedWords = [[]];
+        greenLetters = {};
+        yellowLetters = new Set();
+        availableSpace = 1;
+        guessedWordCount = 0;
+        gameOver = false;
+
+        // Clear the keyboard colors
+        const keys = document.querySelectorAll(".keyboard-row button");
+        keys.forEach(key => {
+            key.style.backgroundColor = "";
+            key.style.color = "";
+        });
+
+        // Clear the board
+        const gameBoard = document.getElementById("board");
+        gameBoard.innerHTML = "";
+
         wordLength = parseInt(selector.value);
         modal.style.display = "none";
 
@@ -11,8 +31,10 @@ window.addEventListener("load", async () => {
         createSquares();
         getNewWord();
         setupKeyboard();
-        handlePhysicalKeyboardInput();
     });
+
+    // Attach the single physical keyboard handler once after DOM is loaded
+    document.addEventListener('keydown', gameKeyDownHandler);
 });
 
 //Buttons (How To Play and Settings)!
@@ -20,6 +42,73 @@ const howToPlayBtn = document.getElementById('how-to-play-btn');
 const howToPlayText = document.getElementById('how-to-play-text');
 const settingsBtn = document.getElementById('settings-btn');
 const settingsScreen = document.getElementById('settings');
+const changeLengthBtn = document.getElementById('change-length-btn'); // Get reference to existing button in HTML
+
+// Single event handler for physical keyboard input
+function gameKeyDownHandler(e) {
+    const modal = document.getElementById("word-length-modal");
+    // Check if modal is visible
+    if (modal.style.display === "flex") {
+        if (e.key === "Enter") {
+            // Allow Enter to submit the modal
+            document.getElementById("start-game-btn").click();
+        }
+        return; // Stop processing game keys if modal is open
+    }
+
+    const key = e.key.toLowerCase();
+
+    // Only play sound for valid game interaction keys
+    if (key === "enter" || key === "backspace" || /^[a-z]$/.test(key)) {
+        playSound(clickSound);
+    }
+
+    if (key === "enter") {
+        handleSubmitWord();
+        return;
+    }
+
+    if (key === "backspace") {
+        handleDeleteLetter();
+        return;
+    }
+
+    if (/^[a-z]$/.test(key)) {
+        updateGuessedWords(key);
+    }
+}
+
+// Handle Change Length button
+changeLengthBtn.addEventListener('click', () => {
+    const modal = document.getElementById("word-length-modal");
+    const selector = document.getElementById("word-length-selector");
+
+    selector.value = wordLength ? wordLength.toString() : "5"; // Ensure wordLength exists or default
+    modal.style.display = "flex";
+
+    settingsScreen.classList.add('hidden');
+    howToPlayText.classList.remove('visible');
+    howToPlayText.classList.add('hidden');
+    howToPlayBtn.textContent = "How to Play ▼";
+});
+
+// Close the modal when clicking outside of it
+window.addEventListener('click', (event) => {
+    const modal = document.getElementById("word-length-modal");
+    const gameBoard = document.getElementById("board");
+
+    // Check if the click is on the modal overlay itself, not its content
+    // Also check if the game has been initialized (board has children)
+    if (event.target === modal) {
+        // Only allow closing by clicking outside if the game board has been created
+        if (gameBoard && gameBoard.children.length > 0) {
+            modal.style.display = "none";
+        } else {
+            // Optionally show a notification that they need to select a length first
+            showNotification("Please select a word length first", 1500);
+        }
+    }
+});
 
 // Handle How to Play toggle
 howToPlayBtn.addEventListener('click', () => {
@@ -130,26 +219,6 @@ function setupKeyboard() {
     }
 }
 
-function handlePhysicalKeyboardInput() {
-    document.addEventListener('keydown', (e) => {
-        const key = e.key.toLowerCase();
-        playSound(clickSound);
-
-        if (key === "enter") {
-            handleSubmitWord();
-            return;
-        }
-
-        if (key === "backspace") {
-            handleDeleteLetter();
-            return;
-        }
-
-        if (/^[a-z]$/.test(key)) {
-            updateGuessedWords(key);
-        }
-    });
-}
 function getCurrentWordArr() {
     const numberOfGuessedWords = guessedWords.length;
     return guessedWords[numberOfGuessedWords - 1];
@@ -188,8 +257,6 @@ function handleDeleteLetter() {
         lastLetterEl.textContent = "";
     }
 }
-
-
 
 //Checks if word is Valid
 async function isValidWord(word) {
@@ -418,11 +485,10 @@ document.getElementById("dark-mode-toggle").addEventListener("change", function 
 document.getElementById("colorblind-toggle").addEventListener("change", function () {
     document.body.classList.toggle("colorblind-mode", this.checked);
 });
-
+//hard mode toggle
 document.getElementById("hard-mode-toggle").addEventListener("change", function () {
     document.body.classList.toggle("hard-mode", this.checked);
 });
-
 
 //Sound
 const muteToggle = document.getElementById("mute-toggle");
