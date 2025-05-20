@@ -59,7 +59,7 @@ def test_get_recent_achievements_3():
 
 
 @pytest.mark.django_db
-def test_user_achievements_view_own_profile(client):
+def test_user_achievements_view_own_profile_1(client):
     user = UserFactory()
     client.force_login(user)
 
@@ -79,7 +79,6 @@ def test_user_achievements_view_own_profile(client):
     assert response.context["user_profile"] == user
     assert "games_with_achievements" in response.context
     assert "overall_stats" in response.context
-    print(response.context["pinned_achievements"])
 
     overall = response.context["overall_stats"]
     assert overall["unlocked"] == 1
@@ -87,19 +86,46 @@ def test_user_achievements_view_own_profile(client):
 
 
 @pytest.mark.django_db
-def test_user_achievements_view_other_profile(client):
-    viewer = UserFactory()
-    target_user = UserFactory(username="target_user")
-    client.force_login(viewer)
+def test_user_achievements_view_own_profile_2(client):
+    user = UserFactory()
+    client.force_login(user)
 
     game = GameFactory()
-    ach = AchievementFactory(game=game, threshold=0)
-    UserAchievementFactory(user=target_user, achievement=ach, date_earned=timezone.now())
+    ach1 = AchievementFactory(game=game, threshold=0)
+    ach2 = AchievementFactory(game=game, threshold=10)
 
-    url = reverse("user_achievements_by_username", kwargs={"username": target_user.username})
+    # both unlocked
+    UserAchievementFactory(user=user, achievement=ach1, date_earned=timezone.now())
+    UserAchievementFactory(user=user, achievement=ach2, date_earned=timezone.now())
+
+    url = reverse("user_achievements")
     response = client.get(url)
 
     assert response.status_code == 200
-    assert response.context["viewing_own_profile"] is False
-    assert response.context["user_profile"] == target_user
-    assert response.context["overall_stats"]["unlocked"] == 1
+    assert response.context["viewing_own_profile"] is True
+    assert response.context["user_profile"] == user
+    assert "games_with_achievements" in response.context
+    assert "overall_stats" in response.context
+
+    overall = response.context["overall_stats"]
+    assert overall["unlocked"] == 2
+    assert overall["total"] == 2
+
+
+@pytest.mark.django_db
+def test_user_achievements_view_own_profile_3(client):
+    user = UserFactory()
+    client.force_login(user)
+
+    url = reverse("user_achievements")
+    response = client.get(url)
+
+    assert response.status_code == 200
+    assert response.context["viewing_own_profile"] is True
+    assert response.context["user_profile"] == user
+    assert "games_with_achievements" in response.context
+    assert "overall_stats" in response.context
+
+    overall = response.context["overall_stats"]
+    assert overall["unlocked"] == 0
+    assert overall["total"] == 0
