@@ -276,6 +276,7 @@ class ReviewPendingGuideView(LoginRequiredMixin, UserPassesTestMixin, DetailView
         context["feedback"] = feedback
         context["message"] = message
 
+
         msg = f"""
             Guide reviewed successfully!
             {self.object.author.username}'s {self.object.game_id.name} Guide was {action}ed.
@@ -287,7 +288,6 @@ class ReviewPendingGuideView(LoginRequiredMixin, UserPassesTestMixin, DetailView
             """
 
         messages.info(request, msg, extra_tags="guide-reviewed")
-
         return redirect("knowledge-base-moderator")
 
 
