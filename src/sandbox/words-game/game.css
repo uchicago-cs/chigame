@@ -590,7 +590,6 @@ h1 {
     box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.4);
 }
 
-
 .settings-screen {
     background-color: var(--card-bg);
     color: var(--text);
@@ -689,3 +688,4 @@ body.colorblind-mode {
     --primary: #0000FF;
     --accent: #FF8000;
 }
+
