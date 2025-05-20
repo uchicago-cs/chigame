@@ -304,6 +304,9 @@ class UserFeedbackView(TemplateView):
             GeneralFeedback.objects.create(feedback=feedback_text)
             messages.success(request, "Thank you for your feedback!")
         return redirect("knowledge-base")
+      
+def faq_view(request):
+    return render(request, "knowledge-base/faq.html")
 
 
 class ModeratorListByGame(LoginRequiredMixin, UserPassesTestMixin, ListView):

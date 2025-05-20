@@ -18,6 +18,7 @@ from .views import (
     ModeratorSingleGame,
     ReviewPendingGuideView,
     UserFeedbackView,
+    faq_view,
 )
 
 urlpatterns = [
@@ -31,6 +32,7 @@ urlpatterns = [
     path("upload", ContributorMdUpload, name="knowledge-base-guide-upload"),
     path("guides/<int:pk>/reupload", ContributorMdUpload, name="knowledge-base-guide-reupload"),
     path("feedback", UserFeedbackView.as_view(), name="knowledge-base-feedback"),
+    path("faq", faq_view, name="knowledge-base-faq"),
     path("moderation/review/games", ModeratorListByGame.as_view(), name="moderator-manage-by-game"),
     path("moderation/review/games/<int:game_pk>", ModeratorSingleGame.as_view(), name="moderator-single-game"),
     path(
