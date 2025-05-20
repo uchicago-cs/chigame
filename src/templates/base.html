@@ -101,6 +101,9 @@
               <li class="nav-item">
                 <a class="nav-link" href="{% url 'knowledge-base' %}">Knowledge Base</a>
               </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'leaderboards_landing' %}">Leaderboards</a>
+              </li>
               {% if request.user.is_authenticated %}
                 <li class="nav-item">
                   <a class="nav-link" href="{% url 'game-list' %}">Games</a>
