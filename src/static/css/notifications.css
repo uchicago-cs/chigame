@@ -1,3 +1,18 @@
+.inbox-category {
+  box-shadow: none;
+  border: 1px solid #dee2e6;         /* Light gray Bootstrap-style border */
+  border-left: 4px solid transparent; /* Fix the weird left stripe */
+  border-radius: 0 !important;       /* Remove rounding except for ends */
+  padding: 0.75rem 1rem;             /* Clean spacing */
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+  
+}
+
+.inbox-category.active {
+  background-color: #800000;
+  border: none;         /* remove left border */
+}
+
 .notification-hover:hover {
   background-color: #f8f9fa;
   cursor: pointer;
