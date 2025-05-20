@@ -1,16 +1,21 @@
 <template>
   <nav class="navbar">
     <div class="logo">
-      <img src="/logo.png" alt="Logo" class="logo" />
-      <span>Chigame</span>
+      <router-link to="/"><img src="/logo.png" alt="Logo" class="logo" /></router-link>
+      <router-link to="/"class="chigame-text"><span>Chigame</span></router-link>
     </div>
 
     <ul class="nav-links">
       <li><router-link to="/">Home</router-link></li>
       <li><router-link to="/about">About</router-link></li>
+      <li><router-link to="/games">Games</router-link></li>
       <li><router-link to="/forums">Forums</router-link></li>
       <li><router-link to="/lobbies">Lobbies</router-link></li>
     </ul>
+
+    <div class="search-bar">
+      <input type="text" placeholder="Search..." />
+    </div>
 
     <div class="auth-btn">
       <router-link to="/login" class="sign-in">Sign In</router-link>
@@ -26,6 +31,13 @@ export default {
 </script>
 
 <style scoped>
+.chigame-text {
+  color: #800000;
+  font-family: "Pixelify Sans", sans-serif;
+  font-weight: bold;
+  text-decoration: none;
+}
+
 .navbar {
   display: flex;
   align-items: center;
@@ -95,6 +107,18 @@ export default {
 .auth-btn .sign-up:hover {
   background-color: #800000;
   color: #fff;
+}
+
+.search-bar {
+  margin-left: 2rem;
+}
+
+.search-bar input {
+  padding: 0.4rem 0.75rem;
+  border: 1px solid #A6A6A6;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  background-color: #fff;
 }
 
 </style>

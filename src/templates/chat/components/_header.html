@@ -1,0 +1,20 @@
+<div class="bg-danger text-white p-3 rounded-top d-flex justify-content-between align-items-center">
+  <div class="d-flex flex-column">
+    <h2 class="chigame-text mb-0">{{ chat.name }}</h2>
+    <div class="small mt-1 opacity-75">Welcome, {{ request.user.username }}</div>
+  </div>
+  <div class="d-flex gap-2 align-items-center">
+    <!-- Collapse button -->
+    <button id="collapse-chat"
+            class="btn btn-sm btn-light d-none"
+            title="Collapse">
+      <i class="bi bi-chevron-down"></i>
+    </button>
+    <!-- Toggle layout button -->
+    <button id="toggle-chat-mode"
+            class="btn btn-sm btn-light"
+            title="Toggle View">
+      <i class="bi bi-layout-sidebar-inset-reverse"></i>
+    </button>
+  </div>
+</div>

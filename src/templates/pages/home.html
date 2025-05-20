@@ -9,6 +9,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&display=swap"
         rel="stylesheet" />
   <link href="{% static 'css/homepage.css' %}" rel="stylesheet" />
+  <!-- carousel styling-->
+  <link rel="stylesheet" href="{% static 'css/carousel.css' %}" />
 {% endblock css %}
 {% block content %}
   <!-- First row of homepage for logged in users (Favorite Games and Friends List)-->
@@ -164,27 +166,24 @@
     <div class="d-flex flex-row justify-content-between">
       <span>Trending Games</span><span class="d-flex flex-column justify-content-around"><span class="see-more-link"><a class="nav-link" href="{% url 'game-list' %}">>> See all</a></span></span>
     </div>
-    <div class="trending-games-block tournament-name">
-      <div class="trending-section">
-        <h2 class="section-title">Trending Games</h2>
-        <div class="swiper">
-          <div class="swiper-wrapper">
-            <div class="swiper-slide">
-              <img src="{% static 'images/games/management.png' %}" alt="Management" />
-            </div>
-            <div class="swiper-slide">
-              <img src="{% static 'images/games/checkers.png' %}" alt="Checkers" />
-            </div>
-            <div class="swiper-slide">
-              <img src="{% static 'images/games/wordgame.png' %}" alt="Word Game" />
-            </div>
-            <div class="swiper-slide">
-              <img src="{% static 'images/games/reversi.png' %}" alt="Reversi" />
-            </div>
+    <div class="trending-games-block">
+      <div class="swiper">
+        <div class="swiper-wrapper">
+          <div class="swiper-slide">
+            <img src="{% static 'images/games/management.png' %}" alt="Management" />
           </div>
-          <!-- Pagination dots -->
-          <div class="swiper-pagination"></div>
+          <div class="swiper-slide">
+            <img src="{% static 'images/games/checkers.png' %}" alt="Checkers" />
+          </div>
+          <div class="swiper-slide">
+            <img src="{% static 'images/games/wordgame.png' %}" alt="Word Game" />
+          </div>
+          <div class="swiper-slide">
+            <img src="{% static 'images/games/reversi.png' %}" alt="Reversi" />
+          </div>
         </div>
+        <!-- Pagination dots -->
+        <div class="swiper-pagination"></div>
       </div>
     </div>
   </div>
@@ -262,6 +261,7 @@
   </div>
 {% endblock content %}
 {% block javascript %}
+  {{ block.super }}
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       const swiper = new Swiper('.swiper', {

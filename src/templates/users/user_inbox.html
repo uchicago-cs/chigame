@@ -4,54 +4,132 @@
 
 {% block content %}
   <div class="container mt-4">
-    <a href="{% url 'users:deleted-notifications' pk=request.user.pk %}"
-       class="btn btn-primary">Show Deleted Notifications</a>
-    <br />
-    <br />
-    <ul class="list-group">
-      <form method="post" action="{% url 'users:bulk-inbox' %}">
-        {% csrf_token %}
-        {% for notification in notifications %}
-          {% with notification_type=notification.type %}
-            <li class="notification-container list-group-item d-flex justify-content-between align-items-start border mb-3 {% if notification.read %}bg-secondary{% endif %}">
-              <div class="ms-2 me-auto">
-                <label>
-                  <input type="checkbox" name="notification[]" value="{{ notification.id }}" />
-                </label>
-                {% if notification.message %}
-                  <a href="{% url 'users:notification-detail' notification.pk %}">{{ notification.message }}</a>
-                {% else %}
-                  <a href="{% url 'users:notification-detail' notification.pk %}">{{ default_notification_messages | get_dict_val:notification_type }}</a>
-                {% endif %}
-              </div>
-              <div class="button-container">
-                {% if notification.read %}
-                  <a href="{% url 'users:act-on-inbox-notification' notification.pk 'mark_unread' %}">
-                    <span class="badge bg-primary rounded-pill me-2">
-                      <i class="bi bi-envelope"></i> MARK UNREAD
-                    </span>
-                  </a>
-                {% else %}
-                  <a href="{% url 'users:act-on-inbox-notification' notification.pk 'mark_read' %}">
-                    <span class="badge bg-primary rounded-pill me-2">
-                      <i class="bi bi-envelope-open"></i> MARK READ
-                    </span>
-                  </a>
-                {% endif %}
-                <a href="{% url 'users:act-on-inbox-notification' notification.pk 'delete' %}">
-                  <span class="badge bg-danger rounded-pill me-2">
-                    <i class="bi bi-trash3"></i> DELETE
-                  </span>
-                </a>
-              </div>
-            </li>
-          {% endwith %}
-        {% endfor %}
-        <button class="btn btn-primary" type="submit" name="delete_all" value="1">Delete All Marked</button>
-        <button class="btn btn-primary" type="submit" name="mark_all" value="1">Mark All As Read</button>
-      </form>
+    <div class="row">
+      <!-- Sidebar (Left) -->
+      <div class="col-md-3 mb-4">
+        <div class="list-group">
+          {% for key, label in category_choices %}
+            <a href="{% url 'users:user-inbox-category' pk=pk category=key %}"
+               class="list-group-item list-group-item-action {% if active_category == key %}active{% endif %}">
+              {{ label }}
+            </a>
+          {% endfor %}
+        </div>
+      </div>
+      <!-- Main Content (Right) -->
+      <div class="col-md-9">
+        <a href="{% url 'users:deleted-notifications' pk=request.user.pk %}"
+           class="btn btn-primary">Show Deleted Notifications</a>
+        <br />
+        <br />
+        <ul class="list-group">
+          <form method="post" action="{% url 'users:bulk-inbox' %}">
+            {% csrf_token %}
+            {% for notification in notifications %}
+              {% with notification_type=notification.type %}
+                <li class="notification-container list-group-item d-flex justify-content-between align-items-center border shadow-sm notification-hover {% if notification.read %}read{% else %}unread{% endif %}"
+                    oncontextmenu="openContextMenu(event, '{{ notification.id }}')">
+                  <div class="ms-2 me-auto">
+                    <label>
+                      <input type="checkbox" name="notification[]" value="{{ notification.id }}" />
+                    </label>
+                    {% if notification.message %}
+                      <a href="{% url 'users:notification-detail' notification.pk %}">{{ notification.message }}</a>
+                    {% else %}
+                      <a href="{% url 'users:notification-detail' notification.pk %}">{{ default_notification_messages | get_dict_val:notification_type }}</a>
+                    {% endif %}
+                    <span class="badge bg-info ms-2">{{ notification.get_category_display }}</span>
+                  </div>
+                  <div class="button-container d-flex gap-2">
+                    {% if notification.read %}
+                      <a href="{% url 'users:act-on-inbox-notification' notification.pk 'mark_unread' %}"
+                         class="text-decoration-none text-primary"
+                         title="Mark as Unread">
+                        <i class="bi bi-envelope icon-lg"></i>
+                      </a>
+                    {% else %}
+                      <a href="{% url 'users:act-on-inbox-notification' notification.pk 'mark_read' %}"
+                         class="text-decoration-none text-primary"
+                         title="Mark as Read">
+                        <i class="bi bi-envelope-open icon-lg"></i>
+                      </a>
+                    {% endif %}
+                    <a href="{% url 'users:act-on-inbox-notification' notification.pk 'delete' %}"
+                       class="text-danger text-decoration-none"
+                       title="Delete">
+                      <i class="bi bi-trash icon-lg"></i>
+                    </a>
+                    <a href="#"
+                       onclick="openContextMenuFromButton(event, '{{ notification.id }}'); return false;"
+                       class="text-muted text-decoration-none"
+                       title="Move">
+                      <i class="bi bi-folder2-open"></i>
+                    </a>
+                  </div>
+                </li>
+              {% endwith %}
+            {% endfor %}
+            <button class="btn btn-primary" type="submit" name="delete_all" value="1">Delete All Marked</button>
+            <button class="btn btn-primary" type="submit" name="mark_all" value="1">Mark All As Read</button>
+          </form>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div id="contextMenu" class="context-menu">
+    <ul>
+      <li class="dropdown-item">
+        Move ▸
+        <ul class="dropdown-submenu">
+          {% for key, label in notifications.first.CATEGORY_CHOICES %}
+            <li onclick="changeCategory('{{ key }}')">{{ label }}</li>
+          {% endfor %}
+        </ul>
+      </li>
     </ul>
   </div>
+  <meta name="csrf-token" content="{{ csrf_token }}" />
+  <style>
+    .context-menu {
+      display: none;
+      position: absolute;
+      background: white;
+      border: 1px solid #ccc;
+      z-index: 1000;
+    }
+
+    .dropdown-item {
+      position: relative;
+      padding: 8px;
+      cursor: pointer;
+    }
+
+    .dropdown-submenu {
+      display: none;
+      position: absolute;
+      top: 0;
+      left: 100%;
+      background: white;
+      border: 1px solid #ccc;
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      z-index: 1001;
+    }
+
+    .dropdown-item:hover>.dropdown-submenu {
+      display: block;
+    }
+
+    .dropdown-submenu li {
+      padding: 8px;
+      cursor: pointer;
+    }
+
+    .dropdown-submenu li:hover {
+      background-color: #f0f0f0;
+    }
+  </style>
   <script>
     const notificationItems = document.querySelectorAll('.notification-container');
     notificationItems.forEach(function(notificationItem) {
@@ -69,5 +147,48 @@
         }
       });
     });
+
+    let selectedNotificationId = null;
+
+    function openContextMenu(event, notifId) {
+      event.preventDefault();
+      selectedNotificationId = notifId;
+
+      const menu = document.getElementById("contextMenu");
+      menu.style.left = `${event.pageX}px`;
+      menu.style.top = `${event.pageY}px`;
+      menu.style.display = "block";
+    }
+
+    function changeCategory(category) {
+      const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+      fetch(`/users/notifications/${selectedNotificationId}/move/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-CSRFToken': csrfToken,
+        },
+        body: new URLSearchParams({
+          category: category
+        })
+      }).then(() => {
+        window.location.reload();
+      });
+      document.getElementById("contextMenu").style.display = "none";
+    }
+
+    document.addEventListener('click', () => {
+      document.getElementById("contextMenu").style.display = "none";
+    });
+
+    function openContextMenuFromButton(event, notifId) {
+      event.stopPropagation(); // Prevent document click from hiding the menu
+      selectedNotificationId = notifId;
+
+      const menu = document.getElementById("contextMenu");
+      menu.style.left = `${event.pageX}px`;
+      menu.style.top = `${event.pageY}px`;
+      menu.style.display = "block";
+    }
   </script>
 {% endblock content %}

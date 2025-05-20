@@ -1,43 +1,258 @@
 body {
-  margin: 0;
-  background-color: rgb(254, 200, 154);
+    margin: 0;
+    background: #e7d3b5;
+    color: #3b2f2a;
+    font-family: "Outfit", sans-serif;
+    font-style: normal;
 }
+
 canvas {
-  display: inline-block;
-  background: black;
+    display: inline-block;
+    background: #d2b48c;
 }
 
 .main-content {
     display: flex;
-    flex-direction: row;
+    justify-content: center;
     align-items: center;
-    top: 0px;
-    height: 90%;
-    padding: 20px;
+    margin-top: 5vh;
+    height: 95vh;
 }
 
-.main-left {
-    flex: 1;
+.navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background-color: #a67c52;
+    box-sizing: border-box;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+    max-height: 10%;
+    z-index: 100;
 }
 
-.main-right {
-    flex: 1;
+.nav-btns {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 1rem;
+}
+
+.navbar h1 {
+    margin: 0;
+    color: white;
+    font-size: 40px;
+}
+
+.navbar h1::after {
+    content: " | CHECKERS";
+    font-weight: 100;
 }
 
 .btn {
-    font-family: Arial;
-    font-size: 32px;
-    color: rgb(254, 200, 154);
-    background-color: rgb(138, 90, 68);
+    font-family: inherit;
+    font-size: 20px;
     border: none;
-    height: 64px;
-    width: 160px;
-    font-size: 18px;
-    margin-right: 20px;
+    padding: 15px 20px;
+    border-radius: 50px;
     cursor: pointer;
-    transition: opacity 0.3s;
+    position: relative;
+    display: inline-block;
+    transition: transform 0.2s, filter 0.2s;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
 }
 
 .btn:hover {
-    opacity: 0.8;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
+    transform: translateY(2px);
+    filter: brightness(0.9);
+}
+
+#gameOverPrompts {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    width: 100vw;
+    position: absolute;
+    top: 0;
+    left: 0;
+    gap: 1.5rem;
+    visibility: hidden;
+    font-size: 24px;
+    color: rgb(138, 90, 68);
+    z-index: 50;
+}
+
+#gameOverPrompts.show {
+    visibility: visible;
+}
+
+.game-over-message {
+    text-align: center;
+    display: none;
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.game-over-message.show {
+    display: flex;
+}
+
+#declineDrawBtn {
+    display: none;
+}
+
+.play-again-prompt {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.play-again-prompt p {
+    margin: 0 0 15px 0;
+}
+
+.play-again-btns {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.play-again-btns .btn {
+    font-size: 18px;
+    padding: 10px 25px;
+}
+
+.hidden {
+    display: none;
+}
+
+/* Settings Menu Styles */
+#settings-container::before {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 149;
+    width: 100%;
+    height: 20%;
+    border-radius: 0 20px 0 0;
+    background-color: white;
+    content: "";
+}
+
+#settings-container {
+    position: fixed;
+    bottom: -120px;
+    left: 50%;
+    z-index: 150;
+    transform: translateX(-50%);
+    width: 90vw;
+    border-radius: 0 1rem 0 0;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+    color: black;
+    background-color: white;
+    transition: bottom 0.2s ease-in-out;
+}
+
+#settings-container.show {
+    bottom: 0;
+}
+
+/* for the menu itself and the button to toggle it*/
+#settings-menu {
+    display: flex;
+    flex-direction: column;
+    justify-content: left;
+    align-items: left;
+    width: 100%;
+    padding: 1rem;
+}
+
+#settings-tab {
+    position: absolute;
+    top: -62px;
+    left: 0;
+    width: auto;
+    padding: 0.5rem 3rem;
+    border: none;
+    border-radius: 1rem 1rem 0 0;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+    background-color: white;
+    font-size: 35px;
+    text-align: center;
+    user-select: none;
+}
+
+#settings-buttons {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1rem;
+}
+
+.setting-btn {
+    font-family: inherit;
+    font-size: 20px;
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+    padding: 15px 20px;
+    border: none;
+    border-radius: 50px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+    background-color: rgb(65, 65, 65);
+    color: white;
+    transition:
+        transform 0.2s,
+        filter 0.2s,
+        outline-offset 0s,
+        outline 0s,
+        background-color 0.1s,
+        color 0.1s;
+}
+
+.setting-btn:hover {
+    transform: translateY(2px);
+    filter: brightness(0.9);
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+#toggle-colorblind.selected {
+    background-color: transparent;
+    color: rgb(29, 210, 114);
+    outline: 3px solid rgb(29, 210, 114);
+    outline-offset: -3px;
+}
+
+#captured-pieces {
+    position: fixed;
+    right: 0px;
+    top: 50%;
+    transform: translate(0, -50%);
+    min-width: 100px;
+    max-width: 150px;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 1rem;
+    background-color: #a67c52;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+    border-radius: 1rem 0 0 1rem;
+    color: white;
+    font-size: 20px;
 }
