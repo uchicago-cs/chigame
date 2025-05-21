@@ -120,12 +120,11 @@ function drawBoard(scene) {
 
       // listens for clicks on tiles
       tile.on('pointerdown', () => {
-        const [logicalX, logicalY] = transformCoords(x, y); // Undo mirror for logic
+        const [logicalX, logicalY] = isPlayerTwo
+          ? [BOARD_SIZE - 1 - x, BOARD_SIZE - 1 - y]
+          : [x, y];
         // does nothing if no pieces were selected
         if (!selectedPiece) return;
-        // Prevents moving other player's piece
-        if (selectedPiece.ownerId !== PLAYER_ID) return;
-
 
         // see if there are any pieces at the selected square
         const targetPiece = getPiece(logicalX, logicalY);
@@ -164,11 +163,6 @@ function createPiece(x, y, logicalColor, scene) {
 
   piece.sprite.setInteractive();
   piece.sprite.on('pointerdown', () => {
-    if (!selectedPiece && piece.ownerId !== PLAYER_ID) {
-      // Not your piece
-      return;
-    }
-
     if (!selectedPiece && piece.owner === getCurrentPlayerOwner()) {
       selectedPiece = piece;
       piece.sprite.setStrokeStyle(HIGHLIGHT_SIZE, COLORS.white);
@@ -234,7 +228,7 @@ function isValidMove(piece, moveX, moveY) {
   const dy = moveY - piece.y;
 
   // Adjust move direction depending on player perspective
-  const direction = (isPlayerTwo ? -1 : 1) * (piece.owner === PLAYER_RED ? -1 : 1);
+  const direction = piece.owner === PLAYER_RED ? -1 : 1;
 
   // Normal move (1 step diagonally)
   if (Math.abs(dx) === 1 && dy === direction) {
