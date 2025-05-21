@@ -17,21 +17,39 @@ window.addEventListener("load", async () => {
 });
 
 
+//Buttons (How To Play and Settings)!
 const howToPlayBtn = document.getElementById('how-to-play-btn');
 const howToPlayText = document.getElementById('how-to-play-text');
+const settingsBtn = document.getElementById('settings-btn');
+const settingsScreen = document.getElementById('settings');
 
-//Opens and closes how to play text
+// Handle How to Play toggle
 howToPlayBtn.addEventListener('click', () => {
-    howToPlayText.classList.toggle('visible');
-    howToPlayText.classList.toggle('hidden');
+    const isVisible = !howToPlayText.classList.contains('visible');
 
-    if (howToPlayText.classList.contains('visible')) {
-        howToPlayBtn.textContent = "How to Play ▲";
+    howToPlayText.classList.toggle('visible', isVisible);
+    howToPlayText.classList.toggle('hidden', !isVisible);
+
+    //Hide settings
+    settingsScreen.classList.add('hidden');
+
+    if (isVisible) {
+    howToPlayBtn.textContent = "How to Play ▲";
     } else {
-        howToPlayBtn.textContent = "How to Play ▼";
+    howToPlayBtn.textContent = "How to Play ▼";
     }
 });
 
+// Handle Settings toggle
+settingsBtn.addEventListener('click', () => {
+
+    settingsScreen.classList.toggle('hidden');
+
+    // Always hide How to Play
+    howToPlayText.classList.remove('visible');
+    howToPlayText.classList.add('hidden');
+    howToPlayBtn.textContent = "How to Play ▼";
+});
 let guessedWords = [[]];
 let availableSpace = 1;
 let word = "";
@@ -249,7 +267,7 @@ async function handleSubmitWord() {
 
             const letterId = firstLetterId + index;
             const letterEl = document.getElementById(letterId);
-            letterEl.style = `background-color:${tileColor};border-color:${tileColor}`;
+            letterEl.style = `background-color:${tileColor};border-color:${tileColor};color: white`; //keep white no matter light or dark mode
 
             //change on-web keyboard color
             const keyButton = document.querySelector(`[data-key="${letter}"]`);
@@ -260,6 +278,8 @@ async function handleSubmitWord() {
                 if (keyColor !== COLOR_CORRECT) {
                     keyButton.style.backgroundColor = tileColor;
                     keyButton.style.borderColor = tileColor;
+                    keyButton.style.color = "white"; //keep white no matter light or dark mode
+
                 }
             }
         }, interval * index);
@@ -339,14 +359,6 @@ function shakeRow(rowIndex) {
         tile.classList.add("shake");
         setTimeout(() => tile.classList.remove("shake"), 500);
     }
-}
-
-//Settings
-document.getElementById("settings-btn").addEventListener("click", toggleSettings);
-//Show Setting Screen
-function toggleSettings() {
-    const settingsScreen = document.getElementById("settings");
-    settingsScreen.classList.toggle("hidden");
 }
 
 //Dark Mode
