@@ -96,16 +96,16 @@
             credentials: 'include',
             body: JSON.stringify(data)
           })
-        .then(response => {
+          .then(response => {
             if (!response.ok) {
               throw new Error('Network response was not ok');
             }
             return response.json();
           })
-        .then(data => {
+          .then(data => {
             console.log('Success:', data);
           })
-        .catch(error => {
+          .catch(error => {
             console.error('Error:', error);
           });
       });
