@@ -6,7 +6,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
 from django.db.models import CharField, F, Q, Value
 from django.db.models.functions import Concat
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.safestring import mark_safe
 from django.views.decorators.http import require_POST
@@ -351,5 +351,7 @@ def LikeUnlikeGuide(request, pk):
     # if originally unlike, then like it
     else:
         guide.likes.add(request.user)
+    liked = not liked
+    like_count = guide.likes.count()
 
-    return redirect("knowledge-base-guide-detail", pk)
+    return JsonResponse({"liked": liked, "like_count": like_count})

@@ -6,3 +6,22 @@
 .guide-detail-header .visit-game-link {
   color: #0d6efd;
 }
+
+
+.heart-button {
+  background: none;
+  border: none;
+  font-size: 12pt;
+  cursor: pointer;
+  padding: 0;
+}
+
+
+.heart-hollow {
+  color: gray;       /* Simulate "hollow" with gray */
+  transition: color 0.2s ease;
+}
+
+.heart-liked {
+  color: red;         /* Filled (liked) = red */
+}
