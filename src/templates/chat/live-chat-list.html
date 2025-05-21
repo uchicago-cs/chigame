@@ -3,6 +3,13 @@
 {% block content %}
   <div class="container mt-4">
     <h2 class="mb-4">Public Chat</h2>
+    <div class="search-container mb-3">
+      <input type="text"
+             id="search-input"
+             class="form-control"
+             placeholder="Search public chats..."
+             value="{{ request.GET.q|default:'' }}" />
+    </div>
     <div class="list-group">
       {% for chat in chats %}
         <a href="{% url 'chat-page' chat.id %}"
@@ -23,4 +30,42 @@
       {% endfor %}
     </div>
   </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const searchInput = document.getElementById('search-input');
+
+      const debounce = (func, delay) => {
+        let timeout;
+        return function(...args) {
+          clearTimeout(timeout);
+          timeout = setTimeout(() => func.apply(this, args), delay);
+        };
+      };
+
+      const handleSearchInput = debounce(function() {
+        const searchQuery = this.value.trim();
+        const currentUrl = new URL(window.location.href);
+
+        if (searchQuery) {
+          currentUrl.searchParams.set('q', searchQuery);
+        } else {
+          currentUrl.searchParams.delete('q');
+        }
+
+        window.history.pushState({}, '', currentUrl);
+
+        // Filter the chat list
+        const chatItems = document.querySelectorAll('.list-group-item');
+        chatItems.forEach(item => {
+          const chatName = item.textContent.toLowerCase();
+          if (chatName.includes(searchQuery.toLowerCase())) {
+            item.style.display = '';
+          } else {
+            item.style.display = 'none';
+          }
+        });
+      });
+    });
+  </script>
 {% endblock content %}
