@@ -58,6 +58,7 @@
       cursor: pointer;
       font-size: 1rem;
       text-align: left;
+      text-decoration: none;
       margin-top: 50px;
     }
 
@@ -68,6 +69,7 @@
       text-align: center;
       cursor: pointer;
       color: #555;
+      width: 568px;
       width: 568px;
     }
 
@@ -95,27 +97,45 @@
           `;
         }
 
+        function isHtmlFile(file) {
+          return file && file.name.toLowerCase().endsWith('.html');
+        }
+
+        function handleFile(file) {
+          if (!isHtmlFile(file)) {
+            alert('Only .html files are allowed!');
+            input.value = '';
+            zone.innerHTML = 'Drag & drop a file here<br />or click to browse';
+            return false;
+          }
+          showFileName(file);
+          return true;
+        }
+
         zone.addEventListener('click', () => input.click());
+
         zone.addEventListener('dragover', e => {
           e.preventDefault();
           zone.classList.add('hover');
         });
+
         zone.addEventListener('dragleave', () => {
           zone.classList.remove('hover');
         });
+
         zone.addEventListener('drop', e => {
           e.preventDefault();
           zone.classList.remove('hover');
-          if (e.dataTransfer.files.length) {
+          const file = e.dataTransfer.files[0];
+          if (file && handleFile(file)) {
             input.files = e.dataTransfer.files;
-            showFileName(e.dataTransfer.files[0]);
           }
         });
 
         input.addEventListener('change', () => {
           const file = input.files[0];
           if (file) {
-            showFileName(file);
+            handleFile(file);
           }
         });
       });
@@ -218,7 +238,11 @@
       <br />
       or click to browse
     </div>
-    <input type="file" id="myFile" name="uploaded_file" class="if-file-input" />
+    <input type="file"
+           id="myFile"
+           name="uploaded_file"
+           class="if-file-input"
+           accept=".html" />
     <button type="submit" class="btn-success">Upload Game</button>
   </form>
   <h3>Publish Story</h3>
