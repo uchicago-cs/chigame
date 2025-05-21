@@ -343,7 +343,7 @@ class Notification(models.Model):
             self.FRIEND_REQUEST: "friend",
             self.REMINDER: "system",
             self.UPCOMING_MATCH: "match",
-            self.MATCH_PROPOSAL: "match",
+            self.MATCH_INVITATION: "match",
             self.GROUP_INVITATION: "group",
             self.ACHIEVEMENT: "achievement",
         }

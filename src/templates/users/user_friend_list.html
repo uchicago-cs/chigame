@@ -1,7 +1,70 @@
 {% extends "base.html" %}
 
-{% load render_table from django_tables2 %}
+{% load static %}
 
 {% block content %}
-  {% render_table table %}
+  <style>
+    .profile-photo {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      object-fit: cover;
+      display: block;
+      border: 3px solid #800000;
+    }
+
+    .btn {
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 15px;
+      transition: border-color 0.3s, box-shadow 0.3s;
+      font-size: 13px;
+      padding: 4px 8px;
+    }
+
+    .btn:focus {
+      outline: none;
+      border-color: #800000;
+      box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.2);
+    }
+
+    .btn {
+      background-color: #800000;
+      color: white;
+      text-align: center;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn:hover {
+      background-color: #800000;
+    }
+  </style>
+  <div class="container my-4">
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+      {% for friend in friends %}
+        <div class="col-12 col-md-8">
+          <div class="card h-100 shadow-sm border-0">
+            <div class="card-body d-flex align-items-center">
+              {% if friend.userprofile.profile_photo %}
+                <img src="{{ friend.userprofile.profile_photo.url }}"
+                     alt="{{ friend.username|default:'No username' }}'s profile picture"
+                     class="profile-photo rounded-circle me-3" />
+              {% else %}
+                <img src="{% static 'images/no_picture_available.png' %}"
+                     alt="Default Profile Photo"
+                     class="profile-photo rounded-circle me-3" />
+              {% endif %}
+              <div>
+                {% if friend.username %}<h5 class="card-title mb-0">@{{ friend.username }}</h5>{% endif %}
+                {% if friend.name %}<small class="text-muted">{{ friend.name }}</small>{% endif %}
+                <a href="{% url 'users:user-profile' friend.id %}"
+                   class="btn btn-primary">View Profile</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
 {% endblock content %}
