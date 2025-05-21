@@ -625,7 +625,11 @@ class TournamentListView(ListView):
             return Tournament.objects.prefetch_related("matches").all()
 
         # For non-staff users, show only tournaments they are part of
-        return Tournament.objects.prefetch_related("matches").filter(players=self.request.user)
+        return (
+            Tournament.objects.prefetch_related("matches")
+            .filter(Q(players=self.request.user) | Q(created_by=self.request.user))
+            .distinct()
+        )
 
     def get(self, request, *args, **kwargs):
         super().get(request, *args, **kwargs)
