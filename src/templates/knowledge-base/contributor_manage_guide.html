@@ -4,6 +4,21 @@
 
 <link rel="stylesheet" href="{% static 'css/knowledge-base-styles.css' %}" />
 {% block page-content %}
+  {% if messages %}
+    <ul class="messages">
+      {% for message in messages %}
+        {% if 'guide-upload' in message.tags %}
+          <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert"
+                    aria-label="Close"></button>
+          </div>
+        {% endif %}
+      {% endfor %}
+    </ul>
+  {% endif %}
   <h1 class="mb-4">Manage My Guides</h1>
   <div class="contributor-header-box">
     <form method="get" class="mb-3 d-flex align-items-center gap-2">
@@ -23,7 +38,6 @@
           <th>Your Guides</th>
           <th>Upload Time</th>
           <th>Status</th>
-          <!--<th>Actions</th>-->
         </tr>
       </thead>
       <tbody>
@@ -57,8 +71,3 @@
     </table>
   </div>
 {% endblock page-content %}
-<!--            <td>
-              {% if guide.status != 0 %}
-                <a href="{% url 'feedback-detail' guide.latest_feedback.pk %}" class="btn btn-primary">Review</a> &nbsp;
-              {% endif %}
-            </td>-->
