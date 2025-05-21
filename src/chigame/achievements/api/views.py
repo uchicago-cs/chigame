@@ -54,7 +54,7 @@ def award_achievement(request):
                 description = "Game for demonstrating achievements.",
                 min_players = 1,
                 max_players = 1,
-                complexity = 1
+                complexity = 1,
             )[0]
             achievement = Achievement.objects.get_or_create(
                 name = "Clicked a Button",
@@ -63,9 +63,8 @@ def award_achievement(request):
             )[0]
             user = request.user
             user_achievement = UserAchievement.objects.get_or_create(
-                user = user,
-                achievement = achievement,
-                date_earned = "2025-04-24T21:45:37.084000Z"
+                user = user, achievement = achievement, date_earned = "2025-04-24T21:45:37.084000Z"
             )
+
             response_data = {'message': 'Button press received'}
             return JsonResponse(response_data)
