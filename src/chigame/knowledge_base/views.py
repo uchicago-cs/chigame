@@ -341,7 +341,6 @@ def ModeratorSetPublishedGuide(request, game_pk, guide_pk):
 
 
 @require_POST
-@login_required
 def LikeUnlikeGuide(request, pk):
     guide = get_object_or_404(Guide, pk=pk)
     liked = guide.likes.filter(pk=request.user.pk).exists()
