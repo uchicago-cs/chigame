@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block extrahead %}
+  <link rel="stylesheet"
+        type="text/css"
+        href="{% static 'tournament_styles.css' %}" />
+  <style>
+    .stats-container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f8f8f8;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .stats-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .stats-section {
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .stats-title {
+      color: #333;
+      margin-bottom: 15px;
+      font-size: 1.2em;
+    }
+
+    .match-card {
+      background: #f8f9fa;
+      border-radius: 6px;
+      padding: 15px;
+      margin-top: 10px;
+    }
+
+    .match-card h4 {
+      color: #2c3e50;
+      margin-bottom: 10px;
+    }
+
+    .match-card p {
+      margin: 5px 0;
+      color: #666;
+    }
+
+    .match-card .duration {
+      color: #27ae60;
+      font-weight: bold;
+    }
+
+    .match-card.fastest {
+      border-color: #4CAF50;
+      background-color: #E8F5E9;
+    }
+
+    .match-card.slowest {
+      border-color: #f44336;
+      background-color: #FFEBEE;
+    }
+
+    .match-duration {
+      font-size: 1.2em;
+      font-weight: bold;
+      color: #666;
+    }
+
+    .match-players {
+      margin-top: 10px;
+      color: #666;
+    }
+
+    .back-button {
+      display: inline-block;
+      padding: 10px 20px;
+      background-color: #2196F3;
+      color: white;
+      text-decoration: none;
+      border-radius: 4px;
+      margin-bottom: 20px;
+    }
+
+    .back-button:hover {
+      background-color: #1976D2;
+    }
+  </style>
+{% endblock extrahead %}
+{% block content %}
+  <div class="stats-container">
+    <a href="{% url 'tournament-detail' tournament.id %}"
+       class="back-button">← Back to Tournament</a>
+    <div class="stats-header">
+      <h1>Match Statistics</h1>
+      <h2>{{ tournament.name }}</h2>
+    </div>
+    <div class="stats-section">
+      <h3 class="stats-title">Tournament Overview</h3>
+      <p>Total Matches: {{ tournament_stats.total_matches }}</p>
+      <p>Completed Matches: {{ tournament_stats.completed_matches }}</p>
+      {% if tournament_stats.average_duration %}
+        <p>Average Match Duration: {{ tournament_stats.average_duration }}</p>
+      {% endif %}
+    </div>
+    <div class="stats-section">
+      <h3 class="stats-title">Fastest Match</h3>
+      {% if fastest_match %}
+        <div class="match-card fastest">
+          <div class="match-duration">Duration: {{ fastest_match.duration|default:"N/A" }}</div>
+          <div class="match-players">
+            Players:
+            {% for player in fastest_match.players.all %}
+              {{ player.name|default:player.email }}
+              {% if not forloop.last %},{% endif %}
+            {% endfor %}
+          </div>
+          <div class="match-players">Date: {{ fastest_match.date_played|date:"F j, Y, g:i a" }}</div>
+        </div>
+      {% else %}
+        <p>No completed matches found.</p>
+      {% endif %}
+    </div>
+    <div class="stats-section">
+      <h3 class="stats-title">Slowest Match</h3>
+      {% if slowest_match %}
+        <div class="match-card slowest">
+          <div class="match-duration">Duration: {{ slowest_match.duration|default:"N/A" }}</div>
+          <div class="match-players">
+            Players:
+            {% for player in slowest_match.players.all %}
+              {{ player.name|default:player.email }}
+              {% if not forloop.last %},{% endif %}
+            {% endfor %}
+          </div>
+          <div class="match-players">Date: {{ slowest_match.date_played|date:"F j, Y, g:i a" }}</div>
+        </div>
+      {% else %}
+        <p>No completed matches found.</p>
+      {% endif %}
+    </div>
+    <div class="stats-section">
+      <h3 class="stats-title">All Matches</h3>
+      {% if all_matches %}
+        {% for match in all_matches %}
+          <div class="match-card">
+            <div class="match-duration">Duration: {{ match.duration|default:"N/A" }}</div>
+            <div class="match-players">
+              Players:
+              {% for player in match.players.all %}
+                {{ player.name|default:player.email }}
+                {% if not forloop.last %},{% endif %}
+              {% endfor %}
+            </div>
+            <div class="match-players">Date: {{ match.date_played|date:"F j, Y, g:i a" }}</div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <p>No matches found.</p>
+      {% endif %}
+    </div>
+  </div>
+{% endblock content %}

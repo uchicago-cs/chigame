@@ -2,14 +2,10 @@
 
 {% load static %}
 
-{% block title %}
-  Tournament Details - {{ tournament.name }}
-{% endblock title %}
-{% block css %}
-  {{ block.super }}
+{% block extrahead %}
   <link rel="stylesheet"
         type="text/css"
-        href="{% static 'css/tournament_styles.css' %}" />
+        href="{% static 'tournament_styles.css' %}" />
   <style>
     .simulation-controls {
       margin: 20px 0;
@@ -135,8 +131,25 @@
     .inline-form {
       display: inline;
     }
+
+    /* #addedum */
+    .stats-button {
+      display: inline-block;
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: white;
+      text-decoration: none;
+      border-radius: 4px;
+      margin: 10px 0;
+    }
+
+    .stats-button:hover {
+      background-color: #45a049;
+    }
+
+    /* #addedum end */
   </style>
-{% endblock css %}
+{% endblock extrahead %}
 {% block content %}
   <div class="tournament-header">
     <h1 class="tournament-name">
@@ -207,42 +220,153 @@
             <input type="radio"
                    name="tournament_type"
                    value="single"
-                   {% if simulation_type == "single" %}checked{% endif %} />
+                   {% if not simulation_data.is_double_elimination %}checked{% endif %} />
             Single Elimination
           </label>
           <label>
             <input type="radio"
                    name="tournament_type"
                    value="double"
-                   {% if simulation_type == "double" %}checked{% endif %} />
+                   {% if simulation_data.is_double_elimination %}checked{% endif %} />
             Double Elimination
-          </label>
-          <label>
-            <input type="radio"
-                   name="tournament_type"
-                   value="round_robin"
-                   {% if simulation_type == "round_robin" %}checked{% endif %} />
-            Round Robin
-          </label>
-          <label>
-            <input type="radio"
-                   name="tournament_type"
-                   value="multi_stage"
-                   {% if simulation_type == "multi_stage" %}checked{% endif %} />
-            Multi-Stage
           </label>
           <button type="submit">Set Tournament Type</button>
         </form>
       </div>
-    {% endif %}
-    {% if simulation_mode %}
-      {% if simulation_type == "single" or simulation_type == "double" %}
-        {% include "tournaments/single_double_detail.html" %}
-      {% elif simulation_type == "round_robin" %}
-        {% include "tournaments/round_robin_detail.html" %}
-      {% elif simulation_type == "multi_stage" %}
-        {% include "tournaments/multi_stage_detail.html" %}
-      {% endif %}
+      <div class="simulation-actions">
+        <form method="post" class="inline-form">
+          {% csrf_token %}
+          <input type="hidden" name="tournament_id" value="{{ tournament.id }}" />
+          <input type="hidden" name="action" value="advance_round" />
+          <button type="submit">Advance to Next Round</button>
+        </form>
+        <form method="post" class="inline-form">
+          {% csrf_token %}
+          <input type="hidden" name="tournament_id" value="{{ tournament.id }}" />
+          <input type="hidden" name="action" value="reset_simulation" />
+          <button type="submit">Reset Simulation</button>
+        </form>
+        <form method="post" class="inline-form">
+          {% csrf_token %}
+          <input type="hidden" name="tournament_id" value="{{ tournament.id }}" />
+          <input type="hidden" name="action" value="run_full_simulation" />
+          <button type="submit">Run Full Simulation</button>
+        </form>
+      </div>
+      <!-- Tournament Bracket Display -->
+      <div class="tournament-bracket">
+        <h3>Tournament Bracket</h3>
+        {% if simulation_data.tournament_winner %}
+          <div class="tournament-winner">
+            <h3>Tournament Winner</h3>
+            {% for player in tournament.get_all_players %}
+              {% if player.id == simulation_data.tournament_winner %}
+                <p>
+                  {% if player.name %}
+                    <strong>{{ player.name }}</strong>
+                  {% else %}
+                    <strong>{{ player.email }}</strong>
+                  {% endif %}
+                </p>
+              {% endif %}
+            {% endfor %}
+          </div>
+        {% endif %}
+        <div class="bracket-container">
+          {% for round_num, brackets in simulation_data.rounds.items %}
+            <div class="round">
+              <div class="bracket-title">Round {{ round_num }}</div>
+              {% if brackets.winners %}
+                <div class="bracket-title">Winners Bracket</div>
+                {% for match in brackets.winners %}
+                  <div class="match winners">
+                    {% for player_data in match.players %}
+                      <div class="match-player {% if player_data.id == match.winner %}winner{% elif match.winner and player_data.id != match.winner %}loser{% endif %}">
+                        {% for player in tournament.get_all_players %}
+                          {% if player.id == player_data.id %}
+                            {% if player.name %}
+                              {{ player.name }}
+                            {% else %}
+                              {{ player.email }}
+                            {% endif %}
+                          {% endif %}
+                        {% endfor %}
+                      </div>
+                    {% endfor %}
+                    {% if not match.winner %}
+                      <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="tournament_id" value="{{ tournament.id }}" />
+                        <input type="hidden" name="action" value="simulate_match" />
+                        <input type="hidden" name="match_id" value="{{ match.id }}" />
+                        <button type="submit" class="simulate-match-btn">Simulate Match</button>
+                      </form>
+                    {% endif %}
+                  </div>
+                {% endfor %}
+              {% endif %}
+              {% if brackets.losers %}
+                <div class="bracket-title">Losers Bracket</div>
+                {% for match in brackets.losers %}
+                  <div class="match losers">
+                    {% for player_data in match.players %}
+                      <div class="match-player {% if player_data.id == match.winner %}winner{% elif match.winner and player_data.id != match.winner %}loser{% endif %}">
+                        {% for player in tournament.get_all_players %}
+                          {% if player.id == player_data.id %}
+                            {% if player.name %}
+                              {{ player.name }}
+                            {% else %}
+                              {{ player.email }}
+                            {% endif %}
+                          {% endif %}
+                        {% endfor %}
+                      </div>
+                    {% endfor %}
+                    {% if not match.winner %}
+                      <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="tournament_id" value="{{ tournament.id }}" />
+                        <input type="hidden" name="action" value="simulate_match" />
+                        <input type="hidden" name="match_id" value="{{ match.id }}" />
+                        <button type="submit" class="simulate-match-btn">Simulate Match</button>
+                      </form>
+                    {% endif %}
+                  </div>
+                {% endfor %}
+              {% endif %}
+              {% if brackets.final %}
+                <div class="bracket-title">Final Match</div>
+                {% for match in brackets.final %}
+                  <div class="match final">
+                    {% for player_data in match.players %}
+                      <div class="match-player {% if player_data.id == match.winner %}winner{% elif match.winner and player_data.id != match.winner %}loser{% endif %}">
+                        {% for player in tournament.get_all_players %}
+                          {% if player.id == player_data.id %}
+                            {% if player.name %}
+                              {{ player.name }}
+                            {% else %}
+                              {{ player.email }}
+                            {% endif %}
+                          {% endif %}
+                        {% endfor %}
+                      </div>
+                    {% endfor %}
+                    {% if not match.winner %}
+                      <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="tournament_id" value="{{ tournament.id }}" />
+                        <input type="hidden" name="action" value="simulate_match" />
+                        <input type="hidden" name="match_id" value="{{ match.id }}" />
+                        <button type="submit" class="simulate-match-btn">Simulate Match</button>
+                      </form>
+                    {% endif %}
+                  </div>
+                {% endfor %}
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+      </div>
     {% endif %}
   </div>
   <p>Game: {{ tournament.game }}</p>
@@ -285,43 +409,27 @@
       {% endfor %}
     </ul>
   {% endif %}
+  <!-- You can add more fields as needed -->
   <p>Matches:</p>
   {% if tournament.get_all_matches %}
-    <ul class="match-list">
+    <ul>
       {% for match in tournament.get_all_matches %}
-        <li class="match-item">
-          <div class="match-info">
-            <p class="match-players">
-              Match (
-              {% for player in match.players.all %}
-                {% if player.name %}
-                  <a href="{% url 'users:detail' player.id %}">{{ player.name }}</a>
-                {% else %}
-                  <a href="{% url 'users:detail' player.id %}">{{ player.email }}</a>
-                {% endif %}
-                {% if not forloop.last %}vs.{% endif %}
-              {% empty %}
-                Forfeited
-              {% endfor %}
-              )
-            </p>
-            <p class="match-status">Status: {{ match.lobby.get_match_status_display }}</p>
-            {% if match.lobby.match_status == match.lobby.Viewable %}
-              <p class="match-in-progress">Match in progress</p>
-            {% elif match.lobby.match_status == match.lobby.Finished %}
-              <p class="match-finished">Match finished</p>
-            {% else %}
-              <p class="match-waiting">Waiting for players ({{ match.lobby.members.count }}/{{ match.players.count }})</p>
-            {% endif %}
-            {% if user in match.players.all and tournament.status == "tournament in progress" and match.lobby.match_status != match.lobby.Viewable %}
-              <form method="post" class="join-match-form">
-                {% csrf_token %}
-                <input type="hidden" name="tournament_id" value="{{ tournament.id }}" />
-                <input type="hidden" name="action" value="join_match" />
-                <button type="submit" class="join-match-button">Join Match</button>
-              </form>
-            {% endif %}
-          </div>
+        <li>
+          <p>
+            Match (
+            {% for player in match.players.all %}
+              {% if player.name %}
+                <a href="{% url 'users:detail' player.id %}">{{ player.name }}</a>
+              {% else %}
+                <a href="{% url 'users:detail' player.id %}">{{ player.email }}</a>
+              {% endif %}
+              {% if not forloop.last %}vs.{% endif %}
+            {% empty %}
+              Forfeited
+            {% endfor %}
+            )
+          </p>
+          <!-- You can add more fields as needed -->
         </li>
       {% endfor %}
     </ul>
@@ -363,6 +471,7 @@
       <button>{{ tournament.name }} Chat</button>
     </a>
   {% endif %}
+  <!-- You can add more fields as needed -->
   {% if user.is_staff %}
     <p>
       <a href="{% url 'tournament-delete' tournament.id %}">Delete</a>
@@ -372,5 +481,9 @@
     <p>
       <a href="{% url 'tournament-update' tournament.id %}">Update</a>
     </p>
+  {% endif %}
+  {% if tournament.status == "tournament ended" %}
+    <a href="{% url 'tournament-match-stats' tournament.id %}"
+       class="stats-button">View Match Analytics</a>
   {% endif %}
 {% endblock content %}
