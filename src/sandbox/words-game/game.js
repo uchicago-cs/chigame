@@ -75,16 +75,30 @@ function loadWords() {    return fetch(`${wordLength}WORDS.txt`)
         });
 }
 
-//Get a new word to solve
+//hashing function for daily word selection
+function hashInt(x) {
+  x = ((x >>> 16) ^ x) * 0x45d9f3b;
+  x = ((x >>> 16) ^ x) * 0x45d9f3b;
+  x = (x >>> 16) ^ x;
+  return x >>> 0;
+}
+
+/*
+Process for selecting daily word involves taking today's date as an integer (YYYYMMDD),
+hashing it using the above function, then using modulo operator to get the index of the word
+we want from the word list. Overall this function returns the word that will be played with.
+*/
 function getNewWord() {
     if (mode === 'game') {
         word = allowedWords[Math.floor(Math.random() * allowedWords.length)];
         console.log(`Today's Word: ${word}`);
     } else if (mode === 'solo') {
         const today = new Date();
-        const startDate = new Date('2025-05-03');
-        const dayIndex = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
-        const index = dayIndex % allowedWords.length;
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        const dayIndex = parseInt(`${year}${month}${day}`, 10);
+        index = hashInt(dayIndex) % allowedWords.length;
         word = allowedWords[index];
         console.log(`Today's Word: ${word}`);
     } else {
