@@ -37,6 +37,7 @@ urlpatterns = [
     path("interactive-fiction/", views.InteractiveFictionView.as_view(), name="interactive-fiction"),
     path("<int:pk>/upload/", UploadFileView.as_view(), name="upload-file"),
     path("if-game/<int:pk>/", InteractiveFictionView.as_view(), name="interactive-fiction-detail"),
+    path("twine-db/<int:pk>/", views.serve_twine_from_db, name="twine-db"),
     # tournaments
     path("tournaments/", views.TournamentListView.as_view(), name="tournament-list"),
     path("tournaments/<int:pk>/", views.TournamentDetailView.as_view(), name="tournament-detail"),
