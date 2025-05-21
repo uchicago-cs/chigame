@@ -86,15 +86,6 @@ class Migration(migrations.Migration):
             name="options",
             field=models.ManyToManyField(blank=True, related_name="polls", to="chat.livechatpolloption"),
         ),
-        migrations.CreateModel(
-            name="LiveChatMessageReaction",
-            fields=[
-                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-                ("content", models.CharField(max_length=10, validators=[chigame.chat.validators.validate_emoji])),
-                ("message", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="chat.livechatmessage")),
-                ("user", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
-            ],
-        ),
         migrations.AddField(
             model_name="livechat",
             name="users",
@@ -105,9 +96,5 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name="livechatpollvote",
             constraint=models.UniqueConstraint(fields=("poll", "option", "user"), name="unique_poll_option_user"),
-        ),
-        migrations.AlterUniqueTogether(
-            name="livechatmessagereaction",
-            unique_together={("user", "message", "content")},
         ),
     ]
