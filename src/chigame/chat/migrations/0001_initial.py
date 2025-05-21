@@ -102,17 +102,6 @@ class Migration(migrations.Migration):
                 related_name="live_chats", through="chat.LiveChatUser", to=settings.AUTH_USER_MODEL
             ),
         ),
-        migrations.CreateModel(
-            name="LiveChatMessageReaction",
-            fields=[
-                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-                ("content", models.CharField(max_length=10)),
-                ("message", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="chat.livechatmessage")),
-                ("user", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
-            ],
-            options={
-                "unique_together": {("user", "message", "content")},
-            },
         migrations.AddConstraint(
             model_name="livechatpollvote",
             constraint=models.UniqueConstraint(fields=("poll", "option", "user"), name="unique_poll_option_user"),
