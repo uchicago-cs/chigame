@@ -188,7 +188,10 @@ document.addEventListener('DOMContentLoaded', function () {
                       ${descElem ? descElem.textContent : ''} in ${gameName}
                     </p>
                     <p class="achievement-date">
-                      ${unlockedDate ? 'Unlocked on ' + unlockedDate : 'Not unlocked'}
+                    ${
+                      unlockedDate && unlockedDate !== 'Not unlocked'
+                        ? 'Unlocked on ' + unlockedDate : 'Not unlocked'
+                    }
                     </p>
                   </div>
                   <button class="pin-button active" data-achievement-id="${achievementId}">
