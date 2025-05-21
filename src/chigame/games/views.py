@@ -765,7 +765,7 @@ class IFGameCreateView(CreateView):
 
         context["game"] = latest_game
 
-        if latest_game.twine_file:
+        if latest_game.twine_file_content:
             context["uploaded_file_url"] = latest_game.twine_file.url
 
         return context
