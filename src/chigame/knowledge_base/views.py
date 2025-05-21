@@ -355,3 +355,21 @@ def LikeUnlikeGuide(request, pk):
     like_count = guide.likes.count()
 
     return JsonResponse({"liked": liked, "like_count": like_count})
+
+
+@require_POST
+@login_required
+def FavUnfavGuide(request, pk):
+    guide = get_object_or_404(Guide, pk=pk)
+    favorited = guide.favorites.filter(pk=request.user.pk).exists()
+    # if originally favorite, then unfavorite it
+    if favorited:
+        guide.favorites.remove(request.user)
+    # if originally unfavorite, then favorite it
+    else:
+        guide.favorites.add(request.user)
+
+    favorited = not favorited
+    fav_count = guide.favorites.count()
+
+    return JsonResponse({"favorited": favorited, "fav_count": fav_count})

@@ -22,7 +22,7 @@
         <p>Last edited {{ guide.recent_upload }}</p>
         <p>
           <span id="like-count">{{ guide.likes.count }} ♥</span> and
-          <span>{{ guide.favorites.count }} ★</span>
+          <span id="fav-count">{{ guide.favorites.count }} ★</span>
         </p>
       </div>
       <!-- second row, "last edited..." and a link to access the game -->
@@ -52,7 +52,7 @@
   {% endif %}
   <span type="submit"
         id="like-span"
-        class="heart-button"
+        class="likefav-button"
         data-user="{{ request.user }}"
         data-like-url="{% url 'like-unlike-guide' guide.pk %}">
     <i id="like-icon"
@@ -62,7 +62,17 @@
       {% else %}
         heart-hollow
       {% endif %}"">♥</i>
-      Like
+      <span class="likefav-text">Like</span>
+    </span>
+    &nbsp;
+    <span type="submit"
+          id="fav-span"
+          class="likefav-button"
+          data-user="{{ request.user }}"
+          data-fav-url="{% url 'fav-unfav-guide' guide.pk %}">
+      <i id="fav-icon"
+         class=" {% if request.user in guide.favorites.all %} star-faved {% else %} star-hollow {% endif %}">★</i>
+      <span class="likefav-text">Favorite</span>
     </span>
     {% csrf_token %}
   {% endblock page-content %}

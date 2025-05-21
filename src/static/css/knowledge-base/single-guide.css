@@ -8,20 +8,39 @@
 }
 
 
-.heart-button {
+.likefav-button {
   background: none;
   border: none;
-  font-size: 12pt;
+  font-size: 16pt;
   cursor: pointer;
   padding: 0;
 }
 
 
+.likefav-text {
+  font-size: 12pt;
+}
+
+
 .heart-hollow {
-  color: gray;       /* Simulate "hollow" with gray */
-  transition: color 0.2s ease;
+  color: gray;
+  transition: color 0.5s ease;
 }
 
 .heart-liked {
-  color: red;         /* Filled (liked) = red */
+  color: red;
+  transition: color 0.5s ease;
+
+}
+
+
+.star-hollow {
+  color: gray;
+  transition: color 0.5s ease;
+}
+
+.star-faved {
+  color: #D4AF37;
+  transition: color 0.5s ease;
+
 }
