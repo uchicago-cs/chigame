@@ -19,6 +19,7 @@ from chigame.api.tests.factories import (
     FeedbackFactory,
     GameFactory,
     LobbyFactory,
+    MatchFactory,
     TournamentFactory,
     UserFactory,
 )
@@ -958,6 +959,83 @@ class SpamFilterTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("spam", str(response.data).lower())
         self.assertEqual(Review.objects.count(), 0)
+
+
+class SimulationTests(APITestCase):
+    def setUp(self):
+        self.user = UserFactory()
+        self.game = GameFactory()
+        self.tournament = TournamentFactory(game=self.game, created_by=self.user)
+
+        self.matches = []
+        # Create 4 matches that are properly wired to this tournament + game
+        for _ in range(4):
+            players = UserFactory.create_batch(2)
+            lobby = LobbyFactory(game=self.game, created_by=self.user)
+            lobby.members.set(players)
+            lobby.save()
+
+            match = MatchFactory(game=self.game, lobby=lobby, players=players)
+            self.tournament.matches.add(match)
+            self.matches.append(match)
+        # # create 4 matches under that tournament
+        # for _ in range(4):
+        #     m = MatchFactory()
+        #     self.tournament.matches.add(m)
+
+        self.url = reverse("api-tournament-simulate", args=[self.tournament.pk])
+        self.client.force_authenticate(self.user)
+
+    def test_single_elimination(self):
+        # Simulate a tournament with single elimination
+        resp = self.client.post(self.url, {}, format="json")
+        self.assertEqual(resp.status_code, 200)
+        self.assertFalse(resp.data["is_double_elimination"])
+        self.assertIn("rounds", resp.data)
+        # the winner must be one of the players in your matches
+        all_player_ids = {u.id for m in self.tournament.matches.all() for u in m.players.all()}
+        self.assertIn(resp.data["tournament_winner"], all_player_ids)
+
+    def test_double_elimination(self):
+        # Simulate a tournament with double elimination
+        resp = self.client.post(self.url, {"double_elimination": True}, format="json")
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(resp.data["is_double_elimination"])
+
+    def test_simulation_with_no_matches(self):
+        # Simulate a tournament with no matches (edge case)
+
+        # Remove all matches from tournament
+        self.tournament.matches.clear()
+
+        resp = self.client.post(self.url, {}, format="json")
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.data["rounds"], {})
+        self.assertIsNone(resp.data["tournament_winner"])
+
+    def test_simulated_round_match_counts(self):
+        # Ensures that the number of matches in the first round is equal to the number of matches in the tournament
+        # This prevents duplicate mathces
+        resp = self.client.post(self.url, {}, format="json")
+        self.assertEqual(resp.status_code, 200)
+
+        rounds = resp.data["rounds"]
+        round1_matches = rounds[1]["winners"]
+        self.assertEqual(len(round1_matches), self.tournament.matches.count())
+
+    def test_double_elimination_includes_losers_bracket(self):
+        resp = self.client.post(self.url, {"double_elimination": True}, format="json")
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn("losers", resp.data["rounds"][2])
+
+    def test_double_elimination_final_match_present(self):
+        # Checks that double elimination includes a final match
+        resp = self.client.post(self.url, {"double_elimination": True}, format="json")
+        self.assertEqual(resp.status_code, 200)
+
+        final_matches = resp.data["rounds"].get("3", {}).get("final", [])
+        if len(final_matches) > 0:
+            self.assertIn("players", final_matches[0])
 
 
 class FeedbackTests(APITestCase):
