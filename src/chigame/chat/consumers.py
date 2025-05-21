@@ -129,20 +129,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
         user_id = text_data_json["user_id"]
         reply_to_id = text_data_json.get("reply_to")
 
-<<<<<<<<< Temporary merge branch 1
-        # Save message to database once when first received from client
-        message_data = await self.save_message(self.chat_id, user_id, message, reply_to_id)
-=========
-        # this will need to be made conditional at some point
+        # Filter message for profanity
         filtered_message = self.profanity_filter.censor_message(message)
->>>>>>>>> Temporary merge branch 2
 
-        # Save message and get username
-        # The original message is saved to the database to preserve the full context of the chat,
-        # while the filtered version is broadcasted to ensure compliance with content moderation policies.
-        username = await self.save_message(self.chat_id, user_id, message)  # pass the original message
+        # Save original message to the database and get message metadata
+        message_data = await self.save_message(self.chat_id, user_id, message, reply_to_id)
 
-        # the filtered message is sent to the group - this is where the censorship happens
+        # Send the filtered message to the group
         await self.channel_layer.group_send(
             self.room_group_name,
             {
