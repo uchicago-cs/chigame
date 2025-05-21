@@ -10,16 +10,22 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.safestring import mark_safe
 from django.views.decorators.http import require_POST
-from django.views.generic import DetailView, ListView
+from django.views.generic import DetailView, ListView, TemplateView
 
 from chigame.games.models import Category, Game
 
 from .forms import MarkdownUploadForm
-from .models import Guide, ReviewFeedback
+from .markdown_extensions import HtmlSanitizerExtension, SectionWrapperExtension
+from .models import GeneralFeedback, Guide, ReviewFeedback
 
 
 # Viewers
 class DefaultView(ListView):
+    """
+    Landing page view that displays published guides.
+    Allows searching, filtering by category, and sorting of guides.
+    """
+
     model = Guide
     template_name = "knowledge-base/landing.html"
     context_object_name = "guides"
@@ -96,6 +102,11 @@ class GuideDetail(DetailView):
         guide = self.get_object()
 
         context["published"] = False
+
+        # Render the markdown text as actual markdown
+        md = markdown.Markdown(extensions=[SectionWrapperExtension(), HtmlSanitizerExtension(), "fenced_code"])
+        html_content = md.convert(guide.content)
+        context["rendered_content"] = html_content
 
         if guide.game_id.published_guide_id == guide:
             context["published"] = True
@@ -182,6 +193,11 @@ def DownloadGuide(request, pk):
 
 
 class FeedbackDetail(LoginRequiredMixin, DetailView):
+    """
+    Displays the details of a moderator's feedback on a guide.
+    This view is specifically for guide authors to see feedback about their guides.
+    """
+
     model = ReviewFeedback
     template_name = "knowledge-base/feedback_detail.html"
     context_object_name = "feedback"
@@ -269,7 +285,29 @@ class ReviewPendingGuideView(LoginRequiredMixin, UserPassesTestMixin, DetailView
         context = self.get_context_data(object=self.object)
         context["feedback"] = feedback
         context["message"] = message
-        return self.render_to_response(context)
+
+        return redirect("knowledge-base-moderator")
+
+
+class UserFeedbackView(TemplateView):
+    """
+    View for users to submit general feedback about the knowledge base system.
+    This is separate from guide-specific feedback (ReviewFeedback) and is meant
+    for general user experience feedback.
+    """
+
+    template_name = "knowledge-base/feedback.html"
+
+    def post(self, request, *args, **kwargs):
+        feedback_text = request.POST.get("feedback", "")
+        if feedback_text:
+            GeneralFeedback.objects.create(feedback=feedback_text)
+            messages.success(request, "Thank you for your feedback!")
+        return redirect("knowledge-base")
+
+
+def faq_view(request):
+    return render(request, "knowledge-base/faq.html")
 
 
 class ModeratorListByGame(LoginRequiredMixin, UserPassesTestMixin, ListView):
