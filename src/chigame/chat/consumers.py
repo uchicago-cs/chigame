@@ -140,7 +140,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
             except LiveChatMessage.DoesNotExist:
                 reply_to = None
         # Save the message to the database
-        message_obj = await database_sync_to_async(LiveChatMessage.objects.create)(live_chat=chat, user=user, content=message, reply_to=reply_to)
+        message_obj = await database_sync_to_async(LiveChatMessage.objects.create)(
+            live_chat=chat, user=user, content=message, reply_to=reply_to
+        )
 
         # Return the display name (username or email)
         return user.username or user.email, message_obj.id
@@ -163,13 +165,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         # Save message to database once when first received from client
         username, message_id = await self.save_message(self.chat_id, user_id, message, reply_to_id)
-        
+
         # Get reply information if available
         reply_to_username = None
         reply_to_content = None
         if reply_to_id:
             try:
-                reply_message = await database_sync_to_async(LiveChatMessage.objects.select_related('user').get)(id=reply_to_id)
+                reply_message = await database_sync_to_async(LiveChatMessage.objects.select_related("user").get)(
+                    id=reply_to_id
+                )
                 reply_to_username = reply_message.user.username or reply_message.user.email
                 reply_to_content = reply_message.content
             except LiveChatMessage.DoesNotExist:
