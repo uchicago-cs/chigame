@@ -1,3 +1,4 @@
+from django import forms
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
@@ -888,3 +889,35 @@ class GroupLeaveView(LoginRequiredMixin, View):
             group.members.remove(request.user)
             messages.success(request, "You have successfully left the group.")
         return redirect(reverse("users:group-detail", kwargs={"pk": group.pk}))
+
+
+class GroupForm(forms.ModelForm):
+    class Meta:
+        model = Group
+        fields = ["name", "description", "members"]
+        widgets = {
+            "members": forms.CheckboxSelectMultiple(),
+        }
+
+
+class GroupUpdateView(LoginRequiredMixin, UpdateView):
+    model = Group
+    form_class = GroupForm
+    template_name = "users/group_update.html"
+
+    def get_success_url(self):
+        return reverse("users:group-detail", kwargs={"pk": self.object.pk})
+
+    def dispatch(self, request, *args, **kwargs):
+        group = self.get_object()
+        if request.user not in group.members.all():
+            messages.error(request, "You do not have permission to edit this group.")
+            return redirect(reverse("users:group-detail", kwargs={"pk": group.pk}))
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        if self.request.user != self.get_object().created_by:
+            form.fields.pop("name", None)
+            form.fields.pop("description", None)
+        return form
