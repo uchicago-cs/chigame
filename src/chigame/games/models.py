@@ -241,9 +241,6 @@ class Player(models.Model):
     victory_type = models.TextField(blank=True, null=True)
 
 
-# ==================================
-
-
 class MatchProposal(models.Model):
     """
     A proposal for a group of friends to have a match at a specific
@@ -764,9 +761,6 @@ class GameData(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.game.name}: {self.key}"
-
-
-# ================ CHECKERS ================
 
 
 class Checkers(models.Model):
