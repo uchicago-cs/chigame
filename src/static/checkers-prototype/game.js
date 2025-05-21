@@ -44,7 +44,6 @@ let pieces = [];
 let selectedPiece = null;
 let myColor = PLAYER_ID === 1 ? COLORS.red : COLORS.black;
 let currentTurnColor = CURRENT_TURN_PLAYER_ID === 1 ? COLORS.red : COLORS.black;
-const isPlayerTwo = PLAYER_ID === 2;
 // change to adjust the piece size, any value less than 2 would make the pieces
 // bigger than the tiles
 const RADIUS_SCALE_FACTOR = 2.5;
@@ -90,8 +89,14 @@ function update() {
 }
 // ----------------------------------------------------------------------------
 
-function transformCoords(x, y) {
-  return isPlayerTwo ? [BOARD_SIZE - 1 - x, BOARD_SIZE - 1 - y] : [x, y];
+// Mirror and Unmirrors the board by transforming the coordinates
+// This depends on whether they are player 2 or not
+function maybeMirrorCoord(x, y) {
+  return PLAYER_ID === 2 ? [BOARD_SIZE - 1 - x, BOARD_SIZE - 1 - y] : [x, y];
+}
+
+function maybeUnmirrorCoord(x, y) {
+  return PLAYER_ID === 2 ? [BOARD_SIZE - 1 - x, BOARD_SIZE - 1 - y] : [x, y];
 }
 
 // Draw the game board
@@ -99,7 +104,8 @@ function drawBoard(scene) {
   // loop over the entire game board (y is column, x is row)
   for (let y = 0; y < BOARD_SIZE; y++) {
     for (let x = 0; x < BOARD_SIZE; x++) {
-      const [drawX, drawY] = transformCoords(x, y);
+      const [logicalX, logicalY] = [x, y]; // store logical (unflipped) coordinates
+      const [drawX, drawY] = maybeMirrorCoord(x, y);
       // setting tile colors: even tiles = light brown, odd tiles = dark brown
       let tile_color = (x + y) % 2 === 0 ? COLORS.light_brown : COLORS.dark_brown;
 
@@ -110,7 +116,7 @@ function drawBoard(scene) {
           // margin + x returns the top-left location of each tile
           // tile size / 2 returns the center of the tile
           MARGIN + drawX * TILE_SIZE + TILE_SIZE / 2, // x position
-          MARGIN + drawY * TILE_SIZE + TILE_SIZE / 2,  // y position
+          MARGIN + drawY * TILE_SIZE + TILE_SIZE / 2, // y position
           TILE_SIZE, // width
           TILE_SIZE, // height
           tile_color
@@ -118,22 +124,21 @@ function drawBoard(scene) {
         // make the tiles selectable so players can click on them to move pieces
         .setInteractive();
 
+      tile.logicalX = logicalX;
+      tile.logicalY = logicalY;
+
       // listens for clicks on tiles
-      tile.on('pointerdown', () => {
-        const [logicalX, logicalY] = isPlayerTwo
-          ? [BOARD_SIZE - 1 - x, BOARD_SIZE - 1 - y]
-          : [x, y];
-        // does nothing if no pieces were selected
-        if (!selectedPiece) return;
+      tile.on('pointerdown', function () {
+        if (!selectedPiece || selectedPiece.ownerId !== PLAYER_ID) return;
 
         // see if there are any pieces at the selected square
-        const targetPiece = getPiece(logicalX, logicalY);
+        const targetPiece = getPiece(this.logicalX, this.logicalY);
 
         // if there's no piece on the selected square
         // and it is a valid move for the selected piece,
         // move the piece and end the player turn
-        if (!targetPiece && isValidMove(selectedPiece, logicalX, logicalY)) {
-          movePiece(selectedPiece, logicalX, logicalY);
+        if (!targetPiece && isValidMove(selectedPiece, this.logicalX, this.logicalY)) {
+          movePiece(selectedPiece, this.logicalX, this.logicalY);
           endTurn();
         }
       });
@@ -141,11 +146,11 @@ function drawBoard(scene) {
   }
 }
 
-
 function createPiece(x, y, logicalColor, scene) {
-  const [drawX, drawY] = transformCoords(x, y);
   const owner = logicalColor === COLORS.red ? PLAYER_RED : PLAYER_BLACK;
   const ownerId = owner === PLAYER_RED ? 1 : 2; // You can use Django to inject real IDs
+
+  const [drawX, drawY] = maybeMirrorCoord(x, y);
 
   const piece = {
     x,
@@ -163,6 +168,11 @@ function createPiece(x, y, logicalColor, scene) {
 
   piece.sprite.setInteractive();
   piece.sprite.on('pointerdown', () => {
+    if (!selectedPiece && piece.ownerId !== PLAYER_ID) {
+      // Not your piece
+      return;
+    }
+
     if (!selectedPiece && piece.owner === getCurrentPlayerOwner()) {
       selectedPiece = piece;
       piece.sprite.setStrokeStyle(HIGHLIGHT_SIZE, COLORS.white);
@@ -227,8 +237,10 @@ function isValidMove(piece, moveX, moveY) {
   const dx = moveX - piece.x;
   const dy = moveY - piece.y;
 
-  // Adjust move direction depending on player perspective
-  const direction = piece.owner === PLAYER_RED ? -1 : 1;
+  // with our current orientation, red pieces always move up and black pieces move down
+  // may need to fix this once we introduce multiplayer, which would require
+  // us to flip the board for different players
+  const direction = piece.owner === PLAYER_RED ? -1 : 1; // in js, y=0 at the top
 
   // Normal move (1 step diagonally)
   if (Math.abs(dx) === 1 && dy === direction) {
@@ -272,10 +284,10 @@ function movePiece(piece, moveX, moveY) {
   piece.x = moveX;
   piece.y = moveY;
   // update the display state
-  const [drawX, drawY] = transformCoords(moveX, moveY);
-
+  const [drawX, drawY] = maybeMirrorCoord(moveX, moveY);
   piece.sprite.x = MARGIN + drawX * TILE_SIZE + TILE_SIZE / 2;
   piece.sprite.y = MARGIN + drawY * TILE_SIZE + TILE_SIZE / 2;
+
 
   // Log the current state
   const currentState = getBoardState();
