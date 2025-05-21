@@ -17,18 +17,6 @@
           <a href="{% url 'index' %}" class="nav-btn">Home</a>
           <button id="how-to-play-btn" class="nav-btn">How to Play ▼</button>
           <button id="settings-btn" class="nav-btn">⚙</button>
-          <!-- TEMPORARY START: Temporary Login Option -->
-          <div id="login-container">
-            <form id="loginForm" onsubmit="event.preventDefault(); tempLogin();">
-              <input type="text" id="tempUsername" placeholder="Enter username" />
-              <button type="submit" class="login-button">Login</button>
-            </form>
-            <div id="user-info">
-              <span id="current-username"></span>
-              <button onclick="tempLogout()" class="login-button">Logout</button>
-            </div>
-          </div>
-          <!-- TEMPORARY END: Temporary Login Option -->
         </div>
         <div class="logo-title">
           <h1 class="name">WORDS</h1>
@@ -94,53 +82,6 @@
         <p>© 2025 WORDS - UNIVERSITY OF CHICAGO</p>
       </footer>
     </div>
-    <script>
-      // TEMPORARY START: Temporary Login Option Script
-      function tempLogin() {
-        const username = document.getElementById('tempUsername').value.trim();
-        if (username) {
-          localStorage.setItem('tempUsername', username);
-          updateLoginUI(username);
-        }
-      }
-
-      function tempLogout() {
-        localStorage.removeItem('tempUsername');
-        updateLoginUI(null);
-      }
-
-      function updateLoginUI(username) {
-        const loginForm = document.getElementById('loginForm');
-        const userInfo = document.getElementById('user-info');
-        const currentUsername = document.getElementById('current-username');
-        const profileUsername = document.getElementById('username');
-
-        if (username) {
-          loginForm.classList.add('display-none');
-          loginForm.classList.remove('display-flex');
-          userInfo.classList.add('display-flex');
-          userInfo.classList.remove('display-none');
-          currentUsername.textContent = username;
-          profileUsername.textContent = username;
-        } else {
-          loginForm.classList.add('display-flex');
-          loginForm.classList.remove('display-none');
-          userInfo.classList.add('display-none');
-          userInfo.classList.remove('display-flex');
-          document.getElementById('tempUsername').value = '';
-          profileUsername.textContent = 'GUEST';
-        }
-      }
-
-      // On page load, check for temp username
-      document.addEventListener('DOMContentLoaded', function() {
-        const saved = localStorage.getItem('tempUsername');
-        if (saved) {
-          updateLoginUI(saved);
-        }
-      });
-      // TEMPORARY END: Temporary Login Option Script
-    </script>
     <script src="index.js" defer></script>
   </body>
 </html>

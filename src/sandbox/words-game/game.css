@@ -685,51 +685,6 @@ body.colorblind-mode {
     --accent: #FF8000;
 }
 
-/* Login Container */
-.login-container {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  margin-left: 0.5rem;
-}
-
-/* Login Form */
-.login-form {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-}
-
-/* Username Input */
-.login-input {
-  padding: 0.3rem;
-  border-radius: 3px;
-  border: 1px solid #ccc;
-  background: var(--bg-dark);
-  color: var(--text);
-}
-
-/* Login Button */
-.login-button {
-  padding: 0.3rem 0.7rem;
-  border-radius: 3px;
-  background: var(--primary);
-  color: white;
-  border: none;
-}
-
-/* User Info */
-.user-info {
-  display: none;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-/* Logout Button */
-.logout-button {
-  padding: 0.3rem 0.7rem;
-  border-radius: 3px;
-  background: var(--primary);
-  color: white;
-  border: none;
+.display-flex {
+    display: flex;
 }

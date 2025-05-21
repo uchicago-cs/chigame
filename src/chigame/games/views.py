@@ -1593,8 +1593,8 @@ def wordle_game_page(request):
     }
     token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
 
-    # Local development server URL + token
-    iframe_url = f"http://localhost:3000/index.html?token={token}"
+    # GitHub Pages game URL + token
+    iframe_url = f"https://zhejiej.github.io/Words-Game//?token={token}"
 
     return render(request, "games/wordle.html", {"iframe_url": iframe_url})
 
