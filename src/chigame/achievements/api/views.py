@@ -58,7 +58,7 @@ def award_achievement(request):
             )[0]
             achievement = Achievement.objects.get_or_create(name="Clicked a Button", rarity=1, game=game)[0]
             user = request.user
-            user_achievement = UserAchievement.objects.get_or_create(
+            UserAchievement.objects.get_or_create(
                 user=user, achievement=achievement, date_earned="2025-04-24T21:45:37.084000Z"
             )
 
