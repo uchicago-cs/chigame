@@ -28,8 +28,14 @@
       JSON.stringify({
         message: messageInput,
         user_id: "{{ request.user.id }}",
+        reply_to: replyToMessageId
       })
     );
+
+    // Clear reply state
+    replyToMessageId = null;
+    replyToUsername = null;
+    replyToContent = null;
   };
 
   /**
@@ -42,14 +48,37 @@
   chatSocket.onmessage = function(e) {
     const data = JSON.parse(e.data);
 
+    // Target consistent message container using ID
+    const messageList = document.querySelector("#message-container");
+
     // Create message container
     const messageContainer = document.createElement("div");
-    messageContainer.className = "mb-3 align-self-end";
+    messageContainer.className = `mb-3 ${data.user_id === "{{ request.user.id }}" ? "align-self-end" : "align-self-start"}`;
+    messageContainer.setAttribute("data-message-id", data.message_id);
+    messageContainer.setAttribute("oncontextmenu", `showContextMenu(event, ${data.message_id}, '${data.username}', '${data.message}'); return false;`);
 
     // Create message bubble
     const messageBubble = document.createElement("div");
-    messageBubble.className = "bg-success-subtle rounded p-2 shadow-sm";
+    messageBubble.className = `${data.user_id === "{{ request.user.id }}" ? "bg-success-subtle" : "bg-white"} rounded p-2 shadow-sm`;
     messageBubble.style.maxWidth = "80%";
+
+    // Add reply preview if this is a reply
+    if (data.reply_to) {
+      const replyPreview = document.createElement("div");
+      replyPreview.className = "message-reply";
+
+      const replySender = document.createElement("div");
+      replySender.className = "message-reply__sender";
+      replySender.textContent = data.reply_to_username;
+
+      const replyContent = document.createElement("div");
+      replyContent.className = "message-reply__content";
+      replyContent.textContent = data.reply_to_content;
+
+      replyPreview.appendChild(replySender);
+      replyPreview.appendChild(replyContent);
+      messageBubble.appendChild(replyPreview);
+    }
 
     // Create message sender
     const sender = document.createElement("div");
@@ -75,14 +104,45 @@
     messageBubble.appendChild(timestamp);
     messageContainer.appendChild(messageBubble);
 
-    // Clear input and add message to container
+    // Add message to container and clear input
+    messageList.appendChild(messageContainer);
     document.querySelector("#id_message_send_input").value = "";
-    document.querySelector(".bg-light.flex-grow-1 .d-flex.flex-column").appendChild(messageContainer);
 
     // Scroll to bottom of chat - using requestAnimationFrame to ensure DOM updates first
     requestAnimationFrame(() => {
-      const container = document.querySelector(".bg-light.flex-grow-1");
-      container.scrollTop = container.scrollHeight;
+      messageList.scrollTop = messageList.scrollHeight;
     });
   };
+  // Toggle between centered and floating chat mode
+  const chatContainer = document.getElementById("chatContainer");
+  const toggleButton = document.getElementById("toggle-chat-mode");
+  const collapseButton = document.getElementById("collapse-chat");
+
+  if (collapseButton) {
+    collapseButton.addEventListener("click", () => {
+      chatContainer.classList.toggle("collapsed-chat");
+
+      // Flip arrow direction
+      const icon = collapseButton.querySelector("i");
+      if (icon) {
+        icon.classList.toggle("bi-chevron-down");
+        icon.classList.toggle("bi-chevron-up");
+      }
+    });
+  }
+
+  if (chatContainer && toggleButton) {
+    toggleButton.addEventListener("click", () => {
+      chatContainer.classList.toggle("floating-chat");
+      chatContainer.classList.toggle("centered-chat");
+
+      // Show collapse button only in floating mode
+      if (chatContainer.classList.contains("floating-chat")) {
+        collapseButton.classList.remove("d-none");
+      } else {
+        collapseButton.classList.add("d-none");
+        chatContainer.classList.remove("collapsed-chat");
+      }
+    });
+  }
 </script>

@@ -8,6 +8,7 @@ from django.core.cache import cache
 from chigame.users.models import User
 
 from .models import LiveChat, LiveChatMessage
+from .utils import ProfanityFilter
 
 # Rate limiting constants
 MESSAGES_PER_SECOND = 1  # Maximum messages allowed per second
@@ -21,6 +22,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
     It allows users to connect to a chat room and send messages to other users
     in the room.
     """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.profanity_filter = ProfanityFilter()
 
     @database_sync_to_async
     def get_live_chat(self, chat_id):
@@ -107,7 +112,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         return True
 
-    async def save_message(self, chat_id, user_id, message):
+    async def save_message(self, chat_id, user_id, message, reply_to_id=None):
         """
         Saves the message to the database. This is called when a message is received from the client.
 
@@ -115,6 +120,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             chat_id (int): The ID of the chat.
             user_id (int): The ID of the user.
             message (str): The message to save.
+            reply_to_id (int, optional): The ID of the message being replied to.
 
         Returns:
             tuple: (username, bool) - The username and whether the message was saved.
@@ -127,12 +133,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
             database_sync_to_async(LiveChat.objects.get)(id=chat_id),
             database_sync_to_async(User.objects.get)(id=user_id),
         )
-
+        reply_to = None
+        if reply_to_id:
+            try:
+                reply_to = LiveChatMessage.objects.get(id=reply_to_id)
+            except LiveChatMessage.DoesNotExist:
+                reply_to = None
         # Save the message to the database
-        await database_sync_to_async(LiveChatMessage.objects.create)(live_chat=chat, user=user, content=message)
+        message_obj = await database_sync_to_async(LiveChatMessage.objects.create)(live_chat=chat, user=user, content=message, reply_to=reply_to)
 
         # Return the display name (username or email)
-        return user.username or user.email, True
+        return user.username or user.email
 
     async def receive(self, text_data):
         """
@@ -145,29 +156,26 @@ class ChatConsumer(AsyncWebsocketConsumer):
         text_data_json = json.loads(text_data)
         message = text_data_json["message"]
         user_id = text_data_json["user_id"]
+        reply_to_id = text_data_json.get("reply_to")
+
+        # Filter message for profanity
+        filtered_message = self.profanity_filter.censor_message(message)
 
         # Save message to database once when first received from client
-        username, saved = await self.save_message(self.chat_id, user_id, message)
+        username = await self.save_message(self.chat_id, user_id, message)
 
-        if not saved:
-            # Send rate limit error to the user
-            await self.send(
-                text_data=json.dumps(
-                    {
-                        "type": "error",
-                        "message": f"Rate limit exceeded. Maximum {MESSAGES_PER_SECOND} messages per second allowed.",
-                    }
-                )
-            )
-            return
-
+        # Send the filtered message to the group
         await self.channel_layer.group_send(
             self.room_group_name,
             {
                 "type": "sendMessage",
-                "message": message,
+                "message": filtered_message,
                 "user_id": user_id,
-                "username": username,
+                "username": message_data["username"],
+                "message_id": message_data["message_id"],
+                "reply_to": message_data["reply_to"],
+                "reply_to_username": message_data["reply_to_username"],
+                "reply_to_content": message_data["reply_to_content"],
             },
         )
 
@@ -179,16 +187,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
         Args:
             event (dict): The event data containing message details.
         """
-        message = event["message"]
-        user_id = event["user_id"]
-        username = event.get("username", "")
-
         await self.send(
             text_data=json.dumps(
                 {
-                    "message": message,
-                    "user_id": user_id,
-                    "username": username,
+                    "message": event["message"],
+                    "user_id": event["user_id"],
+                    "username": event["username"],
+                    "message_id": event["message_id"],
+                    "reply_to": event["reply_to"],
+                    "reply_to_username": event["reply_to_username"],
+                    "reply_to_content": event["reply_to_content"],
                 }
             )
         )

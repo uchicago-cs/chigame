@@ -118,6 +118,7 @@ LOCAL_APPS = [
     "chigame.achievements",
     "chigame.forums.base",
     "chigame.knowledge_base",
+    "chigame.leaderboards",
     "chigame.chat",
     # Overridden django-machina apps
     "chigame.forums.forum_conversation",
@@ -233,6 +234,7 @@ TEMPLATES = [
                 "chigame.users.context_processors.allauth_settings",
                 # https://django-machina.readthedocs.io/en/latest/getting_started.html#django-settings
                 "machina.core.context_processors.metadata",
+                "chigame.users.context_processors.user_notifications",
             ],
             "loaders": [
                 # https://django-machina.readthedocs.io/en/latest/getting_started.html#django-settings
@@ -407,3 +409,8 @@ MACHINA_DEFAULT_AUTHENTICATED_USER_FORUM_PERMISSIONS = [
 # ------------------------------------------------------------------------------
 # https://channels.readthedocs.io/en/stable/topics/channel_layers.html
 CHANNEL_LAYERS = {"default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}}
+
+
+# for interactive fiction -  game hosting media url
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
