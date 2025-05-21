@@ -81,7 +81,7 @@ class Game(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.name} ({self.created_by})"
+        return self.name
 
 
 class InteractiveFictionGame(Game):
