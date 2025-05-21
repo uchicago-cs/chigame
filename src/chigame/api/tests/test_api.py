@@ -19,6 +19,7 @@ from chigame.api.tests.factories import (
     FeedbackFactory,
     GameFactory,
     LobbyFactory,
+    MatchFactory,
     TournamentFactory,
     UserFactory,
 )
@@ -960,6 +961,83 @@ class SpamFilterTests(APITestCase):
         self.assertEqual(Review.objects.count(), 0)
 
 
+class SimulationTests(APITestCase):
+    def setUp(self):
+        self.user = UserFactory()
+        self.game = GameFactory()
+        self.tournament = TournamentFactory(game=self.game, created_by=self.user)
+
+        self.matches = []
+        # Create 4 matches that are properly wired to this tournament + game
+        for _ in range(4):
+            players = UserFactory.create_batch(2)
+            lobby = LobbyFactory(game=self.game, created_by=self.user)
+            lobby.members.set(players)
+            lobby.save()
+
+            match = MatchFactory(game=self.game, lobby=lobby, players=players)
+            self.tournament.matches.add(match)
+            self.matches.append(match)
+        # # create 4 matches under that tournament
+        # for _ in range(4):
+        #     m = MatchFactory()
+        #     self.tournament.matches.add(m)
+
+        self.url = reverse("api-tournament-simulate", args=[self.tournament.pk])
+        self.client.force_authenticate(self.user)
+
+    def test_single_elimination(self):
+        # Simulate a tournament with single elimination
+        resp = self.client.post(self.url, {}, format="json")
+        self.assertEqual(resp.status_code, 200)
+        self.assertFalse(resp.data["is_double_elimination"])
+        self.assertIn("rounds", resp.data)
+        # the winner must be one of the players in your matches
+        all_player_ids = {u.id for m in self.tournament.matches.all() for u in m.players.all()}
+        self.assertIn(resp.data["tournament_winner"], all_player_ids)
+
+    def test_double_elimination(self):
+        # Simulate a tournament with double elimination
+        resp = self.client.post(self.url, {"double_elimination": True}, format="json")
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(resp.data["is_double_elimination"])
+
+    def test_simulation_with_no_matches(self):
+        # Simulate a tournament with no matches (edge case)
+
+        # Remove all matches from tournament
+        self.tournament.matches.clear()
+
+        resp = self.client.post(self.url, {}, format="json")
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.data["rounds"], {})
+        self.assertIsNone(resp.data["tournament_winner"])
+
+    def test_simulated_round_match_counts(self):
+        # Ensures that the number of matches in the first round is equal to the number of matches in the tournament
+        # This prevents duplicate mathces
+        resp = self.client.post(self.url, {}, format="json")
+        self.assertEqual(resp.status_code, 200)
+
+        rounds = resp.data["rounds"]
+        round1_matches = rounds[1]["winners"]
+        self.assertEqual(len(round1_matches), self.tournament.matches.count())
+
+    def test_double_elimination_includes_losers_bracket(self):
+        resp = self.client.post(self.url, {"double_elimination": True}, format="json")
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn("losers", resp.data["rounds"][2])
+
+    def test_double_elimination_final_match_present(self):
+        # Checks that double elimination includes a final match
+        resp = self.client.post(self.url, {"double_elimination": True}, format="json")
+        self.assertEqual(resp.status_code, 200)
+
+        final_matches = resp.data["rounds"].get("3", {}).get("final", [])
+        if len(final_matches) > 0:
+            self.assertIn("players", final_matches[0])
+
+
 class FeedbackTests(APITestCase):
     def setUp(self):
         self.user = UserFactory()
@@ -1025,3 +1103,70 @@ class FeedbackTests(APITestCase):
         response = self.client.delete(detail_url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertFalse(Feedback.objects.filter(id=feedback.id).exists())
+
+
+class JWTAuthenticationTests(APITestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="testuser", email="test@example.com", password="testpassword123")
+        self.token_url = reverse("token-obtain-pair")
+
+        # we use lobby since it requries authorization
+        self.game = GameFactory()
+        self.protected_url = reverse("api-lobby-list")
+        self.protected_data = {
+            "game": self.game.id,
+            "name": "New Lobby",
+            "min_players": 2,
+            "max_players": 4,
+            "members": [self.user.id],
+            "created_by": self.user.id,
+        }
+
+    def test_obtain_token(self):
+        response = self.client.post(
+            self.token_url, {"username": "testuser", "password": "testpassword123"}, format="json"  # try username
+        )
+
+        # if username doesn't work us e email
+        if response.status_code != status.HTTP_200_OK:
+            response = self.client.post(
+                self.token_url, {"email": "test@example.com", "password": "testpassword123"}, format="json"
+            )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("access", response.data)
+        self.assertIn("refresh", response.data)
+        return response.data["access"], response.data["refresh"]
+
+    def test_access_protected_endpoint_with_token(self):
+        try:
+            access_token, _ = self.test_obtain_token()
+            self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access_token}")
+            response = self.client.post(self.protected_url, self.protected_data, format="json")
+            self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        except AssertionError as e:
+            self.fail(f"Failed to access protected endpoint: {e}")
+
+    def test_token_refresh(self):
+        try:
+            _, refresh_token = self.test_obtain_token()
+
+            # se refresh token to get new access token
+            refresh_url = reverse("token-refresh")
+            refresh_response = self.client.post(refresh_url, {"refresh": refresh_token}, format="json")
+
+            self.assertEqual(refresh_response.status_code, status.HTTP_200_OK)
+            self.assertIn("access", refresh_response.data)
+        except AssertionError as e:
+            self.fail(f"Failed to refresh token: {e}")
+
+    def test_endpoint_rejects_unauthenticated_requests(self):
+        # dont' set credentials
+        response = self.client.post(self.protected_url, self.protected_data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_endpoint_rejects_malformed_token(self):
+        # set a malformed token
+        self.client.credentials(HTTP_AUTHORIZATION="Bearer invalid_token_string")
+        response = self.client.post(self.protected_url, self.protected_data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
