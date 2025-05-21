@@ -35,14 +35,19 @@
           <button id="how-to-play-btn" class="nav-btn">How to Play ▼</button>
           <button id="settings-btn" class="nav-btn">⚙</button>
           <!-- TEMPORARY START: Temporary Login Option -->
-          <div id="login-container">
-            <form id="loginForm" onsubmit="event.preventDefault(); tempLogin();">
-              <input type="text" id="tempUsername" placeholder="Enter username" />
+          <div id="login-container" class="login-container">
+            <form id="loginForm"
+                  class="login-form"
+                  onsubmit="event.preventDefault(); tempLogin();">
+              <input type="text"
+                     id="tempUsername"
+                     class="login-input"
+                     placeholder="Enter username" />
               <button type="submit" class="login-button">Login</button>
             </form>
-            <div id="user-info">
+            <div id="user-info" class="user-info">
               <span id="current-username"></span>
-              <button onclick="tempLogout()" class="login-button">Logout</button>
+              <button onclick="tempLogout()" class="logout-button">Logout</button>
             </div>
           </div>
           <!-- TEMPORARY END: Temporary Login Option -->
@@ -114,6 +119,13 @@
         <li>Gray: The letter is not in the word at all.</li>
       </ul>
       <br />
+      <h4>Hard Mode</h4>
+      <p>
+        Hints that you get (green and yellow positionings) must be used in your subsequent guesses.
+        Note that grey letters can still be used, and that you are free to put yellow letters in the
+        same spot again.
+      </p>
+      <br />
       <h4>Additional Rules</h4>
       <p>
         Letters can be repeated. A letter will only be marked once per position.
@@ -148,6 +160,11 @@
         <label>
           <input type="checkbox" id="colorblind-toggle" />
           Enable Colorblind Mode
+        </label>
+        <h4>Hard Mode</h4>
+        <label>
+          <input type="checkbox" id="hard-mode-toggle" />
+          Enable Hard Mode
         </label>
       </div>
     </div>
