@@ -155,8 +155,11 @@ class GameCreateView(UserPassesTestMixin, CreateView):
         # save both the file and its contents
         uploaded_file = self.request.FILES.get("twine_file")
         if uploaded_file:
-            self.object.twine_file = uploaded_file         
-            self.object.twine_file_content = uploaded_file.read()     
+            file_contents = uploaded_file.read()
+            uploaded_file.seek(0) 
+            
+            self.object.twine_file_content = file_contents  #binary field expects bytes
+            self.object.twine_file = uploaded_file          #file field expects a file object
     
         self.object.save()
         return redirect(self.get_success_url())
