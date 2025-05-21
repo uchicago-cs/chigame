@@ -49,6 +49,7 @@ let currentTurnColor = CURRENT_TURN_PLAYER_ID === 1 ? COLORS.red : COLORS.black;
 const RADIUS_SCALE_FACTOR = 2.5;
 // selected piece highlight stroke width
 const HIGHLIGHT_SIZE = 3;
+let highlightedTiles = [];
 
 // ------------------- Get Board State ----------------------------------------
 // From Database
@@ -173,16 +174,15 @@ function createPiece(x, y, logicalColor, scene) {
       return;
     }
 
-    if (!selectedPiece && piece.owner === getCurrentPlayerOwner()) {
-      selectedPiece = piece;
-      piece.sprite.setStrokeStyle(HIGHLIGHT_SIZE, COLORS.white);
-    } else if (selectedPiece === piece) {
+    if (selectedPiece === piece) {
       selectedPiece.sprite.setStrokeStyle();
       selectedPiece = null;
+      clearHighlights();
     } else if (piece.owner === getCurrentPlayerOwner()) {
-      selectedPiece.sprite.setStrokeStyle();
+      if (selectedPiece) selectedPiece.sprite.setStrokeStyle();
       selectedPiece = piece;
       piece.sprite.setStrokeStyle(HIGHLIGHT_SIZE, COLORS.white);
+      highlightValidMoves(scene, piece);
     }
   });
 
@@ -260,6 +260,44 @@ function isValidMove(piece, moveX, moveY) {
   return false;
 }
 
+// helper function to highlight the valid moves for the selected piece
+function highlightValidMoves(scene, piece) {
+  // clear old highlights
+  clearHighlights();
+
+  // iterate through the board
+  for (let y = 0; y < BOARD_SIZE; y++) {
+    for (let x = 0; x < BOARD_SIZE; x++) {
+      // check that the tile is not occupied and is a valid move
+      if (!getPiece(x, y) && isValidMove(piece, x, y)) {
+        const [drawX, drawY] = maybeMirrorCoord(x, y);
+
+        // add a slighlty transparent white square on top of that tile to make
+        // the tile appear highlighted
+        const highlight = scene.add.rectangle(
+          MARGIN + drawX * TILE_SIZE + TILE_SIZE / 2,
+          MARGIN + drawY * TILE_SIZE + TILE_SIZE / 2,
+          TILE_SIZE,
+          TILE_SIZE,
+          COLORS.white,
+          0.3
+        );
+
+        // Track it for later cleanup
+        highlightedTiles.push(highlight);
+      }
+    }
+  }
+}
+
+// helper function to clear all the highlighted tiles
+function clearHighlights() {
+  while (highlightedTiles.length > 0) {
+    highlightedTiles.pop().destroy();
+  }
+}
+
+
 function movePiece(piece, moveX, moveY) {
   updateScore();
 
@@ -312,7 +350,6 @@ function movePiece(piece, moveX, moveY) {
       }
     })
     .catch((error) => console.error("Fetch error:", error));
-
 }
 
 // helper function to get the piece
@@ -329,6 +366,7 @@ function endTurn() {
   selectedPiece = null;
   // switch between red and black player turn
   currentTurnColor = (currentTurnColor === COLORS.red) ? COLORS.black : COLORS.red;
+  clearHighlights();
 }
 
 // Retrieves a 2D array representation of the board state where 0 are unoccupied
