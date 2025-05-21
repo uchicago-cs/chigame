@@ -1,6 +1,10 @@
 # Words-Game
-Word list based on the 5-letter word list compiled by shmookey.
-https://gist.github.com/shmookey/b28e342e1b1756c4700f42f17102c2ff
+
+Word List for 4, 5, 6 Letter words (pages 1 and 2) - 1000 words each
+
+https://www.thefreedictionary.com/4-letter-words.htm
+https://www.thefreedictionary.com/5-letter-words.htm
+https://www.thefreedictionary.com/6-letter-words.htm
 
 Dictionary API for known words
 https://dictionaryapi.dev/
