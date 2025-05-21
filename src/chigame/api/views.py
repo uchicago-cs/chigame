@@ -9,7 +9,6 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import SAFE_METHODS, BasePermission, IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from chigame.achievements.models import Achievement, UserAchievement
 from chigame.api.filters import GameFilter
@@ -31,12 +30,10 @@ from chigame.api.serializers import (
     UserSerializer,
 )
 from chigame.api.spam_utils import is_spam
-from chigame.games.models import Feedback, Game, Lobby, Message, Review, Tournament
-from chigame.leaderboards.models import LeaderboardEntry, Match, Metric, MetricScore
-from chigame.users.models import Group, User, UserProfile
 from chigame.games.models import Feedback, Game, GameData, Lobby, Message, Review, Tournament
 from chigame.games.simulation_utils import run_complete_tournament_simulation
-from chigame.users.models import Group, User
+from chigame.leaderboards.models import LeaderboardEntry, Match, Metric, MetricScore
+from chigame.users.models import Group, User, UserProfile
 
 
 # Helper function to get user from slug
@@ -380,13 +377,14 @@ class AchievementCreateView(generics.CreateAPIView):
             {"message": "Achievement assigned to user!", "data": serializer.data}, status=status.HTTP_201_CREATED
         )
 
+
 class MetricScoreView(generics.ListCreateAPIView):
     """
     View to handle MetricScore creation and retrieval.
     """
 
     serializer_class = MetricScoreSerializer
-    authentication_classes = [JWTAuthentication, SessionAuthentication]
+    authentication_classes = [SessionAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
@@ -422,6 +420,7 @@ class MetricScoreView(generics.ListCreateAPIView):
             match=match,
             leaderboard_entry=leaderboard_entry,
         )
+
 
 class GameDataListView(generics.ListCreateAPIView):
     """
