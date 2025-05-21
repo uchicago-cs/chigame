@@ -23,7 +23,13 @@
   <div class="contributor-header-box">
     <form method="get" class="mb-3 d-flex align-items-center gap-2">
       <select name="sort" class="form-select w-auto">
-        <option value="">Sort by: Most Recent Updates</option>
+        <option value="">Sort By:</option>
+        <option value="status"
+                {% if request.GET.sort == "status" %}selected{% endif %}>Status</option>
+        <option value="game" {% if request.GET.sort == "game" %}selected{% endif %}>Game</option>
+        <option value="likes" {% if request.GET.sort == "likes" %}selected{% endif %}>Likes</option>
+        <option value="newest"
+                {% if request.GET.sort == "newest" %}selected{% endif %}>Most Recent Updates</option>
         <option value="old" {% if request.GET.sort == "old" %}selected{% endif %}>Oldest Update</option>
       </select>
       <button type="submit" class="btn btn-outline-secondary">Search</button>
@@ -47,7 +53,8 @@
               <a href="{% url 'download-guide' guide.pk %}"
                  class="btn btn-outline-secondary"><i class="fas fa-download"></i></a>
               &nbsp;
-              Guide for {{ guide.game_id }}(ID={{ guide.pk }})
+              <a class="text-decoration-none"
+                 href="{% url 'knowledge-base-guide-detail' guide.pk %}">Guide for {{ guide.game_id }}(ID={{ guide.pk }})</a>
             </td>
             <td>Last Upload: {{ guide.recent_upload }}</td>
             <td>

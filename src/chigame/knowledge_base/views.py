@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
-from django.db.models import CharField, F, Q, Value
+from django.db.models import CharField, Count, F, Q, Value
 from django.db.models.functions import Concat
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -171,6 +171,21 @@ class ContributorManageGuide(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         guides = self.request.user.authored_guides.all()
+
+        # pubs = Publisher.objects.annotate(num_books=Count('book')).order_by('-num_books')[:5]
+
+        # for sorting
+        sort = self.request.GET.get("sort")
+        if sort == "old":
+            guides = guides.order_by("recent_upload")
+        elif sort == "newest":
+            guides = guides.order_by("-recent_upload")
+        elif sort == "game":
+            guides = guides.order_by("game_id")
+        elif sort == "likes":
+            guides = guides.annotate(num_likes=Count("likes")).order_by("-num_likes")
+        elif sort == "status":  # default: status
+            guides = guides.order_by("status")
 
         for guide in guides:
             guide.latest_feedback = None
