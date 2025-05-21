@@ -51,6 +51,9 @@ let drawOfferedBy = null;
 //BOT SETTINGS
 let vsEasyBot = true;
 
+// default volume
+let volumeAmount = 1;
+
 // ----------------------------------------------------------------------------
 
 // ---INIT FUNCTIONS-----------------------------------------------------------
@@ -73,7 +76,7 @@ function create() {
   // Listen for the 'h' key, give hint if pressed
   this.input.keyboard.on('keydown-H', () => {
     // Play hint sound effect
-    this.sound.play('hint');
+    this.sound.play('hint', { volume: volumeAmount });
 
     giveHint();
   });
@@ -376,7 +379,7 @@ function movePiece(piece, moveX, moveY) {
   piece.sprite.y = MARGIN + piece.y * TILE_SIZE + TILE_SIZE / 2;
 
   // Play move sound effect
-  piece.sprite.scene.sound.play('slide');
+  piece.sprite.scene.sound.play('slide', { volume: volumeAmount });
   console.log("Current board state:", getBoardState());
 }
 
@@ -687,6 +690,40 @@ document.addEventListener('DOMContentLoaded', () => {
       changeColorButton.classList.remove('selected');
 
     }
+  });
+});
+
+// Event listener for the volume slider
+document.addEventListener('DOMContentLoaded', () => {
+  const volumeSlider = document.getElementById("volume-slider");
+  const volumeDisplay = document.getElementById("volume-display");
+
+  function updateVolume() {
+    volumeAmount = volumeSlider.value / 100;
+    volumeDisplay.textContent = `${volumeSlider.value}%`;
+
+    // math to align the slider
+    const thumbX = (volumeSlider.value - volumeSlider.min) /
+      (volumeSlider.max - volumeSlider.min) *
+      (volumeSlider.getBoundingClientRect().width -
+        parseFloat(window.getComputedStyle(volumeSlider).getPropertyValue('height'))) +
+      volumeSlider.offsetLeft;
+
+    volumeDisplay.style.left = `${thumbX}px`;
+    volumeDisplay.style.top = `${volumeSlider.offsetTop - 25}px`;
+    volumeDisplay.style.transform = `translate(-25%, 0)`;
+  }
+
+  volumeSlider.addEventListener("input", updateVolume);
+  volumeSlider.addEventListener("mouseover", () => {
+    volumeDisplay.style.opacity = "100";
+    volumeDisplay.style.visibility = "visible";
+    updateVolume();
+  });
+
+  volumeSlider.addEventListener("mouseout", () => {
+    volumeDisplay.style.opacity = "0";
+    volumeDisplay.style.visibility = "hidden";
   });
 });
 
