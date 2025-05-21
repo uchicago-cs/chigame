@@ -746,7 +746,6 @@ class GameList(models.Model):
         return f"{self.name} ({self.created_by})"
 
 
-
 class GameData(models.Model):
     """
     A key-value store for games to store user progress and statistics.
@@ -765,6 +764,7 @@ class GameData(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.game.name}: {self.key}"
+
 
 # ================ CHECKERS ================
 
@@ -819,4 +819,3 @@ class CheckersTurn(models.Model):
 
     def __str__(self):
         return f"Turn {self.turn_number} of Checkers Game {self.game.id}"
-

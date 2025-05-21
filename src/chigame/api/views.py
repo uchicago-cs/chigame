@@ -14,8 +14,8 @@ from chigame.api.filters import GameFilter
 from chigame.api.serializers import (
     AchievementSerializer,
     CategorySerializer,
-    GameDataSerializer,
     FeedbackSerializer,
+    GameDataSerializer,
     GameReviewStatsSerializer,
     GameSerializer,
     GroupSerializer,
@@ -424,6 +424,7 @@ class GameDataDetailView(generics.RetrieveUpdateDestroyAPIView):
     def perform_update(self, serializer):
         serializer.save(user=self.request.user)
 
+
 class TournamentSimulationView(APIView):
     """
     POST /api/tournaments/{pk}/simulate/
@@ -497,4 +498,3 @@ class GameReviewStatsAPIView(APIView):
         }
 
         return Response(GameReviewStatsSerializer(data).data)
-
