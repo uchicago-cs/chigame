@@ -907,7 +907,7 @@
         "num_winner": 1,
         "archived": true,
         "created_by": 101,
-        "players": [101, 203, 204, 205],
+        "players": [203, 204, 205],
         "winners": [202],
         "matches": [2001, 2002]
       }
@@ -972,8 +972,8 @@
         "draw_rules": "In case of a draw, the player with the higher seed will advance.",
         "num_winner": 1,
         "archived": false,
-        "created_by": 101,
-        "players": [102, 103, 104],
+        "created_by": 102,
+        "players": [201, 103, 104],
         "winners": [],
         "matches": []
       }
