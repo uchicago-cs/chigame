@@ -18,23 +18,18 @@
     </select>
     <button type="submit" class="btn btn-outline-secondary">Sort</button>
   </form>
-  <table border="1">
+  <table class="table">
     <thead>
       <tr>
-        <th>Guide ID</th>
         <th>Author</th>
         <th>Timestamp</th>
         <th>Status</th>
-        <th>Action</th>
+        <th>Actions</th>
       </tr>
     </thead>
     <tbody>
       {% for guide in ApprovedGuides %}
         <tr>
-          <td>
-            ID={{ guide.pk }}
-            <a href="{% url 'download-guide' guide.pk %}" class="maroon">[Download]</a>
-          </td>
           <td>{{ guide.author }}</td>
           <td>{{ guide.recent_upload }}</td>
           <td>
@@ -44,20 +39,23 @@
               Not Published
             {% endif %}
           </td>
-          <td>
+          <td class="d-flex gap-2 flex-column justify-content-end">
             <form action="{% url 'moderator-set-publish-guide' game_pk=game.pk guide_pk=guide.pk %}"
-                  method="post">
+                  method="post"
+                  class="d-flex justify-content-end">
               {% csrf_token %}
-              <button type="submit">
+              <button type="submit" class="btn btn-primary w-100">
                 {% if game.published_guide_id == guide %}
-                  Unpublish
+                  Remove as active
                 {% elif game.published_guide_id %}
-                  Switch to Publish
+                  Swap with active
                 {% else %}
-                  Publish
+                  Set as active
                 {% endif %}
               </button>
             </form>
+            <a class="btn btn-outline-primary d-inline-block"
+               href="{% url 'download-guide' guide.pk %}">Download</a>
           </td>
         </tr>
       {% endfor %}
