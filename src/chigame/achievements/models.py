@@ -26,6 +26,30 @@ class Achievement(models.Model):
     def __str__(self):
         return f"{self.name} ({self.game})"
 
+    def get_user_achievement(self, user):
+        """
+        Method of an achievement that, given a user, returns the UserAchievement object
+        associated with that achievement and user. If no such object exists, returns None.
+        """
+        try:
+            user_achievement = UserAchievement.objects.get(achievement=self, user=user)
+            return user_achievement
+        except UserAchievement.DoesNotExist:
+            return None
+
+    def get_achievement_percentage(self):
+        """
+        Method of achievement that returns as a float the percentage of the associated game's
+        users who have gotten that achievement
+        """
+        users = self.game.users.all()
+        obtained = 0
+        for user in users:
+            user_achievement = self.get_user_achievement(user)
+            if user_achievement is not None and user_achievement.date_earned is not None:
+                obtained += 1
+        return obtained / len(users)
+
     class Meta:
         unique_together = ("name", "game")
 
