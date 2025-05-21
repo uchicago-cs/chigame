@@ -192,7 +192,7 @@
   "fields": {
     "user": 7,
     "bio": "A brief bio about User Seven",
-    "date_joined": "2023-10-26T13:42:31.123Z"
+    "date_joined": "2023-10-26T13:42:31.123Z",
     "sender": 2,
     "receiver": 3,
     "accepted": true,
