@@ -409,3 +409,8 @@ MACHINA_DEFAULT_AUTHENTICATED_USER_FORUM_PERMISSIONS = [
 # ------------------------------------------------------------------------------
 # https://channels.readthedocs.io/en/stable/topics/channel_layers.html
 CHANNEL_LAYERS = {"default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}}
+
+
+# for interactive fiction -  game hosting media url
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"

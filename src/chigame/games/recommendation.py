@@ -101,7 +101,7 @@ class TournamentRecommendationService:
         if not self.owner:
             return 0
 
-        # Check if user is in the owner's friends (friends field is in User model, not UserProfile)
+        # The friends relationship is on the User model, not UserProfile
         if user in self.owner.friends.all():
             return 10
 
