@@ -15,7 +15,7 @@ from django.core.files.storage import FileSystemStorage
 from django.core.paginator import Paginator
 from django.db.models import Avg, Case, Count, ExpressionWrapper, F, FloatField, Q, Value, When
 from django.db.models.functions import Lower
-from django.http import HttpResponse, Http404, HttpResponseForbidden, HttpResponseRedirect, JsonResponse
+from django.http import Http404, HttpResponse, HttpResponseForbidden, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
@@ -158,7 +158,7 @@ class GameCreateView(UserPassesTestMixin, CreateView):
             self.object.twine_file_name = uploaded_file.name
             self.object.twine_file = uploaded_file.read()
             uploaded_file.seek(0)
-    
+
         self.object.save()
         return redirect(self.get_success_url())
 
@@ -187,7 +187,9 @@ class GameEditView(UserPassesTestMixin, UpdateView):
         context["is_create"] = False
         return context
 
-# ===========For storing twine in database ============== 
+
+# ===========For storing twine in database ==============
+
 
 def serve_twine_from_db(request, pk):
     game = get_object_or_404(Game, pk=pk)
@@ -198,6 +200,7 @@ def serve_twine_from_db(request, pk):
         content_type="text/html",
         headers={"Content-Disposition": f'inline; filename="{game.twine_file_name}"'},
     )
+
 
 # =============== BGG Searching =================
 # The following functions involve using the BoardGameGeek API to search for games.
