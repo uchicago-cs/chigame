@@ -16,7 +16,7 @@ def validate_username(value):
     """
     Validate that the username is not all numeric.
     """
-    if value.isdigit():
+    if value and isinstance(value, str) and value.isdigit():
         raise ValidationError(_("Username cannot be all numbers."), code="invalid_username")
 
 
@@ -93,10 +93,12 @@ class UserProfile(models.Model):
 
 class FriendInvitationManager(models.Manager):
     def get_by_users(self, user1, user2, **kwargs):
-        """Gets a friend invitation given two user, which can be a sender
+        """Gets an active friend invitation given two users, which can be a sender
         or a receiver"""
         return (
-            self.filter(Q(sender=user1, receiver=user2) | Q(sender=user2, receiver=user1), **kwargs)
+            self.filter(
+                Q(sender=user1, receiver=user2, is_deleted=False) | Q(sender=user2, receiver=user1, is_deleted=False)
+            )
             .order_by("-timestamp")
             .first()
         )
@@ -106,6 +108,14 @@ class FriendInvitation(models.Model):
     """
     An invitation from a User to another User, requesting that they become
     friends.
+
+    IMPORTANT NOTE TO DEVELOPERS BEFORE MODIFYING THIS MODEL:
+    -------------------------------------------------------------------
+    There is no uniqueness constraint on sender and receiver, because there
+    can be multiple deleted invitations! Use is_deleted=True to soft delete a
+    friend invitation, never hard delete them. In the view functions we enforce
+    that there can only be one active is_deleted=False invitation between two
+    users.
     """
 
     sender = models.ForeignKey(User, related_name="sent_friend_invitations", on_delete=models.CASCADE)
@@ -114,9 +124,6 @@ class FriendInvitation(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     objects = FriendInvitationManager()
     is_deleted = models.BooleanField(default=False)
-
-    class Meta:
-        unique_together = ("sender", "receiver")
 
     def accept_invitation(self):
         """
@@ -397,7 +404,7 @@ class Notification(models.Model):
             return "bi-people-fill"
         elif self.type == self.UPCOMING_MATCH:
             return "bi-calendar-event-fill"
-        elif self.type == self.MATCH_PROPOSAL:
+        elif self.type == self.MATCH_INVITATION:
             return "bi-joystick"
         elif self.type == self.ACHIEVEMENT:
             return "bi-star-fill"
