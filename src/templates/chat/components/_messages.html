@@ -96,6 +96,35 @@
     z-index: 1000;
     display: none;
   }
+
+  .message-reactions {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+    font-size: 1.1em;
+  }
+
+  .reaction-pill {
+    display: inline-block;
+    background-color: #ffe6ea;
+    color: #b30000;
+    border-radius: 12px;
+    padding: 2px 8px;
+    margin-right: 6px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: background-color 0.2s ease;
+  }
+
+  .reaction-pill:hover {
+    background-color: #ffccd5;
+  }
+
+  .reaction-count {
+    margin-left: 4px;
+    font-weight: bold;
+  }
 </style>
 <div id="message-container"
      class="chat-messages-scroll flex-grow-1 overflow-auto p-3 bg-light d-flex flex-column">
@@ -104,7 +133,7 @@
       {% for message in messages %}
         <div class="mb-3 {% if message.user == request.user %}align-self-end{% else %}align-self-start{% endif %}"
              data-message-id="{{ message.id }}"
-             oncontextmenu="showContextMenu(event, {{ message.id }}, '{{ message.user.username }}', '{{ message.content }}'); return false;">
+             oncontextmenu="showContextMenu(event, '{{ message.id }}', '{{ message.user.username }}', '{{ message.content }}'); return false;">
           <div class="{% if message.user == request.user %}bg-success-subtle{% else %}bg-white{% endif %} rounded p-2 shadow-sm">
             {% if message.reply_to %}
               <div class="message-reply">
@@ -115,6 +144,7 @@
             <div class="fw-bold small text-danger">{{ message.user.username }}</div>
             <div class="mt-1">{{ message.content }}</div>
             <div class="text-end text-muted small mt-1">{{ message.sent_at|date:"g:i A" }}</div>
+            <div class="message-reactions mt-1" id="reactions-{{ message.id }}"></div>
           </div>
         </div>
       {% endfor %}
@@ -123,66 +153,4 @@
     {% endif %}
   </div>
 </div>
-<!-- Context Menu -->
-<div id="contextMenu" class="context-menu">
-  <div class="small text-muted mb-1" id="replyPreview"></div>
-  <button class="btn btn-sm btn-light w-100" onclick="replyToMessage()">Reply</button>
-  <button class="btn btn-sm btn-danger w-100" onclick="deleteMessage()">Delete</button>
-</div>
-<script>
-  let replyToMessageId = null;
-  let replyToUsername = null;
-  let replyToContent = null;
-
-  function showContextMenu(event, messageId, username, content) {
-    const contextMenu = document.getElementById('contextMenu');
-    const replyPreview = document.getElementById('replyPreview');
-
-    // Store reply information
-    replyToMessageId = messageId;
-    replyToUsername = username;
-    replyToContent = content;
-
-    // Update preview
-    replyPreview.textContent = `Replying to ${username}: ${content}`;
-
-    // Position and show menu
-    contextMenu.style.left = event.pageX + 'px';
-    contextMenu.style.top = event.pageY + 'px';
-    contextMenu.style.display = 'block';
-
-    // Hide menu when clicking elsewhere
-    document.addEventListener('click', hideContextMenu);
-  }
-
-  function hideContextMenu() {
-    const contextMenu = document.getElementById('contextMenu');
-    contextMenu.style.display = 'none';
-    document.removeEventListener('click', hideContextMenu);
-  }
-
-  function replyToMessage() {
-    const input = document.getElementById('id_message_send_input');
-    input.focus();
-    hideContextMenu();
-  }
-
-  /**
-   * Deletes a message on the frontend.
-   */
-  function deleteMessage() {
-    const messageId = replyToMessageId;
-    fetch(`/chat/message/${messageId}/delete`, {
-      method: 'GET',
-    }).then(response => {
-      if (response.ok) {
-        const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
-        if (messageElement) {
-          messageElement.remove();
-        }
-      } else {
-        console.error('Failed to delete message');
-      }
-    });
-  }
-</script>
+{% include "chat/components/_context_menu.html" %}
