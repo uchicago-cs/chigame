@@ -215,10 +215,10 @@ class GameEditView(UserPassesTestMixin, UpdateView):
 
 def serve_twine_from_db(request, pk):
     game = get_object_or_404(Game, pk=pk)
-    if not game.twine_file_content:
+    if not game.twine_file:
         raise Http404("No Twine file stored in database.")
     return HttpResponse(
-        game.twine_file_content,
+        game.twine_file,
         content_type="text/html",
         headers={"Content-Disposition": f'inline; filename="{game.twine_file_name}"'},
     )
@@ -751,7 +751,7 @@ class IFGameCreateView(CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        latest_game = Game.objects.filter(twine_file_content__isnull=False).order_by("-id").first()
+        latest_game = Game.objects.filter(twine_file__isnull=False).order_by("-id").first()
 
         if not latest_game:
             # fallback dummy game to prevent pk=None
@@ -765,7 +765,7 @@ class IFGameCreateView(CreateView):
 
         context["game"] = latest_game
 
-        if latest_game.twine_file_content:
+        if latest_game.twine_file:
             context["uploaded_file_url"] = latest_game.twine_file.url
 
         return context
