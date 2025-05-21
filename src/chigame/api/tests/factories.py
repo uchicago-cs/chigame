@@ -84,7 +84,7 @@ class UserFactory(DjangoModelFactory):
     name = Faker("name")
     email = Faker("email")
     password = Faker("password")
-    username = Faker("user_name")
+    username = factory.Sequence(lambda n: f"user{n}")
 
 
 class TournamentFactory(DjangoModelFactory):
