@@ -4,6 +4,21 @@
 
 <link rel="stylesheet" href="{% static 'css/knowledge-base-styles.css' %}" />
 {% block page-content %}
+  {% if messages %}
+    <ul class="messages">
+      {% for message in messages %}
+        {% if 'guide-upload' in message.tags %}
+          <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert"
+                    aria-label="Close"></button>
+          </div>
+        {% endif %}
+      {% endfor %}
+    </ul>
+  {% endif %}
   <h1 class="contributor-title">Manage My Guides</h1>
   <a href="{% url 'knowledge-base-guide-upload' %}" class="upload-button">Create New Guide</a>
   <div class="table-responsive">
@@ -22,8 +37,9 @@
         {% for guide in guides %}
           <tr>
             <td>
+              <a href="{% url 'download-guide' guide.pk %}" class="maroon"><i class="fas fa-download"></i></a>
+              &nbsp;
               Guide for {{ guide.game_id }}
-              <!--<a href="{% url 'download-guide' guide.pk %}" class="maroon">[Download]</a>-->
             </td>
             <td>{{ guide.pk }}</td>
             <td>Last Upload: {{ guide.recent_upload }}</td>

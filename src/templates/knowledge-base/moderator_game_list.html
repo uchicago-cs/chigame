@@ -1,0 +1,33 @@
+{% extends "knowledge-base/base.html" %}
+
+{% load static %}
+
+<link rel="stylesheet" href="{% static 'css/knowledge-base-styles.css' %}" />
+{% block page-content %}
+  <h2>Manage Published Guides By Game</h2>
+  <div class="row row-cols-1 row-cols-md-3 g-4 mb-4">
+    {% for game in games %}
+      <div class="col d-flex">
+        <div class="card h-100 w-100">
+          <div class="card-body d-flex flex-column justify-content-between gap-3">
+            <div>
+              <h3 class="card-title">{{ game.name }}</h3>
+              <div class="card-text">
+                {% if game.published_guide_id %}
+                  <a class="m-0"
+                     href="{% url 'knowledge-base-guide-detail' game.published_guide_id.pk %}">View published guide</a>
+                  <p class="m-0 fs-6 text-muted">By {{ game.published_guide_id.author.email }}</p>
+                {% else %}
+                  <p class="m-0">No guide active</p>
+                  <p class="m-0">{{ game.count_published }} accepted guides</p>
+                {% endif %}
+              </div>
+            </div>
+            <a class="btn btn-primary"
+               href="{% url 'moderator-single-game' game.pk %}">Manage</a>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% endblock page-content %}
