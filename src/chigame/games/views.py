@@ -381,20 +381,35 @@ class LobbyDeleteView(DeleteView):
 
 
 def apply_sorting_and_filtering(queryset, sort_param, players_param):
-    # Example value of sort_param: "name-asc" or "year_published-desc".
+    # some examples of sort params are : "name-asc" or "year_published-desc".
     if sort_param:
         sort_field, sort_direction = sort_param.rsplit("-", 1)
         sort_order = "-" if sort_direction == "desc" else ""
-
+        # checking for the type of filter that was selected by user
         if sort_field == "name":
             if sort_direction == "desc":
                 queryset = queryset.order_by(Lower("name").desc())
             else:
                 queryset = queryset.order_by(Lower("name"))
+        elif sort_field == "avg_rating":
+            from django.db.models import Avg
+
+            queryset = queryset.annotate(avg_rating=Avg("review__rating"))
+            if sort_direction == "desc":
+                queryset = queryset.order_by("-avg_rating")
+            else:
+                queryset = queryset.order_by("avg_rating")
+        elif sort_field == "popularity":
+            from django.db.models import Count
+
+            queryset = queryset.annotate(popularity=Count("review"))
+            if sort_direction == "desc":
+                queryset = queryset.order_by("-popularity")
+            else:
+                queryset = queryset.order_by("popularity")
         else:
             queryset = queryset.order_by(f"{sort_order}{sort_field}")
-
-    # Filter by number of players. Handles numeric values and '10+' case.
+    # to filter by # of players
     if players_param:
         if players_param.isdigit():
             players = int(players_param)
@@ -1340,6 +1355,23 @@ def tournament_feedback_list(request, tournament_id):
 
 
 @login_required
+def user_feedback_list(request):
+    """
+    View to display all feedback submitted by the logged-in user.
+    """
+    user_feedback = Feedback.objects.filter(user=request.user).order_by("-created_at")
+
+    # Get the first tournament associated with the user's feedback (if any)
+    tournament = user_feedback.first().tournament if user_feedback.exists() else None
+
+    return render(
+        request,
+        "tournaments/tournament_user_feedback.html",
+        {"user_feedback": user_feedback, "tournament": tournament},
+    )
+
+
+@login_required
 def submit_feedback(request, tournament_id):
     tournament = get_object_or_404(Tournament, id=tournament_id)
 
@@ -1357,11 +1389,64 @@ def submit_feedback(request, tournament_id):
             comment=comment,  # Use 'comment' if that's the field name in the model
             rating=rating,
         )
+        print("Submitting feedback by user:", request.user)
 
         messages.success(request, "Feedback submitted successfully!")
         return redirect("tournament-detail", pk=tournament.id)
 
     return render(request, "tournaments/tournament_submit_feedback.html", {"tournament": tournament})
+
+
+@login_required
+def update_feedback_view(request, feedback_id):
+    """
+    View to handle updating feedback.
+    Only the original author or an admin can update feedback.
+    """
+    feedback = get_object_or_404(Feedback, id=feedback_id)
+
+    # Check if the user is authorized to update the feedback
+    if feedback.user != request.user and not request.user.is_staff:
+        return HttpResponseForbidden("You are not authorized to update this feedback.")
+
+    if request.method == "POST":
+        new_comment = request.POST.get("content")
+        new_rating = request.POST.get("rating")
+
+        if not new_comment or not new_rating:
+            messages.error(request, "All fields are required.")
+            return redirect("update-feedback", feedback_id=feedback.id)
+
+        # Update feedback fields
+        feedback.comment = new_comment
+        feedback.rating = new_rating
+        feedback.save()
+
+        messages.success(request, "Feedback updated successfully!")
+        return redirect("user-feedback-list")
+
+    return render(request, "tournaments/tournament_update_feedback.html", {"feedback": feedback})
+
+
+@login_required
+def delete_feedback_view(request, feedback_id):
+    """
+    View to handle deleting feedback.
+    Only the original author or an admin can delete feedback.
+    """
+    feedback = get_object_or_404(Feedback, id=feedback_id)
+
+    # Check if the user is authorized to delete the feedback
+    if feedback.user != request.user and not request.user.is_staff:
+        return HttpResponseForbidden("You are not authorized to delete this feedback.")
+
+    if request.method == "POST":
+        # Delete the feedback
+        feedback.delete()
+        messages.success(request, "Feedback deleted successfully!")
+        return redirect("user-feedback-list")
+
+    return render(request, "tournaments/tournament_delete_feedback.html", {"feedback": feedback})
 
 
 # Placeholder Game
