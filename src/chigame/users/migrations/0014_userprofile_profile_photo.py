@@ -9,9 +9,9 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AddField(
-            model_name="userprofile",
-            name="profile_photo",
-            field=models.ImageField(blank=True, null=True, upload_to="profile_photos/"),
-        ),
+        # migrations.AddField(
+        #     model_name="userprofile",
+        #     name="profile_photo",
+        #     field=models.ImageField(blank=True, null=True, upload_to="profile_photos/"),
+        # ),
     ]
