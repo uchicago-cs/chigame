@@ -740,7 +740,7 @@ class GameList(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.name} ({self.created_by})"
+        return self.name
 
 
 class GameData(models.Model):
