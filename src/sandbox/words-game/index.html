@@ -58,18 +58,13 @@
           <button id="how-to-play-btn" class="nav-btn">How to Play ▼</button>
           <button id="settings-btn" class="nav-btn">⚙</button>
           <!-- TEMPORARY START: Temporary Login Option -->
-          <div id="login-container" class="login-container">
-            <form id="loginForm"
-                  onsubmit="event.preventDefault(); tempLogin();"
-                  class="login-form">
-              <input type="text"
-                     id="tempUsername"
-                     placeholder="Enter username"
-                     class="login-input" />
+          <div id="login-container">
+            <form id="loginForm" onsubmit="event.preventDefault(); tempLogin();">
+              <input type="text" id="tempUsername" placeholder="Enter username" />
               <button type="submit" class="login-button">Login</button>
             </form>
-            <div id="user-info" class="user-info">
-              <span id="current-username" class="username-text"></span>
+            <div id="user-info">
+              <span id="current-username"></span>
               <button onclick="tempLogout()" class="login-button">Logout</button>
             </div>
           </div>
@@ -161,13 +156,17 @@
         const profileUsername = document.getElementById('username');
 
         if (username) {
-          loginForm.style.display = 'none';
-          userInfo.style.display = 'flex';
+          loginForm.classList.add('display-none');
+          loginForm.classList.remove('display-flex');
+          userInfo.classList.add('display-flex');
+          userInfo.classList.remove('display-none');
           currentUsername.textContent = username;
           profileUsername.textContent = username;
         } else {
-          loginForm.style.display = 'flex';
-          userInfo.style.display = 'none';
+          loginForm.classList.add('display-flex');
+          loginForm.classList.remove('display-none');
+          userInfo.classList.add('display-none');
+          userInfo.classList.remove('display-flex');
           document.getElementById('tempUsername').value = '';
           profileUsername.textContent = 'GUEST';
         }
