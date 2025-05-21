@@ -929,7 +929,7 @@
         "num_winner": 1,
         "archived": true,
         "created_by": 101,
-        "players": [202, 203, 206],
+        "players": [101, 202, 203, 206],
         "winners": [203],
         "matches": [2003, 2004]
       }
@@ -951,7 +951,7 @@
         "num_winner": 1,
         "archived": true,
         "created_by": 201,
-        "players": [203, 204, 205, 206],
+        "players": [102, 203, 204, 205, 206],
         "winners": [205],
         "matches": [2005, 2006]
       }
