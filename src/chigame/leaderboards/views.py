@@ -1,6 +1,4 @@
 from django.shortcuts import get_object_or_404, render
-from rest_framework import generics
-from rest_framework.permissions import IsAuthenticated
 
 from chigame.games.models import Game
 from chigame.leaderboards.models import LeaderboardEntry, Region
