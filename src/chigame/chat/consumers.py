@@ -125,28 +125,37 @@ class ChatConsumer(AsyncWebsocketConsumer):
             text_data (str): The message data received from the client.
         """
         text_data_json = json.loads(text_data)
-        msg_type = text_data_json.get("type", "send")
-        if msg_type == "send":
-            message = text_data_json["message"]
-            user_id = text_data_json["user_id"]
-            reply_to_id = text_data_json.get("reply_to")
+        message = text_data_json["message"]
+        user_id = text_data_json["user_id"]
+        reply_to_id = text_data_json.get("reply_to")
 
-            # Save message to database once when first received from client
-            message_data = await self.save_message(self.chat_id, user_id, message, reply_to_id)
+<<<<<<<<< Temporary merge branch 1
+        # Save message to database once when first received from client
+        message_data = await self.save_message(self.chat_id, user_id, message, reply_to_id)
+=========
+        # this will need to be made conditional at some point
+        filtered_message = self.profanity_filter.censor_message(message)
+>>>>>>>>> Temporary merge branch 2
 
-            await self.channel_layer.group_send(
-                self.room_group_name,
-                {
-                    "type": "sendMessage",
-                    "message": message,
-                    "user_id": user_id,
-                    "username": message_data["username"],
-                    "message_id": message_data["message_id"],
-                    "reply_to": message_data["reply_to"],
-                    "reply_to_username": message_data["reply_to_username"],
-                    "reply_to_content": message_data["reply_to_content"],
-                },
-            )
+        # Save message and get username
+        # The original message is saved to the database to preserve the full context of the chat,
+        # while the filtered version is broadcasted to ensure compliance with content moderation policies.
+        username = await self.save_message(self.chat_id, user_id, message)  # pass the original message
+
+        # the filtered message is sent to the group - this is where the censorship happens
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                "type": "sendMessage",
+                "message": filtered_message,
+                "user_id": user_id,
+                "username": message_data["username"],
+                "message_id": message_data["message_id"],
+                "reply_to": message_data["reply_to"],
+                "reply_to_username": message_data["reply_to_username"],
+                "reply_to_content": message_data["reply_to_content"],
+            },
+        )
 
     async def sendMessage(self, event):
         """
