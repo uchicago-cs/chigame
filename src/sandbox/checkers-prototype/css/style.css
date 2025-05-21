@@ -268,8 +268,8 @@ canvas {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%) rotate3d(1, 1, 0, 0deg);
-  width: 400px;              
-  height: 400px;             
+  width: 400px;
+  height: 400px;
   border-radius: 50%;
   background-color: currentColor;
   box-shadow: 0 0 20px rgba(0,0,0,0.5);
