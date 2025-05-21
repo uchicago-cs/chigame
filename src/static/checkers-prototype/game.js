@@ -67,7 +67,7 @@ async function fetchInitialBoardState() {
   }
 }
 
-// ---INIT FUNCTIONS-----------------------------------------------------------
+// ---INIT FUNCTIONS----------------------------------------------------------
 function preload() {
 
 }
