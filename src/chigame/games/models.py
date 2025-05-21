@@ -81,7 +81,7 @@ class Game(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return self.name
+        return f"{self.name} ({self.created_by})"
 
 
 class InteractiveFictionGame(Game):
@@ -239,64 +239,6 @@ class Player(models.Model):
     role = models.TextField(blank=True, null=True)
     outcome = models.PositiveSmallIntegerField(choices=OUTCOMES, blank=True, null=True)
     victory_type = models.TextField(blank=True, null=True)
-
-
-# ================ CHECKERS ================
-
-
-class Checkers(models.Model):
-    """
-    A game of Checkers stores:
-      - the players and bots
-      - a timestamp of when the game begins and ends
-    """
-
-    player_1 = models.ForeignKey(Player, on_delete=models.CASCADE)
-    player_2 = models.ForeignKey(
-        Player, on_delete=models.CASCADE, null=True, blank=True, related_name="checkers_player_2"
-    )
-    # bot
-    winner = models.ForeignKey(
-        Player, on_delete=models.SET_NULL, null=True, blank=True, related_name="checkers_winner"
-    )
-    start_time = models.DateTimeField()
-    end_time = models.DateTimeField(null=True, blank=True)
-
-    def __str__(self):
-        return f"Player 1 {self.player_1} in Checkers {self.id}"
-
-
-class CheckersBoard(models.Model):
-    """
-    The Checkers board stores the game state using a list of bits
-    """
-
-    state = models.JSONField()  # store positions/pieces as a 2D array
-    # state_bits = models.IntegerField() # stores positions as bits
-
-    def __str__(self):
-        return f"Board {self.id}"
-
-
-class CheckersTurn(models.Model):
-    """
-    Tracks a Checkers game's board state, the current turn, and the player making
-    the turn
-    """
-
-    game = models.ForeignKey(Checkers, on_delete=models.CASCADE, related_name="turns")
-    board = models.ForeignKey(CheckersBoard, on_delete=models.CASCADE)
-    turn_number = models.PositiveIntegerField()
-    player = models.ForeignKey(Player, on_delete=models.CASCADE)
-
-    class Meta:
-        unique_together = ("game", "turn_number")
-
-    def __str__(self):
-        return f"Turn {self.turn_number} of Checkers Game {self.game.id}"
-
-
-# ==================================
 
 
 class MatchProposal(models.Model):
@@ -801,6 +743,78 @@ class GameList(models.Model):
         return f"{self.name} ({self.created_by})"
 
 
+class GameData(models.Model):
+    """
+    A key-value store for games to store user progress and statistics.
+    This allows for persistence between sessions and tracking achievements for any game.
+    """
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="game_data")
+    game = models.ForeignKey(Game, on_delete=models.CASCADE, related_name="game_data")
+    key = models.CharField(max_length=255)  # identifies the type of data being stored
+    value = models.TextField()  # stores the actual data as JSON or string
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ["user", "game", "key"]  # ensure each key is unique per user and game
+
+    def __str__(self):
+        return f"{self.user.username} - {self.game.name}: {self.key}"
+
+
+class Checkers(models.Model):
+    """
+    A game of Checkers stores:
+      - the players and bots
+      - a timestamp of when the game begins and ends
+    """
+
+    player_1 = models.ForeignKey(Player, on_delete=models.CASCADE)
+    player_2 = models.ForeignKey(
+        Player, on_delete=models.CASCADE, null=True, blank=True, related_name="checkers_player_2"
+    )
+    # bot
+    winner = models.ForeignKey(
+        Player, on_delete=models.SET_NULL, null=True, blank=True, related_name="checkers_winner"
+    )
+    start_time = models.DateTimeField()
+    end_time = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"Player 1 {self.player_1} in Checkers {self.id}"
+
+
+class CheckersBoard(models.Model):
+    """
+    The Checkers board stores the game state using a list of bits
+    """
+
+    state = models.JSONField()  # store positions/pieces as a 2D array
+    # state_bits = models.IntegerField() # stores positions as bits
+
+    def __str__(self):
+        return f"Board {self.id}"
+
+
+class CheckersTurn(models.Model):
+    """
+    Tracks a Checkers game's board state, the current turn, and the player making
+    the turn
+    """
+
+    game = models.ForeignKey(Checkers, on_delete=models.CASCADE, related_name="turns")
+    board = models.ForeignKey(CheckersBoard, on_delete=models.CASCADE)
+    turn_number = models.PositiveIntegerField()
+    player = models.ForeignKey(Player, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ("game", "turn_number")
+
+    def __str__(self):
+        return f"Turn {self.turn_number} of Checkers Game {self.game.id}"
+
+
 class GameQueue(models.Model):
     """
     A queue of games to be played by the user.
@@ -856,13 +870,10 @@ class GameQueue(models.Model):
         if new_position == old_position:
             return entry
 
-        # Using atomic transactions becuase if one reindexing fails we dont want the others to succeed
         with transaction.atomic():
             if new_position < old_position:
-                # shift everything between new_position and old_position-1 down by 1
                 self._reindex_range(new_position, old_position - 1, +1)
             else:
-                # shift everything between old_position+1 and new_position up by 1
                 self._reindex_range(old_position + 1, new_position, -1)
 
             entry.position = new_position
@@ -878,10 +889,7 @@ class GameQueue(models.Model):
         insert_at = entry.position + 1
 
         with transaction.atomic():
-            # bump everyone  back one slot
             self._reindex_range(insert_at, self.entries.aggregate(max=models.Max("position"))["max"], +1)
-
-            # create duplicate entry
             dup = GameQueueEntry.objects.create(queue=self, game=game, position=insert_at)
 
         return dup
