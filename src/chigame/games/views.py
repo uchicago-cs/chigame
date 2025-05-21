@@ -152,11 +152,12 @@ class GameCreateView(UserPassesTestMixin, CreateView):
     # Ensure the uploaded Twine .html file is saved to the Game model
     def form_valid(self, form):
         self.object = form.save(commit=False)
-        # ✅ Manually assign uploaded file
-        if self.request.FILES.get("twine_file"):
-            self.object.twine_file = self.request.FILES["twine_file"]
-            #read raw bytes
-            self.object.twine_file = uploaded_file.read()
+        # save both the file and its contents
+        uploaded_file = self.request.FILES.get("twine_file")
+        if uploaded_file:
+            self.object.twine_file = uploaded_file         
+            self.object.twine_file_content = uploaded_file.read()     
+    
         self.object.save()
         return redirect(self.get_success_url())
 
