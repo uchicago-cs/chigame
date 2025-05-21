@@ -257,30 +257,49 @@ canvas {
     font-size: 20px;
 }
 
-
-.hidden {
-  display: none;
-}
-
-@keyframes spin {
-  from { transform: translate(-50%, -50%) rotate(0deg); }
-  to   { transform: translate(-50%, -50%) rotate(360deg); }
+/* Game over displays */
+#gameOverPrompts {
+  perspective: 800px;
 }
 
 #endScreenPiece {
+  display: none;
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 300px;
-  height: 300px;
+  transform: translate(-50%, -50%) rotate3d(1, 1, 0, 0deg);
+  width: 400px;              
+  height: 400px;             
   border-radius: 50%;
-  pointer-events: none;
-  z-index: 200;
+  background-color: currentColor;
   box-shadow: 0 0 20px rgba(0,0,0,0.5);
-  animation: spin 2s linear infinite;
+  transform-style: preserve-3d;
 }
 
-/* when we want to show it: */
+@keyframes spin3d {
+  to {
+    transform: translate(-50%, -50%) rotate3d(1, 1, 0, 360deg);
+  }
+}
+
 #endScreenPiece.show {
   display: block;
+  animation: spin3d 6s linear infinite;
 }
+
+#endScreenText {
+  position: absolute;
+  top: calc(50% - 325px - 20px);
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: "Outfit", sans-serif;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: currentColor;
+  pointer-events: none;
+  z-index: 201;
+  white-space: nowrap;
+}
+
+.hidden { display: none; }
+#endScreenText.show { display: block; }
