@@ -107,6 +107,13 @@
              target="_blank"
              class="btn btn-success">Open Game in New Tab</a>
         {% endif %}
+        <!-- stored in database game code -->
+        {% if game.twine_file_content %} 
+          <h3>Play Twine Game from Database</h3>
+          <a href="{% url 'twine-db' game.pk %}"
+             target="_blank"
+             class="btn btn-success">Open Game in New Tab</a>
+        {% endif %}
         <h3 id="player-description">Players</h3>
         <p>
           {% if game.min_players == game.max_players %}
