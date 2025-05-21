@@ -15,7 +15,8 @@ canvas {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    margin-top: 5vh;
+    height: 95vh;
 }
 
 .navbar {
@@ -31,13 +32,14 @@ canvas {
     box-sizing: border-box;
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
     max-height: 10%;
+    z-index: 100;
 }
 
 .nav-btns {
     display: flex;
     justify-content: flex-end;
     align-items: center;
-    gap: 1.5rem;
+    gap: 1rem;
 }
 
 .navbar h1 {
@@ -60,35 +62,48 @@ canvas {
     cursor: pointer;
     position: relative;
     display: inline-block;
-    transition: transform 0.2s;
+    transition: transform 0.2s, filter 0.2s;
     box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
 }
 
 .btn:hover {
     box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
     transform: translateY(2px);
-    opacity: 0.8;
+    filter: brightness(0.9);
+}
+
+#gameOverPrompts {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    width: 100vw;
+    position: absolute;
+    top: 0;
+    left: 0;
+    gap: 1.5rem;
+    visibility: hidden;
+    font-size: 24px;
+    color: rgb(138, 90, 68);
+    z-index: 50;
+}
+
+#gameOverPrompts.show {
+    visibility: visible;
 }
 
 .game-over-message {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-family: "Outfit", sans-serif;
-    font-size: 24px;
-    color: rgb(138, 90, 68);
     text-align: center;
     display: none;
     background-color: rgba(255, 255, 255, 0.9);
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
-    z-index: 1000;
 }
 
 .game-over-message.show {
-    display: block;
+    display: flex;
 }
 
 #declineDrawBtn {
@@ -96,19 +111,15 @@ canvas {
 }
 
 .play-again-prompt {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-family: "Outfit", sans-serif;
-    font-size: 24px;
-    color: rgb(138, 90, 68);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
     text-align: center;
     background-color: rgba(255, 255, 255, 0.9);
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
-    z-index: 1000;
 }
 
 .play-again-prompt p {
@@ -131,47 +142,117 @@ canvas {
 }
 
 /* Settings Menu Styles */
-/* for the menu itself and the button to toggle it*/
-.settings-menu {
-    position: fixed;
-    bottom: 0;
+#settings-container::before {
+    position: absolute;
+    top: 0;
     left: 0;
-    width: 10%;
-    height: 90%;
-    background-color: #a67c52;
-    color: white;
-    padding: 1rem;
-    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
-    transform: translateX(-100%);
-    transition: transform 0.3s ease-in-out;
-    z-index: 1000;
+    z-index: 149;
+    width: 100%;
+    height: 20%;
+    border-radius: 0 20px 0 0;
+    background-color: white;
+    content: "";
 }
 
-.settings-menu h2 {
-    margin-top: 0;
-}
-
-.settings-button {
+#settings-container {
     position: fixed;
-    bottom: 20px;
-    left: 20px;
-    font-size: 24px;
-    border: none;
-    background-color: #a67c52;
-    color: white;
-    border-radius: 50%;
-    width: 50px;
-    height: 50px;
-    cursor: pointer;
+    bottom: -120px;
+    left: 50%;
+    z-index: 150;
+    transform: translateX(-50%);
+    width: 90vw;
+    border-radius: 0 1rem 0 0;
     box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
-    transition: transform 0.2s;
-    z-index: 1001;
+    color: black;
+    background-color: white;
+    transition: bottom 0.2s ease-in-out;
 }
 
-.settings-button:hover {
-    transform: scale(1.1);
+#settings-container.show {
+    bottom: 0;
 }
 
-.settings-menu.active {
-    transform: translateX(0);
+/* for the menu itself and the button to toggle it*/
+#settings-menu {
+    display: flex;
+    flex-direction: column;
+    justify-content: left;
+    align-items: left;
+    width: 100%;
+    padding: 1rem;
+}
+
+#settings-tab {
+    position: absolute;
+    top: -62px;
+    left: 0;
+    width: auto;
+    padding: 0.5rem 3rem;
+    border: none;
+    border-radius: 1rem 1rem 0 0;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+    background-color: white;
+    font-size: 35px;
+    text-align: center;
+    user-select: none;
+}
+
+#settings-buttons {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1rem;
+}
+
+.setting-btn {
+    font-family: inherit;
+    font-size: 20px;
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+    padding: 15px 20px;
+    border: none;
+    border-radius: 50px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+    background-color: rgb(65, 65, 65);
+    color: white;
+    transition:
+        transform 0.2s,
+        filter 0.2s,
+        outline-offset 0s,
+        outline 0s,
+        background-color 0.1s,
+        color 0.1s;
+}
+
+.setting-btn:hover {
+    transform: translateY(2px);
+    filter: brightness(0.9);
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+#toggle-colorblind.selected {
+    background-color: transparent;
+    color: rgb(29, 210, 114);
+    outline: 3px solid rgb(29, 210, 114);
+    outline-offset: -3px;
+}
+
+#captured-pieces {
+    position: fixed;
+    right: 0px;
+    top: 50%;
+    transform: translate(0, -50%);
+    min-width: 100px;
+    max-width: 150px;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 1rem;
+    background-color: #a67c52;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+    border-radius: 1rem 0 0 1rem;
+    color: white;
+    font-size: 20px;
 }

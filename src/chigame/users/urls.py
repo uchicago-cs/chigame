@@ -1,5 +1,6 @@
 from django.urls import path
 
+from chigame.api.views import UserGroupsView
 from chigame.users.views import (
     accept_friend_invitation,
     act_on_inbox_notification,
@@ -43,7 +44,7 @@ urlpatterns = [
     path("user_history/<int:pk>", views.user_history, name="user-history"),
     path("search-results", view=user_search_results, name="user-search-results"),
     path("notifications/search-results", view=notification_search_results, name="notification-search-results"),
-    path("inbox/<int:pk>", view=user_inbox_view, name="user-inbox"),
+    path("inbox/<int:pk>/", view=user_inbox_view, name="user-inbox"),
     path("profile/<int:pk>/friends", view=friend_list_view, name="friend-list"),
     path("inbox/<int:pk>/deleted_notifications", views.deleted_notifications_view, name="deleted-notifications"),
     path("notification_detail/<int:pk>", view=notification_detail, name="notification-detail"),
@@ -53,8 +54,12 @@ urlpatterns = [
         name="act-on-inbox-notification",
     ),
     path("bulk-action/", view=bulk_inbox, name="bulk-inbox"),
+    path("<slug:slug>/groups/", UserGroupsView.as_view(), name="api-user-groups"),
     path("notifications/<int:pk>/bookmark/", view=bookmark_notification, name="bookmark-notification"),
     path("notifications/<int:pk>/bookmarked/", view=view_bookmarked_notifications, name="bookmarked-notifications"),
     path("upload-photo/", upload_profile_photo, name="upload-photo"),
     path("notifications/<int:pk>/move/", views.move_notification, name="move-notification"),
+    path("labels/create/", views.create_notification_label, name="create-notification-label"),
+    path("labels/<int:label_id>/notifications/", views.notifications_by_label, name="notifications-by-label"),
+    path("inbox/<int:pk>/<str:category>/", views.user_inbox_view, name="user-inbox-category"),
 ]
