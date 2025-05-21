@@ -2,7 +2,7 @@
 
 {% block css %}
   {{ block.super }}
-    <style>
+  <style>
     .container {
       position: relative;
       display: flex;
@@ -59,7 +59,7 @@
     }
   </style>
 {% endblock css %}
-    {% load static %}
+{% load static %}
 
 
 {% block content %}
@@ -71,45 +71,44 @@
     <button type="button" class="button button4">Click here</button>
     <button type="button" class="button button5">Click here</button>
     <form method="post" id="apiForm">
-        {% csrf_token %}
-        <button type="submit" class="button button6">Click here</button>
+      {% csrf_token %}
+      <button type="submit" class="button button6">Click here</button>
     </form>
-
     <script>
-        const form = document.getElementById('apiForm');
+      const form = document.getElementById('apiForm');
 
-        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-        form.addEventListener('submit', function(event) {
-            event.preventDefault();
+      const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+      form.addEventListener('submit', function(event) {
+          event.preventDefault();
 
-            const formData = new FormData(form);
-            const data = {};
-            formData.forEach((value, key) => {
-                data[key] = value;
-            });
+          const formData = new FormData(form);
+          const data = {};
+          formData.forEach((value, key) => {
+              data[key] = value;
+          });
 
-            fetch('api/award-achievement/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrfToken
-                },
-                credentials: 'include',
-                body: JSON.stringify(data)
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                console.log('Success:', data);
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
-        });
+          fetch('api/award-achievement/', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+                  'X-CSRFToken': csrfToken
+              },
+              credentials: 'include',
+              body: JSON.stringify(data)
+          })
+          .then(response => {
+              if (!response.ok) {
+                  throw new Error('Network response was not ok');
+              }
+              return response.json();
+          })
+          .then(data => {
+              console.log('Success:', data);
+          })
+          .catch(error => {
+              console.error('Error:', error);
+          });
+      });
     </script>
   </body>
 {% endblock content %}

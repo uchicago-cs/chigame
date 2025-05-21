@@ -347,9 +347,6 @@ REST_FRAMEWORK = {
     ],
 }
 
-SESSION_COOKIE_SECURE = False
-CSRF_COOKIE_SECURE = False
-
 CORS_ALLOWED_ORIGINS = [
     # Vue frontend URL
     "http://localhost:5173",
