@@ -13,7 +13,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.core.files.storage import FileSystemStorage
 from django.core.paginator import Paginator
-from django.db.models import Avg, Count, ExpressionWrapper, F, FloatField, Q
+from django.db.models import Avg, Case, Count, ExpressionWrapper, F, FloatField, Q, Value, When
 from django.db.models.functions import Lower
 from django.http import HttpResponseForbidden, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -106,11 +106,17 @@ class GameDetailView(LoginRequiredMixin, FormMixin, DetailView):
 
         # FOR IF/twine GAMES
         context["is_twine_game"] = self.object.twine_file.name.endswith(".html") if self.object.twine_file else False
+        context["recommended_games"] = get_recommended_games(
+            game=self.object,
+            user=self.request.user if self.request.user.is_authenticated else None,
+            limit=4,  # this is to show 4 reccomendations
+        )
         # Include the user's GameLists: default Favorites plus others
         if self.request.user.is_authenticated:
             favorites_list, _ = GameList.objects.get_or_create(name="Favorites", created_by=self.request.user)
             context["favorites_list"] = favorites_list
             context["game_lists"] = GameList.objects.filter(created_by=self.request.user).exclude(pk=favorites_list.pk)
+
         return context
 
     def post(self, request, *args, **kwargs):
@@ -132,7 +138,6 @@ class GameCreateView(UserPassesTestMixin, CreateView):
     model = Game
     form_class = GameForm
     template_name = "games/game_form.html"
-    success_url = reverse_lazy("game-list")  # URL to redirect after successful creation
     raise_exception = True  # if user is not staff member, raise exception
 
     # check if user is staff member
@@ -143,6 +148,20 @@ class GameCreateView(UserPassesTestMixin, CreateView):
         context = super().get_context_data(**kwargs)
         context["is_create"] = True
         return context
+
+    # Ensure the uploaded Twine .html file is saved to the Game model
+    def form_valid(self, form):
+        self.object = form.save(commit=False)
+        # ✅ Manually assign uploaded file
+        if self.request.FILES.get("twine_file"):
+            self.object.twine_file = self.request.FILES["twine_file"]
+        self.object.save()
+        return redirect(self.get_success_url())
+
+    def get_success_url(self):
+        if self.object.twine_file and self.object.twine_file.name.endswith(".html"):
+            return reverse("interactive-fiction-detail", kwargs={"pk": self.object.pk})
+        return reverse("game-detail", kwargs={"pk": self.object.pk})
 
 
 class GameEditView(UserPassesTestMixin, UpdateView):
@@ -386,6 +405,91 @@ def apply_sorting_and_filtering(queryset, sort_param, players_param):
     return queryset
 
 
+def get_recommended_games(game, user=None, limit=5):
+    """
+    Returns a queryset of recommended games based on multiple weighted factors.
+
+    Args:
+        game: The reference Game object
+        user: Optional User object to check play history
+        limit: Maximum number of games to return
+
+    Returns:
+        QuerySet of Game objects ordered by recommendation score
+    """
+
+    # Settled on a recommendation system that combines multiple factors
+    # (as opposed to having it only be category based):
+    # Game categories (40% weight)
+    # Game mechanics (30% weight)
+    # Game designers/artists (15% weight)
+    # Similar complexity ratings (10% weight)
+    # Similar playtime (5% weight)
+    #
+    # The reason I went with this weighted approach is to provide more well
+    # rounded recommendations than
+    # using categories alone. Also, I deprioritized, but didn't exclude, games
+    # the user has already played.
+
+    all_games = Game.objects.exclude(id=game.id)
+
+    game_categories = game.categories.all()
+    game_mechanics = game.mechanics.all()
+    game_people = game.people.all()
+
+    all_games = all_games.annotate(category_score=Count("categories", filter=Q(categories__in=game_categories)) * 0.4)
+
+    all_games = all_games.annotate(mechanics_score=Count("mechanics", filter=Q(mechanics__in=game_mechanics)) * 0.3)
+
+    all_games = all_games.annotate(people_score=Count("people", filter=Q(people__in=game_people)) * 0.15)
+
+    if game.complexity:
+        # Convert Decimal to float before arithmetic operations
+        complexity_value = float(game.complexity)
+        all_games = all_games.annotate(
+            complexity_score=Case(
+                When(complexity__range=(complexity_value - 0.5, complexity_value + 0.5), then=0.1),
+                When(complexity__range=(complexity_value - 1.0, complexity_value + 1.0), then=0.05),
+                default=Value(0),
+                output_field=FloatField(),
+            )
+        )
+    else:
+        all_games = all_games.annotate(complexity_score=Value(0, output_field=FloatField()))
+    if game.expected_playtime:
+        # Convert to float before arithmetic
+        playtime_value = float(game.expected_playtime)
+        all_games = all_games.annotate(
+            playtime_score=Case(
+                When(expected_playtime__range=(playtime_value * 0.8, playtime_value * 1.2), then=0.05),
+                default=Value(0),
+                output_field=FloatField(),
+            )
+        )
+    else:
+        all_games = all_games.annotate(playtime_score=Value(0, output_field=FloatField()))
+    if user and user.is_authenticated:
+        played_game_ids = Match.objects.filter(players=user).values_list("game_id", flat=True)
+        all_games = all_games.annotate(
+            played_penalty=Case(When(id__in=played_game_ids, then=0.2), default=1.0, output_field=FloatField())
+        )
+    else:
+        all_games = all_games.annotate(played_penalty=Value(1.0, output_field=FloatField()))
+
+    all_games = all_games.annotate(
+        total_score=(
+            F("category_score")
+            + F("mechanics_score")
+            + F("people_score")
+            + F("complexity_score")
+            + F("playtime_score")
+        )
+        * F("played_penalty")
+    ).order_by("-total_score")
+
+    return all_games[:limit]
+
+
 def search_results(request):
     query_input = request.GET.get("q")
     sort = request.GET.get("sort_by", "name-asc")
@@ -480,6 +584,7 @@ class UploadFileView(View):
                 description="Uploaded Twine game",
                 min_players=1,
                 max_players=1,
+                complexity=1,
                 twine_file=f"twine_games/{filename}",
             )
 
