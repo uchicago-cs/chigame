@@ -96,12 +96,13 @@
   }
 
   .highlight-reply {
-    animation: highlightFlash 0.8s ease-in-out;
+    animation: highlightFlash 1.5s ease-in-out;
+    background-color: #eaeaea !important;
   }
 
   @keyframes highlightFlash {
     from {
-      background-color: #e0e0e0;
+      background-color: #eaeaea;
     }
 
     to {
@@ -200,8 +201,11 @@
             behavior: 'smooth',
             block: 'center'
           });
-          target.classList.add('highlight-reply');
-          setTimeout(() => target.classList.remove('highlight-reply'), 800);
+          const innerBox = target.querySelector('div');
+          if (innerBox) {
+            innerBox.classList.add('highlight-reply');
+            setTimeout(() => innerBox.classList.remove('highlight-reply'), 800);
+          }
         }
       });
     });
