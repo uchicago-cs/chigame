@@ -189,8 +189,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     </p>
                     <p class="achievement-date">
                     ${
-                      unlockedDate && unlockedDate !== 'Not unlocked'
-                        ? 'Unlocked on ' + unlockedDate : 'Not unlocked'
+                      unlockedDate && unlockedDate !== 'Not yet unlocked'
+                        ? 'Unlocked on ' + unlockedDate : 'Not yet unlocked'
                     }
                     </p>
                   </div>
