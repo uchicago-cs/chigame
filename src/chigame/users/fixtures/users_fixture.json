@@ -132,8 +132,10 @@
     "pk": 1,
     "fields": {
       "user": 1,
+      "display_name": "Default Display Name",
       "bio": "A brief bio for the superuser",
-      "date_joined": "2023-10-30T03:31:56.761Z"
+      "date_joined": "2023-10-30T03:31:56.761Z",
+      "friends": []
     }
   },
 {
@@ -141,8 +143,10 @@
   "pk": 2,
   "fields": {
     "user": 2,
+    "display_name": "user1",
     "bio": "A brief bio about User One",
-    "date_joined": "2023-10-30T03:21:40.213Z"
+    "date_joined": "2023-10-30T03:21:40.213Z",
+    "friends": []
   }
 },
 {
@@ -150,8 +154,10 @@
   "pk": 3,
   "fields": {
     "user": 3,
+    "display_name": "user2",
     "bio": "A brief bio about User Two",
-    "date_joined": "2023-10-30T03:22:35.174Z"
+    "date_joined": "2023-10-30T03:22:35.174Z",
+    "friends": []
   }
 },
 {
@@ -159,8 +165,10 @@
   "pk": 4,
   "fields": {
     "user": 4,
+    "display_name": "user3",
     "bio": "A brief bio about User Three",
-    "date_joined": "2023-10-30T03:24:37.723Z"
+    "date_joined": "2023-10-30T03:24:37.723Z",
+    "friends": []
   }
 },
 {
@@ -168,8 +176,10 @@
   "pk": 5,
   "fields": {
     "user": 5,
+    "display_name": "user4",
     "bio": "A brief bio about User Four",
-    "date_joined": "2023-10-30T03:24:56.555Z"
+    "date_joined": "2023-10-30T03:24:56.555Z",
+    "friends": []
   }
 },
 {
@@ -177,8 +187,10 @@
   "pk": 6,
   "fields": {
     "user": 6,
+    "display_name": "user5",
     "bio": "A brief bio about User Five",
-    "date_joined": "2023-10-30T03:25:12.630Z"
+    "date_joined": "2023-10-30T03:25:12.630Z",
+    "friends": []
   }
 },
 {
@@ -186,8 +198,10 @@
   "pk": 7,
   "fields": {
     "user": 7,
+    "display_name": "Default Display Name",
     "bio": "A brief bio about User Seven",
-    "date_joined": "2023-10-26T13:42:31.123Z"
+    "date_joined": "2023-10-26T13:42:31.123Z",
+    "friends": []
   }
 },
 {
@@ -195,8 +209,10 @@
   "pk": 8,
   "fields": {
     "user": 8,
+    "display_name": "Default Display Name",
     "bio": "A brief bio about User Eight",
-    "date_joined": "2023-10-26T13:53:08.045Z"
+    "date_joined": "2023-10-26T13:53:08.045Z",
+    "friends": []
   }
 }
 ]
