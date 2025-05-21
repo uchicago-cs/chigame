@@ -2,6 +2,8 @@
 Base settings to build other settings files upon.
 """
 
+import os
+import sys
 from pathlib import Path
 
 import environ
@@ -337,15 +339,32 @@ SOCIALACCOUNT_FORMS = {"signup": "chigame.users.forms.UserSocialSignupForm"}
 # Add additional configuration below:
 # ------------------------------------------------------------------------------
 
+current_module = sys.modules[__name__]
+
 # REST FRAMEWORK
-REST_FRAMEWORK = {
-    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
-    "PAGE_SIZE": 10,
-    "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework.authentication.SessionAuthentication",
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
-    ],
-}
+# Get the absolute project directory
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..'))
+
+# Construct the path to the achievements API directory
+achievements_api_dir = os.path.join(project_root, 'src', 'chigame', 'achievements', 'api')
+
+# Check if the directory exists
+if os.path.isdir(achievements_api_dir):
+    REST_FRAMEWORK = {
+        "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+        "PAGE_SIZE": 10,
+        "DEFAULT_AUTHENTICATION_CLASSES": [
+            "rest_framework.authentication.SessionAuthentication",
+        ],
+    }
+else:
+    REST_FRAMEWORK = {
+        "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+        "PAGE_SIZE": 10,
+        "DEFAULT_AUTHENTICATION_CLASSES": [
+            "rest_framework_simplejwt.authentication.JWTAuthentication",
+        ],
+    }
 
 CORS_ALLOWED_ORIGINS = [
     # Vue frontend URL
