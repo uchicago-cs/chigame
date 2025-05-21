@@ -101,15 +101,8 @@
           </p>
         {% endif %}
         <p>{{ game.description|linebreaksbr }}</p>
-        {% if is_twine_game %}
+        {% if game.twine_file %}
           <h3>Play Twine Game</h3>
-          <a href="{{ game.twine_file.url }}"
-             target="_blank"
-             class="btn btn-success">Open Game in New Tab</a>
-        {% endif %}
-        <!-- stored in database game code -->
-        {% if game.twine_file_content %} 
-          <h3>Play Twine Game from Database</h3>
           <a href="{% url 'twine-db' game.pk %}"
              target="_blank"
              class="btn btn-success">Open Game in New Tab</a>
