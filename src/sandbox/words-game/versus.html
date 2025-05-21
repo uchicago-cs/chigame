@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Words Versus</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Press+Start+2P&display=swap"
+          rel="stylesheet" />
+    <link rel="stylesheet" href="versus.css" />
+  </head>
+  <body>
+    <div id="header">
+      <h1 class="name">WORDS</h1>
+      <h1>timer</h1>
+    </div>
+    <div id="notification-wrapper">
+      <div id="notification"></div>
+    </div>
+    <div id="versus-container">
+      <!-- Player 1 Side -->
+      <div class="player-side" id="player1">
+        <h2>YOU</h2>
+        <div id="player1-score">Score: 0</div>
+        <div class="player1-main">
+          <div class="board-container" id="board-container-1">
+            <div class="board" id="board-1"></div>
+          </div>
+          <div class="keyboard-container" id="keyboard-container-1">
+            <div class="keyboard-row">
+              <button data-key="q">q</button>
+              <button data-key="w">w</button>
+              <button data-key="e">e</button>
+              <button data-key="r">r</button>
+              <button data-key="t">t</button>
+              <button data-key="y">y</button>
+              <button data-key="u">u</button>
+              <button data-key="i">i</button>
+              <button data-key="o">o</button>
+              <button data-key="p">p</button>
+            </div>
+            <div class="keyboard-row">
+              <button class="space"></button>
+              <button data-key="a">a</button>
+              <button data-key="s">s</button>
+              <button data-key="d">d</button>
+              <button data-key="f">f</button>
+              <button data-key="g">g</button>
+              <button data-key="h">h</button>
+              <button data-key="j">j</button>
+              <button data-key="k">k</button>
+              <button data-key="l">l</button>
+              <button class="space"></button>
+            </div>
+            <div class="keyboard-row">
+              <button data-key="enter" class="wide">Enter</button>
+              <button data-key="z">z</button>
+              <button data-key="x">x</button>
+              <button data-key="c">c</button>
+              <button data-key="v">v</button>
+              <button data-key="b">b</button>
+              <button data-key="n">n</button>
+              <button data-key="m">m</button>
+              <button data-key="del" class="wide">Del</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="divider-line"></div>
+      <!-- Opponent -->
+      <div class="player-side" id="player2">
+        <h2>Opponent</h2>
+        <div id="player2-score">Score: 0</div>
+        <div class="player2-main">
+          <div class="board-container" id="board-container-2">
+            <div class="board" id="board-2"></div>
+          </div>
+          <div class="keyboard-container" id="keyboard-container-2">
+            <!-- Empty, only hidden here for styling (line up with board 1)-->
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <script defer src="versus.js"></script>
+  </body>
+</html>
