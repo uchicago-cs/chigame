@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from chigame.achievements.models import Achievement, UserAchievement
-from chigame.games.models import Category, Chat, Game, GameData, Lobby, Mechanic, Message, Review, Tournament, User
+from chigame.games.models import Category, Chat, Feedback, Game, GameData, Lobby, Mechanic, Message, Review, Tournament, User
 from chigame.users.models import Group
 
 
