@@ -6,3 +6,79 @@
 .tournament-name {
   margin-right: 10px;
 }
+
+/* Match List Styles */
+.match-list {
+  list-style: none;
+  padding: 0;
+  margin: 20px 0;
+}
+
+.match-item {
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 5px;
+  padding: 15px;
+  margin-bottom: 10px;
+  transition: all 0.3s ease;
+}
+
+.match-item:hover {
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.match-info {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.match-players {
+  font-weight: bold;
+  margin: 0;
+}
+
+.match-status {
+  color: #6c757d;
+  margin: 0;
+}
+
+.match-in-progress {
+  color: #28a745;
+  font-weight: bold;
+  margin: 0;
+}
+
+.match-finished {
+  color: #6c757d;
+  font-style: italic;
+  margin: 0;
+}
+
+.match-waiting {
+  color: #ffc107;
+  margin: 0;
+}
+
+.join-match-form {
+  margin-top: 10px;
+}
+
+.join-match-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.join-match-button:hover {
+  background-color: #0056b3;
+}
+
+.join-match-button:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}

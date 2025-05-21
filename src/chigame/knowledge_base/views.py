@@ -9,16 +9,23 @@ from django.db.models.functions import Concat
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.safestring import mark_safe
-from django.views.generic import DetailView, ListView
+from django.views.decorators.http import require_POST
+from django.views.generic import DetailView, ListView, TemplateView
 
 from chigame.games.models import Category, Game
 
 from .forms import MarkdownUploadForm
-from .models import Guide, ReviewFeedback
+from .markdown_extensions import HtmlSanitizerExtension, SectionWrapperExtension
+from .models import GeneralFeedback, Guide, ReviewFeedback
 
 
 # Viewers
 class DefaultView(ListView):
+    """
+    Landing page view that displays published guides.
+    Allows searching, filtering by category, and sorting of guides.
+    """
+
     model = Guide
     template_name = "knowledge-base/landing.html"
     context_object_name = "guides"
@@ -67,6 +74,21 @@ class DefaultView(ListView):
         context["categories"] = Category.objects.filter(
             id__in=Game.objects.values_list("categories", flat=True).distinct()
         )
+        if self.request.user.is_authenticated:
+            unseen_feedbacks = []
+            submittedguides = Guide.objects.filter(author=self.request.user)
+            for guide in submittedguides:
+                feedbacks = guide.feedbacks.all()
+                if feedbacks:
+                    # now the status banner only supports the recentest feedback
+                    # for an uploaded guide object
+                    latest_feedback = feedbacks.order_by("-timestamp").first()
+                    if not latest_feedback.seen:
+                        unseen_feedbacks.append(latest_feedback)
+
+            context["unseen_feedbacks"] = unseen_feedbacks
+        else:
+            context["unseen_feedbacks"] = []
         return context
 
 
@@ -80,6 +102,11 @@ class GuideDetail(DetailView):
         guide = self.get_object()
 
         context["published"] = False
+
+        # Render the markdown text as actual markdown
+        md = markdown.Markdown(extensions=[SectionWrapperExtension(), HtmlSanitizerExtension(), "fenced_code"])
+        html_content = md.convert(guide.content)
+        context["rendered_content"] = html_content
 
         if guide.game_id.published_guide_id == guide:
             context["published"] = True
@@ -155,7 +182,7 @@ class ContributorManageGuide(LoginRequiredMixin, ListView):
 @login_required
 def DownloadGuide(request, pk):
     guide = get_object_or_404(Guide, pk=pk)
-    if guide.author != request.user:
+    if guide.author != request.user and not request.user.moderator:
         raise PermissionDenied
     content = guide.content  # Assuming this is already Markdown or close to it
 
@@ -166,14 +193,27 @@ def DownloadGuide(request, pk):
 
 
 class FeedbackDetail(LoginRequiredMixin, DetailView):
+    """
+    Displays the details of a moderator's feedback on a guide.
+    This view is specifically for guide authors to see feedback about their guides.
+    """
+
     model = ReviewFeedback
     template_name = "knowledge-base/feedback_detail.html"
     context_object_name = "feedback"
 
     def get_object(self, queryset=None):
         feedback = super().get_object(queryset)
-        if feedback.guide_id.author != self.request.user:
+        if feedback.guide_id.author != self.request.user and not self.request.user.moderator:
             raise PermissionDenied
+
+        # update whether a ReviewFeedback object is seen by its author
+        # Note: Only seeing by its author (the contributor) can update the "seen"
+        # field! Seeing by a moderator wouldn't update it.
+        if self.request.user == feedback.guide_id.author and not feedback.seen:
+            feedback.seen = True
+            feedback.save()
+
         return feedback
 
 
@@ -245,4 +285,88 @@ class ReviewPendingGuideView(LoginRequiredMixin, UserPassesTestMixin, DetailView
         context = self.get_context_data(object=self.object)
         context["feedback"] = feedback
         context["message"] = message
-        return self.render_to_response(context)
+
+        return redirect("knowledge-base-moderator")
+
+
+class UserFeedbackView(TemplateView):
+    """
+    View for users to submit general feedback about the knowledge base system.
+    This is separate from guide-specific feedback (ReviewFeedback) and is meant
+    for general user experience feedback.
+    """
+
+    template_name = "knowledge-base/feedback.html"
+
+    def post(self, request, *args, **kwargs):
+        feedback_text = request.POST.get("feedback", "")
+        if feedback_text:
+            GeneralFeedback.objects.create(feedback=feedback_text)
+            messages.success(request, "Thank you for your feedback!")
+        return redirect("knowledge-base")
+
+
+def faq_view(request):
+    return render(request, "knowledge-base/faq.html")
+
+
+class ModeratorListByGame(LoginRequiredMixin, UserPassesTestMixin, ListView):
+    model = Game
+    template_name = "knowledge-base/moderator_game_list.html"
+    context_object_name = "games"
+
+    def get_queryset(self):
+        queryset = Game.objects.all()
+        return queryset
+
+    # called when UserPassesTestMixin
+    # this makes sure only moderators can access this page
+    def test_func(self):
+        return self.request.user.moderator
+
+
+class ModeratorSingleGame(LoginRequiredMixin, UserPassesTestMixin, ListView):
+    model = Guide
+    template_name = "knowledge-base/moderator_single_game.html"
+    context_object_name = "ApprovedGuides"
+
+    def get_queryset(self):
+        pk = self.kwargs["game_pk"]
+        game = get_object_or_404(Game, pk=pk)
+        queryset = Guide.objects.filter(game_id=game, status=1)
+
+        # for sorting
+        sort = self.request.GET.get("sort")
+        if sort == "old":
+            queryset = queryset.order_by("recent_upload")
+        else:  # default: newest first
+            queryset = queryset.order_by("-recent_upload")
+        return queryset
+
+    # called when UserPassesTestMixin
+    # this makes sure only moderators can access this page
+    def test_func(self):
+        return self.request.user.moderator
+
+    def get_context_data(self, **kwargs):
+        pk = self.kwargs["game_pk"]
+        game = get_object_or_404(Game, pk=pk)
+
+        context = super().get_context_data(**kwargs)
+        context["game"] = game
+        return context
+
+
+@require_POST
+def ModeratorSetPublishedGuide(request, game_pk, guide_pk):
+    game = get_object_or_404(Game, pk=game_pk)
+    guide = get_object_or_404(Guide, pk=guide_pk)
+    if game.published_guide_id != guide:
+        # publish or switch to publish if not currently published
+        game.published_guide_id = guide
+    else:
+        # unpublish if already published
+        game.published_guide_id = None
+
+    game.save()
+    return redirect("moderator-single-game", game_pk)  # or wherever you want to redirect
