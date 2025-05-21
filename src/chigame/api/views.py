@@ -14,8 +14,8 @@ from chigame.api.filters import GameFilter
 from chigame.api.serializers import (
     AchievementSerializer,
     CategorySerializer,
-    GameDataSerializer,
     FeedbackSerializer,
+    GameDataSerializer,
     GameReviewStatsSerializer,
     GameSerializer,
     GroupSerializer,
@@ -28,7 +28,7 @@ from chigame.api.serializers import (
     UserSerializer,
 )
 from chigame.api.spam_utils import is_spam
-from chigame.games.models import Game, GameData, Lobby, Message, Review
+from chigame.games.models import Feedback, Game, GameData, Lobby, Message, Review, Tournament
 from chigame.games.simulation_utils import run_complete_tournament_simulation
 from chigame.users.models import Group, User
 
@@ -423,6 +423,7 @@ class GameDataDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     def perform_update(self, serializer):
         serializer.save(user=self.request.user)
+
 
 class TournamentSimulationView(APIView):
     """

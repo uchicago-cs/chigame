@@ -765,6 +765,7 @@ class GameData(models.Model):
     def __str__(self):
         return f"{self.user.username} - {self.game.name}: {self.key}"
 
+
 # ================ CHECKERS ================
 
 
