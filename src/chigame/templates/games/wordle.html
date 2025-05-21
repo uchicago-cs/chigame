@@ -1,14 +1,16 @@
 {% extends "base.html" %}
+
 {% load static %}
 
-{% block title %}Words Game{% endblock %}
-
+{% block title %}
+  Words Game
+{% endblock title %}
 {% block content %}
-<div class="container">
+  <div class="container">
     <div class="row">
-        <div class="col-12">
-            <iframe src="{{ iframe_url }}" style="width: 100%; height: 100vh; border: none;"></iframe>
-        </div>
+      <div class="col-12">
+        <iframe src="{{ iframe_url }}" class="game-iframe"></iframe>
+      </div>
     </div>
-</div>
-{% endblock %} 
+  </div>
+{% endblock content %}

@@ -35,14 +35,14 @@
           <button id="how-to-play-btn" class="nav-btn">How to Play ▼</button>
           <button id="settings-btn" class="nav-btn">⚙</button>
           <!-- TEMPORARY START: Temporary Login Option -->
-          <div id="login-container" style="display: inline-flex; align-items: center; gap: 0.3rem; margin-left: 0.5rem;">
-            <form id="loginForm" onsubmit="event.preventDefault(); tempLogin();" style="display: inline-flex; align-items: center; gap: 0.3rem;">
-              <input type="text" id="tempUsername" placeholder="Enter username" style="padding: 0.3rem; border-radius: 3px; border: 1px solid #ccc; background: var(--bg-dark); color: var(--text);" />
-              <button type="submit" style="padding: 0.3rem 0.7rem; border-radius: 3px; background: var(--primary); color: white; border: none;">Login</button>
+          <div id="login-container">
+            <form id="loginForm" onsubmit="event.preventDefault(); tempLogin();">
+              <input type="text" id="tempUsername" placeholder="Enter username" />
+              <button type="submit" class="login-button">Login</button>
             </form>
-            <div id="user-info" style="display: none; align-items: center; gap: 0.5rem;">
-              <span id="current-username" style="color: var(--text);"></span>
-              <button onclick="tempLogout()" style="padding: 0.3rem 0.7rem; border-radius: 3px; background: var(--primary); color: white; border: none;">Logout</button>
+            <div id="user-info">
+              <span id="current-username"></span>
+              <button onclick="tempLogout()" class="login-button">Logout</button>
             </div>
           </div>
           <!-- TEMPORARY END: Temporary Login Option -->
@@ -174,14 +174,18 @@
         const loginForm = document.getElementById('loginForm');
         const userInfo = document.getElementById('user-info');
         const currentUsername = document.getElementById('current-username');
-        
+
         if (username) {
-          loginForm.style.display = 'none';
-          userInfo.style.display = 'flex';
+          loginForm.classList.add('display-none');
+          loginForm.classList.remove('display-flex');
+          userInfo.classList.add('display-flex');
+          userInfo.classList.remove('display-none');
           currentUsername.textContent = username;
         } else {
-          loginForm.style.display = 'flex';
-          userInfo.style.display = 'none';
+          loginForm.classList.add('display-flex');
+          loginForm.classList.remove('display-none');
+          userInfo.classList.add('display-none');
+          userInfo.classList.remove('display-flex');
           document.getElementById('tempUsername').value = '';
         }
       }

@@ -684,3 +684,52 @@ body.colorblind-mode {
     --primary: #0000FF;
     --accent: #FF8000;
 }
+
+/* Login Container Styles */
+#login-container {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    margin-left: 0.5rem;
+}
+
+#loginForm {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+#tempUsername {
+    padding: 0.3rem;
+    border-radius: 3px;
+    border: 1px solid #ccc;
+    background: var(--bg-dark);
+    color: var(--text);
+}
+
+.login-button {
+    padding: 0.3rem 0.7rem;
+    border-radius: 3px;
+    background: var(--primary);
+    color: white;
+    border: none;
+}
+
+#user-info {
+    display: none;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+#current-username {
+    color: var(--text);
+}
+
+/* Display utility classes */
+.display-none {
+    display: none;
+}
+
+.display-flex {
+    display: flex;
+}
