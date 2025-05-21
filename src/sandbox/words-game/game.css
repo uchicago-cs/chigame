@@ -670,3 +670,13 @@ h1 {
 .settings-screen input[type="checkbox"]:checked::after {
     visibility: visible;
 }
+
+body.dark-mode {
+    --card-bg: #c4c4c4;
+    --text: #000000;
+}
+
+body.colorblind-mode {
+    --primary: #0000FF;
+    --accent: #FF8000;
+}
