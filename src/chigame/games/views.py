@@ -155,6 +155,8 @@ class GameCreateView(UserPassesTestMixin, CreateView):
         # ✅ Manually assign uploaded file
         if self.request.FILES.get("twine_file"):
             self.object.twine_file = self.request.FILES["twine_file"]
+            #read raw bytes
+            self.object.twine_file = uploaded_file.read()
         self.object.save()
         return redirect(self.get_success_url())
 
