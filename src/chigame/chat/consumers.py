@@ -143,7 +143,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         message_obj = await database_sync_to_async(LiveChatMessage.objects.create)(live_chat=chat, user=user, content=message, reply_to=reply_to)
 
         # Return the display name (username or email)
-        return user.username or user.email
+        return user.username or user.email, message_obj.id
 
     async def receive(self, text_data):
         """
@@ -162,7 +162,18 @@ class ChatConsumer(AsyncWebsocketConsumer):
         filtered_message = self.profanity_filter.censor_message(message)
 
         # Save message to database once when first received from client
-        username = await self.save_message(self.chat_id, user_id, message)
+        username, message_id = await self.save_message(self.chat_id, user_id, message, reply_to_id)
+        
+        # Get reply information if available
+        reply_to_username = None
+        reply_to_content = None
+        if reply_to_id:
+            try:
+                reply_message = await database_sync_to_async(LiveChatMessage.objects.select_related('user').get)(id=reply_to_id)
+                reply_to_username = reply_message.user.username or reply_message.user.email
+                reply_to_content = reply_message.content
+            except LiveChatMessage.DoesNotExist:
+                reply_to_id = None
 
         # Send the filtered message to the group
         await self.channel_layer.group_send(
@@ -171,11 +182,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 "type": "sendMessage",
                 "message": filtered_message,
                 "user_id": user_id,
-                "username": message_data["username"],
-                "message_id": message_data["message_id"],
-                "reply_to": message_data["reply_to"],
-                "reply_to_username": message_data["reply_to_username"],
-                "reply_to_content": message_data["reply_to_content"],
+                "username": username,
+                "message_id": message_id,
+                "reply_to": reply_to_id,
+                "reply_to_username": reply_to_username,
+                "reply_to_content": reply_to_content,
             },
         )
 
