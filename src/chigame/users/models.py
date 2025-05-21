@@ -106,6 +106,14 @@ class FriendInvitation(models.Model):
     """
     An invitation from a User to another User, requesting that they become
     friends.
+
+    IMPORTANT NOTE TO DEVELOPERS BEFORE MODIFYING THIS MODEL:
+    -------------------------------------------------------------------
+    There is no uniqueness constraint on sender and receiver, because there
+    can be multiple deleted invitations! Use is_deleted=True to soft delete a
+    friend invitation, never hard delete them. In the view functions we enforce
+    that there can only be one active is_deleted=False invitation between two
+    users.
     """
 
     sender = models.ForeignKey(User, related_name="sent_friend_invitations", on_delete=models.CASCADE)
@@ -114,9 +122,6 @@ class FriendInvitation(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     objects = FriendInvitationManager()
     is_deleted = models.BooleanField(default=False)
-
-    class Meta:
-        unique_together = ("sender", "receiver")
 
     def accept_invitation(self):
         """
