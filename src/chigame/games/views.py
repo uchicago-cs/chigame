@@ -381,20 +381,35 @@ class LobbyDeleteView(DeleteView):
 
 
 def apply_sorting_and_filtering(queryset, sort_param, players_param):
-    # Example value of sort_param: "name-asc" or "year_published-desc".
+    # some examples of sort params are : "name-asc" or "year_published-desc".
     if sort_param:
         sort_field, sort_direction = sort_param.rsplit("-", 1)
         sort_order = "-" if sort_direction == "desc" else ""
-
+        # checking for the type of filter that was selected by user
         if sort_field == "name":
             if sort_direction == "desc":
                 queryset = queryset.order_by(Lower("name").desc())
             else:
                 queryset = queryset.order_by(Lower("name"))
+        elif sort_field == "avg_rating":
+            from django.db.models import Avg
+
+            queryset = queryset.annotate(avg_rating=Avg("review__rating"))
+            if sort_direction == "desc":
+                queryset = queryset.order_by("-avg_rating")
+            else:
+                queryset = queryset.order_by("avg_rating")
+        elif sort_field == "popularity":
+            from django.db.models import Count
+
+            queryset = queryset.annotate(popularity=Count("review"))
+            if sort_direction == "desc":
+                queryset = queryset.order_by("-popularity")
+            else:
+                queryset = queryset.order_by("popularity")
         else:
             queryset = queryset.order_by(f"{sort_order}{sort_field}")
-
-    # Filter by number of players. Handles numeric values and '10+' case.
+    # to filter by # of players
     if players_param:
         if players_param.isdigit():
             players = int(players_param)
