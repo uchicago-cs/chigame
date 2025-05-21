@@ -79,34 +79,34 @@
 
       const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
       form.addEventListener('submit', function(event) {
-          event.preventDefault();
+        event.preventDefault();
 
-          const formData = new FormData(form);
-          const data = {};
-          formData.forEach((value, key) => {
-              data[key] = value;
-          });
+        const formData = new FormData(form);
+        const data = {};
+        formData.forEach((value, key) => {
+            data[key] = value;
+        });
 
-          fetch('api/award-achievement/', {
-              method: 'POST',
-              headers: {
-                  'Content-Type': 'application/json',
-                  'X-CSRFToken': csrfToken
-              },
-              credentials: 'include',
-              body: JSON.stringify(data)
+        fetch('api/award-achievement/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            credentials: 'include',
+            body: JSON.stringify(data)
           })
-          .then(response => {
-              if (!response.ok) {
-                  throw new Error('Network response was not ok');
-              }
-              return response.json();
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
           })
           .then(data => {
-              console.log('Success:', data);
+            console.log('Success:', data);
           })
           .catch(error => {
-              console.error('Error:', error);
+            console.error('Error:', error);
           });
       });
     </script>
