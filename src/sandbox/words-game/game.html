@@ -32,10 +32,10 @@
       <div id="header">
         <div class="nav-buttons">
           <a href="{% url 'index' %}" class="nav-btn">Home</a>
-          <button id="how-to-play-btn" class="nav-btn">How to Play</button>
+          <button id="how-to-play-btn" class="nav-btn">How to Play ▼</button>
           <button id="settings-btn" class="nav-btn">⚙</button>
         </div>
-        <div id="title">
+        <div class="logo-title">
           <h1 class="name">WORDS</h1>
         </div>
       </div>
@@ -121,11 +121,22 @@
       <div class="settings-content">
         <h2>Settings</h2>
         <h4>Sound Settings</h4>
-        <label>PlaceHolder</label>
+        <label for="volume">Volume:</label>
+        <input type="range" id="volume" min="0" max="100" value="50" />
+        <label>
+          <input type="checkbox" id="mute-toggle" />
+          Mute
+        </label>
         <h4>Light/Dark mode</h4>
-        <label>PlaceHolder</label>
+        <label>
+          <input type="checkbox" id="dark-mode-toggle" />
+          Enable Light Mode
+        </label>
         <h4>Colorblind mode</h4>
-        <label>PlaceHolder</label>
+        <label>
+          <input type="checkbox" id="colorblind-toggle" />
+          Enable Colorblind Mode
+        </label>
       </div>
     </div>
     <script>
