@@ -1170,3 +1170,26 @@ class JWTAuthenticationTests(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION="Bearer invalid_token_string")
         response = self.client.post(self.protected_url, self.protected_data, format="json")
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+class GameDataTests(APITestCase):
+    def setUp(self):
+        self.user1 = UserFactory()
+        self.user2 = UserFactory()
+
+        self.game1 = GameFactory()
+        self.game2 = GameFactory()
+
+        self.list_url = reverse("api-game-data-list")
+
+        self.test_data = {"game": self.game1.id, "key": "test_key", "value": "test_value"}
+
+        self.client.force_authenticate(user=self.user1)
+        self.client.post(self.list_url, self.test_data)
+        self.client.post(self.list_url, {"game": self.game1.id, "key": "another_key", "value": "another_value"})
+        self.client.post(self.list_url, {"game": self.game2.id, "key": "game2_key", "value": "game2_value"})
+
+        self.client.force_authenticate(user=self.user2)
+        self.client.post(self.list_url, {"game": self.game1.id, "key": "user2_key", "value": "user2_value"})
+
+        self.client.force_authenticate(user=None)
