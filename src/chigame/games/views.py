@@ -564,7 +564,7 @@ class InteractiveFictionView(TemplateView):
         context["game"] = latest_game
 
         if latest_game.twine_file:
-            context["uploaded_file_url"] = latest_game.twine_file.url
+            context["has_uploaded_twine"] = bool(latest_game.twine_file)
 
         return context
 
