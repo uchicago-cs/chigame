@@ -585,3 +585,88 @@ h1 {
     transform: translateY(-2px);
     box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.4);
 }
+
+/* Settings */
+.settings-screen {
+    background-color: var(--card-bg);
+    color: var(--text);
+    padding: 1.5rem;
+    text-align: left;
+    border: 2px solid var(--primary);
+    border-radius: 0px;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 400px;
+    max-width: 90vw;
+    max-height: 90vh;
+    overflow-y: auto;
+    z-index: 100;
+    box-shadow: 6px 6px 0px rgba(0, 0, 0, 0.3);
+    line-height: 1.4;
+    font-size: 0.9rem;
+}
+
+.settings-screen h2 {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    color: var(--primary);
+    text-shadow: 2px 2px 0 black;
+}
+
+.settings-screen h4 {
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+    color: var(--accent);
+}
+
+.settings-screen label {
+    display: block;
+    font-size: 0.7rem;
+    margin-bottom: 0.75rem;
+    color: var(--text);
+}
+
+.settings-screen input[type="range"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 100%;
+    height: 8px;
+    background: var(--primary);
+    border: 2px solid var(--accent);
+    box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.4);
+    cursor: pointer;
+    margin-top: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.settings-screen input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    height: 14px;
+    width: 14px;
+    background: var(--accent);
+    border: 2px solid var(--primary);
+    cursor: pointer;
+}
+
+.settings-screen input[type="checkbox"] {
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    background-color: var(--bg);
+    border: 2px solid var(--primary);
+    box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.4);
+    margin-right: 0.5rem;
+    position: relative;
+    top: 2px;
+}
+
+.settings-screen input[type="checkbox"]:checked {
+    background-color: var(--accent);
+}
+
+.settings-screen input[type="checkbox"]:checked::after {
+    visibility: visible;
+}
