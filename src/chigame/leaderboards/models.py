@@ -28,7 +28,7 @@ class LeaderboardEntry(models.Model):
     rank = models.IntegerField()
 
     def __str__(self):
-        return f"{self.user.user.username} - Rank {self.rank}"
+        return f"{self.user.user.name} - Rank {self.rank}"
 
 
 class Metric(models.Model):
@@ -49,7 +49,7 @@ class MetricScore(models.Model):
     match = models.ForeignKey(Match, on_delete=models.CASCADE, related_name="metric_scores")
 
     def __str__(self):
-        return f"{self.user.user.username} - {self.metric.name}: {self.score}"
+        return f"{self.user.user.name} - {self.metric.name}: {self.score}"
 
 
 class LeaderboardPrivacySetting(models.Model):
@@ -74,11 +74,11 @@ class LeaderboardPrivacySetting(models.Model):
 
     def __str__(self):
         if self.leaderboard:
-            return f"{self.user.display_name}'s settings for {self.leaderboard.name}"
+            return f"{self.user.user.name}'s settings for {self.leaderboard.name}"
         elif self.game:
-            return f"{self.user.display_name}'s settings for {self.game.name}"
+            return f"{self.user.user.name}'s settings for {self.game.name}"
         else:
-            return f"{self.user.display_name}'s global settings"
+            return f"{self.user.user.name}'s global settings"
 
     @classmethod
     def get_user_setting(cls, user, game=None, leaderboard=None):
