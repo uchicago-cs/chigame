@@ -751,7 +751,7 @@ class IFGameCreateView(CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        latest_game = Game.objects.filter(twine_file__isnull=False).order_by("-id").first()
+        latest_game = Game.objects.filter(twine_file_content__isnull=False).order_by("-id").first()
 
         if not latest_game:
             # fallback dummy game to prevent pk=None
