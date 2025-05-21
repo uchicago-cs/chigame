@@ -38,6 +38,14 @@
     replyToContent = null;
   };
 
+  function escapeHTML(str) {
+    return str
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
   /**
    * This function is called when a message is received from the server.
    * It creates a new div element with the message and appends it to the chat container.
@@ -146,13 +154,13 @@
         if (collapseButton) {
           collapseButton.classList.remove("d-none");
         }
-      } else {
-        if (collapseButton) {
-          collapseButton.classList.add("d-none");
-        }
-
-        chatContainer.classList.remove("collapsed-chat");
       }
+      if (collapseButton) {
+        collapseButton.classList.add("d-none");
+      }
+
+      chatContainer.classList.remove("collapsed-chat");
+
     });
   }
 </script>
