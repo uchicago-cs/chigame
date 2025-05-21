@@ -573,15 +573,23 @@ class IFGameCreateView(UserPassesTestMixin, CreateView):
     model = InteractiveFictionGame
     form_class = IFGameForm
     template_name = "games/interactive-fiction/IF_game_create.html"
-    success_url = reverse_lazy("game-list")
 
     def test_func(self):
         return self.request.user.is_staff
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        return context
+    def form_valid(self, form):
+        self.object = form.save(commit=False)
+        if self.request.FILES.get("twine_file"):
+            self.object.twine_file = self.request.FILES["twine_file"]
+        self.object.min_players = 1
+        self.object.max_players = 1
+        self.object.complexity = 1
+        self.object.save()
+        form.save_m2m()
+        return redirect(self.get_success_url())
 
+    def get_success_url(self):
+        return reverse("game-detail", kwargs={"pk": self.object.pk})
 
 class UploadFileView(View):
     def post(self, request, pk=None):

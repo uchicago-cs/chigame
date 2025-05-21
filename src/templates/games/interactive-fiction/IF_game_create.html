@@ -11,13 +11,12 @@
       padding: 0 1rem;
     }
 
-    h1,
-    h3 {
+    h1, h3 {
       text-align: left;
       margin-bottom: 1rem;
     }
 
-    #game_form>div {
+    #game_form > div {
       margin-bottom: 1.5rem;
     }
 
@@ -70,7 +69,6 @@
       cursor: pointer;
       color: #555;
       width: 568px;
-      width: 568px;
     }
 
     .upload-zone.hover {
@@ -81,8 +79,9 @@
       display: none;
     }
   </style>
+
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
       document.querySelectorAll('.upload-zone').forEach(zone => {
         const inputId = zone.dataset.inputId;
         const input = document.getElementById(inputId);
@@ -97,18 +96,23 @@
           `;
         }
 
-        function isHtmlFile(file) {
-          return file && file.name.toLowerCase().endsWith('.html');
+        function isHtmlFile(file, inputId) {
+          // Only check .html extension for Twine file
+          if (inputId === "id_twine_file") {
+            return file && file.name.toLowerCase().endsWith(".html");
+          }
+          return true;
         }
 
         function handleFile(file) {
-          if (!isHtmlFile(file)) {
-            alert('Only .html files are allowed!');
+          if (!isHtmlFile(file, inputId)) {
+            alert("Only .html files are allowed for the Twine file!");
             input.value = '';
             zone.innerHTML = 'Drag & drop a file here<br />or click to browse';
             return false;
           }
           showFileName(file);
+          validateForm();
           return true;
         }
 
@@ -139,26 +143,39 @@
           }
         });
       });
+
+      // Enable submit button only if all required fields are filled
+      function validateForm() {
+        const name = document.getElementById("id_name").value.trim();
+        const author = document.getElementById("id_author").value.trim();
+        const description = document.getElementById("id_description").value.trim();
+        const twineFile = document.getElementById("id_twine_file").files.length > 0;
+        const submitBtn = document.querySelector("#game_form button[type='submit']");
+        submitBtn.disabled = !(name && author && description && twineFile);
+      }
+
+      ["id_name", "id_author", "id_description", "id_twine_file"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.addEventListener("input", validateForm);
+          el.addEventListener("change", validateForm);
+        }
+      });
+
+      validateForm(); // Initial check
     });
   </script>
+
   <h1>Create Interactive Fiction Game</h1>
-  <form method="post" enctype="multipart/form-data" id="game_form">
+  <form method="post" action="{% url 'interactive-fiction-create' %}" enctype="multipart/form-data" id="game_form">
     {% csrf_token %}
     <div>
       <label for="id_name">Game Name:</label>
-      <input type="text"
-             name="name"
-             id="id_name"
-             value="{{ form.name.value }}"
-             required />
+      <input type="text" name="name" id="id_name" value="{{ form.name.value }}" required />
     </div>
     <div>
       <label for="id_author">Author Name</label>
-      <input type="text"
-             name="author"
-             id="id_author"
-             value="{{ form.author.value }}"
-             required />
+      <input type="text" name="author" id="id_author" value="{{ form.author.value }}" required />
     </div>
     <div>
       <label for="id_description">Description:</label>
@@ -175,22 +192,15 @@
     </div>
     <div>
       <label for="id_content_warnings">Content Warnings</label>
-      <input type="text"
-             name="content_warnings"
-             id="id_content_warnings"
-             value="{{ form.content_warnings.value }}" />
+      <input type="text" name="content_warnings" id="id_content_warnings" value="{{ form.content_warnings.value }}" />
     </div>
     <div>
       <label for="id_rules">Rules:</label>
-      <textarea name="rules" id="id_rules" placeholder="Enter the rules" rows="4">{{ form.rules.value }}</textarea>
+      <textarea name="rules" id="id_rules" rows="4" placeholder="Enter the rules">{{ form.rules.value }}</textarea>
     </div>
     <div>
       <label for="id_year_published">Year Published:</label>
-      <input type="number"
-             name="year_published"
-             id="id_year_published"
-             value="{{ form.year_published.value }}"
-             placeholder="Year Published" />
+      <input type="number" name="year_published" id="id_year_published" value="{{ form.year_published.value }}" placeholder="Year Published" />
     </div>
     <div>
       <label for="id_content_warning">Content Warning (optional):</label>
@@ -203,48 +213,34 @@
         <br />
         or click to browse
       </div>
-      <input type="file"
-             id="id_cover_image"
-             name="uploaded_file"
-             class="if-file-input" />
+      <input type="file" id="id_cover_image" name="uploaded_file" class="if-file-input" />
+    </div>
+    <div>
+      <label for="id_twine_file">Twine Game File (.html)</label>
+      <div class="upload-zone" data-input-id="id_twine_file">
+        Drag &amp; drop a file here
+        <br />
+        or click to browse
+      </div>
+      <input type="file" id="id_twine_file" name="twine_file" class="if-file-input" accept=".html" />
     </div>
     <div>
       <label for="id_allow_comments">
-        <input type="checkbox"
-               name="allow_comments"
-               id="id_allow_comments"
-               {% if form.allow_comments.value %}checked{% endif %} />
+        <input type="checkbox" name="allow_comments" id="id_allow_comments" {% if form.allow_comments.value %}checked{% endif %} />
         Allow Comments
       </label>
     </div>
     <div>
       <label for="id_enable_ratings">
-        <input type="checkbox"
-               name="enable_ratings"
-               id="id_enable_ratings"
-               {% if form.enable_ratings.value %}checked{% endif %} />
+        <input type="checkbox" name="enable_ratings" id="id_enable_ratings" {% if form.enable_ratings.value %}checked{% endif %} />
         Enable Ratings
       </label>
     </div>
-    <hr />
-    <h3>Upload Game Files</h3>
+
+    <button type="submit" class="btn-success" disabled>Submit Game</button>
   </form>
-  <form method="post"
-        action="{% url 'upload-file' pk=game.pk %}"
-        enctype="multipart/form-data">
-    {% csrf_token %}
-    <div class="upload-zone" data-input-id="myFile">
-      Drag &amp; drop a file here
-      <br />
-      or click to browse
-    </div>
-    <input type="file"
-           id="myFile"
-           name="uploaded_file"
-           class="if-file-input"
-           accept=".html" />
-    <button type="submit" class="btn-success">Upload Game</button>
-  </form>
-  <h3>Publish Story</h3>
-  <a href="{{ uploaded_file_url }}" target="_blank" class="btn-success">Play Uploaded Game</a>
+  {% if uploaded_file_url %}
+    <h3>Publish Story</h3>
+    <a href="{{ uploaded_file_url }}" target="_blank" class="btn-success">Play Uploaded Game</a>
+  {% endif %}
 {% endblock content %}

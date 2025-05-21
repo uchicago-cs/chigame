@@ -24,7 +24,7 @@ class GameForm(forms.ModelForm):
 class IFGameForm(forms.ModelForm):
     class Meta:
         model = InteractiveFictionGame
-        fields = ["name", "description", "image", "categories", "suggested_age", "rules", "year_published"]
+        fields = ["name", "description", "image", "categories", "suggested_age", "rules", "year_published", "twine_file"]
 
     image = forms.CharField(
         widget=forms.TextInput(attrs={"placeholder": "Enter Image URL"}),
@@ -42,6 +42,8 @@ class IFGameForm(forms.ModelForm):
     year_published = forms.IntegerField(
         required=False, widget=forms.NumberInput(attrs={"placeholder": "Year Published"})
     )
+
+    twine_file = forms.FileField(required=True)
 
 
 class LobbyForm(forms.ModelForm):
