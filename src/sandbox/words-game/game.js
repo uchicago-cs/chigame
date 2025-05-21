@@ -17,21 +17,39 @@ window.addEventListener("load", async () => {
 });
 
 
+//Buttons (How To Play and Settings)!
 const howToPlayBtn = document.getElementById('how-to-play-btn');
 const howToPlayText = document.getElementById('how-to-play-text');
+const settingsBtn = document.getElementById('settings-btn');
+const settingsScreen = document.getElementById('settings');
 
-//Opens and closes how to play text
+// Handle How to Play toggle
 howToPlayBtn.addEventListener('click', () => {
-    howToPlayText.classList.toggle('visible');
-    howToPlayText.classList.toggle('hidden');
+    const isVisible = !howToPlayText.classList.contains('visible');
 
-    if (howToPlayText.classList.contains('visible')) {
-        howToPlayBtn.textContent = "How to Play ▲";
+    howToPlayText.classList.toggle('visible', isVisible);
+    howToPlayText.classList.toggle('hidden', !isVisible);
+
+    //Hide settings
+    settingsScreen.classList.add('hidden');
+
+    if (isVisible) {
+    howToPlayBtn.textContent = "How to Play ▲";
     } else {
-        howToPlayBtn.textContent = "How to Play ▼";
+    howToPlayBtn.textContent = "How to Play ▼";
     }
 });
 
+// Handle Settings toggle
+settingsBtn.addEventListener('click', () => {
+
+    settingsScreen.classList.toggle('hidden');
+
+    // Always hide How to Play
+    howToPlayText.classList.remove('visible');
+    howToPlayText.classList.add('hidden');
+    howToPlayBtn.textContent = "How to Play ▼";
+});
 let guessedWords = [[]];
 let availableSpace = 1;
 let word = "";
@@ -98,6 +116,7 @@ function setupKeyboard() {
     const keys = document.querySelectorAll(".keyboard-row button");
     for (let i = 0; i < keys.length; i++) {
         keys[i].onclick = ({ target }) => {
+            playSound(clickSound);
             const letter = target.getAttribute("data-key").toLowerCase();
 
             if (letter === "enter") {
@@ -118,6 +137,7 @@ function setupKeyboard() {
 //Sends key to board when pressed on your physical keyboard
 function handlePhysicalKeyboardInput() {
     document.addEventListener('keydown', (e) => {
+        playSound(clickSound);
         const key = e.key.toLowerCase();
 
         if (key === "enter") {
@@ -247,7 +267,7 @@ async function handleSubmitWord() {
 
             const letterId = firstLetterId + index;
             const letterEl = document.getElementById(letterId);
-            letterEl.style = `background-color:${tileColor};border-color:${tileColor}`;
+            letterEl.style = `background-color:${tileColor};border-color:${tileColor};color: white`; //keep white no matter light or dark mode
 
             //change on-web keyboard color
             const keyButton = document.querySelector(`[data-key="${letter}"]`);
@@ -258,6 +278,8 @@ async function handleSubmitWord() {
                 if (keyColor !== COLOR_CORRECT) {
                     keyButton.style.backgroundColor = tileColor;
                     keyButton.style.borderColor = tileColor;
+                    keyButton.style.color = "white"; //keep white no matter light or dark mode
+
                 }
             }
         }, interval * index);
@@ -268,6 +290,7 @@ async function handleSubmitWord() {
     //game end
     if (currentWord === word) {
         showNotification("Congratulations! 🎉");
+        playSound(yaySound);
         gameOver = true;
         setTimeout(() => {
             showEndScreen(true);
@@ -278,6 +301,7 @@ async function handleSubmitWord() {
 
     if (guessedWords.length === 6) {
         showNotification(`Sorry, you have no more guesses! The word was "${word}".`);
+        playSound(loseSound);
         gameOver = true;
         setTimeout(() => {
             showEndScreen(false);
@@ -300,6 +324,7 @@ function showNotification(message, duration = 1000) {
     }, duration);
 }
 
+//Show EndScreen
 function showEndScreen(won) {
     const endScreen = document.getElementById("end-screen");
     const endTitle = document.getElementById("end-title");
@@ -322,10 +347,12 @@ function showEndScreen(won) {
     endScreen.classList.remove("hidden");
 }
 
+//Restart button in EndScreen
 document.getElementById("restart-btn").addEventListener("click", () => {
     location.reload();
 });
 
+//Animation for shaking the row
 function shakeRow(rowIndex) {
     for (let i = 0; i < wordLength; i++) {
         const tile = document.getElementById(rowIndex * wordLength + i + 1);
@@ -333,3 +360,42 @@ function shakeRow(rowIndex) {
         setTimeout(() => tile.classList.remove("shake"), 500);
     }
 }
+
+//Dark Mode
+document.getElementById("dark-mode-toggle").addEventListener("change", function () {
+    document.body.classList.toggle("dark-mode", this.checked);
+});
+
+//Color Blind Mode
+document.getElementById("colorblind-toggle").addEventListener("change", function () {
+    document.body.classList.toggle("colorblind-mode", this.checked);
+});
+
+//Sound Controls
+const muteToggle = document.getElementById("mute-toggle");
+const volumeSlider = document.getElementById("volume");
+const yaySound = new Audio('sound/yay.mp3');
+const loseSound = new Audio('sound/lose.mp3');
+const clickSound = new Audio('sound/click.mp3');
+
+yaySound.volume = volumeSlider.value / 100;
+loseSound.volume = volumeSlider.value / 100;
+clickSound.volume = volumeSlider.value / 100;
+
+function setVolume(volume) {
+    yaySound.volume = volume;
+    loseSound.volume = volume;
+    clickSound.volume = volume
+}
+
+function playSound(audio) {
+    if (!muteToggle.checked) {
+        audio.currentTime = 0;
+        audio.play();
+    }
+}
+volumeSlider.addEventListener("input", function () {
+    const volume = this.value / 100;
+    setVolume(volume);
+    console.log("Volume set to:", volume);
+});
