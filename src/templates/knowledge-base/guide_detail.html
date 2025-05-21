@@ -63,7 +63,13 @@
         {% else %}
           heart-hollow
         {% endif %}"">♥</i>
-        <span class="likefav-text">Like</span>
+        <span id="like-text" class="likefav-text">
+          {% if request.user in guide.likes.all %}
+            Unlike
+          {% else %}
+            Like
+          {% endif %}
+        </span>
       </span>
       &nbsp;
       <span type="submit"
@@ -73,7 +79,13 @@
             data-fav-url="{% url 'fav-unfav-guide' guide.pk %}">
         <i id="fav-icon"
            class=" {% if request.user in guide.favorites.all %} star-faved {% else %} star-hollow {% endif %}">★</i>
-        <span class="likefav-text">Favorite</span>
+        <span id="fav-text" class="likefav-text">
+          {% if request.user in guide.favorites.all %}
+            Unfavorite
+          {% else %}
+            Favorite
+          {% endif %}
+        </span>
       </span>
       {% csrf_token %}
     {% endif %}
