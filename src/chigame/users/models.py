@@ -16,7 +16,7 @@ def validate_username(value):
     """
     Validate that the username is not all numeric.
     """
-    if value.isdigit():
+    if value and isinstance(value, str) and value.isdigit():
         raise ValidationError(_("Username cannot be all numbers."), code="invalid_username")
 
 
@@ -93,10 +93,12 @@ class UserProfile(models.Model):
 
 class FriendInvitationManager(models.Manager):
     def get_by_users(self, user1, user2, **kwargs):
-        """Gets a friend invitation given two user, which can be a sender
+        """Gets an active friend invitation given two users, which can be a sender
         or a receiver"""
         return (
-            self.filter(Q(sender=user1, receiver=user2) | Q(sender=user2, receiver=user1), **kwargs)
+            self.filter(
+                Q(sender=user1, receiver=user2, is_deleted=False) | Q(sender=user2, receiver=user1, is_deleted=False)
+            )
             .order_by("-timestamp")
             .first()
         )
