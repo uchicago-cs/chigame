@@ -6,6 +6,7 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from chigame.users.models import User
 
 from .models import LiveChat, LiveChatMessage
+from .utils import ProfanityFilter
 
 
 class ChatConsumer(AsyncWebsocketConsumer):
@@ -14,6 +15,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
     It allows users to connect to a chat room and send messages to other users
     in the room.
     """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.profanity_filter = ProfanityFilter()
 
     @database_sync_to_async
     def get_live_chat(self, chat_id):
