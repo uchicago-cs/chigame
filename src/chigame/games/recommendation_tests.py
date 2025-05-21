@@ -4,14 +4,11 @@ This is just to verify the general idea works correctly.
 Uses the tournament simulation fixtures.
 """
 
-import pytest
-
 from chigame.games.models import Game, Tournament
 from chigame.games.recommendation import TournamentRecommendationService, get_tournament_recommendations
 from chigame.users.models import User
 
 
-@pytest.mark.django_db
 def test_recommendation_service():
     """Test the recommendation service with tournament fixtures."""
     print("Testing Tournament Recommendation Service...")
@@ -86,3 +83,7 @@ def test_recommendation_service():
         print(f"User: {user}")
         print(f"Score: {score}")
         print(f"Reasons: {', '.join(reasons)}")
+
+
+# Run the test
+test_recommendation_service()
