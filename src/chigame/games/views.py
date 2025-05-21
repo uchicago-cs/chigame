@@ -105,7 +105,7 @@ class GameDetailView(LoginRequiredMixin, FormMixin, DetailView):
         context["avg_rating"] = self.object.reviews.filter(is_public=True).aggregate(Avg("rating"))["rating__avg"]
 
         # FOR IF/twine GAMES
-        context["is_twine_game"] = self.object.twine_file.name.endswith(".html") if self.object.twine_file else False
+        context["is_twine_game"] = self.object.twine_file is not None
         context["recommended_games"] = get_recommended_games(
             game=self.object,
             user=self.request.user if self.request.user.is_authenticated else None,
