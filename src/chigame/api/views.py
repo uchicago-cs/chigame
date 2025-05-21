@@ -15,6 +15,9 @@ from chigame.api.filters import GameFilter
 from chigame.api.serializers import (
     AchievementSerializer,
     CategorySerializer,
+    FeedbackSerializer,
+    GameDataSerializer,
+    GameReviewStatsSerializer,
     GameSerializer,
     GroupSerializer,
     LobbySerializer,
@@ -26,7 +29,8 @@ from chigame.api.serializers import (
     UserSerializer,
 )
 from chigame.api.spam_utils import is_spam
-from chigame.games.models import Game, Lobby, Message, Review
+from chigame.games.models import Feedback, Game, GameData, Lobby, Message, Review, Tournament
+from chigame.games.simulation_utils import run_complete_tournament_simulation
 from chigame.users.models import Group, User
 
 
@@ -370,3 +374,128 @@ class AchievementCreateView(generics.CreateAPIView):
         return Response(
             {"message": "Achievement assigned to user!", "data": serializer.data}, status=status.HTTP_201_CREATED
         )
+
+
+class GameDataListView(generics.ListCreateAPIView):
+    """
+    API endpoint to list and create game data for the authenticated user.
+    """
+
+    serializer_class = GameDataSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # Allow filtering by game
+        game_id = self.request.query_params.get("game", None)
+        if game_id:
+            return GameData.objects.filter(user=self.request.user, game_id=game_id)
+        return GameData.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        # Check if this key already exists for the user and game
+        key = serializer.validated_data.get("key")
+        game = serializer.validated_data.get("game")
+
+        try:
+            existing = GameData.objects.get(user=self.request.user, game=game, key=key)
+            # Update the existing record instead
+            existing.value = serializer.validated_data.get("value")
+            existing.save()
+        except GameData.DoesNotExist:
+            # Create a new record
+            serializer.save(user=self.request.user)
+
+
+class GameDataDetailView(generics.RetrieveUpdateDestroyAPIView):
+    """
+    API endpoint to retrieve, update or delete a specific game data entry.
+    """
+
+    serializer_class = GameDataSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return GameData.objects.filter(user=self.request.user)
+
+    def get_object(self):
+        game_id = self.kwargs.get("game_id")
+        key = self.kwargs.get("key")
+        return get_object_or_404(GameData, user=self.request.user, game_id=game_id, key=key)
+
+    def perform_update(self, serializer):
+        serializer.save(user=self.request.user)
+
+
+class TournamentSimulationView(APIView):
+    """
+    POST /api/tournaments/{pk}/simulate/
+    Body: { "double_elimination": <bool> }
+    Returns a full simulated bracket JSON without touching the DB.
+    """
+
+    permission_classes = []
+
+    def post(self, request, pk):
+        tournament = get_object_or_404(Tournament, pk=pk)
+        # read flag (default to single‐elim)
+        is_double = request.data.get("double_elimination", False)
+        # run the simulator
+        bracket = run_complete_tournament_simulation(tournament, is_double)
+        return Response(bracket, status=status.HTTP_200_OK)
+
+
+class FeedbackListCreateView(generics.ListCreateAPIView):
+    serializer_class = FeedbackSerializer
+    permission_classes = []
+    pagination_class = PageNumberPagination
+
+    def get_queryset(self):
+        tournament_id = self.kwargs["pk"]
+        return Feedback.objects.filter(tournament__id=tournament_id).order_by("-created_at")
+
+    def perform_create(self, serializer):
+        tournament_id = self.kwargs["pk"]
+        tournament = get_object_or_404(Tournament, id=tournament_id)
+        user = User.objects.first()
+        serializer.save(user=user, tournament=tournament)
+
+
+class FeedbackDetailView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = FeedbackSerializer
+    permission_classes = []
+
+    def get_queryset(self):
+        return Feedback.objects.all()
+
+    def perform_update(self, serializer):
+        feedback = self.get_object()
+        user = User.objects.first()
+        if feedback.user != user:
+            raise PermissionDenied("You can only update your own feedback.")
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        user = User.objects.first()
+        if instance.user != user:
+            raise PermissionDenied("You can only delete your own feedback.")
+        instance.delete()
+
+
+class GameReviewStatsAPIView(APIView):
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def get(self, request, pk):
+        game = get_object_or_404(Game, pk=pk)
+        reviews = game.reviews.filter(is_public=True)
+
+        ratings = reviews.exclude(rating__isnull=True).values_list("rating", flat=True)
+
+        avg_rating = round(sum(ratings) / len(ratings), 2) if ratings else None
+        popularity = reviews.count()
+
+        data = {
+            "average_rating": avg_rating,
+            "popularity": popularity,
+        }
+
+        return Response(GameReviewStatsSerializer(data).data)
