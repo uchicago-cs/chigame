@@ -65,6 +65,7 @@ function preload() {
 function create() {
   // Store reference to the scene
   const scene = this;
+  const endPieceDiv = document.getElementById('endScreenPiece');
 
   drawBoard(this);
   populatePieces(this);
@@ -123,8 +124,22 @@ function create() {
 
   playAgainYes.addEventListener('click', resetGame);
   playAgainNo.addEventListener('click', () => {
+    // hide the old prompt
     playAgainPrompt.style.display = 'none';
+    gameOverPrompts.classList.remove('show');
+    gameOverMessage.classList.remove('show');
+
+    // decide winner color
+    const msg = gameOverMessage.textContent || '';
+    const winnerHex = msg.includes('Black wins')
+      ? '#000000'
+      : '#ff0000';
+
+    // paint & show spinner
+    endPieceDiv.style.backgroundColor = winnerHex;
+    endPieceDiv.classList.add('show');
   });
+
 
   forfeitBtn.addEventListener('click', () => {
     if (!gameOver && currentPlayer === COLORS.red) {
