@@ -1,0 +1,242 @@
+:root {
+    --bg-dark: #1c1c1c;
+    --bg-darker: #121212;
+    --primary: #800000;
+    --primary-hover: #9a0000;
+    --accent: #c5a873;
+    --text: #f8f9fa;
+    --text-secondary: #d2d2d2;
+    --card-bg: #2c2c2c;
+    --card-border: #3d3d3d;
+    --disabled: #6c757d;
+    --maroon-dark: #4F2121;
+
+    /* Game specific colors */
+    --correct: #538d4e;
+    --partial: var(--accent);
+    --wrong: #3a3a3c;
+    --key-bg: #3c3c3c;
+    --key-text: #ffffff;
+}
+
+@font-face {
+    font-family: 'PixelFont';
+    src: url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--bg-dark);
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    line-height: 1.4;
+    overflow: hidden;
+}
+
+#header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+    position: relative;
+    width: 100%;
+}
+
+.name {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0.5rem 0;
+}
+
+h1 {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: var(--primary);
+    letter-spacing: 0.2rem;
+    text-shadow: 3px 3px 0px rgba(0, 0, 0, 0.3);
+}
+
+#versus-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 25rem;
+    max-width: 100%;
+    padding: 3rem;
+    height: 100vh;
+
+}
+/* Players */
+.player-side {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    min-width: 100px;
+    gap: 1.5rem;
+}
+
+.player1-main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+
+/* Board */
+.board-container {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    margin-bottom: 1rem;
+}
+
+.board {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 5px;
+    width: 250px;
+    height: 300px;
+}
+
+.board div {
+    width: 45px;
+    height: 45px;
+    border: 2px solid var(--card-border);
+    background-color: var(--bg-darker);
+}
+
+.square {
+    border: 2px solid var(--card-border);
+    width: 54px;
+    height: 54px;
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: var(--text);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-transform: uppercase;
+    border-radius: 0px;
+    transition: all 0.2s ease;
+}
+
+/* Keyboard */
+.keyboard-container {
+    margin: 0.5rem 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+
+}
+
+.keyboard-row {
+    display: flex;
+    justify-content: center;
+    width: clamp(35%, 35vw, 400px);
+    margin-top: 0;
+    margin-right: 0;
+    margin-bottom: 4px;
+    margin-left: -4px;
+    touch-action: manipulation;
+}
+
+.keyboard-row button {
+    font-family: inherit;
+    font-weight: 600;
+    border: 0;
+    padding: 0;
+    height: 48px;
+    cursor: pointer;
+    background-color: var(--key-bg);
+    color: var(--key-text);
+    flex-grow: 1;
+    text-transform: uppercase;
+    margin-right: 4px;
+    border-radius: 0px;
+    user-select: none;
+    transition: all 0.2s ease;
+    box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.3);
+    font-size: 0.9rem;
+}
+
+.keyboard-row button:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+}
+
+.keyboard-row button:active {
+    transform: translateY(1px);
+}
+
+.keyboard-row button.wide {
+    flex-grow: 1.5;
+    font-size: 0.75rem;
+}
+
+.space {
+    flex-grow: 0.5;
+}
+
+#keyboard-container-2 {
+    visibility: hidden;
+    height: 150px;
+}
+
+.divider-line {
+    width: 2px;
+    height: 80%;
+    background-color: var(--card-border); /* or #555, #aaa, white, etc. */
+    margin: 0 2rem;
+}
+
+
+/*Notification*/
+#notification-wrapper {
+    position: fixed;
+    top: 40px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    pointer-events: none;
+    z-index: 1000;
+}
+
+#notification {
+    margin-top: 20px;
+    background-color: var(--card-bg);
+    color: var(--text);
+    padding: 0.75rem 1.5rem;
+    border-radius: 0px;
+    box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.3);
+    font-size: 1rem;
+    opacity: 0;
+    transform: translateY(-30px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    pointer-events: none;
+    max-width: 90%;
+    text-align: center;
+    border: 2px solid var(--primary);
+}
+
+#notification.show {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
