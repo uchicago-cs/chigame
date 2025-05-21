@@ -33,6 +33,8 @@ class Game(models.Model):
 
     # interactive fiction  - twine file
     twine_file = models.FileField(upload_to="twine_games/", null=True, blank=True)
+    twine_file_name = models.CharField(max_length=255, null=True, blank=True)
+    twine_file_content = models.BinaryField(null=True, blank=True)
 
     suggested_age = models.PositiveSmallIntegerField(
         null=True, blank=True
