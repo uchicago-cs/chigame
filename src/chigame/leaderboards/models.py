@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from django.db import models
 
 from chigame.games.models import Game, Match
@@ -70,6 +71,15 @@ class LeaderboardPrivacySetting(models.Model):
 
     class Meta:
         unique_together = ("user", "game", "leaderboard")
+
+    def clean(self):
+        super().clean()
+        if self.complete_opt_out and self.display_as_anonymous:
+            raise ValidationError("You cannot both opt out completely and display anonymously.")
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        return super().save(*args, **kwargs)
 
     def __str__(self):
         if self.leaderboard:

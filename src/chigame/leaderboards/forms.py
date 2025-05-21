@@ -22,3 +22,16 @@ class LeaderboardPrivacySettingForm(forms.ModelForm):
             "complete_opt_out": "If checked, your scores will not appear on this leaderboard",
             "display_as_anonymous": "If checked, your scores will be visible but your username will be hidden",
         }
+
+    def clean(self):
+        """
+        Making sure that the user can't both completely opt out and appear
+        anonymously with the form.
+        """
+
+        cleaned = super().clean()
+        opt_out = cleaned.get("complete_opt_out")
+        anon = cleaned.get("display_as_anonymous")
+        if opt_out and anon:
+            raise forms.ValidationError("You can't both completely opt out and appear anonymously.")
+        return cleaned

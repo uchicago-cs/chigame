@@ -18,4 +18,31 @@ more pretty. I just needed this to see my results. -->
   <p>
     <a href="{% url 'privacy-list' %}">← Back to all settings</a>
   </p>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const optOutCheckbox = document.getElementById('id_complete_opt_out');
+      const anonymousCheckbox = document.getElementById('id_display_as_anonymous');
+
+      function updateCheckboxStates() {
+        if (optOutCheckbox.checked) {
+          anonymousCheckbox.disabled = true;
+          anonymousCheckbox.checked = false;
+        } else {
+          anonymousCheckbox.disabled = false;
+        }
+
+        if (anonymousCheckbox.checked) {
+          optOutCheckbox.disabled = true;
+          optOutCheckbox.checked = false;
+        } else {
+          optOutCheckbox.disabled = false;
+        }
+      }
+
+      updateCheckboxStates();
+
+      optOutCheckbox.addEventListener('change', updateCheckboxStates);
+      anonymousCheckbox.addEventListener('change', updateCheckboxStates);
+    });
+  </script>
 {% endblock content %}
