@@ -566,7 +566,6 @@ class GameReviewStatsAPIView(APIView):
         return Response(GameReviewStatsSerializer(data).data)
 
 
-
 class LiveChatCreateView(generics.CreateAPIView):
     queryset = LiveChat.objects.all()
     serializer_class = LiveChatSerializer
@@ -606,6 +605,7 @@ class LiveChatDetailView(generics.RetrieveAPIView):
     queryset = LiveChat.objects.all()
     serializer_class = LiveChatSerializer
     permission_classes = []
+
 
 class UserAchievementDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = UserAchievement.objects.all()
