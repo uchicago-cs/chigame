@@ -124,13 +124,14 @@ class ReviewSerializer(serializers.ModelSerializer):
 class UserAchievementSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserAchievement
-        fields = ["id", "user", "pinned", "date_earned", "progress"]
+        fields = ["id", "user", "pinned", "date_earned", "last_updated", "progress"]
 
 
 class AchievementSerializer(serializers.ModelSerializer):
     class Meta:
         model = Achievement
         fields = ["id", "name", "description", "rarity", "threshold"]
+
 
 
 class MetricScoreSerializer(serializers.ModelSerializer):
@@ -146,6 +147,16 @@ class MetricScoreSerializer(serializers.ModelSerializer):
         if value < 0:
             raise serializers.ValidationError("Score must be a positive integer.")
         return value
+
+      
+class PopUpInfoSerializer(serializers.Serializer):
+    min_players = serializers.IntegerField()
+    max_players = serializers.IntegerField()
+    complexity = serializers.FloatField()
+    min_playtime = serializers.IntegerField()
+    max_playtime = serializers.IntegerField()
+    description = serializers.CharField()
+
 
 
 class GameDataSerializer(serializers.ModelSerializer):
