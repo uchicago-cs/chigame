@@ -219,6 +219,28 @@ function setupKeyboard() {
     }
 }
 
+
+function handlePhysicalKeyboardInput() {
+    document.addEventListener('keydown', (e) => {
+        const key = e.key.toLowerCase();
+        playSound(clickSound);
+
+        if (key === "enter") {
+            handleSubmitWord();
+            return;
+        }
+
+        if (key === "backspace") {
+            handleDeleteLetter();
+            return;
+        }
+
+        if (/^[a-z]$/.test(key)) {
+            updateGuessedWords(key);
+        }
+    });
+}
+
 function getCurrentWordArr() {
     const numberOfGuessedWords = guessedWords.length;
     return guessedWords[numberOfGuessedWords - 1];
@@ -257,6 +279,7 @@ function handleDeleteLetter() {
         lastLetterEl.textContent = "";
     }
 }
+
 
 //Checks if word is Valid
 async function isValidWord(word) {
@@ -332,6 +355,7 @@ async function handleSubmitWord() {
             yellowLetters.add(currentWordArr[index]);
         }
     });
+
 
     // Apply the colors to the UI
     currentWordArr.forEach((letter, index) => {
@@ -489,6 +513,7 @@ document.getElementById("colorblind-toggle").addEventListener("change", function
 document.getElementById("hard-mode-toggle").addEventListener("change", function () {
     document.body.classList.toggle("hard-mode", this.checked);
 });
+
 
 //Sound
 const muteToggle = document.getElementById("mute-toggle");
