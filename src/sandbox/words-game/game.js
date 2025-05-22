@@ -1,4 +1,3 @@
-//Set up game
 window.addEventListener("load", async () => {
     const modal = document.getElementById("word-length-modal");
     const selector = document.getElementById("word-length-selector");
@@ -16,22 +15,39 @@ window.addEventListener("load", async () => {
     });
 });
 
-
+//Buttons (How To Play and Settings)!
 const howToPlayBtn = document.getElementById('how-to-play-btn');
 const howToPlayText = document.getElementById('how-to-play-text');
+const settingsBtn = document.getElementById('settings-btn');
+const settingsScreen = document.getElementById('settings');
 
-//Opens and closes how to play text
+// Handle How to Play toggle
 howToPlayBtn.addEventListener('click', () => {
-    howToPlayText.classList.toggle('visible');
-    howToPlayText.classList.toggle('hidden');
+    const isVisible = !howToPlayText.classList.contains('visible');
 
-    if (howToPlayText.classList.contains('visible')) {
-        howToPlayBtn.textContent = "How to Play ▲";
+    howToPlayText.classList.toggle('visible', isVisible);
+    howToPlayText.classList.toggle('hidden', !isVisible);
+
+    //Hide settings
+    settingsScreen.classList.add('hidden');
+
+    if (isVisible) {
+    howToPlayBtn.textContent = "How to Play ▲";
     } else {
-        howToPlayBtn.textContent = "How to Play ▼";
+    howToPlayBtn.textContent = "How to Play ▼";
     }
 });
 
+// Handle Settings toggle
+settingsBtn.addEventListener('click', () => {
+
+    settingsScreen.classList.toggle('hidden');
+
+    // Always hide How to Play
+    howToPlayText.classList.remove('visible');
+    howToPlayText.classList.add('hidden');
+    howToPlayBtn.textContent = "How to Play ▼";
+});
 let guessedWords = [[]];
 let availableSpace = 1;
 let word = "";
@@ -45,9 +61,8 @@ const COLOR_CORRECT = "rgb(83, 141, 78)";
 const COLOR_OFF = "rgb(181, 159, 59)";
 const COLOR_WRONG = "rgb(40, 58, 60)";
 
-
-//Loads the words from WORDS.txt to the game
-function loadWords() {    return fetch(`${wordLength}WORDS.txt`)
+function loadWords() {
+    return fetch(`${wordLength}WORDS.txt`)
         .then(response => response.text())
         .then(text => {
             allowedWords = text.split('\n').map(w => w.trim().toLowerCase());
@@ -57,7 +72,6 @@ function loadWords() {    return fetch(`${wordLength}WORDS.txt`)
         });
 }
 
-//Get a new word to solve
 function getNewWord() {
     if (mode === 'game') {
         word = allowedWords[Math.floor(Math.random() * allowedWords.length)];
@@ -74,7 +88,6 @@ function getNewWord() {
     }
 }
 
-//Create boxes/grid for the board container
 function createSquares() {
     const gameBoard = document.getElementById("board");
 
@@ -93,11 +106,11 @@ function createSquares() {
 
 }
 
-//Sends key to board when pressed on the screen
 function setupKeyboard() {
     const keys = document.querySelectorAll(".keyboard-row button");
     for (let i = 0; i < keys.length; i++) {
         keys[i].onclick = ({ target }) => {
+            playSound(clickSound);
             const letter = target.getAttribute("data-key").toLowerCase();
 
             if (letter === "enter") {
@@ -115,10 +128,10 @@ function setupKeyboard() {
     }
 }
 
-//Sends key to board when pressed on your physical keyboard
 function handlePhysicalKeyboardInput() {
     document.addEventListener('keydown', (e) => {
         const key = e.key.toLowerCase();
+        playSound(clickSound);
 
         if (key === "enter") {
             handleSubmitWord();
@@ -135,14 +148,11 @@ function handlePhysicalKeyboardInput() {
         }
     });
 }
-
-//Returns current word you're using
 function getCurrentWordArr() {
     const numberOfGuessedWords = guessedWords.length;
     return guessedWords[numberOfGuessedWords - 1];
 }
 
-//Checks if there is space and adds letter to current word
 function updateGuessedWords(letter) {
     const currentWordArr = getCurrentWordArr();
 
@@ -157,7 +167,6 @@ function updateGuessedWords(letter) {
     }
 }
 
-//Deletes one letter from current word
 function handleDeleteLetter() {
     const currentWordArr = getCurrentWordArr();
     if (!currentWordArr.length) return;
@@ -178,25 +187,9 @@ function handleDeleteLetter() {
     }
 }
 
-//Get tile colors for each letter of the solutionWord
-function getTileColor(letter, index) {
-    const isCorrectLetter = word.includes(letter);
 
-    if (!isCorrectLetter) {
-        return COLOR_WRONG;
-    }
 
-    const letterInThatPosition = word.charAt(index);
-    const isCorrectPosition = letter === letterInThatPosition;
-
-    if (isCorrectPosition) {
-        return COLOR_CORRECT;
-    }
-
-    return COLOR_OFF;
-}
-
-//Check if Word is a Valid Word
+//Checks if word is Valid
 async function isValidWord(word) {
     const word_url = url + word;
     try {
@@ -217,7 +210,6 @@ async function isValidWord(word) {
     }
 }
 
-//Handles running the submission of each word
 async function handleSubmitWord() {
     if (gameOver) {
         return;
@@ -240,24 +232,30 @@ async function handleSubmitWord() {
     const firstLetterId = guessedWordCount * wordLength + 1;
     const interval = 200;
 
-    //Adds the Keyboard color + effects
+    // Calculate the colors using the Wordle algorithm
+    const tileColors = calculateTileColors(currentWordArr, word);
+
+    // Apply the colors to the UI
     currentWordArr.forEach((letter, index) => {
         setTimeout(() => {
-            const tileColor = getTileColor(letter, index);
+            const tileColor = tileColors[index];
 
             const letterId = firstLetterId + index;
             const letterEl = document.getElementById(letterId);
-            letterEl.style = `background-color:${tileColor};border-color:${tileColor}`;
+            letterEl.style = `background-color:${tileColor};border-color:${tileColor};color: white`; //keep white no matter light or dark mode
 
-            //change on-web keyboard color
+            // Update keyboard colors
             const keyButton = document.querySelector(`[data-key="${letter}"]`);
-            console.log('Key color:', keyButton);
             if (keyButton) {
-                const keyColor = keyButton.style.backgroundColor;
+                // Only upgrade the key color (grey → yellow → green), never downgrade
+                const currentKeyColor = keyButton.style.backgroundColor;
 
-                if (keyColor !== COLOR_CORRECT) {
-                    keyButton.style.backgroundColor = tileColor;
-                    keyButton.style.borderColor = tileColor;
+                if (currentKeyColor !== COLOR_CORRECT) {
+                    if (currentKeyColor !== COLOR_OFF || tileColor === COLOR_CORRECT) {
+                        keyButton.style.backgroundColor = tileColor;
+                        keyButton.style.borderColor = tileColor;
+                        keyButton.style.color = "white"; //keep white no matter light or dark mode
+                    }
                 }
             }
         }, interval * index);
@@ -265,9 +263,9 @@ async function handleSubmitWord() {
 
     guessedWordCount += 1;
 
-    //game end
     if (currentWord === word) {
         showNotification("Congratulations! 🎉");
+        playSound(yaySound);
         gameOver = true;
         setTimeout(() => {
             showEndScreen(true);
@@ -275,9 +273,9 @@ async function handleSubmitWord() {
         return;
     }
 
-
     if (guessedWords.length === 6) {
-        showNotification(`Sorry, you have no more guesses! The word was "${word}".`);
+        showNotification(`The word was "${word}"`);
+        playSound(loseSound);
         gameOver = true;
         setTimeout(() => {
             showEndScreen(false);
@@ -288,18 +286,66 @@ async function handleSubmitWord() {
     guessedWords.push([]);
 }
 
+/**
+ * Calculate tile colors using the standard Wordle algorithm
+ * @param {string[]} guess - Array of guess letters
+ * @param {string} target - Target word
+ * @returns {string[]} - Array of color values for each letter
+ */
+function calculateTileColors(guess, target) {
+    // Convert target to array for easier handling
+    const targetArr = target.split('');
+    const colors = Array(guess.length).fill(null);
+
+    // Track which positions in target word are already matched (for green)
+    const targetUsed = Array(targetArr.length).fill(false);
+
+    // First pass: find all green matches
+    for (let i = 0; i < guess.length; i++) {
+        if (guess[i] === targetArr[i]) {
+            colors[i] = COLOR_CORRECT; // Green
+            targetUsed[i] = true;
+        }
+    }
+
+    // Second pass: find yellow and grey matches
+    for (let i = 0; i < guess.length; i++) {
+        if (colors[i] !== null) continue; // Skip already matched positions
+
+        // Look for an unused match in the target word
+        let foundYellow = false;
+
+        for (let j = 0; j < targetArr.length; j++) {
+            if (!targetUsed[j] && guess[i] === targetArr[j]) {
+                colors[i] = COLOR_OFF; // Yellow
+                targetUsed[j] = true;
+                foundYellow = true;
+                break;
+            }
+        }
+
+        // If no unused match found, it's grey
+        if (!foundYellow) {
+            colors[i] = COLOR_WRONG; // Grey
+        }
+    }
+
+    return colors;
+}
+
 //Show Notification
 function showNotification(message, duration = 1000) {
     const notification = document.getElementById("notification");
     notification.textContent = message;
+
     notification.classList.add("show");
 
     setTimeout(() => {
         notification.classList.remove("show");
-        notification.classList.add("hidden");
     }, duration);
 }
 
+//End Screen
 function showEndScreen(won) {
     const endScreen = document.getElementById("end-screen");
     const endTitle = document.getElementById("end-title");
@@ -319,12 +365,11 @@ function showEndScreen(won) {
         endGuesses.appendChild(row);
     });
 
-    endScreen.classList.remove("hidden");
 }
-
 document.getElementById("restart-btn").addEventListener("click", () => {
     location.reload();
 });
+
 
 function shakeRow(rowIndex) {
     for (let i = 0; i < wordLength; i++) {
@@ -333,3 +378,43 @@ function shakeRow(rowIndex) {
         setTimeout(() => tile.classList.remove("shake"), 500);
     }
 }
+
+
+document.getElementById("dark-mode-toggle").addEventListener("change", function () {
+    document.body.classList.toggle("dark-mode", this.checked);
+});
+
+document.getElementById("colorblind-toggle").addEventListener("change", function () {
+    document.body.classList.toggle("colorblind-mode", this.checked);
+});
+
+
+//Sound
+const muteToggle = document.getElementById("mute-toggle");
+const volumeSlider = document.getElementById("volume");
+const yaySound = new Audio('sound/yay.mp3');
+const loseSound = new Audio('sound/lose.mp3');
+const clickSound = new Audio('sound/click.mp3');
+
+yaySound.volume = volumeSlider.value / 100;
+loseSound.volume = volumeSlider.value / 100;
+clickSound.volume = volumeSlider.value / 100;
+
+function setVolume(volume) {
+    yaySound.volume = volume;
+    loseSound.volume = volume;
+    clickSound.volume = volume
+}
+
+function playSound(audio) {
+    if (!muteToggle.checked) {
+        audio.currentTime = 0;
+        audio.play();
+    }
+}
+
+volumeSlider.addEventListener("input", function () {
+    const volume = this.value / 100;
+    setVolume(volume);
+    console.log("Volume set to:", volume);
+});
