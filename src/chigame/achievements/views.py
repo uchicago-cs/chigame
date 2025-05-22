@@ -1,5 +1,5 @@
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 
 from chigame.games.models import Game
 from chigame.users.models import User
@@ -23,7 +23,6 @@ def demo_game(request):
 
 
 @login_required
-
 def user_achievements(request, pk=None):
     """
     Display a user's achievements page.
