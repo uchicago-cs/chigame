@@ -65,7 +65,7 @@ class UserAchievement(models.Model):
         if self.date_earned and self.date_earned > self.last_updated:
             # If the date earned is added, that constitutes an update that should be reflected in last_updated
             self.last_updated = self.date_earned
-        elif self.date_earned < self.last_updated:
+        elif self.date_earned and self.date_earned < self.last_updated:
             # It's not clear how this scenario would come about
             raise ValidationError({"self.date_earned": "date_earned cannot be before last_updated"})
         if self.progress < 0:

@@ -6,7 +6,7 @@ from django.utils import timezone
 from chigame.achievements.models import UserAchievement
 from chigame.achievements.views import get_recent_achievements
 
-from .factories import AchievementFactory, MatchFactory, CompletedUserAchievementFactory, UserFactory
+from .factories import AchievementFactory, CompletedUserAchievementFactory, MatchFactory, UserFactory
 
 
 @pytest.mark.django_db
