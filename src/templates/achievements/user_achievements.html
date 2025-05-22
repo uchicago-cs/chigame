@@ -60,15 +60,15 @@
              id="searchBox"
              class="search-box search-input"
              placeholder="Search games or achievements..." />
-    <div class="status-filter-container">
-      <label for="statusFilter" class="status-filter-label">Status:</label>
-      <select id="statusFilter" class="form-select status-filter-select">
-        <option value="all">All</option>
-        <option value="completed">Completed</option>
-        <option value="in-progress">In Progress</option>
-        <option value="not-started">Not Started</option>
-      </select>
-    </div>
+      <div class="status-filter-container">
+        <label for="statusFilter" class="status-filter-label">Status:</label>
+        <select id="statusFilter" class="form-select status-filter-select">
+          <option value="all">All</option>
+          <option value="completed">Completed</option>
+          <option value="in-progress">In Progress</option>
+          <option value="not-started">Not Started</option>
+        </select>
+      </div>
     </div>
     <ul class="nav-tabs">
       <li class="active" data-tab="all-games">All Games</li>
@@ -93,16 +93,8 @@
               </div>
               <div class="achievements-list">
                 {% for achievement in game_data.achievements %}
-                  <div class="achievement {% if achievement.rarity == 1 %}common{% endif %}
-                  {% if achievement.rarity == 2 %}uncommon{% endif %} 
-                  {% if achievement.rarity == 3 %}rare{% endif %} 
-                  {% if achievement.rarity == 4 %}precious{% endif %} 
-                  {% if achievement.status_for_template == 'not_started' %}not-started{% endif %}
-                  {% if achievement.status_for_template == 'in_progress' %}in-progress{% endif %} 
-                  {% if achievement.status_for_template == 'completed' %}completed{% endif %} 
-                  {% if achievement.spoiler and achievement.status_for_template != 'completed' %}hidden{% endif %} 
-                  {% if achievement.pinned_for_template %}pinned{% endif %}"
-                  data-achievement-id="{{ achievement.id }}">
+                  <div class="achievement {% if achievement.rarity == 1 %}common{% endif %} {% if achievement.rarity == 2 %}uncommon{% endif %} {% if achievement.rarity == 3 %}rare{% endif %} {% if achievement.rarity == 4 %}precious{% endif %} {% if achievement.status_for_template == 'not_started' %}not-started{% endif %} {% if achievement.status_for_template == 'in_progress' %}in-progress{% endif %} {% if achievement.status_for_template == 'completed' %}completed{% endif %} {% if achievement.spoiler and achievement.status_for_template != 'completed' %}hidden{% endif %} {% if achievement.pinned_for_template %}pinned{% endif %}"
+                       data-achievement-id="{{ achievement.id }}">
                     <div class="achievement-icon">
                       <span class="trophy-icon">
                         <img src="{% static 'images/achievement_icons/' %}{{ achievement.rarity }}.png"
@@ -157,7 +149,7 @@
           {% endfor %}
         </div>
       </div>
-      <!-- Second tab content -->
+      <!-- Second tab content: Pinned -->
       <div id="pinned-achievements">
         <h3>Pinned Achievements</h3>
         <div class="achievements-list">
