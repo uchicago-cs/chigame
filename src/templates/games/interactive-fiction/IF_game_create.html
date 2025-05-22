@@ -106,6 +106,176 @@
     .label-add-wrapper input {
       flex: 1;
     }
+
+    /* Help icon styles*/
+
+    .tooltip-container {
+      position: relative;
+      display: inline-block;
+      margin-left: 8px;
+    }
+
+    .help-icon {
+      width: 20px;
+      height: 20px;
+      background-color: #4f46e5;
+      color: white;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: bold;
+      cursor: help;
+      transition: all 0.2s ease;
+      border: 2px solid #4f46e5;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .help-icon:hover {
+      background-color: #3730a3;
+      border-color: #3730a3;
+      transform: scale(1.1);
+    }
+
+    .tooltip {
+      visibility: hidden;
+      opacity: 0;
+      position: absolute;
+      top: -20px;
+      right: -150px;
+      /* Center it better */
+      background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+      color: white;
+      padding: 16px;
+      border-radius: 12px;
+      font-size: 13px;
+      line-height: 1.5;
+      z-index: 1000;
+      box-shadow:
+        0 10px 25px rgba(0, 0, 0, 0.3),
+        0 0 0 1px rgba(255, 255, 255, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      transform: translateY(10px) scale(0.95);
+      width: 320px;
+      /* Fixed width for square-ish design */
+      max-width: none;
+      white-space: normal;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    /* Game-style header */
+    .tooltip-header {
+      background: rgba(79, 70, 229, 0.8);
+      margin: -16px -16px 12px -16px;
+      padding: 8px 16px;
+      border-radius: 12px 12px 0 0;
+      font-weight: bold;
+      font-size: 14px;
+      text-align: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .tooltip-section {
+      margin-bottom: 12px;
+    }
+
+    .tooltip-section:last-child {
+      margin-bottom: 0;
+    }
+
+    .tooltip-section strong {
+      color: #a5b4fc;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .tooltip-steps {
+      margin: 6px 0;
+      padding-left: 8px;
+    }
+
+    .help-link {
+      color: #60a5fa;
+      text-decoration: none;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 6px 12px;
+      background: rgba(96, 165, 250, 0.1);
+      border-radius: 6px;
+      border: 1px solid rgba(96, 165, 250, 0.3);
+      transition: all 0.2s ease;
+      margin-top: 8px;
+      font-size: 12px;
+    }
+
+    .help-link:hover {
+      background: rgba(96, 165, 250, 0.2);
+      border-color: rgba(96, 165, 250, 0.5);
+      text-decoration: none;
+    }
+
+    /* Arrow pointing to the help icon */
+    .tooltip::before {
+      content: "";
+      position: absolute;
+      top: 25px;
+      left: -8px;
+      width: 0;
+      height: 0;
+      border: 8px solid transparent;
+      border-right-color: #1e293b;
+    }
+
+    .tooltip::after {
+      content: "";
+      position: absolute;
+      top: 26px;
+      left: -6px;
+      width: 0;
+      height: 0;
+      border: 6px solid transparent;
+      border-right-color: #334155;
+    }
+
+    .tooltip-container:hover .tooltip {
+      visibility: visible;
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    /* Responsive positioning - keep on screen */
+    @media (max-width: 768px) {
+      .tooltip {
+        right: -100px;
+        width: 280px;
+      }
+    }
+
+    /* Animation for game-like feel */
+    @keyframes tooltipAppear {
+      0% {
+        opacity: 0;
+        transform: translateY(15px) scale(0.9);
+      }
+
+      50% {
+        transform: translateY(-2px) scale(1.02);
+      }
+
+      100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .tooltip-container:hover .tooltip {
+      animation: tooltipAppear 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
   </style>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -363,14 +533,42 @@
       </label>
     </div>
     <hr />
-    <h3>Upload Game Files</h3>
+    <h3>
+      Upload Game Files
+      <div class="tooltip-container">
+        <span class="help-icon">?</span>
+        <div class="tooltip">
+          <div class="tooltip-header">📁 File Upload Guide</div>
+          <div class="tooltip-section">
+            <strong>What to upload:</strong>
+            <br />
+            Export your Twine story as an HTML file
+          </div>
+          <div class="tooltip-section">
+            <strong>How to export:</strong>
+            <div class="tooltip-steps">
+              1. Open your story in Twine
+              <br />
+              2. Click "Build" menu
+              <br />
+              3. Select "Publish to File"
+              <br />
+              4. Save as .html file
+            </div>
+          </div>
+          <a href="https://twinery.org/reference/en/publishing/publishing.html"
+             target="_blank"
+             class="help-link">📖 View Export Guide →</a>
+        </div>
+      </div>
+    </h3>
   </form>
   <form method="post"
         action="{% url 'upload-file' pk=game.pk %}"
         enctype="multipart/form-data">
     {% csrf_token %}
     <div class="upload-zone" data-input-id="myFile">
-      Drag &amp; drop a file here
+      Drag &amp; drop your exported Twine HTML file here
       <br />
       or click to browse
     </div>
