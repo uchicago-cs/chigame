@@ -156,16 +156,18 @@ class ChatConsumer(AsyncWebsocketConsumer):
             text_data (str): The message data received from the client.
         """
         text_data_json = json.loads(text_data)
-        message = text_data_json["message"]
-        user_id = text_data_json["user_id"]
-        # Use reply_to_id for message saving
-        reply_to_id = text_data_json.get("reply_to")
+
+        msg_type = text_data_json.get("type", "send")
+        if msg_type == "send":
+            message = text_data_json["message"]
+            user_id = text_data_json["user_id"]
+            reply_to_id = text_data_json.get("reply_to")
 
         # Apply profanity filter to message
         filtered_message = self.profanity_filter.censor_message(message)
 
         # Save message to database once when first received from client
-        username, message_id = await self.save_message(self.chat_id, user_id, message, reply_to_id)
+        username, message_id = await self.save_message(self.chat_id, user_id, filtered_message, reply_to_id)
 
         # Get reply info if applicable
         reply_to_username = None
@@ -178,11 +180,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
             except LiveChatMessage.DoesNotExist:
                 reply_to = None
 
-        if reply_to_id:
-            # Logic to fetch reply details could be added here if needed
-            pass
+            if reply_to_id:
+                # Logic to fetch reply details could be added here if needed
+                pass
 
-        # the filtered message is sent to the group - this is where the censorship happens
+            # Send the filtered message to the group
         await self.channel_layer.group_send(
             self.room_group_name,
             {

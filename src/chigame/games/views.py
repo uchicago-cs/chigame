@@ -1612,6 +1612,9 @@ def wordle_game_page(request):
     return render(request, "games/wordle.html", {"iframe_url": iframe_url})
 
 
+# ============== Checkers ============
+
+
 @login_required
 def checkers_game_view(request, pk):
     game = get_object_or_404(Checkers, id=pk)
@@ -1627,6 +1630,7 @@ def checkers_game_view(request, pk):
     if latest_turn:
         board = latest_turn.board
     else:
+        # First time loading, create default board
         default_state = [
             [0, 2, 0, 2, 0, 2, 0, 2],
             [2, 0, 2, 0, 2, 0, 2, 0],
@@ -1637,6 +1641,7 @@ def checkers_game_view(request, pk):
             [0, 1, 0, 1, 0, 1, 0, 1],
             [1, 0, 1, 0, 1, 0, 1, 0],
         ]
+        # Save first turn
         board = CheckersBoard.objects.create(state=default_state)
         CheckersTurn.objects.create(game=game, board=board, turn_number=1, player=game.player_1)
 

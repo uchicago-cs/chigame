@@ -35,6 +35,11 @@ user_patterns = [
     path("<slug:slug>/", views.UserDetailView.as_view(), name="api-user-detail"),
     path("<slug:slug>/groups/", views.UserGroupsView.as_view(), name="api-user-groups"),
     path("<int:pk>/friends/", views.UserFriendsAPIView.as_view(), name="api-user-friends"),
+    path(
+        "<int:user_id>/achievements/<int:pk>",
+        views.UserAchievementDetailView.as_view(),
+        name="api-user-achievements-edit",
+    ),
     path("<int:pk>/achievements/", views.UserAchievementListView.as_view(), name="api-user-achievements"),
 ]
 
@@ -59,6 +64,14 @@ login_patterns = [
     path("token/refresh/", TokenRefreshView.as_view(), name="token-refresh"),
 ]
 
+
+livechat_patterns = [
+    path("create/", views.LiveChatCreateView.as_view(), name="api-livechat-create"),
+    path("list/", views.LiveChatListView.as_view(), name="api-livechat-list"),
+    path("<int:chat_id>/add_user/", views.LiveChatAddUserView.as_view(), name="api-livechat-add-user"),
+    path("<int:pk>/", views.LiveChatDetailView.as_view(), name="api-livechat-detail"),
+]
+
 urlpatterns = [
     path("games/", include(game_patterns)),
     path("lobbies/", include(lobby_patterns)),
@@ -66,4 +79,5 @@ urlpatterns = [
     path("tournaments/", include(tournament_patterns)),
     path("groups/", include(group_patterns)),
     path("login/", include(login_patterns)),
+    path("livechats/", include(livechat_patterns)),
 ]

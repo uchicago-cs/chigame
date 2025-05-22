@@ -1,12 +1,15 @@
-<!-- Context Menu -->
 <div id="contextMenu" class="context-menu">
   <div class="small text-muted mb-1" id="replyPreview"></div>
-  <button class="btn btn-sm btn-light w-100" onclick="deleteMessage()">Pinning Messages</button>
+  <button class="btn btn-sm btn-light w-100" onclick="pinningMessage()">Pinning Messages</button>
   <button class="btn btn-sm btn-light w-100" onclick="replyToMessage()">Reply</button>
-  <button class="btn btn-sm btn-light w-100" onclick="deleteMessage()">Edit Message</button>
+  <button class="btn btn-sm btn-light w-100" onclick="editMessage()">Edit Message</button>
+  <button class="btn btn-sm btn-light w-100" onclick="reactToMessage()">React to Message</button>
   <button class="btn btn-sm btnlight w-100" onclick="reactToMessage('❤️')">Add Reactions</button>
-  <button class="btn btn-sm btn-danger w-100" onclick="deleteMessage()">Delete</button>
+  <button class="btn btn-sm btn-danger w-100"
+          onclick="deleteMessage()"
+          title="Delete Message">Delete Message</button>
 </div>
+{% csrf_token %}
 <script>
   let replyToMessageId = null;
   let replyToUsername = null;
@@ -35,12 +38,68 @@
 
   function hideContextMenu() {
     const contextMenu = document.getElementById('contextMenu');
+
     contextMenu.style.display = 'none';
     document.removeEventListener('click', hideContextMenu);
   }
 
+  function editMessage() {
+    const messageId = replyToMessageId;
+    const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
+    const contentElement = messageElement?.querySelector(".mt-1");
+    const oldContent = contentElement?.innerText || "";
+
+    const newContent = prompt("Edit your message: ", oldContent);
+    if (!newContent) return;
+
+
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    fetch(`/chat/message/${messageId}/edit`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-CSRFToken': csrfToken
+        },
+        body: `content=${encodeURIComponent(newContent)}`
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.message === "Message edited successfully" && data.edited === true) {
+          if (contentElement) {
+            contentElement.innerText = newContent;
+          }
+
+
+          const existingTag = messageElement.querySelector(".edited-tag");
+          if (existingTag) {
+            existingTag.remove();
+          }
+
+          const editedTag = document.createElement("div");
+          editedTag.className = "text-end text-muted small mt-1 edited-tag fst-italic";
+          editedTag.innerText = "(edited)";
+          messageElement.appendChild(editedTag);
+
+
+
+        } else {
+          console.error('Failed to edit message');
+        }
+      })
+      .catch(error => {
+        console.error('Error editing message:', error);
+      });
+
+    hideContextMenu();
+  }
+
+  /**
+   * Focuses on the message input field and hides the context menu.
+   */
   function replyToMessage() {
     const input = document.getElementById('id_message_send_input');
+
     input.focus();
     hideContextMenu();
 
@@ -50,7 +109,8 @@
   }
 
   /**
-   * Deletes a message on the frontend.
+   * Performs an eager delete of a message by removing the message from the DOM
+   * and then sending a GET request to the delete-message endpoint.
    */
   function deleteMessage() {
     const messageId = replyToMessageId;
@@ -130,5 +190,20 @@
         existing.remove();
       }
     }
+  }
+
+  function pinningMessage() {
+    hideContextMenu();
+
+  }
+
+  function editMessage() {
+    hideContextMenu();
+
+  }
+
+  function reactToMessage() {
+    hideContextMenu();
+
   }
 </script>
