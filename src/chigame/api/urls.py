@@ -35,6 +35,11 @@ user_patterns = [
     path("<slug:slug>/", views.UserDetailView.as_view(), name="api-user-detail"),
     path("<slug:slug>/groups/", views.UserGroupsView.as_view(), name="api-user-groups"),
     path("<int:pk>/friends/", views.UserFriendsAPIView.as_view(), name="api-user-friends"),
+    path(
+        "<int:user_id>/achievements/<int:pk>",
+        views.UserAchievementDetailView.as_view(),
+        name="api-user-achievements-edit",
+    ),
     path("<int:pk>/achievements/", views.UserAchievementListView.as_view(), name="api-user-achievements"),
 ]
 
