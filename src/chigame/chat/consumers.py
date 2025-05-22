@@ -185,19 +185,19 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 pass
 
             # Send the filtered message to the group
-            await self.channel_layer.group_send(
-                self.room_group_name,
-                {
-                    "type": "sendMessage",
-                    "message": filtered_message,
-                    "user_id": user_id,
-                    "username": username,
-                    "message_id": message_id,
-                    "reply_to": reply_to_id,
-                    "reply_to_username": reply_to_username,
-                    "reply_to_content": reply_to_content,
-                },
-            )
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                "type": "sendMessage",
+                "message": filtered_message,
+                "user_id": user_id,
+                "username": username,
+                "message_id": message_id,
+                "reply_to": reply_to_id,
+                "reply_to_username": reply_to_username,
+                "reply_to_content": reply_to_content,
+            },
+        )
 
     async def sendMessage(self, event):
         """
