@@ -9,26 +9,28 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
       const leaderboardData = {
-        labels: [{
-            %
-            for data in leaderboard_data %
-        }
-        '{{ data.player }}', {
-            % endfor %
-        }
-    ],
+         labels: [{
+             %
+             for data in leaderboard_data %
+           }
+           '{{ data.player }}', {
+             %
+             endfor %
+           }
+         ],
         datasets: [{
-          label: '{{ score_metric_name }}',
-          data: [{
-            %
-            for data in leaderboard_data %
-        } {
-            {
-                data.score
-            }
-        }, {
-            % endfor %
-        }],
+           label: '{{ score_metric_name }}',
+           data: [{
+             %
+             for data in leaderboard_data %
+           } {
+             {
+               data.score
+             }
+           }, {
+             %
+             endfor %
+           }],
           backgroundColor: 'rgba(128, 0, 0, 0.8)',
           borderColor: 'rgba(128, 0, 0, 1)',
           borderWidth: 1

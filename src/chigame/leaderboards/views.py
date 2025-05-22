@@ -50,7 +50,7 @@ def bar_chart(request, game_id):
         metric_score = entry.metric_scores.filter(metric__name=score_metric_name).first()
         if metric_score:
             leaderboard_data.append({"player": entry.user.user.name, "score": metric_score.score})
-        leaderboard_data.sort(key=lambda item: item['score'], reverse=True)
+        leaderboard_data.sort(key=lambda item: item["score"], reverse=True)
 
     context = {
         "game": game,
