@@ -1,7 +1,6 @@
 from django.urls import path
 
 from . import views
-from .views import leaderboard_view
 
 urlpatterns = [
     path("<int:game_id>/", views.leaderboard_view, name="leaderboard_view"),

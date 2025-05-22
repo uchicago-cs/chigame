@@ -35,5 +35,5 @@ def leaderboard_view(request, game_id):
 
 
 def bar_chart(request, game_id):
-    return render(request, "leaderboards/bar_chart.html")
     game = get_object_or_404(Game, id=game_id)
+    return render(request, "leaderboards/bar_chart.html")
