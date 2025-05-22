@@ -89,3 +89,33 @@ def top_time_played_bar_chart(request, game_id):
         "score_metric_name": time_played_metric.name,
     }
     return render(request, "leaderboards/bar_chart.html", context)
+
+def top_games_won_bar_chart(request, game_id):
+    game = get_object_or_404(Game, id=game_id)
+    leaderboard = game.leaderboards.filter(name__icontains="Games Won").first()
+
+    if not leaderboard:
+        return render(request, "leaderboards/empty.html", {"game": game, "message": f"No 'Games Won' leaderboard found for {game.name}."})
+
+    entries = LeaderboardEntry.objects.filter(leaderboard=leaderboard).select_related("user")
+
+    games_won_metric = Metric.objects.filter(game=game, name__icontains="Games Won").first()
+
+    if not games_won_metric:
+        return render(request, "leaderboards/error.html", {"message": f"No 'Games Won' metric found for {game.name}."})
+
+    leaderboard_data = []
+    for entry in entries:
+        metric_score = entry.metric_scores.filter(metric=games_won_metric).first()
+        if metric_score:
+            leaderboard_data.append({"player": entry.user.user.name, "score": metric_score.score})
+
+    leaderboard_data.sort(key=lambda item: item['score'], reverse=True)
+
+    context = {
+        "game": game,
+        "leaderboard": leaderboard,
+        "leaderboard_data": leaderboard_data,
+        "score_metric_name": games_won_metric.name,
+    }
+    return render(request, "leaderboards/bar_chart.html", context)
