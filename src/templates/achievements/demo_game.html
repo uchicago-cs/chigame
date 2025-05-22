@@ -2,13 +2,111 @@
 
 {% block css %}
   {{ block.super }}
+  <style>
+    .container {
+      position: relative;
+      display: flex;
+    }
+
+    .button {
+      cursor: pointer;
+      padding: 15px 32px;
+      border: none;
+      color: white;
+      border-radius: 10px;
+    }
+
+    .button1 {
+      background-color: #851d15;
+      position: relative;
+      top: 220px;
+      left: 80px;
+    }
+
+    .button2 {
+      background-color: #157885;
+      position: relative;
+      top: 380px;
+      left: 200px;
+    }
+
+    .button3 {
+      background-color: #558a2b;
+      position: relative;
+      top: 50px;
+      left: 100px;
+    }
+
+    .button4 {
+      background-color: #4543a1;
+      position: relative;
+      top: 120px;
+      left: 400px;
+    }
+
+    .button5 {
+      background-color: #d47a13;
+      position: relative;
+      top: 232px;
+      left: 20px;
+    }
+
+    .button6 {
+      background-color: #d4136d;
+      position: relative;
+      top: 300px;
+      left: 321px;
+    }
+  </style>
 {% endblock css %}
+{% load static %}
+
 {% block content %}
   <body>
-    <button type="button" class="button button1">Click here</button>
-    <button type="button" class="button button2">Click here</button>
-    <button type="button" class="button button3">Click here</button>
-    <button type="button" class="button button4">Click here</button>
-    <button type="button" class="button button5">Click here</button>
+    <form method="post" id="apiForm">
+      {% csrf_token %}
+      <button type="submit" class="button button1">Click here</button>
+      <button type="submit" class="button button2">Click here</button>
+      <button type="submit" class="button button3">Click here</button>
+      <button type="submit" class="button button4">Click here</button>
+      <button type="submit" class="button button5">Click here</button>
+      <button type="submit" class="button button6">Click here</button>
+    </form>
+    <script>
+      const form = document.getElementById('apiForm');
+
+      const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+      form.addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const formData = new FormData(form);
+        const data = {};
+        formData.forEach((value, key) => {
+          data[key] = value;
+        });
+
+        fetch('api/award-achievement/', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': csrfToken
+            },
+            credentials: 'include',
+            body: JSON.stringify(data)
+          })
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('Network response was not ok');
+            }
+            return response.json();
+          })
+          .then(data => {
+            console.log('Success:', data);
+          })
+          .catch(error => {
+            console.error('Error:', error);
+          });
+      });
+    </script>
   </body>
 {% endblock content %}
