@@ -1,4 +1,5 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db import models
 from django.shortcuts import get_object_or_404, redirect
 from django.views import View
 from django_filters.rest_framework import DjangoFilterBackend
@@ -438,16 +439,16 @@ class GameLeaderboardView(generics.ListAPIView):
         game_id = self.kwargs["game_id"]
         game = get_object_or_404(Game, id=game_id)
 
-        leaderboard = game.leaderboards.first()
-        if not leaderboard:
+        primary_metric = game.metrics.first()
+        if not primary_metric:
             return MetricScore.objects.none()
 
+        # get the highest score per user for the primary metric
         return (
-            MetricScore.objects.filter(
-                metric__game_id=game_id,
-            )
-            .order_by("user", "-score")
-            .distinct("user")
+            MetricScore.objects.filter(metric=primary_metric)
+            .values("user")
+            .annotate(max_score=models.Max("score"))
+            .order_by("-max_score")
         )
 
 
