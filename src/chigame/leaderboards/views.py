@@ -20,3 +20,7 @@ def leaderboard_view(request, game_id):
     return render(
         request, "leaderboards/leaderboard.html", {"game": game, "leaderboard": leaderboard, "entries": entries}
     )
+
+
+def bar_chart(request):
+    return render(request, "leaderboards/bar_chart.html")
