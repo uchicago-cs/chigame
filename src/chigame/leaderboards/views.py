@@ -1,7 +1,7 @@
 from django.shortcuts import get_object_or_404, render
 
 from chigame.games.models import Game
-from chigame.leaderboards.models import LeaderboardEntry, Region
+from chigame.leaderboards.models import LeaderboardEntry, Region, Metric
 
 
 def leaderboard_view(request, game_id):
@@ -57,5 +57,35 @@ def bar_chart(request, game_id):
         "leaderboard": leaderboard,
         "leaderboard_data": leaderboard_data,
         "score_metric_name": score_metric_name,
+    }
+    return render(request, "leaderboards/bar_chart.html", context)
+
+def top_time_played_bar_chart(request, game_id):
+    game = get_object_or_404(Game, id=game_id)
+    leaderboard = game.leaderboards.filter(name__icontains="Time Played").first()
+
+    if not leaderboard:
+        return render(request, "leaderboards/empty.html", {"game": game, "message": f"No 'Time Played' leaderboard found for {game.name}."})
+
+    entries = LeaderboardEntry.objects.filter(leaderboard=leaderboard).select_related("user")
+
+    time_played_metric = Metric.objects.filter(game=game, name__icontains="Time Played").first()
+
+    if not time_played_metric:
+        return render(request, "leaderboards/error.html", {"message": f"No 'Time Played' metric found for {game.name}."})
+
+    leaderboard_data = []
+    for entry in entries:
+        metric_score = entry.metric_scores.filter(metric=time_played_metric).first()
+        if metric_score:
+            leaderboard_data.append({"player": entry.user.user.name, "score": metric_score.score})
+
+    leaderboard_data.sort(key=lambda item: item['score'], reverse=True)
+
+    context = {
+        "game": game,
+        "leaderboard": leaderboard,
+        "leaderboard_data": leaderboard_data,
+        "score_metric_name": time_played_metric.name,
     }
     return render(request, "leaderboards/bar_chart.html", context)
