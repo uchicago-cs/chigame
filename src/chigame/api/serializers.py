@@ -123,7 +123,7 @@ class ReviewSerializer(serializers.ModelSerializer):
 class UserAchievementSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserAchievement
-        fields = ["id", "user", "pinned", "date_earned", "progress"]
+        fields = ["id", "user", "pinned", "date_earned", "last_updated", "progress"]
 
 
 class AchievementSerializer(serializers.ModelSerializer):
