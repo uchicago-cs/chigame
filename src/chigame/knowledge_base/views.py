@@ -172,8 +172,6 @@ class ContributorManageGuide(LoginRequiredMixin, ListView):
     def get_queryset(self):
         guides = self.request.user.authored_guides.all()
 
-        # pubs = Publisher.objects.annotate(num_books=Count('book')).order_by('-num_books')[:5]
-
         # for sorting
         sort = self.request.GET.get("sort")
         if sort == "old":
@@ -184,8 +182,21 @@ class ContributorManageGuide(LoginRequiredMixin, ListView):
             guides = guides.order_by("game_id")
         elif sort == "likes":
             guides = guides.annotate(num_likes=Count("likes")).order_by("-num_likes")
-        elif sort == "status":  # default: status
+        elif sort == "status":
             guides = guides.order_by("status")
+        else:  # default: unseen feedback
+            unseen_feedback = []
+            for guide in guides:
+                all_feedback = guide.feedbacks.all()
+                if all_feedback:
+                    # find the latest feedback for each guide
+                    latest_feedback = all_feedback.order_by("-timestamp").first()
+                    # check if it's been seen
+                    if not latest_feedback.seen:
+                        # if not, add that guide's pk to the unseen feedback list
+                        unseen_feedback.append(latest_feedback.guide_id.pk)
+            qs1 = guides.filter(pk__in=unseen_feedback)
+            guides = qs1 | guides
 
         for guide in guides:
             guide.latest_feedback = None
@@ -194,6 +205,27 @@ class ContributorManageGuide(LoginRequiredMixin, ListView):
                 guide.latest_feedback = latest_feedback
 
         return guides
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        if self.request.user.is_authenticated:
+            unseen_feedback = []
+            submittedguides = Guide.objects.filter(author=self.request.user)
+            for guide in submittedguides:
+                all_feedback = guide.feedbacks.all()
+                if all_feedback:
+                    # find the latest feedback for each guide
+                    latest_feedback = all_feedback.order_by("-timestamp").first()
+                    # check if it's been seen
+                    if not latest_feedback.seen:
+                        # if not, add that guide's pk to the unseen feedback list
+                        unseen_feedback.append(latest_feedback.guide_id.pk)
+
+            context["unseen_feedback"] = unseen_feedback
+        else:
+            context["unseen_feedback"] = []
+        return context
 
 
 @login_required
