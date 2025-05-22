@@ -33,6 +33,7 @@ window.addEventListener("load", async () => {
         setupKeyboard();
     });
 
+
     // Attach the single physical keyboard handler once after DOM is loaded
     document.addEventListener('keydown', gameKeyDownHandler);
 });
@@ -219,6 +220,28 @@ function setupKeyboard() {
     }
 }
 
+
+function handlePhysicalKeyboardInput() {
+    document.addEventListener('keydown', (e) => {
+        const key = e.key.toLowerCase();
+        playSound(clickSound);
+
+        if (key === "enter") {
+            handleSubmitWord();
+            return;
+        }
+
+        if (key === "backspace") {
+            handleDeleteLetter();
+            return;
+        }
+
+        if (/^[a-z]$/.test(key)) {
+            updateGuessedWords(key);
+        }
+    });
+}
+
 function getCurrentWordArr() {
     const numberOfGuessedWords = guessedWords.length;
     return guessedWords[numberOfGuessedWords - 1];
@@ -257,6 +280,7 @@ function handleDeleteLetter() {
         lastLetterEl.textContent = "";
     }
 }
+
 
 //Checks if word is Valid
 async function isValidWord(word) {
@@ -324,6 +348,7 @@ async function handleSubmitWord() {
 
     // Calculate the colors using the Wordle algorithm
     const tileColors = calculateTileColors(currentWordArr, word);
+
     tileColors.forEach((color, index) => {//add letters to colors array for hard mode
         if (color === COLOR_CORRECT) {
             greenLetters[index] = currentWordArr[index];
@@ -489,6 +514,7 @@ document.getElementById("colorblind-toggle").addEventListener("change", function
 document.getElementById("hard-mode-toggle").addEventListener("change", function () {
     document.body.classList.toggle("hard-mode", this.checked);
 });
+
 
 //Sound
 const muteToggle = document.getElementById("mute-toggle");
