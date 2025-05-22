@@ -82,6 +82,19 @@ class GameListView(ListView):
 
         return queryset
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.user.is_authenticated:
+            # Ensure 'Favorites' is always first if it exists or is created.
+            favorites_list, _ = GameList.objects.get_or_create(name="Favorites", created_by=self.request.user)
+            other_lists = (
+                GameList.objects.filter(created_by=self.request.user).exclude(pk=favorites_list.pk).order_by("name")
+            )
+            context["game_lists"] = [favorites_list] + list(other_lists)
+        else:
+            context["game_lists"] = []
+        return context
+
 
 class GameDetailView(LoginRequiredMixin, FormMixin, DetailView):
     model = Game
@@ -1688,3 +1701,15 @@ def checkers_game_get_board_state(request, board_id):
         return Response({"state": board.state})
     except CheckersBoard.DoesNotExist:
         return Response({"error": "Board not found"}, status=404)
+
+
+class GameListDetailView(LoginRequiredMixin, DetailView):
+    """Display the games in a specific GameList."""
+
+    model = GameList
+    template_name = "games/gamelist_detail.html"
+    context_object_name = "gamelist"
+
+    def get_queryset(self):
+        # Ensure users can only view their own game lists
+        return GameList.objects.filter(created_by=self.request.user)

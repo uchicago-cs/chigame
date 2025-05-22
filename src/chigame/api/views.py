@@ -15,6 +15,7 @@ from chigame.api.serializers import (
     AchievementSerializer,
     CategorySerializer,
     FeedbackSerializer,
+    GameDataSerializer,
     GameReviewStatsSerializer,
     GameSerializer,
     GroupSerializer,
@@ -22,12 +23,13 @@ from chigame.api.serializers import (
     MechanicSerializer,
     MessageFeedSerializer,
     MessageSerializer,
+    PopUpInfoSerializer,
     ReviewSerializer,
     UserAchievementSerializer,
     UserSerializer,
 )
 from chigame.api.spam_utils import is_spam
-from chigame.games.models import Feedback, Game, Lobby, Message, Review, Tournament
+from chigame.games.models import Feedback, Game, GameData, Lobby, Message, Review, Tournament
 from chigame.games.simulation_utils import run_complete_tournament_simulation
 from chigame.users.models import Group, User
 
@@ -374,6 +376,72 @@ class AchievementCreateView(generics.CreateAPIView):
         )
 
 
+class GamePopupsAPIView(APIView):
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def get(self, request, pk):
+        game = get_object_or_404(Game, pk=pk)
+        data = {
+            "min_players": game.min_players,
+            "max_players": game.max_players,
+            "complexity": float(game.complexity or 0),
+            "min_playtime": game.min_playtime or 0,
+            "max_playtime": game.max_playtime or 0,
+            "description": game.description or "",
+        }
+        return Response(PopUpInfoSerializer(data).data)
+
+
+class GameDataListView(generics.ListCreateAPIView):
+    """
+    API endpoint to list and create game data for the authenticated user.
+    """
+
+    serializer_class = GameDataSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # Allow filtering by game
+        game_id = self.request.query_params.get("game", None)
+        if game_id:
+            return GameData.objects.filter(user=self.request.user, game_id=game_id)
+        return GameData.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        # Check if this key already exists for the user and game
+        key = serializer.validated_data.get("key")
+        game = serializer.validated_data.get("game")
+
+        try:
+            existing = GameData.objects.get(user=self.request.user, game=game, key=key)
+            # Update the existing record instead
+            existing.value = serializer.validated_data.get("value")
+            existing.save()
+        except GameData.DoesNotExist:
+            # Create a new record
+            serializer.save(user=self.request.user)
+
+
+class GameDataDetailView(generics.RetrieveUpdateDestroyAPIView):
+    """
+    API endpoint to retrieve, update or delete a specific game data entry.
+    """
+
+    serializer_class = GameDataSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return GameData.objects.filter(user=self.request.user)
+
+    def get_object(self):
+        game_id = self.kwargs.get("game_id")
+        key = self.kwargs.get("key")
+        return get_object_or_404(GameData, user=self.request.user, game_id=game_id, key=key)
+
+    def perform_update(self, serializer):
+        serializer.save(user=self.request.user)
+
+
 class TournamentSimulationView(APIView):
     """
     POST /api/tournaments/{pk}/simulate/
@@ -447,3 +515,24 @@ class GameReviewStatsAPIView(APIView):
         }
 
         return Response(GameReviewStatsSerializer(data).data)
+
+
+class UserAchievementListView(APIView):
+    def get(self, request, pk):
+        user_id = self.kwargs["pk"]
+        user_achievements = UserAchievement.objects.filter(user__id=user_id)
+
+        data = [
+            {
+                "id": achievement.id,
+                "achievement": achievement.achievement.name,
+                "game": achievement.achievement.game.name,
+                "pinned": achievement.pinned,
+                "date_earned": achievement.date_earned,
+                "last_updated": achievement.last_updated,
+                "progress": achievement.progress,
+            }
+            for achievement in user_achievements
+        ]
+
+        return Response(data)
