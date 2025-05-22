@@ -684,3 +684,7 @@ body.colorblind-mode {
     --primary: #0000FF;
     --accent: #FF8000;
 }
+
+.display-flex {
+    display: flex;
+}
