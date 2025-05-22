@@ -14,6 +14,13 @@
   };
 
   document.querySelector("#id_message_send_input").focus();
+  document.getElementById("cancel-reply").addEventListener("click", () => {
+    replyToMessageId = null;
+    replyToUsername = null;
+    replyToContent = null;
+    document.getElementById('replying-to-preview').classList.add('d-none');
+  });
+
   document.querySelector("#id_message_send_input").onkeyup = function(e) {
     if (e.key === "Enter") {
       document.querySelector("#id_message_send_button").click();
@@ -32,10 +39,12 @@
       })
     );
 
-    // Clear reply state
     replyToMessageId = null;
     replyToUsername = null;
     replyToContent = null;
+
+    messageInput = "";
+    document.getElementById("replying-to-preview").classList.add("d-none");
   };
 
   function escapeHTML(str) {
