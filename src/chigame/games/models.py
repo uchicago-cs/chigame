@@ -3,7 +3,7 @@ import random
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
-from django.db import models
+from django.db import models, transaction
 from django.utils import timezone
 
 from chigame.users.models import Group, Notification, User
@@ -740,7 +740,7 @@ class GameList(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.name} ({self.created_by})"
+        return self.name
 
 
 class GameData(models.Model):
@@ -850,6 +850,49 @@ class GameQueue(models.Model):
         """
         entry = self.entries.order_by("position").first()
         return entry.game if entry else None
+
+    def _reindex_range(self, start, end, delta):
+        """
+        Helper function to shift all entries within [start, end] by delta.
+        """
+        self.entries.filter(position__gte=start, position__lte=end).update(position=models.F("position") + delta)
+
+    def move_game(self, game, new_position):
+        """
+        Move the given game to new_position
+        """
+        entry = self.entries.get(game=game)
+        old_position = entry.position
+        max_pos = self.entries.aggregate(max=models.Max("position"))["max"] or 0
+
+        new_position = max(1, min(new_position, max_pos))
+
+        if new_position == old_position:
+            return entry
+
+        with transaction.atomic():
+            if new_position < old_position:
+                self._reindex_range(new_position, old_position - 1, +1)
+            else:
+                self._reindex_range(old_position + 1, new_position, -1)
+
+            entry.position = new_position
+            entry.save()
+
+        return entry
+
+    def duplicate_game(self, game):
+        """
+        Insert a duplicate of `game` immediately after the original.
+        """
+        entry = self.entries.get(game=game)
+        insert_at = entry.position + 1
+
+        with transaction.atomic():
+            self._reindex_range(insert_at, self.entries.aggregate(max=models.Max("position"))["max"], +1)
+            dup = GameQueueEntry.objects.create(queue=self, game=game, position=insert_at)
+
+        return dup
 
 
 class GameQueueEntry(models.Model):

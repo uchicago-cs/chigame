@@ -96,6 +96,35 @@
     z-index: 1000;
     display: none;
   }
+
+  .message-reactions {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+    font-size: 1.1em;
+  }
+
+  .reaction-pill {
+    display: inline-block;
+    background-color: #ffe6ea;
+    color: #b30000;
+    border-radius: 12px;
+    padding: 2px 8px;
+    margin-right: 6px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: background-color 0.2s ease;
+  }
+
+  .reaction-pill:hover {
+    background-color: #ffccd5;
+  }
+
+  .reaction-count {
+    margin-left: 4px;
+    font-weight: bold;
+  }
 </style>
 <div id="message-container"
      class="chat-messages-scroll flex-grow-1 overflow-auto p-3 bg-light d-flex flex-column">
@@ -104,7 +133,7 @@
       {% for message in messages %}
         <div class="mb-3 {% if message.user == request.user %}align-self-end{% else %}align-self-start{% endif %}"
              data-message-id="{{ message.id }}"
-             oncontextmenu="showContextMenu(event, {{ message.id }}, '{{ message.user.username }}', '{{ message.content }}'); return false;">
+             oncontextmenu="showContextMenu(event, '{{ message.id }}', '{{ message.user.username }}', '{{ message.content }}'); return false;">
           <div class="{% if message.user == request.user %}bg-success-subtle{% else %}bg-white{% endif %} rounded p-2 shadow-sm">
             {% if message.reply_to %}
               <div class="message-reply">
@@ -115,6 +144,7 @@
             <div class="fw-bold small text-danger">{{ message.user.username }}</div>
             <div class="mt-1">{{ message.content }}</div>
             <div class="text-end text-muted small mt-1">{{ message.sent_at|date:"g:i A" }}</div>
+            <div class="message-reactions mt-1" id="reactions-{{ message.id }}"></div>
           </div>
         </div>
       {% endfor %}
