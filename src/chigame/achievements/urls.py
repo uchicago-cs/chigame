@@ -5,5 +5,5 @@ from . import views
 urlpatterns = [
     path("demo-game", views.demo_game, name="demo-game"),
     path("", views.user_achievements, name="user_achievements"),
-    path("<str:username>/", views.user_achievements, name="user_achievements_by_username"),
+    path("<int:user_id>/", views.user_achievements, name="user_achievements"),
 ]
