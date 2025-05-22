@@ -57,6 +57,15 @@
       top: 300px;
       left: 321px;
     }
+
+    .popup {
+      border: solid;
+      border-radius: 10px;
+      padding: 1rem;
+      border-radius: 1rem;
+      border: solid;
+      top:200px;
+    }
   </style>
 {% endblock css %}
 {% load static %}
@@ -72,8 +81,22 @@
       <button type="submit" class="button button5">Click here</button>
       <button type="submit" class="button button6">Click here</button>
     </form>
+    <div id="popup" class="popup" style="display: none;">
+      Achievement <b>Click Button</b> earned!
+    </div>
     <script>
+      const popup = document.getElementById('popup');
       const form = document.getElementById('apiForm');
+
+      function showPopup() {
+        popup.style.display = 'block';
+        // Hide the popup after 3 seconds
+        setTimeout(hidePopup, 3000);
+      }
+
+      function hidePopup() {
+        popup.style.display = 'none';
+      }
 
       const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
       form.addEventListener('submit', function(event) {
@@ -102,6 +125,13 @@
           })
           .then(data => {
             console.log('Success:', data);
+            console.log(data.message)
+            if (data.message === "T") {
+              console.log("showing popup");
+              showPopup();
+            } else {
+              console.log("not showing popup");
+            }
           })
           .catch(error => {
             console.error('Error:', error);

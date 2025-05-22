@@ -49,6 +49,7 @@ def award_achievement(request):
     # Assigns the user achievement to the currently logged in user
     if request.method == "POST":
         if request.user.is_authenticated:
+            popup = "F" # Variable to decide whether a popup will occur
             game = Game.objects.get_or_create(
                 name="Demo Game",
                 description="Game for demonstrating achievements.",
@@ -58,9 +59,10 @@ def award_achievement(request):
             )[0]
             achievement = Achievement.objects.get_or_create(name="Clicked a Button", rarity=1, game=game)[0]
             user = request.user
-            UserAchievement.objects.get_or_create(
+            user_achievement = UserAchievement.objects.get_or_create(
                 user=user, achievement=achievement, date_earned="2025-04-24T21:45:37.084000Z"
             )
-
-            response_data = {"message": "Button press received"}
+            if user_achievement[1]:
+                popup = "T"
+            response_data = {"message": popup}
             return JsonResponse(response_data)
