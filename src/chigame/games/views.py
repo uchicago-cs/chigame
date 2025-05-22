@@ -82,6 +82,19 @@ class GameListView(ListView):
 
         return queryset
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.user.is_authenticated:
+            # Ensure 'Favorites' is always first if it exists or is created.
+            favorites_list, _ = GameList.objects.get_or_create(name="Favorites", created_by=self.request.user)
+            other_lists = (
+                GameList.objects.filter(created_by=self.request.user).exclude(pk=favorites_list.pk).order_by("name")
+            )
+            context["game_lists"] = [favorites_list] + list(other_lists)
+        else:
+            context["game_lists"] = []
+        return context
+
 
 class GameDetailView(LoginRequiredMixin, FormMixin, DetailView):
     model = Game
@@ -1599,6 +1612,9 @@ def wordle_game_page(request):
     return render(request, "games/wordle.html", {"iframe_url": iframe_url})
 
 
+# ============== Checkers ============
+
+
 @login_required
 def checkers_game_view(request, pk):
     game = get_object_or_404(Checkers, id=pk)
@@ -1614,6 +1630,7 @@ def checkers_game_view(request, pk):
     if latest_turn:
         board = latest_turn.board
     else:
+        # First time loading, create default board
         default_state = [
             [0, 2, 0, 2, 0, 2, 0, 2],
             [2, 0, 2, 0, 2, 0, 2, 0],
@@ -1624,6 +1641,7 @@ def checkers_game_view(request, pk):
             [0, 1, 0, 1, 0, 1, 0, 1],
             [1, 0, 1, 0, 1, 0, 1, 0],
         ]
+        # Save first turn
         board = CheckersBoard.objects.create(state=default_state)
         CheckersTurn.objects.create(game=game, board=board, turn_number=1, player=game.player_1)
 
@@ -1669,3 +1687,15 @@ def checkers_game_get_board_state(request, board_id):
         return Response({"state": board.state})
     except CheckersBoard.DoesNotExist:
         return Response({"error": "Board not found"}, status=404)
+
+
+class GameListDetailView(LoginRequiredMixin, DetailView):
+    """Display the games in a specific GameList."""
+
+    model = GameList
+    template_name = "games/gamelist_detail.html"
+    context_object_name = "gamelist"
+
+    def get_queryset(self):
+        # Ensure users can only view their own game lists
+        return GameList.objects.filter(created_by=self.request.user)

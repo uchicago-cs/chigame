@@ -1,5 +1,5 @@
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import render
 
 from chigame.games.models import Game
 from chigame.users.models import User
@@ -23,22 +23,22 @@ def demo_game(request):
 
 
 @login_required
+
 def user_achievements(request, pk=None):
     """
     Display a user's achievements page.
     If pk is provided, show that user's achievements.
     Otherwise, show the logged-in user's achievements.
     """
+
     if pk:
         # If a username is provided in the URL, get that user's profile
         target_user = get_object_or_404(User, pk=pk)  # Renamed to avoid confusion with request.user
         viewing_own_profile = target_user == request.user
         recent_achievements = get_recent_achievements(target_user.pk, limit=5)
     else:
-        # If no username is provided, show the logged-in user's achievements
         target_user = request.user
         viewing_own_profile = True
-
     # Get all games
     games = Game.objects.all()
 
