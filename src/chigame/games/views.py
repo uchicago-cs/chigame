@@ -1,3 +1,4 @@
+import json
 import os
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta
@@ -53,7 +54,8 @@ from .simulation_utils import (
     MultiStageSimulator,
     RoundRobinSimulator,
     TournamentSimulator,
-    run_complete_tournament_simulation,
+    compute_seeds,
+    get_ordered_players_by_seeds,
 )
 from .tables import LobbyTable
 
@@ -736,6 +738,19 @@ class TournamentDetailView(DetailView):
         else:
             return "single"
 
+    def get_seeded_players_from_fixture(self, tournament):
+        fixture_path = "src/chigame/games/fixtures/seeding_tournaments_fixtures.json"
+        with open(fixture_path) as f:
+            fixture_data = json.load(f)
+
+        seed_data = compute_seeds(fixture_data)
+
+        tournament_players = list(tournament.players.all())
+        id_to_user = {u.id: u for u in tournament_players}
+        seeded_players = get_ordered_players_by_seeds(seed_data, id_to_user)
+
+        return seeded_players
+
     def get(self, request, *args, **kwargs):
         super().get(request, *args, **kwargs)
         tournament = Tournament.objects.get(id=self.kwargs["pk"])
@@ -761,12 +776,24 @@ class TournamentDetailView(DetailView):
                 if simulation_type == "single":
                     simulator = TournamentSimulator(tournament)
                     simulator.set_tournament_type(False)
+
+                    # Include seeded players if enabled
+                    if request.session.get("seeding_mode", False):
+                        seeded_players = self.get_seeded_players_from_fixture(tournament)
+                        simulator.set_seeded_players(seeded_players)
+
                     simulator.initialize_simulation()
                     simulator_data = simulator.get_bracket_data()
 
                 elif simulation_type == "double":
                     simulator = TournamentSimulator(tournament)
                     simulator.set_tournament_type(True)
+
+                    # Include seeded players if enabled
+                    if request.session.get("seeding_mode", False):
+                        seeded_players = self.get_seeded_players_from_fixture(tournament)
+                        simulator.set_seeded_players(seeded_players)
+
                     simulator.initialize_simulation()
                     simulator_data = simulator.get_bracket_data()
 
@@ -883,8 +910,17 @@ class TournamentDetailView(DetailView):
 
         # single and double elimination simulation
         elif simulation_type == "single" or simulation_type == "double":
-            if request.POST.get("action") == "simulate_match":
-                # Simulate a specific match
+            if request.POST.get("action") == "set_seeding_mode":
+                use_seeding = request.POST.get("use_seeding")
+                if use_seeding == "true":
+                    request.session["seeding_mode"] = True
+                elif use_seeding == "false":
+                    request.session["seeding_mode"] = False
+                else:
+                    request.session["seeding_mode"] = None
+                request.session.modified = True
+                return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
+            elif request.POST.get("action") == "simulate_match":
                 match_id = request.POST.get("match_id")
 
                 # Get the simulator data from the session
@@ -893,19 +929,16 @@ class TournamentDetailView(DetailView):
                     messages.error(request, "Simulation data not found. Please restart the simulation.")
                     return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
 
-                # Create a simulator instance and load the data
                 simulator = TournamentSimulator(tournament)
                 simulator.set_tournament_type(
                     request.session.get(f"tournament_{tournament.id}_double_elimination", False)
                 )
-                simulator.initialize_simulation()
 
-                # Update the simulator with the current state
+                # Do not initialize again – just restore
                 simulator.simulated_matches = {}
                 for round_num, brackets in simulator_data["rounds"].items():
                     for bracket_type, matches in brackets.items():
                         for match in matches:
-                            # Ensure match ID is a string
                             match_id_in_data = str(match["id"])
                             match_data = {
                                 "match": None,
@@ -927,14 +960,12 @@ class TournamentDetailView(DetailView):
 
                 simulator.current_round = simulator_data["current_round"]
 
-                # Simulate the match
                 if match_id not in simulator.simulated_matches:
                     messages.error(request, f"Match ID {match_id} not found in simulation data")
                     return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
 
                 winner, loser = simulator.simulate_match_outcome(match_id)
 
-                # Save the updated simulator data
                 updated_data = simulator.get_bracket_data()
                 request.session[f"tournament_{tournament.id}_simulator_data"] = updated_data
                 request.session.modified = True
@@ -1032,12 +1063,49 @@ class TournamentDetailView(DetailView):
                 return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
 
             elif request.POST.get("action") == "run_full_simulation":
-                # Run a complete simulation
                 is_double_elimination = request.session.get(f"tournament_{tournament.id}_double_elimination", False)
-                simulation_data = run_complete_tournament_simulation(tournament, is_double_elimination)
-                request.session[f"tournament_{tournament.id}_simulator_data"] = simulation_data
 
-                messages.success(request, "Full tournament simulation completed")
+                # Pull seeding preference from session if not passed in POST
+                use_seeding = request.POST.get("use_seeding")
+                if use_seeding is None:
+                    use_seeding = request.session.get("seeding_mode", False)
+                use_seeding = str(use_seeding).lower() == "true"
+
+                simulator = TournamentSimulator(tournament)
+                simulator.set_tournament_type(is_double_elimination)
+
+                if use_seeding:
+                    seeded_players = self.get_seeded_players_from_fixture(tournament)
+                    simulator.set_seeded_players(seeded_players)
+
+                simulator.initialize_simulation()
+
+                # Simulate all matches in the first round
+                for match_id in simulator.simulated_matches:
+                    simulator.simulate_match_outcome(match_id)
+
+                # Create and simulate all remaining rounds
+                while True:
+                    next_round_matches = simulator.create_next_round_matches()
+                    if not next_round_matches:
+                        break
+                    for match_id in next_round_matches:
+                        simulator.simulate_match_outcome(match_id)
+
+                # For double elimination, simulate final match if needed
+                if is_double_elimination:
+                    final_match = simulator.create_final_match()
+                    if final_match:
+                        simulator.simulate_match_outcome(f"sim_final_{simulator.current_round + 1}")
+
+                # Save the full bracket to session
+                simulation_data = simulator.get_bracket_data()
+                request.session[f"tournament_{tournament.id}_simulator_data"] = simulation_data
+                request.session.modified = True
+
+                messages.success(
+                    request, "Full tournament simulation completed" + (" with seeding" if use_seeding else "")
+                )
                 return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
 
         elif request.POST.get("action") == "join":
