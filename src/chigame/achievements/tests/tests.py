@@ -6,7 +6,7 @@ from django.utils import timezone
 from chigame.achievements.models import UserAchievement
 from chigame.achievements.views import get_recent_achievements
 
-from .factories import CompletedUserAchievementFactory, MatchFactory, UserFactory
+from .factories import AchievementFactory, MatchFactory, CompletedUserAchievementFactory, UserFactory
 
 
 @pytest.mark.django_db
@@ -16,6 +16,25 @@ def test_game_users():
     assert len(match.game.users.all()) == len(match.players.all())
     for player in match.players.all():
         assert player in match.game.users.all()
+
+
+@pytest.mark.django_db
+def test_achievement_advance():
+    """Test that advancing an achievement works correctly"""
+    for _ in range(5):
+        achievement = AchievementFactory.create()
+        user = UserFactory.create()
+
+        # Advance the achievement for the user
+        achievement.advance(user)
+
+        # Check if the user's achievement progress is updated
+        user_achievement = UserAchievement.objects.get(user=user, achievement=achievement)
+        assert user_achievement.progress == 1
+        if 1e-8 > abs(achievement.threshold - 1):
+            assert user_achievement.date_earned is None
+        else:
+            assert user_achievement.date_earned is None
 
 
 @pytest.mark.django_db
