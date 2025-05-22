@@ -54,10 +54,8 @@ class UserAchievement(models.Model):
         elif self.date_earned < self.last_updated:
             # It's not clear how this scenario would come about
             raise ValidationError({"self.date_earned": "date_earned cannot be before last_updated"})
-        if self.progress < 0 or self.progress - self.achievement.threshold > 0.5:
-            raise ValidationError(
-                {"self.progress": "progress must be between 0 and the achievement's threshold, inclusive"}
-            )
+        if self.progress < 0:
+            raise ValidationError({"self.progress": "progress must be positive"})
 
     def save(self, *args, **kwargs):
         # This approach was borrowed from games/models.py
