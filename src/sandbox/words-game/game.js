@@ -2,10 +2,39 @@ window.addEventListener("load", async () => {
     const modal = document.getElementById("word-length-modal");
     const selector = document.getElementById("word-length-selector");
     const startBtn = document.getElementById("start-game-btn");
+    const modalContent = document.querySelector('.modal-content');
+    const overlay = document.getElementById('menu-overlay');
+
+    // Show the overlay on load for the word length modal - make it immediately visible
+    overlay.classList.add('visible');
+    overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+
+    // Force a reflow to ensure the background change is applied immediately
+    overlay.offsetHeight;
+
+    // Stop propagation on modal content to prevent clicks from closing it
+    if (modalContent) {
+        modalContent.addEventListener('click', (event) => {
+            event.stopPropagation();
+        });
+
+        // Set initial state for animation
+        modalContent.style.transform = 'scale(0.95)';
+        modalContent.style.opacity = '0';
+    }
+
+    // Ensure modal content shows with animation - with a small delay
+    setTimeout(() => {
+        if (modal.classList.contains('visible')) {
+            modal.style.opacity = '1';
+            if (modalContent) {
+                modalContent.style.opacity = '1';
+                modalContent.style.transform = 'scale(1)';
+            }
+        }
+    }, ANIMATION_DELAY);
 
     startBtn.addEventListener("click", async () => {
-        // Reset game state if we're changing length in the middle of a game
-        // Reset game state
         guessedWords = [[]];
         greenLetters = {};
         yellowLetters = new Set();
@@ -25,7 +54,9 @@ window.addEventListener("load", async () => {
         gameBoard.innerHTML = "";
 
         wordLength = parseInt(selector.value);
-        modal.style.display = "none";
+
+        // Close with animation
+        closeModal(modal);
 
         await loadWords();
         createSquares();
@@ -36,7 +67,6 @@ window.addEventListener("load", async () => {
     // Attach the single physical keyboard handler once after DOM is loaded
     document.addEventListener('keydown', gameKeyDownHandler);
 });
-
 
 //Buttons (How To Play and Settings)!
 const howToPlayBtn = document.getElementById('how-to-play-btn');
@@ -49,7 +79,7 @@ const changeLengthBtn = document.getElementById('change-length-btn'); // Get ref
 function gameKeyDownHandler(e) {
     const modal = document.getElementById("word-length-modal");
     // Check if modal is visible
-    if (modal.style.display === "flex") {
+    if (modal.classList.contains('visible')) {
         if (e.key === "Enter") {
             // Allow Enter to submit the modal
             document.getElementById("start-game-btn").click();
@@ -79,18 +109,162 @@ function gameKeyDownHandler(e) {
     }
 }
 
+// Animation timing constants - used to ensure consistency
+const ANIMATION_DURATION = 400; // Match with CSS transition time (in ms)
+const ANIMATION_DELAY = 50; // Small delay to ensure animations start properly
+
+// Function to reset element state for proper animation start
+function resetElementForAnimation(element) {
+    // Force a reflow to ensure styles are applied before animation starts
+    element.style.opacity = '0';
+    element.style.transform = 'translate(-50%, -50%) scale(0.95)';
+    element.offsetHeight; // Trigger reflow
+}
+
+// Function to open modal with animation
+function openModal(modal) {
+    // Show the overlay first, before any other operations
+    const overlay = document.getElementById('menu-overlay');
+    overlay.classList.add('visible');
+    overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)'; // Force immediate darkening
+
+    // Force a reflow to ensure the background change is applied first
+    overlay.offsetHeight;
+
+    // First make the modal visible but transparent
+    modal.classList.add('visible');
+
+    // Force reflow
+    modal.offsetHeight;
+
+    // Set modal to full opacity
+    modal.style.opacity = '1';
+
+    // Make sure the content animates in with the same timing
+    const content = modal.querySelector('.modal-content');
+    if (content) {
+        // Ensure the content is in its initial state (this might be redundant but ensures consistency)
+        if (content.style.transform !== 'scale(0.95)' || content.style.opacity !== '0') {
+            content.style.transform = 'scale(0.95)';
+            content.style.opacity = '0';
+            // Force reflow to ensure animation starts from initial state
+            content.offsetHeight;
+        }
+
+        // Use requestAnimationFrame to ensure the browser has processed the initial state
+        requestAnimationFrame(() => {
+            // Animate to full scale and opacity
+            content.style.opacity = '1';
+            content.style.transform = 'scale(1)';
+        });
+    }
+}
+
+// Function to close modal with animation
+function closeModal(modal) {
+    // Fade out the overlay immediately if no other menu is open
+    if (!howToPlayText.classList.contains('visible') &&
+        !settingsScreen.classList.contains('visible')) {
+        const overlay = document.getElementById('menu-overlay');
+        overlay.style.backgroundColor = 'rgba(0, 0, 0, 0)';
+    }
+
+    // Set opacity to 0 on the modal
+    modal.style.opacity = '0';
+
+    // Scale down the content
+    const content = modal.querySelector('.modal-content');
+    if (content) {
+        content.style.transform = 'scale(0.95)';
+        content.style.opacity = '0';
+    }
+
+    // Create a specific handler for the transition end
+    const handleTransitionEnd = function() {
+        // Remove visibility class after animation completes
+        modal.classList.remove('visible');
+        modal.style.opacity = ''; // Reset for next time
+
+        // Reset content transform
+        if (content) {
+            content.style.transform = '';
+            content.style.opacity = '';
+        }
+
+        // Only fully remove the overlay when the modal transition completes
+        // and if no other menu is open
+        if (!howToPlayText.classList.contains('visible') &&
+            !settingsScreen.classList.contains('visible')) {
+            // Just remove the visibility class, the fade out already started
+            const overlay = document.getElementById('menu-overlay');
+            setTimeout(() => {
+                overlay.classList.remove('visible');
+                overlay.style.backgroundColor = '';
+            }, 50); // Small delay to ensure it's synchronized
+        }
+
+        // Remove the event listener
+        modal.removeEventListener('transitionend', handleTransitionEnd);
+    };
+
+    // Listen for the transition to complete
+    modal.addEventListener('transitionend', handleTransitionEnd);
+
+    // Fallback in case transition event doesn't fire
+    setTimeout(() => {
+        if (modal.classList.contains('visible')) {
+            modal.classList.remove('visible');
+            modal.style.opacity = ''; // Reset for next time
+
+            // Reset content transform
+            if (content) {
+                content.style.transform = '';
+                content.style.opacity = '';
+            }
+
+            // Only fully remove the overlay if no other menu is open
+            if (!howToPlayText.classList.contains('visible') &&
+                !settingsScreen.classList.contains('visible')) {
+                const overlay = document.getElementById('menu-overlay');
+                overlay.classList.remove('visible');
+                overlay.style.backgroundColor = '';
+            }
+        }
+    }, ANIMATION_DURATION + 50); // Slightly longer than transition time to be safe
+}
+
 // Handle Change Length button
-changeLengthBtn.addEventListener('click', () => {
+changeLengthBtn.addEventListener('click', (event) => {
+    // Stop propagation to prevent document click from closing the modal
+    event.stopPropagation();
+
     const modal = document.getElementById("word-length-modal");
     const selector = document.getElementById("word-length-selector");
+    const modalContent = modal.querySelector('.modal-content');
 
+    // Set the current word length in the selector
     selector.value = wordLength ? wordLength.toString() : "5"; // Ensure wordLength exists or default
-    modal.style.display = "flex";
 
-    settingsScreen.classList.add('hidden');
-    howToPlayText.classList.remove('visible');
-    howToPlayText.classList.add('hidden');
-    howToPlayBtn.textContent = "How to Play ▼";
+    // Reset the modal content to its initial state before animating
+    if (modalContent) {
+        modalContent.style.transform = 'scale(0.95)';
+        modalContent.style.opacity = '0';
+
+        // Force reflow to ensure styles are applied
+        modalContent.offsetHeight;
+    }
+
+    // Open with animation
+    openModal(modal);
+
+    if (settingsScreen.classList.contains('visible')) {
+        animateClose(settingsScreen);
+    }
+
+    if (howToPlayText.classList.contains('visible')) {
+        animateClose(howToPlayText);
+        howToPlayBtn.textContent = "How to Play";
+    }
 });
 
 // Close the modal when clicking outside of it
@@ -100,10 +274,10 @@ window.addEventListener('click', (event) => {
 
     // Check if the click is on the modal overlay itself, not its content
     // Also check if the game has been initialized (board has children)
-    if (event.target === modal) {
+    if (event.target === modal && modal.classList.contains('visible')) {
         // Only allow closing by clicking outside if the game board has been created
         if (gameBoard && gameBoard.children.length > 0) {
-            modal.style.display = "none";
+            closeModal(modal);
         } else {
             // Optionally show a notification that they need to select a length first
             showNotification("Please select a word length first", 1500);
@@ -112,32 +286,135 @@ window.addEventListener('click', (event) => {
 });
 
 // Handle How to Play toggle
-howToPlayBtn.addEventListener('click', () => {
+howToPlayBtn.addEventListener('click', (event) => {
+    // Stop propagation to prevent document click from immediately closing the menu
+    event.stopPropagation();
+
     const isVisible = !howToPlayText.classList.contains('visible');
-
-    howToPlayText.classList.toggle('visible', isVisible);
-    howToPlayText.classList.toggle('hidden', !isVisible);
-
-    //Hide settings
-    settingsScreen.classList.add('hidden');
+    const overlay = document.getElementById('menu-overlay');
 
     if (isVisible) {
-    howToPlayBtn.textContent = "How to Play ▲";
+        // Show overlay first, before any other operations
+        overlay.classList.add('visible');
+        overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)'; // Force immediate darkening
+
+        // Force a reflow to ensure the background change is applied first
+        overlay.offsetHeight;
+
+        // Open animation
+        resetElementForAnimation(howToPlayText);
+        howToPlayText.classList.add('visible');
+
+        // Need to do this in next frame to ensure animation works
+        requestAnimationFrame(() => {
+            howToPlayText.style.opacity = '1';
+            howToPlayText.style.transform = 'translate(-50%, -50%) scale(1)';
+        });
+
+        //Hide settings
+        if (settingsScreen.classList.contains('visible')) {
+            animateClose(settingsScreen);
+        }
+
+        howToPlayBtn.textContent = "How to Play";
     } else {
-    howToPlayBtn.textContent = "How to Play ▼";
+        // Close animation - start fading overlay immediately
+        if (!settingsScreen.classList.contains('visible') &&
+            !document.getElementById('word-length-modal').classList.contains('visible')) {
+            overlay.style.backgroundColor = 'rgba(0, 0, 0, 0)';
+        }
+
+        animateClose(howToPlayText);
+        howToPlayBtn.textContent = "How to Play";
     }
 });
 
 // Handle Settings toggle
-settingsBtn.addEventListener('click', () => {
+settingsBtn.addEventListener('click', (event) => {
+    // Stop propagation to prevent document click from immediately closing the menu
+    event.stopPropagation();
 
-    settingsScreen.classList.toggle('hidden');
+    const isVisible = !settingsScreen.classList.contains('visible');
+    const overlay = document.getElementById('menu-overlay');
 
-    // Always hide How to Play
-    howToPlayText.classList.remove('visible');
-    howToPlayText.classList.add('hidden');
-    howToPlayBtn.textContent = "How to Play ▼";
+    if (isVisible) {
+        // Show overlay first, before any other operations
+        overlay.classList.add('visible');
+        overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)'; // Force immediate darkening
+
+        // Force a reflow to ensure the background change is applied first
+        overlay.offsetHeight;
+
+        // Open animation
+        resetElementForAnimation(settingsScreen);
+        settingsScreen.classList.add('visible');
+
+        // Need to do this in next frame to ensure animation works
+        requestAnimationFrame(() => {
+            settingsScreen.style.opacity = '1';
+            settingsScreen.style.transform = 'translate(-50%, -50%) scale(1)';
+        });
+
+        // Hide How to Play
+        if (howToPlayText.classList.contains('visible')) {
+            animateClose(howToPlayText);
+        }
+
+        howToPlayBtn.textContent = "How to Play";
+    } else {
+        // Close animation - start fading overlay immediately
+        if (!howToPlayText.classList.contains('visible') &&
+            !document.getElementById('word-length-modal').classList.contains('visible')) {
+            overlay.style.backgroundColor = 'rgba(0, 0, 0, 0)';
+        }
+
+        animateClose(settingsScreen);
+    }
 });
+
+// Also add stopPropagation to both menus to prevent clicks inside them from closing them
+howToPlayText.addEventListener('click', (event) => {
+    event.stopPropagation();
+});
+
+settingsScreen.addEventListener('click', (event) => {
+    event.stopPropagation();
+});
+
+// Close How to Play and Settings when clicking outside them
+document.addEventListener('click', (event) => {
+    const overlay = document.getElementById('menu-overlay');
+
+    // Close How to Play when clicking outside
+    if (howToPlayText.classList.contains('visible') &&
+        !howToPlayText.contains(event.target) &&
+        event.target !== howToPlayBtn) {
+
+        // Start fading the overlay immediately if this is the only open menu
+        if (!settingsScreen.classList.contains('visible') &&
+            !document.getElementById('word-length-modal').classList.contains('visible')) {
+            overlay.style.backgroundColor = 'rgba(0, 0, 0, 0)';
+        }
+
+        animateClose(howToPlayText);
+        howToPlayBtn.textContent = "How to Play";
+    }
+
+    // Close Settings when clicking outside
+    if (settingsScreen.classList.contains('visible') &&
+        !settingsScreen.contains(event.target) &&
+        event.target !== settingsBtn) {
+
+        // Start fading the overlay immediately if this is the only open menu
+        if (!howToPlayText.classList.contains('visible') &&
+            !document.getElementById('word-length-modal').classList.contains('visible')) {
+            overlay.style.backgroundColor = 'rgba(0, 0, 0, 0)';
+        }
+
+        animateClose(settingsScreen);
+    }
+});
+
 let guessedWords = [[]];
 let greenLetters = {};
 let yellowLetters = new Set();
@@ -146,6 +423,8 @@ let word = "";
 let guessedWordCount = 0;
 let allowedWords = [];
 let gameOver = false;
+let gameWon = false;
+let changeLengthToggle = false;//boolean to check if modal was accessed by change length button. This alters how game state should respond.
 const url = "https://api.dictionaryapi.dev/api/v2/entries/en/";
 
 //color constants
@@ -164,7 +443,6 @@ function loadWords() {
         });
 }
 
-
 //hashing function for daily word selection
 function hashInt(x) {
   x = ((x >>> 16) ^ x) * 0x45d9f3b;
@@ -175,10 +453,8 @@ function hashInt(x) {
 
 /*
 Process for selecting daily word involves taking today's date as an integer (YYYYMMDD),
-hashing it using the above function, then using modulo operator to get the index of the word
-we want from the word list. Overall this function returns the word that will be played with.
+hashing it using the above function
 */
-
 function getNewWord() {
     if (mode === 'game') {
         word = allowedWords[Math.floor(Math.random() * allowedWords.length)];
@@ -237,28 +513,6 @@ function setupKeyboard() {
     }
 }
 
-
-function handlePhysicalKeyboardInput() {
-    document.addEventListener('keydown', (e) => {
-        const key = e.key.toLowerCase();
-        playSound(clickSound);
-
-        if (key === "enter") {
-            handleSubmitWord();
-            return;
-        }
-
-        if (key === "backspace") {
-            handleDeleteLetter();
-            return;
-        }
-
-        if (/^[a-z]$/.test(key)) {
-            updateGuessedWords(key);
-        }
-    });
-}
-
 function getCurrentWordArr() {
     const numberOfGuessedWords = guessedWords.length;
     return guessedWords[numberOfGuessedWords - 1];
@@ -297,7 +551,6 @@ function handleDeleteLetter() {
         lastLetterEl.textContent = "";
     }
 }
-
 
 //Checks if word is Valid
 async function isValidWord(word) {
@@ -365,17 +618,6 @@ async function handleSubmitWord() {
 
     // Calculate the colors using the Wordle algorithm
     const tileColors = calculateTileColors(currentWordArr, word);
-    tileColors.forEach((color, index) => {//add letters to colors array for hard mode
-        if (color === COLOR_CORRECT) {
-            greenLetters[index] = currentWordArr[index];
-        }
-        if (color === COLOR_OFF) {
-            yellowLetters.add(currentWordArr[index]);
-        }
-    });
-
-
-
     tileColors.forEach((color, index) => {//add letters to colors array for hard mode
         if (color === COLOR_CORRECT) {
             greenLetters[index] = currentWordArr[index];
@@ -542,12 +784,6 @@ document.getElementById("hard-mode-toggle").addEventListener("change", function 
     document.body.classList.toggle("hard-mode", this.checked);
 });
 
-document.getElementById("hard-mode-toggle").addEventListener("change", function () {
-    document.body.classList.toggle("hard-mode", this.checked);
-});
-
-
-
 //Sound
 const muteToggle = document.getElementById("mute-toggle");
 const volumeSlider = document.getElementById("volume");
@@ -577,3 +813,78 @@ volumeSlider.addEventListener("input", function () {
     setVolume(volume);
     console.log("Volume set to:", volume);
 });
+
+
+// Function to handle closing animation with a delay
+function animateClose(element, onComplete = null) {
+    // Ensure we trigger a reflow first to ensure animation starts from current state
+    element.offsetHeight; // Force reflow
+
+    // Start fading out overlay immediately if no other menu is open
+    if (!howToPlayText.classList.contains('visible') &&
+        !settingsScreen.classList.contains('visible') &&
+        !document.getElementById('word-length-modal').classList.contains('visible') ||
+        // Only count the current element as visible because we're about to close it
+        (howToPlayText === element && !settingsScreen.classList.contains('visible') &&
+        !document.getElementById('word-length-modal').classList.contains('visible')) ||
+        (settingsScreen === element && !howToPlayText.classList.contains('visible') &&
+        !document.getElementById('word-length-modal').classList.contains('visible'))) {
+
+        // Start the overlay fade out now, to sync with menu closing
+        const overlay = document.getElementById('menu-overlay');
+        overlay.style.backgroundColor = 'rgba(0, 0, 0, 0)';
+    }
+
+    // Set closing styles for the menu
+    element.style.opacity = '0';
+    element.style.transform = 'translate(-50%, -50%) scale(0.95)';
+
+    // Create a specific handler for the transition end
+    const handleTransitionEnd = function() {
+        // Remove visibility class after animation completes
+        element.classList.remove('visible');
+
+        // Only fully remove the overlay when the menu transition completes
+        // and if no other menu is open
+        if (!howToPlayText.classList.contains('visible') &&
+            !settingsScreen.classList.contains('visible') &&
+            !document.getElementById('word-length-modal').classList.contains('visible')) {
+
+            // Just remove the visibility class, the fade out already started
+            const overlay = document.getElementById('menu-overlay');
+            setTimeout(() => {
+                overlay.classList.remove('visible');
+                overlay.style.backgroundColor = '';
+            }, 50); // Small delay to ensure it's synchronized
+        }
+
+        // Run the callback if provided
+        if (onComplete) onComplete();
+
+        // Remove the event listener
+        element.removeEventListener('transitionend', handleTransitionEnd);
+    };
+
+    // Listen for the transition to complete
+    element.addEventListener('transitionend', handleTransitionEnd);
+
+    // Fallback in case transition event doesn't fire
+    setTimeout(() => {
+        if (element.classList.contains('visible')) {
+            element.classList.remove('visible');
+
+            // Only fully remove the overlay if no other menu is open
+            if (!howToPlayText.classList.contains('visible') &&
+                !settingsScreen.classList.contains('visible') &&
+                !document.getElementById('word-length-modal').classList.contains('visible')) {
+
+                // Just remove the visibility class, the fade out already started
+                const overlay = document.getElementById('menu-overlay');
+                overlay.classList.remove('visible');
+                overlay.style.backgroundColor = '';
+            }
+
+            if (onComplete) onComplete();
+        }
+    }, ANIMATION_DURATION + 50); // Slightly longer than transition time to be safe
+}

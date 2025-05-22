@@ -14,8 +14,10 @@
     <div id="notification-wrapper">
       <div id="notification"></div>
     </div>
+    <!-- Dark overlay for menus -->
+    <div id="menu-overlay" class="menu-overlay"></div>
     <!-- Word Length Change -->
-    <div id="word-length-modal" class="modal">
+    <div id="word-length-modal" class="modal visible">
       <div class="modal-content">
         <h2>Choose Word Length</h2>
         <select id="word-length-selector">
@@ -32,7 +34,7 @@
       <div id="header">
         <div class="nav-buttons">
           <a href="{% url 'index' %}" class="nav-btn">Home</a>
-          <button id="how-to-play-btn" class="nav-btn">How to Play ▼</button>
+          <button id="how-to-play-btn" class="nav-btn">How to Play</button>
           <button id="change-length-btn" class="nav-btn">Change Length</button>
           <button id="settings-btn" class="nav-btn">⚙</button>
         </div>
