@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from chigame.achievements.models import Achievement, UserAchievement
+from chigame.chat.models import LiveChat
 from chigame.games.models import (
     Category,
     Chat,
@@ -14,6 +15,7 @@ from chigame.games.models import (
     Tournament,
     User,
 )
+from chigame.leaderboards.models import MetricScore
 from chigame.users.models import Group
 
 
@@ -132,6 +134,21 @@ class AchievementSerializer(serializers.ModelSerializer):
         fields = ["id", "name", "description", "rarity", "threshold"]
 
 
+class MetricScoreSerializer(serializers.ModelSerializer):
+    metric_id = serializers.IntegerField(write_only=True)
+    match_id = serializers.IntegerField(write_only=True)
+
+    class Meta:
+        model = MetricScore
+        fields = ["id", "score", "user", "metric", "match", "leaderboard_entry", "metric_id", "match_id"]
+        read_only_fields = ["id", "user", "metric", "match", "leaderboard_entry"]
+
+    def validate_score(self, value):
+        if value < 0:
+            raise serializers.ValidationError("Score must be a positive integer.")
+        return value
+
+
 class PopUpInfoSerializer(serializers.Serializer):
     min_players = serializers.IntegerField()
     max_players = serializers.IntegerField()
@@ -159,3 +176,11 @@ class GameReviewStatsSerializer(serializers.Serializer):
     average_rating = serializers.DecimalField(max_digits=3, decimal_places=2, required=False)
     popularity = serializers.IntegerField()
     read_only_fields = ["id", "created_at", "user", "tournament"]
+
+
+class LiveChatSerializer(serializers.ModelSerializer):
+    users = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+
+    class Meta:
+        model = LiveChat
+        fields = ["id", "name", "users"]
