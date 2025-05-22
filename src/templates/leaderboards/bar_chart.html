@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h1>{{ leaderboard.name }}</h1>
+
+  {% if leaderboard_data %}
+    <canvas id="leaderboardChart" width="400" height="300"></canvas>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+      const leaderboardData = {
+        labels: [{% for data in leaderboard_data %} '{{ data.player }}', {% endfor %}],
+        datasets: [{
+          label: '{{ score_metric_name }}',
+          data: [{% for data in leaderboard_data %} {{ data.score }}, {% endfor %}],
+          backgroundColor: 'rgba(128, 0, 0, 0.8)',
+          borderColor: 'rgba(128, 0, 0, 1)',
+          borderWidth: 1
+        }]
+      };
+
+      const config = {
+        type: 'bar',
+        data: leaderboardData,
+        options: {
+          indexAxis: 'y',
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: '{{ score_metric_name }}'
+              }
+            },
+            x: {
+              title: {
+                display: true,
+                text: 'Player'
+              }
+            }
+          }
+        },
+      };
+
+      const leaderboardChart = new Chart(
+        document.getElementById('leaderboardChart'),
+        config
+      );
+    </script>
+  {% else %}
+    <p>No leaderboard data available for {{ score_metric_name }}.</p>
+  {% endif %}
+{% endblock content %}
