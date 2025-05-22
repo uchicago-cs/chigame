@@ -209,11 +209,13 @@ function update() {
     const prompts = document.getElementById('gameOverPrompts');
     const message = document.getElementById('gameOverMessage');
     prompts.classList.add('show');
+    // specific prompts for game ending on valid move
     message.textContent =
       `${currentPlayer === COLORS.red ? 'Red' : 'Black'} has no valid moves! ` +
       `${currentPlayer === COLORS.red ? 'Black' : 'Red'} wins!`;
     message.classList.add('show');
 
+    // same logic as regular game end
     document.getElementById('playAgainPrompt').style.display = 'flex';
     document.getElementById('drawBtn').style.display = 'none';
     document.getElementById('forfeitBtn').style.display = 'none';
