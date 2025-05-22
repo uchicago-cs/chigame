@@ -358,6 +358,16 @@ async function handleSubmitWord() {
     });
 
 
+
+    tileColors.forEach((color, index) => {//add letters to colors array for hard mode
+        if (color === COLOR_CORRECT) {
+            greenLetters[index] = currentWordArr[index];
+        }
+        if (color === COLOR_OFF) {
+            yellowLetters.add(currentWordArr[index]);
+        }
+    });
+
     // Apply the colors to the UI
     currentWordArr.forEach((letter, index) => {
         setTimeout(() => {
@@ -514,6 +524,11 @@ document.getElementById("colorblind-toggle").addEventListener("change", function
 document.getElementById("hard-mode-toggle").addEventListener("change", function () {
     document.body.classList.toggle("hard-mode", this.checked);
 });
+
+document.getElementById("hard-mode-toggle").addEventListener("change", function () {
+    document.body.classList.toggle("hard-mode", this.checked);
+});
+
 
 
 //Sound
