@@ -170,6 +170,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
         # Get reply info if applicable
         reply_to_username = None
         reply_to_content = None
+        if reply_to_id:
+            try:
+                reply_to = await database_sync_to_async(LiveChatMessage.objects.get)(id=reply_to_id)
+                reply_to_username = await database_sync_to_async(lambda: reply_to.user.username)()
+                reply_to_content = reply_to.content  # This is safe — already loaded
+            except LiveChatMessage.DoesNotExist:
+                reply_to = None
 
         if reply_to_id:
             # Logic to fetch reply details could be added here if needed
