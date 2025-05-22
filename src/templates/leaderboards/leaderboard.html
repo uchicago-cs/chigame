@@ -5,7 +5,7 @@
     <tr>
       <th>Rank</th>
       <th>Player</th>
-      <!--<th>Region</th>-->
+      <th>Region</th>
     </tr>
   </thead>
   <tbody>
@@ -15,7 +15,7 @@
         <td>
           <a href="{% url 'user_profile_view' user_id=entry.user.id %}">{{ entry.user.username }}</a>
         </td>
-        <!--<td>{{ entry.user.region }}</td>-->
+        <td>{{ entry.user.region }}</td>
       </tr>
     {% endfor %}
   </tbody>

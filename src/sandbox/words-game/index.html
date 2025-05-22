@@ -5,61 +5,83 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>"Words"</title>
     <link rel="stylesheet" href="style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Press+Start+2P&display=swap"
+          rel="stylesheet" />
   </head>
   <body>
-    <!--Add Nav Bar from Chi game-->
     <div id="container">
+      <div id="header">
+        <div class="nav-buttons">
+          <a href="{% url 'index' %}" class="nav-btn">Home</a>
+          <button id="how-to-play-btn" class="nav-btn">How to Play ▼</button>
+          <button id="settings-btn" class="nav-btn">⚙</button>
+        </div>
+        <div class="logo-title">
+          <h1 class="name">WORDS</h1>
+        </div>
+      </div>
       <div id="title">
-        <h1 class="name">"Words"</h1>
         <h2 class="select">Select Game Mode</h2>
       </div>
-      <!--Game Modes to Choose From-->
+      <div class="profile-section">
+        <h3>
+          USERNAME: <span id="username">GUEST</span>
+        </h3>
+      </div>
       <div class="game-modes">
         <div class="mode">
-          <a href="{% url 'game' %}">
+          <a href="{% url 'game' mode=game %}">
             <button class="mode-btn">Solo</button>
           </a>
-          <p>
-            <strong>Mode:
-              <br />
-            </strong>
-            Basic Word: In this mode,
-            players are given a new five-letter word to guess each
-            time they play. There are no restrictions, so you can
-            play as many times as you want, solving a different
-            word with each new game.
-          </p>
+          <div class="mode-description">
+            <p>
+              <strong>BASIC WORD</strong>
+            </p>
+            <p>
+              Get a new five-letter word each time you play. No restrictions - play as many times as you want with a different word each game.
+            </p>
+          </div>
         </div>
         <div class="mode">
-          <a href="{% url 'solo' %}">
+          <a href="{% url 'solo' mode=solo %}">
             <button class="mode-btn">Daily</button>
           </a>
-          <p>
-            <strong>Mode:
-              <br />
-            </strong>Basic Word:
-            In this mode, players are given one five-letter word
-            to guess each day. Everyone around the world gets the
-            same word, come back daily for a new challenge.
-          </p>
+          <div class="mode-description">
+            <p>
+              <strong>DAILY CHALLENGE</strong>
+            </p>
+            <p>One five-letter word per day. Everyone worldwide gets the same word. Come back daily for a new challenge.</p>
+          </div>
         </div>
         <div class="mode">
           <a href="#">
-            <button class="mode-btn" onclick="alert('Not implemented yet')">Versus</button>
+            <button class="mode-btn disabled" onclick="alert('Coming soon!')">Versus</button>
           </a>
-          <p>
-            <strong>Mode:</strong> TO BE IMPLEMENTED
-          </p>
+          <div class="mode-description">
+            <p>
+              <strong>COMING SOON</strong>
+            </p>
+            <p>Challenge your friends in real-time word battles.</p>
+          </div>
         </div>
         <div class="mode">
           <a href="#">
-            <button class="mode-btn" onclick="alert('Not implemented yet')">Tournament</button>
+            <button class="mode-btn disabled" onclick="alert('Coming soon!')">Tournament</button>
           </a>
-          <p>
-            <strong>Mode:</strong> TO BE IMPLEMENTED
-          </p>
+          <div class="mode-description">
+            <p>
+              <strong>COMING SOON</strong>
+            </p>
+            <p>Compete in tournaments against multiple players.</p>
+          </div>
         </div>
       </div>
+      <footer>
+        <p>© 2025 WORDS - UNIVERSITY OF CHICAGO</p>
+      </footer>
     </div>
+    <script src="index.js" defer></script>
   </body>
 </html>
