@@ -42,7 +42,7 @@
     .large-avatar {
       font-size: 40px;
     }
-    
+
     .user-stats {
       margin-top: -10px;
       background-color: var(--card-bg);
@@ -52,7 +52,7 @@
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
       width: 65%;
     }
-    
+
     .stats-container {
       display: flex;
       justify-content: space-between;
