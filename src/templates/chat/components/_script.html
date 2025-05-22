@@ -164,8 +164,11 @@
       // Show collapse button only in floating mode
       if (chatContainer.classList.contains("floating-chat")) {
         collapseButton.classList.remove("d-none");
+        collapseButton.classList.remove("d-none");
       } else {
         collapseButton.classList.add("d-none");
+        chatContainer.classList.remove("collapsed-chat");
+
       }
     });
   }
