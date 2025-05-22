@@ -1343,6 +1343,53 @@ class TournamentArchivedListView(ListView):
         return self.request.user.is_staff
 
 
+@login_required
+def play_embedded_game(request, pk):
+    """
+    Generic view for playing embedded games.
+    This handles any game that has a game_url field populated.
+    This also makes it easy to check if a game is populated or not!
+    Also added debugging for PR testing
+    """
+    game = get_object_or_404(Game, pk=pk)
+
+    if not game.game_url:
+        messages.error(request, f"{game.name} is not available for embedded play.")
+        return redirect("game-detail", pk=pk)
+
+    iframe_url = game.game_url
+    jwt_token_used = False
+
+    if "zhejiej.github.io/Words-Game" in game.game_url:
+        payload = {
+            "user_id": request.user.id,
+            "username": request.user.username,
+            "exp": datetime.now(timezone.utc) + timedelta(minutes=30),
+        }
+        token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
+
+        separator = "&" if "?" in game.game_url else "?"
+        iframe_url = f"{game.game_url}{separator}token={token}"
+        jwt_token_used = True
+
+        messages.info(request, f"JWT Token generated for {game.name}")
+
+    # Debug info (for PR testing)
+    if settings.DEBUG:
+        messages.info(request, f" Loading embedded game: {game.name}")
+        if jwt_token_used:
+            messages.info(request, "JWT authentication enabled")
+        messages.info(request, f"Game URL: {iframe_url}")
+
+    context = {
+        "game": game,
+        "iframe_url": iframe_url,
+        "jwt_token_used": jwt_token_used,
+    }
+
+    return render(request, "games/embedded_game.html", context)
+
+
 # Tournament Feedback Views
 @login_required
 def tournament_feedback_list(request, tournament_id):

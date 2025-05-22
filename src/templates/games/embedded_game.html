@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}
+  Play {{ game.name }}
+{% endblock title %}
+{% block content %}
+  <style>
+    .embedded-game-iframe {
+      width: 100%;
+      height: 800px;
+      border: none;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .game-header {
+      margin-bottom: 20px;
+      padding: 20px;
+      background-color: #f8f9fa;
+      border-radius: 8px;
+    }
+
+    .game-info {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+
+    .game-thumbnail {
+      width: 60px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+  </style>
+  <div class="game-header">
+    <div class="game-info">
+      <img src="{{ game.image }}" alt="{{ game.name }}" class="game-thumbnail" />
+      <div>
+        <h2>{{ game.name }}</h2>
+        <p class="text-muted mb-0">{{ game.description|truncatewords:20 }}</p>
+        {% if settings.DEBUG %}
+          <small class="text-info">Debug: Game ID {{ game.id }} | URL: {{ iframe_url }}</small>
+        {% endif %}
+      </div>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{% url 'game-detail' game.pk %}"
+         class="btn btn-outline-primary">
+        <i class="bi bi-arrow-left"></i> Back to Game Details
+      </a>
+      <button class="btn btn-outline-secondary" onclick="toggleFullscreen()">
+        <i class="bi bi-fullscreen"></i> Fullscreen
+      </button>
+      {% if jwt_token_used %}<span class="badge bg-success align-self-center">Authenticated</span>{% endif %}
+    </div>
+  </div>
+  <div class="embedded-game-container">
+    <iframe id="gameIframe"
+            src="{{ iframe_url }}"
+            class="embedded-game-iframe"
+            allowfullscreen
+            title="Play {{ game.name }}">
+      <p>
+        Your browser does not support iframes. <a href="{{ iframe_url }}" target="_blank">Click here to play {{ game.name }} in a new window</a>.
+      </p>
+    </iframe>
+  </div>
+  <script>
+    function toggleFullscreen() {
+      const iframe = document.getElementById('gameIframe');
+      if (iframe.requestFullscreen) {
+        iframe.requestFullscreen();
+      } else if (iframe.webkitRequestFullscreen) {
+        iframe.webkitRequestFullscreen();
+      } else if (iframe.msRequestFullscreen) {
+        iframe.msRequestFullscreen();
+      }
+    }
+    window.addEventListener('message', function(event) {
+      const trustedOrigins = [
+        'https://zhejiej.github.io'
+      ];
+      if (trustedOrigins.some(origin => event.origin.startsWith(origin))) {
+        console.log('Received message from embedded game:', event.data);
+        if (event.data.type === 'gameCompleted') {
+          console.log('Game completed:', event.data);
+        }
+      }
+    });
+  </script>
+{% endblock content %}

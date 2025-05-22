@@ -63,6 +63,7 @@ urlpatterns = [
     # tournament feedback
     path("tournaments/<int:tournament_id>/feedback/", views.tournament_feedback_list, name="tournament-feedback-list"),
     path("tournaments/<int:tournament_id>/feedback/submit/", views.submit_feedback, name="submit-feedback"),
+    path("<int:pk>/play/", views.play_embedded_game, name="play-embedded-game"),
 ]
 # for an uploaded twine file this makes the files accessible at a url
 if settings.DEBUG:

@@ -131,4 +131,27 @@ class Command(BaseCommand):
             game5.people.add(designers["matt"])
             self.stdout.write(f"Created game: {game5.name}")
 
+        self.stdout.write("Creating Wordle word game...")
+        word_category = Category.objects.get_or_create(name="Word Game")[0]
+        puzzle_category = Category.objects.get_or_create(name="Puzzle")[0]
+        single_player_mechanic = Mechanic.objects.get_or_create(name="Pattern Recognition")[0]
+
+        wordle_game, created = Game.objects.get_or_create(
+            name="Wordle",
+            defaults={
+                "description": "A word guessing game where you try to guess a 5-letter word in 6 attempts.",
+                "min_players": 1,
+                "max_players": 1,
+                "complexity": 2.0,
+                "expected_playtime": 10,
+                "year_published": 2023,
+                "image": "/static/images/no_picture_available.png",
+            },
+        )
+
+        if created:
+            wordle_game.categories.add(word_category, puzzle_category)
+            wordle_game.mechanics.add(single_player_mechanic)
+            self.stdout.write(f"Created game: {wordle_game.name}")
+
         self.stdout.write(self.style.SUCCESS("Successfully created test games"))
