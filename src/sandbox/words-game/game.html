@@ -3,28 +3,49 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>"Words"</title>
+    <title>ChiGame Words</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Press+Start+2P&display=swap"
+          rel="stylesheet" />
     <link rel="stylesheet" href="game.css" />
-    <script defer src="game.js"></script>
   </head>
   <body>
-    <!--Add Nav Bar from Chi game-->
-    <!--How to Play Banner for the time being-->
-    <div id="banner">
-      <button id="how-to-play-btn">How to Play</button>
+    <div id="notification-wrapper">
+      <div id="notification"></div>
+    </div>
+    <!-- Word Length Change -->
+    <div id="word-length-modal" class="modal">
+      <div class="modal-content">
+        <h2>Choose Word Length</h2>
+        <select id="word-length-selector">
+          <option value="4">4 Letters</option>
+          <option value="5" selected>5 Letters</option>
+          <option value="6">6 Letters</option>
+        </select>
+        <br />
+        <br />
+        <button id="start-game-btn" class="start-game">Start Game</button>
+      </div>
     </div>
     <div id="container">
-      <div id="title">
-        <h1 class="name">"Words"</h1>
+      <div id="header">
+        <div class="nav-buttons">
+          <a href="{% url 'index' %}" class="nav-btn">Home</a>
+          <button id="how-to-play-btn" class="nav-btn">How to Play ▼</button>
+          <button id="change-length-btn" class="nav-btn">Change Length</button>
+          <button id="settings-btn" class="nav-btn">⚙</button>
+        </div>
+        <div class="logo-title">
+          <h1 class="name">WORDS</h1>
+        </div>
       </div>
       <div id="streak">
         <h3>Streak:</h3>
       </div>
-      <!--Board Screen-->
       <div id="board-container">
         <div id="board"></div>
       </div>
-      <!--Keyboard-->
       <div id="keyboard-container">
         <div class="keyboard-row">
           <button data-key="q">q</button>
@@ -64,24 +85,30 @@
         </div>
       </div>
     </div>
-    <!--How to Play information-->
     <div id="how-to-play-text" class="side-panel hidden">
-      <h3>How to Play "Words"!</h3>
-      <p>Guess the 5-letter secret word in 6 tries or fewer.</p>
-      <p>Try to guess the word in the least number of attempts</p>
-      <p>Keep the longest daily streak for guessing the word correctly</p>
+      <h3>How to Play WORDS</h3>
+      <p>Guess the secret word in 6 tries or fewer.</p>
+      <p>Try to guess the word in the least number of attempts.</p>
+      <p>Keep the longest daily streak for guessing the word correctly.</p>
       <br />
       <h4>How to Play</h4>
       <p>
-        Each guess must be a valid 5-letter English word. Press Enter to submit a guess.
+        Each guess must be a valid English word of correct length. Press Enter to submit a guess.
         After each guess, the color of the tiles will change to show how close your guess was to the word.
       </p>
       <br />
       <ul>
         <li>Green: The letter is correct and in the correct position.</li>
         <li>Yellow: The letter is in the word but in the wrong position.</li>
-        <li>White: The letter is not in the word at all.</li>
+        <li>Gray: The letter is not in the word at all.</li>
       </ul>
+      <br />
+      <h4>Hard Mode</h4>
+      <p>
+        Hints that you get (green and yellow positionings) must be used in your subsequent guesses.
+        Note that grey letters can still be used, and that you are free to put yellow letters in the
+        same spot again.
+      </p>
       <br />
       <h4>Additional Rules</h4>
       <p>
@@ -90,5 +117,46 @@
         You have exactly 6 attempts to guess the word correctly.
       </p>
     </div>
+    <div id="end-screen" class="end-screen hidden">
+      <div class="end-content">
+        <h2 id="end-title"></h2>
+        <p id="end-message"></p>
+        <div id="end-guesses"></div>
+        <button id="restart-btn">Play Again</button>
+      </div>
+    </div>
+    <div id="settings" class="settings-screen hidden">
+      <div class="settings-content">
+        <h2>Settings</h2>
+        <h4>Sound Settings</h4>
+        <label for="volume">Volume:</label>
+        <input type="range" id="volume" min="0" max="100" value="50" />
+        <label>
+          <input type="checkbox" id="mute-toggle" />
+          Mute
+        </label>
+        <h4>Light/Dark mode</h4>
+        <label>
+          <input type="checkbox" id="dark-mode-toggle" />
+          Enable Light Mode
+        </label>
+        <h4>Colorblind mode</h4>
+        <label>
+          <input type="checkbox" id="colorblind-toggle" />
+          Enable Colorblind Mode
+        </label>
+        <h4>Hard Mode</h4>
+        <label>
+          <input type="checkbox" id="hard-mode-toggle" />
+          Enable Hard Mode
+        </label>
+      </div>
+    </div>
+    <script>
+      const urlParams = new URLSearchParams(window.location.search);
+      const mode = urlParams.get('mode');
+      window.gameMode = mode;
+    </script>
+    <script src="game.js" defer></script>
   </body>
 </html>
