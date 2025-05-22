@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from chigame.achievements.models import Achievement, UserAchievement
+from chigame.chat.models import LiveChat
 from chigame.games.models import (
     Category,
     Chat,
@@ -175,3 +176,11 @@ class GameReviewStatsSerializer(serializers.Serializer):
     average_rating = serializers.DecimalField(max_digits=3, decimal_places=2, required=False)
     popularity = serializers.IntegerField()
     read_only_fields = ["id", "created_at", "user", "tournament"]
+
+
+class LiveChatSerializer(serializers.ModelSerializer):
+    users = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+
+    class Meta:
+        model = LiveChat
+        fields = ["id", "name", "users"]
