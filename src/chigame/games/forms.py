@@ -1,7 +1,18 @@
 from django import forms
 from django.core.validators import MaxValueValidator, MinValueValidator
 
-from .models import Game, InteractiveFictionGame, Lobby, Review
+from .models import Game, InteractiveFictionGame, Lobby, Review, Tournament
+
+
+class TournamentForm(forms.ModelForm):
+    class Meta:
+        model = Tournament
+        fields = "__all__"
+        widgets = {
+            "description": forms.Textarea(attrs={"maxlength": 1000}),
+            "rules": forms.Textarea(attrs={"maxlength": 1000}),
+            "draw_rules": forms.Textarea(attrs={"maxlength": 1000}),
+        }
 
 
 class GameForm(forms.ModelForm):
