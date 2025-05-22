@@ -6,7 +6,7 @@ from . import views
 game_patterns = [
     path("", views.GameListView.as_view(), name="api-game-list"),
     path("<int:pk>/", views.GameDetailView.as_view(), name="api-game-detail"),
-    path("<int:pk>/categories/", views.GameCategoriesAPIView.as_view(), name="api-game-categories"),
+    path("<int:pk>/categories/", views.GameCategoriesAPIView.as_view(), name="api-game-asdcategories"),
     path("<int:pk>/mechanics/", views.GameMechanicsAPIView.as_view(), name="api-game-mechanics"),
     path("<int:pk>/reviews/", views.GameReviewListView.as_view(), name="api-game-reviews"),
     path("<int:pk>/reviews/create/", views.ReviewCreateView.as_view(), name="api-game-review-create"),
@@ -18,6 +18,7 @@ game_patterns = [
         name="api-user-achievement-assignment",
     ),
     path("<int:pk>/achievements/create/", views.AchievementCreateView.as_view(), name="api-game-achievement-create"),
+    path("<int:game_id>/scores/", views.MetricScoreView.as_view(), name="api-game-submit-score"),
     path("<int:pk>/popups/", views.GamePopupsAPIView.as_view(), name="api-game-popups"),
     path("data/", views.GameDataListView.as_view(), name="api-game-data-list"),
     path("<int:game_id>/data/<str:key>/", views.GameDataDetailView.as_view(), name="api-game-data-detail"),
@@ -34,6 +35,7 @@ user_patterns = [
     path("<slug:slug>/", views.UserDetailView.as_view(), name="api-user-detail"),
     path("<slug:slug>/groups/", views.UserGroupsView.as_view(), name="api-user-groups"),
     path("<int:pk>/friends/", views.UserFriendsAPIView.as_view(), name="api-user-friends"),
+    path("<int:pk>/achievements/", views.UserAchievementListView.as_view(), name="api-user-achievements"),
 ]
 
 tournament_patterns = [

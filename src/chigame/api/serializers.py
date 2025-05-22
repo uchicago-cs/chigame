@@ -14,6 +14,7 @@ from chigame.games.models import (
     Tournament,
     User,
 )
+from chigame.leaderboards.models import MetricScore
 from chigame.users.models import Group
 
 
@@ -123,13 +124,28 @@ class ReviewSerializer(serializers.ModelSerializer):
 class UserAchievementSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserAchievement
-        fields = ["id", "user", "pinned", "date_earned", "progress"]
+        fields = ["id", "user", "pinned", "date_earned", "last_updated", "progress"]
 
 
 class AchievementSerializer(serializers.ModelSerializer):
     class Meta:
         model = Achievement
         fields = ["id", "name", "description", "rarity", "threshold"]
+
+
+class MetricScoreSerializer(serializers.ModelSerializer):
+    metric_id = serializers.IntegerField(write_only=True)
+    match_id = serializers.IntegerField(write_only=True)
+
+    class Meta:
+        model = MetricScore
+        fields = ["id", "score", "user", "metric", "match", "leaderboard_entry", "metric_id", "match_id"]
+        read_only_fields = ["id", "user", "metric", "match", "leaderboard_entry"]
+
+    def validate_score(self, value):
+        if value < 0:
+            raise serializers.ValidationError("Score must be a positive integer.")
+        return value
 
 
 class PopUpInfoSerializer(serializers.Serializer):
