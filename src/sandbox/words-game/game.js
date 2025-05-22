@@ -258,7 +258,7 @@ async function handleSubmitWord() {
     // Calculate the colors using the Wordle algorithm
     const tileColors = calculateTileColors(currentWordArr, word);
 
-  
+
     tileColors.forEach((color, index) => {//add letters to colors array for hard mode
         if (color === COLOR_CORRECT) {
             greenLetters[index] = currentWordArr[index];
