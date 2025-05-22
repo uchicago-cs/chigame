@@ -1,8 +1,7 @@
 from django.shortcuts import get_object_or_404, render
 
-from chigame.games.models import Game
-from chigame.leaderboards.models import LeaderboardEntry
-from chigame.users.models import UserProfile
+from chigame.games.models import Game, UserProfile
+from chigame.leaderboards.models import LeaderboardEntry, Region
 
 
 def leaderboard_view(request, game_id):
@@ -12,10 +11,26 @@ def leaderboard_view(request, game_id):
     if not leaderboard:
         return render(request, "leaderboards/empty.html", {"game": game})
 
-    entries = LeaderboardEntry.objects.filter(leaderboard=leaderboard).select_related("user").order_by("rank")
+    entries = (
+        LeaderboardEntry.objects.filter(leaderboard=leaderboard).select_related("user", "region").order_by("rank")
+    )
+
+    region_param = request.GET.get("region")
+    if region_param:
+        entries = entries.filter(region__region=region_param)
+
+    available_regions = Region.objects.values_list("region", flat=True).distinct()
 
     return render(
-        request, "leaderboards/leaderboard.html", {"game": game, "leaderboard": leaderboard, "entries": entries}
+        request,
+        "leaderboards/leaderboard.html",
+        {
+            "game": game,
+            "leaderboard": leaderboard,
+            "entries": entries,
+            "regions": available_regions,
+            "selected_region": region_param,
+        },
     )
 
 
