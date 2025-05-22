@@ -49,7 +49,7 @@ def award_achievement(request):
     # Assigns the user achievement to the currently logged in user
     if request.method == "POST":
         if request.user.is_authenticated:
-            popup = "F" # Variable to decide whether a popup will occur
+            popup = "F"  # Variable to decide whether a popup will occur
             game = Game.objects.get_or_create(
                 name="Demo Game",
                 description="Game for demonstrating achievements.",
