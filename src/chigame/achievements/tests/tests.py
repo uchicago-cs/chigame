@@ -6,7 +6,7 @@ from django.utils import timezone
 from chigame.achievements.models import UserAchievement
 from chigame.achievements.views import get_recent_achievements
 
-from .factories import MatchFactory, UserAchievementFactory, UserFactory
+from .factories import CompletedUserAchievementFactory, MatchFactory, UserFactory
 
 
 @pytest.mark.django_db
@@ -23,7 +23,7 @@ def test_get_recent_achievements():
     user = UserFactory()
     # Create 6 achievements with different dates
     for i in range(6):
-        UserAchievementFactory(user=user, date_earned=timezone.now() - timedelta(days=i))
+        CompletedUserAchievementFactory(user=user, date_earned=timezone.now() - timedelta(days=i))
 
     recent = get_recent_achievements(user.id)
 
@@ -47,7 +47,7 @@ def test_get_recent_achievements_3():
     user = UserFactory()
     # Create 3 achievements with different dates
     for i in range(3):
-        UserAchievementFactory(user=user, date_earned=timezone.now() - timedelta(days=i))
+        CompletedUserAchievementFactory(user=user, date_earned=timezone.now() - timedelta(days=i))
 
     recent = get_recent_achievements(user.id)
 

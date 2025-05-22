@@ -48,8 +48,16 @@ class UserAchievement(models.Model):
         return f"{self.user} - {self.achievement}"
 
     def clean(self):
-        if self.date_earned and self.date_earned != self.last_updated:
-            raise ValidationError({"date_earned": "date_earned, if not null, cannot differ from last_updated"})
+        if self.date_earned and self.date_earned > self.last_updated:
+            # If the date earned is added, that constitutes an update that should be reflected in last_updated
+            self.last_updated = self.date_earned
+        elif self.date_earned < self.last_updated:
+            # It's not clear how this scenario would come about
+            raise ValidationError({"self.date_earned": "date_earned cannot be before last_updated"})
+        if self.progress < 0 or self.progress - self.achievement.threshold > 0.5:
+            raise ValidationError(
+                {"self.progress": "progress must be between 0 and the achievement's threshold, inclusive"}
+            )
 
     def save(self, *args, **kwargs):
         # This approach was borrowed from games/models.py
