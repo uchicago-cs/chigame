@@ -71,6 +71,10 @@ document.addEventListener('DOMContentLoaded', function () {
         const titleElement = achievementDiv.querySelector('.achievement-info h4');
         const descElement = achievementDiv.querySelector('.achievement-info .achievement-desc');
 
+        // Get the game name for this card
+        const gameNameElement = card.querySelector('.game-title');
+        const gameNameText = gameNameElement ? gameNameElement.textContent.toLowerCase() : '';
+
         // Get text content, accounting for "???" spoilers
         const titleText = titleElement ? titleElement.textContent.toLowerCase() : '';
         const descText = descElement ? descElement.textContent.toLowerCase() : '';
@@ -78,10 +82,10 @@ document.addEventListener('DOMContentLoaded', function () {
         // Check text match
         let textSearchSucceeded = true; // Assume true if search box is empty
         if (searchText !== '') {
-          textSearchSucceeded = titleText.includes(searchText) || descText.includes(searchText);
+          textSearchSucceeded = titleText.includes(searchText) ||
+                     descText.includes(searchText) ||
+                     gameNameText.includes(searchText);
         }
-
-        // Check status match based on CSS classes
         let statusFilterSucceeded = false;
         if (selectedStatus === 'all') {
           statusFilterSucceeded = true;
