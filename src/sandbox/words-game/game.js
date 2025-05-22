@@ -33,10 +33,10 @@ window.addEventListener("load", async () => {
         setupKeyboard();
     });
 
-
     // Attach the single physical keyboard handler once after DOM is loaded
     document.addEventListener('keydown', gameKeyDownHandler);
 });
+
 
 //Buttons (How To Play and Settings)!
 const howToPlayBtn = document.getElementById('how-to-play-btn');
@@ -348,6 +348,25 @@ async function handleSubmitWord() {
 
     // Calculate the colors using the Wordle algorithm
     const tileColors = calculateTileColors(currentWordArr, word);
+    tileColors.forEach((color, index) => {//add letters to colors array for hard mode
+        if (color === COLOR_CORRECT) {
+            greenLetters[index] = currentWordArr[index];
+        }
+        if (color === COLOR_OFF) {
+            yellowLetters.add(currentWordArr[index]);
+        }
+    });
+
+
+
+    tileColors.forEach((color, index) => {//add letters to colors array for hard mode
+        if (color === COLOR_CORRECT) {
+            greenLetters[index] = currentWordArr[index];
+        }
+        if (color === COLOR_OFF) {
+            yellowLetters.add(currentWordArr[index]);
+        }
+    });
 
     tileColors.forEach((color, index) => {//add letters to colors array for hard mode
         if (color === COLOR_CORRECT) {
@@ -514,6 +533,11 @@ document.getElementById("colorblind-toggle").addEventListener("change", function
 document.getElementById("hard-mode-toggle").addEventListener("change", function () {
     document.body.classList.toggle("hard-mode", this.checked);
 });
+
+document.getElementById("hard-mode-toggle").addEventListener("change", function () {
+    document.body.classList.toggle("hard-mode", this.checked);
+});
+
 
 
 //Sound
