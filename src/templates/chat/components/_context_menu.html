@@ -43,6 +43,10 @@
     const input = document.getElementById('id_message_send_input');
     input.focus();
     hideContextMenu();
+
+    document.getElementById('replying-to-preview').classList.remove('d-none');
+    document.getElementById('preview-username').textContent = replyToUsername;
+    document.getElementById('preview-content').textContent = replyToContent;
   }
 
   /**

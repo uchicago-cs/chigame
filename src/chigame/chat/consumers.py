@@ -136,7 +136,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         reply_to = None
         if reply_to_id:
             try:
-                reply_to = LiveChatMessage.objects.get(id=reply_to_id)
+                reply_to = await database_sync_to_async(LiveChatMessage.objects.get)(id=reply_to_id)
             except LiveChatMessage.DoesNotExist:
                 reply_to = None
         # Save the message to the database
@@ -156,43 +156,48 @@ class ChatConsumer(AsyncWebsocketConsumer):
             text_data (str): The message data received from the client.
         """
         text_data_json = json.loads(text_data)
-        message = text_data_json["message"]
-        user_id = text_data_json["user_id"]
-        reply_to_id = text_data_json.get("reply_to")
 
-        # Filter message for profanity
+        msg_type = text_data_json.get("type", "send")
+        if msg_type == "send":
+            message = text_data_json["message"]
+            user_id = text_data_json["user_id"]
+            reply_to_id = text_data_json.get("reply_to")
+
+        # Apply profanity filter to message
         filtered_message = self.profanity_filter.censor_message(message)
 
         # Save message to database once when first received from client
-        username, message_id = await self.save_message(self.chat_id, user_id, message, reply_to_id)
+        username, message_id = await self.save_message(self.chat_id, user_id, filtered_message, reply_to_id)
 
-        # Get reply information if available
+        # Get reply info if applicable
         reply_to_username = None
         reply_to_content = None
         if reply_to_id:
             try:
-                reply_message = await database_sync_to_async(LiveChatMessage.objects.select_related("user").get)(
-                    id=reply_to_id
-                )
-                reply_to_username = reply_message.user.username or reply_message.user.email
-                reply_to_content = reply_message.content
+                reply_to = await database_sync_to_async(LiveChatMessage.objects.get)(id=reply_to_id)
+                reply_to_username = await database_sync_to_async(lambda: reply_to.user.username)()
+                reply_to_content = reply_to.content  # This is safe — already loaded
             except LiveChatMessage.DoesNotExist:
-                reply_to_id = None
+                reply_to = None
 
-        # Send the filtered message to the group
-        await self.channel_layer.group_send(
-            self.room_group_name,
-            {
-                "type": "sendMessage",
-                "message": filtered_message,
-                "user_id": user_id,
-                "username": username,
-                "message_id": message_id,
-                "reply_to": reply_to_id,
-                "reply_to_username": reply_to_username,
-                "reply_to_content": reply_to_content,
-            },
-        )
+            if reply_to_id:
+                # Logic to fetch reply details could be added here if needed
+                pass
+
+            # Send the filtered message to the group
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    "type": "sendMessage",
+                    "message": filtered_message,
+                    "user_id": user_id,
+                    "username": username,
+                    "message_id": message_id,
+                    "reply_to": reply_to_id,
+                    "reply_to_username": reply_to_username,
+                    "reply_to_content": reply_to_content,
+                },
+            )
 
     async def sendMessage(self, event):
         """
