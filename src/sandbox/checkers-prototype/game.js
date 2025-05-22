@@ -54,13 +54,11 @@ let vsEasyBot = true;
 // ----------------------------------------------------------------------------
 
 // ---INIT FUNCTIONS-----------------------------------------------------------
-
 function preload() {
   // load in the soundeffects
   this.load.audio('slide', 'sfx/slide.mp3');
   this.load.audio('hint', 'sfx/bling.mp3');
 }
-
 
 function create() {
   // Store reference to the scene
@@ -372,8 +370,20 @@ function movePiece(piece, moveX, moveY) {
   // Move the piece
   piece.x = moveX;
   piece.y = moveY;
-  piece.sprite.x = MARGIN + piece.x * TILE_SIZE + TILE_SIZE / 2;
-  piece.sprite.y = MARGIN + piece.y * TILE_SIZE + TILE_SIZE / 2;
+  const newX = MARGIN + moveX * TILE_SIZE + TILE_SIZE / 2;
+  const newY = MARGIN + moveY * TILE_SIZE + TILE_SIZE / 2;
+
+  // Animate the piece movement
+  checkers.scene.scenes[0].tweens.add({
+    targets: piece.sprite,
+    x: newX,
+    y: newY,
+    duration: 300, // having done some testing and playing, I think 300 ms is the best
+    // https://docs.phaser.io/phaser/concepts/tweens
+    // https://rexrainbow.github.io/phaser3-rex-notes/docs/site/ease-function/
+    ease: 'Power3',
+  });
+
 
   // Play move sound effect
   piece.sprite.scene.sound.play('slide');
