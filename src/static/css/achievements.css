@@ -78,7 +78,6 @@
       z-index: 2;
     }
 
-
     .recent-achievements-box {
       position: absolute;
       top: 21%;
@@ -90,7 +89,6 @@
       overflow: hidden;
       z-index: 1;
     }
-
 
     .recent-achievements-content {
       padding: 10px;
