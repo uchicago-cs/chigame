@@ -1170,3 +1170,109 @@ class JWTAuthenticationTests(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION="Bearer invalid_token_string")
         response = self.client.post(self.protected_url, self.protected_data, format="json")
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+class GameDataTests(APITestCase):
+    def setUp(self):
+        self.user1 = UserFactory()
+        self.user2 = UserFactory()
+
+        self.game1 = GameFactory()
+        self.game2 = GameFactory()
+
+        self.list_url = reverse("api-game-data-list")
+
+        self.test_data = {"game": self.game1.id, "key": "test_key", "value": "test_value"}
+
+        self.client.force_authenticate(user=self.user1)
+        self.client.post(self.list_url, self.test_data)
+        self.client.post(self.list_url, {"game": self.game1.id, "key": "another_key", "value": "another_value"})
+        self.client.post(self.list_url, {"game": self.game2.id, "key": "game2_key", "value": "game2_value"})
+
+        self.client.force_authenticate(user=self.user2)
+        self.client.post(self.list_url, {"game": self.game1.id, "key": "user2_key", "value": "user2_value"})
+
+        self.client.force_authenticate(user=None)
+
+    def test_unauthenticated_access_rejected(self):
+        # list attempt
+        response = self.client.get(self.list_url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+        # create attempt
+        response = self.client.post(self.list_url, self.test_data)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+        # access detail endpoint
+        detail_url = reverse("api-game-data-detail", args=[self.game1.id, "test_key"])
+        response = self.client.get(detail_url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_list_gamedata(self):
+        self.client.force_authenticate(user=self.user1)
+        response = self.client.get(self.list_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data["results"]), 3)
+
+    def test_filter_by_game(self):
+        self.client.force_authenticate(user=self.user1)
+        response = self.client.get(f"{self.list_url}?game={self.game1.id}")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data["results"]), 2)
+
+    def test_create_gamedata(self):
+        self.client.force_authenticate(user=self.user1)
+        new_data = {"game": self.game1.id, "key": "new_key", "value": "new_value"}
+        response = self.client.post(self.list_url, new_data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data["key"], "new_key")
+        self.assertEqual(response.data["value"], "new_value")
+
+    def test_update_existing_by_create(self):
+        self.client.force_authenticate(user=self.user1)
+        updated_data = {"game": self.game1.id, "key": "test_key", "value": "updated_value"}
+        response = self.client.post(self.list_url, updated_data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # verify updated value
+        detail_url = reverse("api-game-data-detail", args=[self.game1.id, "test_key"])
+        response = self.client.get(detail_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["value"], "updated_value")
+
+        # check the count didn't increase
+        response = self.client.get(self.list_url)
+        self.assertEqual(len(response.data["results"]), 3)
+
+    def test_retrieve_gamedata(self):
+        self.client.force_authenticate(user=self.user1)
+        detail_url = reverse("api-game-data-detail", args=[self.game1.id, "test_key"])
+        response = self.client.get(detail_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["key"], "test_key")
+        self.assertEqual(response.data["value"], "test_value")
+
+    def test_update_gamedata_put(self):
+        self.client.force_authenticate(user=self.user1)
+        detail_url = reverse("api-game-data-detail", args=[self.game1.id, "test_key"])
+        update_data = {"game": self.game1.id, "key": "test_key", "value": "updated_via_put"}
+        response = self.client.put(detail_url, update_data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["value"], "updated_via_put")
+
+    def test_update_gamedata_patch(self):
+        self.client.force_authenticate(user=self.user1)
+        detail_url = reverse("api-game-data-detail", args=[self.game1.id, "test_key"])
+        patch_data = {"value": "updated_via_patch"}
+        response = self.client.patch(detail_url, patch_data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["value"], "updated_via_patch")
+
+    def test_delete_gamedata(self):
+        self.client.force_authenticate(user=self.user1)
+        detail_url = reverse("api-game-data-detail", args=[self.game1.id, "test_key"])
+        response = self.client.delete(detail_url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+        response = self.client.get(detail_url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
