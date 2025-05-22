@@ -4,9 +4,18 @@
   <h1>{{ leaderboard.name }}</h1>
 
   <div style="margin-bottom: 20px;">
-    <a href="{% url 'bar_chart' game.id %}" class="btn btn-primary {% if 'Points' in score_metric_name %}active{% endif %}">Points</a>
-    <a href="{% url 'top_time_played_bar_chart' game.id %}" class="btn btn-success {% if 'Time' in score_metric_name %}active{% endif %}">Time Played</a>
-    <a href="{% url 'top_games_won_bar_chart' game.id %}" class="btn btn-warning {% if 'Games Won' in score_metric_name %}active{% endif %}">Games Won</a>
+    <a href="{% url 'bar_chart' game.id %}"
+       class="btn {% if 'Points' in score_metric_name %}btn-dark active{% else %}btn-outline-dark{% endif %}">
+       Points
+    </a>
+    <a href="{% url 'top_time_played_bar_chart' game.id %}"
+       class="btn {% if 'Time' in score_metric_name %}btn-dark active{% else %}btn-outline-dark{% endif %}">
+       Time Played
+    </a>
+    <a href="{% url 'top_games_won_bar_chart' game.id %}"
+       class="btn {% if 'Games Won' in score_metric_name %}btn-dark active{% else %}btn-outline-dark{% endif %}">
+       Games Won
+    </a>
   </div>
 
   {% if leaderboard_data %}
