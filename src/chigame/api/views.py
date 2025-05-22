@@ -3,6 +3,7 @@ from django.shortcuts import get_object_or_404, redirect
 from django.views import View
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, status
+from rest_framework.authentication import SessionAuthentication
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import SAFE_METHODS, BasePermission, IsAuthenticated, IsAuthenticatedOrReadOnly
@@ -23,6 +24,7 @@ from chigame.api.serializers import (
     MechanicSerializer,
     MessageFeedSerializer,
     MessageSerializer,
+    MetricScoreSerializer,
     PopUpInfoSerializer,
     ReviewSerializer,
     UserAchievementSerializer,
@@ -31,7 +33,8 @@ from chigame.api.serializers import (
 from chigame.api.spam_utils import is_spam
 from chigame.games.models import Feedback, Game, GameData, Lobby, Message, Review, Tournament
 from chigame.games.simulation_utils import run_complete_tournament_simulation
-from chigame.users.models import Group, User
+from chigame.leaderboards.models import LeaderboardEntry, Match, Metric, MetricScore
+from chigame.users.models import Group, User, UserProfile
 
 
 # Helper function to get user from slug
@@ -376,6 +379,50 @@ class AchievementCreateView(generics.CreateAPIView):
         )
 
 
+class MetricScoreView(generics.ListCreateAPIView):
+    """
+    View to handle MetricScore creation and retrieval.
+    """
+
+    serializer_class = MetricScoreSerializer
+    authentication_classes = [SessionAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        game_id = self.kwargs["game_id"]
+        return MetricScore.objects.filter(metric__game=game_id)
+
+    def perform_create(self, serializer):
+        game_id = self.kwargs["game_id"]
+
+        user = self.request.user
+        user_profile, created = UserProfile.objects.get_or_create(user=user, defaults={})
+        game = get_object_or_404(Game, id=game_id)
+
+        metric_id = self.request.data.get("metric_id")
+        match_id = self.request.data.get("match_id")
+
+        metric = get_object_or_404(Metric, id=metric_id, game=game)
+        match = get_object_or_404(Match, id=match_id, game=game)
+
+        leaderboard = metric.game.leaderboards.first()
+        if not leaderboard:
+            raise ValidationError("No leaderboard found for this game.")
+
+        leaderboard_entry, _ = LeaderboardEntry.objects.get_or_create(
+            leaderboard=leaderboard,
+            user=user_profile,
+            defaults={"rank": 0},
+        )
+
+        serializer.save(
+            user=user_profile,
+            metric=metric,
+            match=match,
+            leaderboard_entry=leaderboard_entry,
+        )
+
+
 class GamePopupsAPIView(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
@@ -515,6 +562,14 @@ class GameReviewStatsAPIView(APIView):
         }
 
         return Response(GameReviewStatsSerializer(data).data)
+
+
+class UserAchievementDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = UserAchievement.objects.all()
+    serializer_class = UserAchievementSerializer
+
+    def perform_update(self, serializer):
+        serializer.save()
 
 
 class UserAchievementListView(APIView):
