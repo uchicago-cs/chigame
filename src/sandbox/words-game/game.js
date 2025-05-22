@@ -865,42 +865,6 @@ volumeSlider.addEventListener("input", function () {
     console.log("Volume set to:", volume);
 });
 
-function saveGameState(){
-    const gameState = {
-        guessedWords,
-        word,
-        wordLength,
-        guessedWordCount,
-        availableSpace,
-        greenLetters,
-        yellowLetters: Array.from(yellowLetters),
-        gameOver,
-        gameWon
-    };
-    const key = mode === 'solo' ? 'soloGameState' : 'dailyGameState';
-    localStorage.setItem(key, JSON.stringify(gameState));
-}
-
-function restoreGameState(){
-    const key = mode === 'solo' ? 'soloGameState' : 'dailyGameState';
-    const gameStateJSON = localStorage.getItem(key);
-    if(!gameStateJSON){
-        return false;
-    }
-    const parsedGS = JSON.parse(gameStateJSON);
-    guessedWords = parsedGS.guessedWords;
-    word = parsedGS.word;
-    wordLength = parsedGS.wordLength;
-    guessedWordCount = parsedGS.guessedWordCount;
-    availableSpace = parsedGS.availableSpace;
-    greenLetters = parsedGS.greenLetters;
-    yellowLetters = new Set(parsedGS.yellowLetters)
-    gameOver = parsedGS.gameOver;
-    gameWon = parsedGS.gameWon ?? false;
-
-    return true;
-}
-
 // Function to handle closing animation with a delay
 function animateClose(element, onComplete = null) {
     // Ensure we trigger a reflow first to ensure animation starts from current state
