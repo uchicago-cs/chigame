@@ -1,12 +1,19 @@
+import asyncio
 import json
 
 from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
+from django.core.cache import cache
 
 from chigame.users.models import User
 
 from .models import LiveChat, LiveChatMessage
 from .utils import ProfanityFilter
+
+# Rate limiting constants
+MESSAGES_PER_SECOND = 1  # Maximum messages allowed per second
+RATE_LIMIT_WINDOW_SECONDS = 1  # Time window for rate limiting in seconds
+RATE_LIMIT_KEY_PREFIX = "chat_rate_limit:"
 
 
 class ChatConsumer(AsyncWebsocketConsumer):
@@ -85,8 +92,27 @@ class ChatConsumer(AsyncWebsocketConsumer):
         if hasattr(self, "room_group_name"):
             await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
 
-    @database_sync_to_async
-    def save_message(self, chat_id, user_id, message, reply_to_id=None):
+    async def check_rate_limit(self, user_id):
+        """
+        Checks if the user has exceeded their message rate limit.
+
+        Args:
+            user_id (int): The ID of the user.
+
+        Returns:
+            bool: True if user is within rate limit, False otherwise.
+        """
+        cache_key = f"{RATE_LIMIT_KEY_PREFIX}{user_id}"
+
+        # Initialize the cache key if it does not exist
+        if not cache.add(cache_key, 0, RATE_LIMIT_WINDOW_SECONDS):
+            # Atomically increment the message count
+            if cache.incr(cache_key) >= MESSAGES_PER_SECOND:
+                return False
+
+        return True
+
+    async def save_message(self, chat_id, user_id, message, reply_to_id=None):
         """
         Saves the message to the database. This is called when a message is received from the client.
 
@@ -95,9 +121,18 @@ class ChatConsumer(AsyncWebsocketConsumer):
             user_id (int): The ID of the user.
             message (str): The message to save.
             reply_to_id (int, optional): The ID of the message being replied to.
+
+        Returns:
+            tuple: (username, bool) - The username and whether the message was saved.
         """
-        chat = LiveChat.objects.get(id=chat_id)
-        user = User.objects.get(id=user_id)
+        # Check rate limit first
+        if not await self.check_rate_limit(user_id):
+            return None, False
+
+        chat, user = await asyncio.gather(
+            database_sync_to_async(LiveChat.objects.get)(id=chat_id),
+            database_sync_to_async(User.objects.get)(id=user_id),
+        )
         reply_to = None
         if reply_to_id:
             try:
@@ -105,16 +140,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
             except LiveChatMessage.DoesNotExist:
                 reply_to = None
         # Save the message to the database
-        message_obj = LiveChatMessage.objects.create(live_chat=chat, user=user, content=message, reply_to=reply_to)
+        message_obj = await database_sync_to_async(LiveChatMessage.objects.create)(
+            live_chat=chat, user=user, content=message, reply_to=reply_to
+        )
 
-        # Return the display name and message ID
-        return {
-            "username": user.username or user.email,
-            "message_id": message_obj.id,
-            "reply_to": reply_to_id,
-            "reply_to_username": reply_to.user.username if reply_to else None,
-            "reply_to_content": reply_to.content if reply_to else None,
-        }
+        # Return the display name (username or email)
+        return user.username or user.email, message_obj.id
 
     async def receive(self, text_data):
         """
@@ -132,8 +163,21 @@ class ChatConsumer(AsyncWebsocketConsumer):
         # Filter message for profanity
         filtered_message = self.profanity_filter.censor_message(message)
 
-        # Save original message to the database and get message metadata
-        message_data = await self.save_message(self.chat_id, user_id, message, reply_to_id)
+        # Save message to database once when first received from client
+        username, message_id = await self.save_message(self.chat_id, user_id, message, reply_to_id)
+
+        # Get reply information if available
+        reply_to_username = None
+        reply_to_content = None
+        if reply_to_id:
+            try:
+                reply_message = await database_sync_to_async(LiveChatMessage.objects.select_related("user").get)(
+                    id=reply_to_id
+                )
+                reply_to_username = reply_message.user.username or reply_message.user.email
+                reply_to_content = reply_message.content
+            except LiveChatMessage.DoesNotExist:
+                reply_to_id = None
 
         # Send the filtered message to the group
         await self.channel_layer.group_send(
@@ -142,11 +186,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 "type": "sendMessage",
                 "message": filtered_message,
                 "user_id": user_id,
-                "username": message_data["username"],
-                "message_id": message_data["message_id"],
-                "reply_to": message_data["reply_to"],
-                "reply_to_username": message_data["reply_to_username"],
-                "reply_to_content": message_data["reply_to_content"],
+                "username": username,
+                "message_id": message_id,
+                "reply_to": reply_to_id,
+                "reply_to_username": reply_to_username,
+                "reply_to_content": reply_to_content,
             },
         )
 
