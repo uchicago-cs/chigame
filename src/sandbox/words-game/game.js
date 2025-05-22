@@ -257,6 +257,8 @@ async function handleSubmitWord() {
 
     // Calculate the colors using the Wordle algorithm
     const tileColors = calculateTileColors(currentWordArr, word);
+
+  
     tileColors.forEach((color, index) => {//add letters to colors array for hard mode
         if (color === COLOR_CORRECT) {
             greenLetters[index] = currentWordArr[index];
@@ -422,6 +424,7 @@ document.getElementById("colorblind-toggle").addEventListener("change", function
 document.getElementById("hard-mode-toggle").addEventListener("change", function () {
     document.body.classList.toggle("hard-mode", this.checked);
 });
+
 
 
 //Sound
