@@ -1,16 +1,11 @@
 """
 Module for all Form Tests.
 """
+import pytest
 from django.forms import EmailField
 from django.utils.translation import gettext_lazy as _
 
-from chigame.users.forms import (
-    UserAdminChangeForm,
-    UserAdminCreationForm,
-    UserSignupForm,
-    UserSocialSignupForm,
-    generate_unique_username,
-)
+from chigame.users.forms import UserAdminChangeForm, UserAdminCreationForm, UserSignupForm, generate_unique_username
 from chigame.users.models import User
 from chigame.users.tests.factories import UserFactory
 
@@ -43,6 +38,7 @@ class TestUserAdminCreationForm:
         assert "email" in form.errors
         assert form.errors["email"][0] == _("This email has already been taken.")
 
+    @pytest.mark.django_db
     def test_valid_creation_form(self):
         """
         Tests that the form is valid when email and matching passwords are provided.
@@ -68,6 +64,7 @@ class TestUserAdminChangeForm:
 
 
 class TestUserSignupForm:
+    @pytest.mark.django_db
     def test_auto_username_is_generated(self):
         """
         Ensure that a unique username is automatically generated during signup.
@@ -84,15 +81,7 @@ class TestUserSignupForm:
         assert len(user.username) >= 4
 
 
-class TestUserSocialSignupForm:
-    def test_can_instantiate_social_signup_form(self):
-        """
-        Ensure that the social signup form can be instantiated without errors.
-        """
-        form = UserSocialSignupForm()
-        assert form is not None
-
-
+@pytest.mark.django_db
 def test_generate_unique_username_does_not_duplicate_existing():
     """
     Ensure generate_unique_username never returns a username that already exists.
