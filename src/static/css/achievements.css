@@ -42,8 +42,18 @@
     .large-avatar {
       font-size: 40px;
     }
-
-  .stats-container {
+    
+    .user-stats {
+      margin-top: -10px;
+      background-color: var(--card-bg);
+      padding: 10px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      width: 65%;
+    }
+    
+    .stats-container {
       display: flex;
       justify-content: space-between;
       margin-bottom: 20px;
