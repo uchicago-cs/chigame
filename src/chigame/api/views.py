@@ -498,3 +498,11 @@ class GameReviewStatsAPIView(APIView):
         }
 
         return Response(GameReviewStatsSerializer(data).data)
+
+
+class UserAchievementDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = UserAchievement.objects.all()
+    serializer_class = UserAchievementSerializer
+
+    def perform_update(self, serializer):
+        serializer.save()
