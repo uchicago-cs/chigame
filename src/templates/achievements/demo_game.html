@@ -63,13 +63,13 @@
 
 {% block content %}
   <body>
-    <button type="button" class="button button1">Click here</button>
-    <button type="button" class="button button2">Click here</button>
-    <button type="button" class="button button3">Click here</button>
-    <button type="button" class="button button4">Click here</button>
-    <button type="button" class="button button5">Click here</button>
     <form method="post" id="apiForm">
       {% csrf_token %}
+      <button type="submit" class="button button1">Click here</button>
+      <button type="submit" class="button button2">Click here</button>
+      <button type="submit" class="button button3">Click here</button>
+      <button type="submit" class="button button4">Click here</button>
+      <button type="submit" class="button button5">Click here</button>
       <button type="submit" class="button button6">Click here</button>
     </form>
     <script>
