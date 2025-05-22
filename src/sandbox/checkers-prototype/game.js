@@ -189,14 +189,14 @@ function create() {
       resetDrawOffer();
     }
   });
-  easyBot.textContent =  `Easy Bot: ${vsEasyBot ? 'ON' : 'OFF'}`;
+  easyBot.textContent = `Easy Bot: ${vsEasyBot ? 'ON' : 'OFF'}`;
   easyBot.addEventListener('click', () => {
     vsEasyBot = !vsEasyBot;
     easyBot.textContent = `Easy Bot: ${vsEasyBot ? 'ON' : 'OFF'}`;
   });
 }
 
-function update() {}
+function update() { }
 // ----------------------------------------------------------------------------
 
 // Draw the game board
@@ -504,8 +504,7 @@ function giveHint() {
     // way of calling a specific square on the board. For now, I just have it return
     // the row and col on the matrix.
     alert(
-      `Hint: Move ${currentPlayer === COLORS.red ? 'red' : 'black'} piece at (row ${
-        randomHint.piece.y
+      `Hint: Move ${currentPlayer === COLORS.red ? 'red' : 'black'} piece at (row ${randomHint.piece.y
       }, column ${randomHint.piece.x}) to (row ${randomHint.y}, column ${randomHint.x})`
     );
   } else {
@@ -584,8 +583,7 @@ function giveHint() {
     // way of calling a specific square on the board. For now, I just have it return
     // the row and col on the matrix.
     alert(
-      `Hint: Move ${currentPlayer === COLORS.red ? 'red' : 'black'} piece at (row ${
-        randomHint.piece.y
+      `Hint: Move ${currentPlayer === COLORS.red ? 'red' : 'black'} piece at (row ${randomHint.piece.y
       }, column ${randomHint.piece.x}) to (row ${randomHint.y}, column ${randomHint.x})`
     );
   } else {
@@ -609,7 +607,7 @@ function giveHint() {
     declineDrawBtn.style.display = 'none';
   }
   //if black and bot is on, schedule bot move
-  if (vsEasyBot && currentPlayer === COLORS.black){
+  if (vsEasyBot && currentPlayer === COLORS.black) {
     //delay so user has time to process bot movw after their own
     scene.time.delayedCall(300, easyBot, [scene], scene);
   }
@@ -702,58 +700,58 @@ document.addEventListener('DOMContentLoaded', () => {
 
 //return arr of legal moves for given player
 function getLegalMoves(color) {
-    //arr to store legal moves
-    const moves = [];
-    //moving up or down board?
-    const direction = color === COLORS.red ? -1 : 1;
+  //arr to store legal moves
+  const moves = [];
+  //moving up or down board?
+  const direction = color === COLORS.red ? -1 : 1;
 
-    //loop thru pieces
-    pieces.forEach(piece => {
-      if (piece.color !== color) return; //return for other p;layer peices
-      // simple moves
-      [-1, 1].forEach(diagonal => { //try L and R diagonals
-        const col = piece.x + diagonal; //new col
-        const row = piece.y + direction; //new row
-        if ( //check if mvoe is valid
-          col >= 0 && col < BOARD_SIZE && row >= 0 && row < BOARD_SIZE &&
-          !getPiece(col, row) && isValidMove(piece, col, row)) {
-          moves.push({ piece, x: col, y: row }); //add move to arr
-        }
-      });
-      // jump moves for captures
-      [-2, 2].forEach(jump => {
-        const jump_col = piece.x + jump;
-        const jump_row = piece.y + 2 * direction;
-        if (
-          jump_col >= 0 && jump_col < BOARD_SIZE && jump_row >= 0 && jump_row < BOARD_SIZE &&
-          !getPiece(jump_col, jump_row) && isValidMove(piece, jump_col, jump_row)) {
-          moves.push({ piece, x: jump_col, y: jump_row });
-        }
-      });
+  //loop thru pieces
+  pieces.forEach(piece => {
+    if (piece.color !== color) return; //return for other p;layer peices
+    // simple moves
+    [-1, 1].forEach(diagonal => { //try L and R diagonals
+      const col = piece.x + diagonal; //new col
+      const row = piece.y + direction; //new row
+      if ( //check if mvoe is valid
+        col >= 0 && col < BOARD_SIZE && row >= 0 && row < BOARD_SIZE &&
+        !getPiece(col, row) && isValidMove(piece, col, row)) {
+        moves.push({ piece, x: col, y: row }); //add move to arr
+      }
     });
+    // jump moves for captures
+    [-2, 2].forEach(jump => {
+      const jump_col = piece.x + jump;
+      const jump_row = piece.y + 2 * direction;
+      if (
+        jump_col >= 0 && jump_col < BOARD_SIZE && jump_row >= 0 && jump_row < BOARD_SIZE &&
+        !getPiece(jump_col, jump_row) && isValidMove(piece, jump_col, jump_row)) {
+        moves.push({ piece, x: jump_col, y: jump_row });
+      }
+    });
+  });
 
-    return moves;
-  }
+  return moves;
+}
 
 
-  // Easy bot: pick a random legal move and play it
+// Easy bot: pick a random legal move and play it
 function easyBot(scene) {
-    //get legal moves
-    //check if game over
-    //it not do a random legal move
-    const legalMoves = getLegalMoves(COLORS.black);
-    //if No legal moves
-    if (legalMoves.length === 0) {
-      console.log('Cant move');
-      return;
-    }
-    //get random move
-    const move = Phaser.Utils.Array.GetRandom(legalMoves);
-    //execute move
-    movePiece(move.piece, move.x, move.y);
-    // end bot's turn
-    endTurn(scene);
+  //get legal moves
+  //check if game over
+  //it not do a random legal move
+  const legalMoves = getLegalMoves(COLORS.black);
+  //if No legal moves
+  if (legalMoves.length === 0) {
+    console.log('Cant move');
+    return;
   }
+  //get random move
+  const move = Phaser.Utils.Array.GetRandom(legalMoves);
+  //execute move
+  movePiece(move.piece, move.x, move.y);
+  // end bot's turn
+  endTurn(scene);
+}
 
 // Coordinates overlay button
 document.addEventListener('DOMContentLoaded', () => {
