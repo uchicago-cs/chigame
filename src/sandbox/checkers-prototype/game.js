@@ -198,7 +198,28 @@ function create() {
   });
 }
 
-function update() {}
+function update() {
+  if (gameOver) return;
+
+  // check at the start of each turn whether the current player can move
+  const moves = getLegalMoves(currentPlayer);
+  if (moves.length === 0) {
+    gameOver = true;
+
+    const prompts = document.getElementById('gameOverPrompts');
+    const message = document.getElementById('gameOverMessage');
+    prompts.classList.add('show');
+    message.textContent =
+      `${currentPlayer === COLORS.red ? 'Red' : 'Black'} has no valid moves! ` +
+      `${currentPlayer === COLORS.red ? 'Black' : 'Red'} wins!`;
+    message.classList.add('show');
+
+    document.getElementById('playAgainPrompt').style.display = 'flex';
+    document.getElementById('drawBtn').style.display = 'none';
+    document.getElementById('forfeitBtn').style.display = 'none';
+  }
+}
+
 // ----------------------------------------------------------------------------
 
 // Draw the game board
