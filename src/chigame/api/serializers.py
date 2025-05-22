@@ -133,7 +133,6 @@ class AchievementSerializer(serializers.ModelSerializer):
         fields = ["id", "name", "description", "rarity", "threshold"]
 
 
-
 class MetricScoreSerializer(serializers.ModelSerializer):
     metric_id = serializers.IntegerField(write_only=True)
     match_id = serializers.IntegerField(write_only=True)
@@ -148,7 +147,7 @@ class MetricScoreSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Score must be a positive integer.")
         return value
 
-      
+
 class PopUpInfoSerializer(serializers.Serializer):
     min_players = serializers.IntegerField()
     max_players = serializers.IntegerField()
@@ -156,7 +155,6 @@ class PopUpInfoSerializer(serializers.Serializer):
     min_playtime = serializers.IntegerField()
     max_playtime = serializers.IntegerField()
     description = serializers.CharField()
-
 
 
 class GameDataSerializer(serializers.ModelSerializer):

@@ -422,6 +422,7 @@ class MetricScoreView(generics.ListCreateAPIView):
             leaderboard_entry=leaderboard_entry,
         )
 
+
 class GamePopupsAPIView(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
