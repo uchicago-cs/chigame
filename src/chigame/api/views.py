@@ -515,3 +515,24 @@ class GameReviewStatsAPIView(APIView):
         }
 
         return Response(GameReviewStatsSerializer(data).data)
+
+
+class UserAchievementListView(APIView):
+    def get(self, request, pk):
+        user_id = self.kwargs["pk"]
+        user_achievements = UserAchievement.objects.filter(user__id=user_id)
+
+        data = [
+            {
+                "id": achievement.id,
+                "achievement": achievement.achievement.name,
+                "game": achievement.achievement.game.name,
+                "pinned": achievement.pinned,
+                "date_earned": achievement.date_earned,
+                "last_updated": achievement.last_updated,
+                "progress": achievement.progress,
+            }
+            for achievement in user_achievements
+        ]
+
+        return Response(data)
