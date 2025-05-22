@@ -765,6 +765,7 @@ class GameData(models.Model):
 
 # ================ CHECKERS =================
 
+
 class Checkers(models.Model):
     """
     A game of Checkers stores:
