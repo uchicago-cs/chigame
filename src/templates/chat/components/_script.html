@@ -35,7 +35,7 @@
       JSON.stringify({
         message: messageInput,
         user_id: "{{ request.user.id }}",
-        reply_to: replyToMessageId
+        reply_to: replyToMessageId,
       })
     );
 
@@ -70,14 +70,41 @@
 
     // Create message container
     const messageContainer = document.createElement("div");
-    messageContainer.className = `mb-3 ${data.user_id === "{{ request.user.id }}" ? "align-self-end" : "align-self-start"}`;
+    messageContainer.className = `mb-3 ${
+      data.user_id === "{{ request.user.id }}"
+        ? "align-self-end"
+        : "align-self-start"
+    }`;
     messageContainer.setAttribute("data-message-id", data.message_id);
     const escapedUsername = escapeHTML(data.username);
     const escapedMessage = escapeHTML(data.message);
     messageContainer.setAttribute("oncontextmenu", `showContextMenu(event, ${data.message_id}, '${escapedUsername}', '${escapedMessage}'); return false;`);
+    const escapeHtml = (str) =>
+      str.replace(
+        /[&<>'"]/g,
+        (char) =>
+        ({
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          "'": "&#39;",
+          '"': "&quot;",
+        } [char])
+      );
+
+    const escapedUsername = escapeHtml(data.username);
+    const escapedMessage = escapeHtml(data.message);
+    messageContainer.setAttribute(
+      "oncontextmenu",
+      `showContextMenu(event, ${data.message_id}, '${escapedUsername}', '${escapedMessage}'); return false;`
+    );
     // Create message bubble
     const messageBubble = document.createElement("div");
-    messageBubble.className = `${data.user_id === "{{ request.user.id }}" ? "bg-success-subtle" : "bg-white"} rounded p-2 shadow-sm`;
+    messageBubble.className = `${
+      data.user_id === "{{ request.user.id }}"
+        ? "bg-success-subtle"
+        : "bg-white"
+    } rounded p-2 shadow-sm`;
     messageBubble.style.maxWidth = "80%";
 
     // Add reply preview if this is a reply
@@ -112,8 +139,8 @@
     const timestamp = document.createElement("div");
     timestamp.className = "text-end text-muted small mt-1";
     timestamp.textContent = new Date().toLocaleTimeString([], {
-      hour: '2-digit',
-      minute: '2-digit'
+      hour: "2-digit",
+      minute: "2-digit",
     });
 
     // Assemble message
@@ -156,6 +183,7 @@
 
       // Show collapse button only in floating mode
       if (chatContainer.classList.contains("floating-chat")) {
+        collapseButton.classList.remove("d-none");
         collapseButton.classList.remove("d-none");
       } else {
         collapseButton.classList.add("d-none");
