@@ -38,6 +38,33 @@ def test_achievement_advance():
 
 
 @pytest.mark.django_db
+def test_achievement_set_progress():
+    achievement = AchievementFactory(threshold=2.0)
+    user = UserFactory()
+
+    achievement.set_progress(user, 1.0)
+    user_achievement = UserAchievement.objects.get(user=user, achievement=achievement)
+    assert abs(user_achievement.progress - 1.0) <= 1e-8
+
+    achievement.set_progress(user, 2.0)
+    user_achievement.refresh_from_db()
+    assert abs(user_achievement.progress - 2.0) <= 1e-8
+    assert user_achievement.date_earned is not None
+    assert user_achievement.date_earned == user_achievement.last_updated
+
+    achievement.set_progress(user, 1.0)
+    user_achievement.refresh_from_db()
+    assert abs(user_achievement.progress - 2.0) <= 1e-8
+    assert user_achievement.date_earned is not None
+    assert user_achievement.date_earned == user_achievement.last_updated
+
+    achievement.set_progress(user, 1.0, override=True)
+    user_achievement.refresh_from_db()
+    assert abs(user_achievement.progress - 1.0) <= 1e-8
+    assert user_achievement.date_earned is None
+
+
+@pytest.mark.django_db
 def test_get_recent_achievements():
     user = UserFactory()
     # Create 6 achievements with different dates
