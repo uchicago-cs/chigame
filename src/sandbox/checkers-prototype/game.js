@@ -634,10 +634,9 @@ function getLegalMoves(color) {
     });
 
     return moves;
-  }
+}
 
-
-  // Easy bot: pick a random legal move and play it
+// Easy bot: pick a random legal move and play it
 function easyBot(scene) {
     //get legal moves
     //check if game over
@@ -654,7 +653,7 @@ function easyBot(scene) {
     movePiece(move.piece, move.x, move.y);
     // end bot's turn
     endTurn(scene);
-  }
+}
 
 // Coordinates overlay button
 document.addEventListener('DOMContentLoaded', () => {
@@ -713,6 +712,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
+// function to resize the game board based on the slider value
 function resizegame(percentage) {
   // Calculate new dimensions
   const newWidth = Math.floor(START_WIDTH * percentage);
