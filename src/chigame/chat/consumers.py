@@ -136,7 +136,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         reply_to = None
         if reply_to_id:
             try:
-                reply_to = LiveChatMessage.objects.get(id=reply_to_id)
+                reply_to = await database_sync_to_async(LiveChatMessage.objects.get)(id=reply_to_id)
             except LiveChatMessage.DoesNotExist:
                 reply_to = None
         # Save the message to the database
@@ -163,15 +163,23 @@ class ChatConsumer(AsyncWebsocketConsumer):
             user_id = text_data_json["user_id"]
             reply_to_id = text_data_json.get("reply_to")
 
-            # Apply profanity filter to message
-            filtered_message = self.profanity_filter.censor_message(message)
+        # Apply profanity filter to message
+        filtered_message = self.profanity_filter.censor_message(message)
 
-            # Save message to database once when first received from client
-            username, message_id = await self.save_message(self.chat_id, user_id, filtered_message, reply_to_id)
+        # Save message to database once when first received from client
+        username, message_id = await self.save_message(self.chat_id, user_id, filtered_message, reply_to_id)
 
-            # Get reply info if applicable
-            reply_to_username = None
-            reply_to_content = None
+        # Get reply info if applicable
+        reply_to_username = None
+        reply_to_content = None
+        if reply_to_id:
+            try:
+                reply_to = await database_sync_to_async(LiveChatMessage.objects.get)(id=reply_to_id)
+                reply_to_username = await database_sync_to_async(lambda: reply_to.user.username)()
+                reply_to_content = reply_to.content  # This is safe — already loaded
+            except LiveChatMessage.DoesNotExist:
+                reply_to = None
+
             if reply_to_id:
                 # Logic to fetch reply details could be added here if needed
                 pass
