@@ -20,6 +20,7 @@ from chigame.api.serializers import (
     GameReviewStatsSerializer,
     GameSerializer,
     GroupSerializer,
+    LiveChatSerializer,
     LobbySerializer,
     MechanicSerializer,
     MessageFeedSerializer,
@@ -31,6 +32,7 @@ from chigame.api.serializers import (
     UserSerializer,
 )
 from chigame.api.spam_utils import is_spam
+from chigame.chat.models import LiveChat, LiveChatUser
 from chigame.games.models import Feedback, Game, GameData, Lobby, Message, Review, Tournament
 from chigame.games.simulation_utils import run_complete_tournament_simulation
 from chigame.leaderboards.models import LeaderboardEntry, Match, Metric, MetricScore
@@ -562,6 +564,55 @@ class GameReviewStatsAPIView(APIView):
         }
 
         return Response(GameReviewStatsSerializer(data).data)
+
+
+class LiveChatCreateView(generics.CreateAPIView):
+    queryset = LiveChat.objects.all()
+    serializer_class = LiveChatSerializer
+    permission_classes = []
+
+    def perform_create(self, serializer):
+        user = User.objects.first()
+        if not user:
+            raise ValueError("No user exists in the database to assign to the LiveChatUser")
+
+        chat = serializer.save()
+        LiveChatUser.objects.create(user=user, live_chat=chat)
+
+
+class LiveChatAddUserView(APIView):
+    permission_classes = []
+
+    def post(self, request, chat_id):
+        chat = LiveChat.objects.get(id=chat_id)
+        user_ids = request.data.get("user_ids", [])
+        for uid in user_ids:
+            user = User.objects.get(id=uid)
+            LiveChatUser.objects.get_or_create(user=user, live_chat=chat)
+        return Response({"id": chat.id, "name": chat.name, "users": user_ids})
+
+
+class LiveChatListView(generics.ListAPIView):
+    serializer_class = LiveChatSerializer
+    permission_classes = []
+
+    def get_queryset(self):
+        user = User.objects.first()
+        return LiveChat.objects.filter(users=user)
+
+
+class LiveChatDetailView(generics.RetrieveAPIView):
+    queryset = LiveChat.objects.all()
+    serializer_class = LiveChatSerializer
+    permission_classes = []
+
+
+class UserAchievementDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = UserAchievement.objects.all()
+    serializer_class = UserAchievementSerializer
+
+    def perform_update(self, serializer):
+        serializer.save()
 
 
 class UserAchievementListView(APIView):
