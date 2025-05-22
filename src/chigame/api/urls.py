@@ -18,6 +18,7 @@ game_patterns = [
         name="api-user-achievement-assignment",
     ),
     path("<int:pk>/achievements/create/", views.AchievementCreateView.as_view(), name="api-game-achievement-create"),
+    path("<int:pk>/popups/", views.GamePopupsAPIView.as_view(), name="api-game-popups"),
     path("data/", views.GameDataListView.as_view(), name="api-game-data-list"),
     path("<int:game_id>/data/<str:key>/", views.GameDataDetailView.as_view(), name="api-game-data-detail"),
     path("<int:pk>/review-stats/", views.GameReviewStatsAPIView.as_view(), name="api-game-review-stats"),
@@ -33,6 +34,7 @@ user_patterns = [
     path("<slug:slug>/", views.UserDetailView.as_view(), name="api-user-detail"),
     path("<slug:slug>/groups/", views.UserGroupsView.as_view(), name="api-user-groups"),
     path("<int:pk>/friends/", views.UserFriendsAPIView.as_view(), name="api-user-friends"),
+    path("<int:pk>/achievements/", views.UserAchievementListView.as_view(), name="api-user-achievements"),
 ]
 
 tournament_patterns = [
