@@ -3,6 +3,7 @@ Module for all Form Tests.
 """
 import pytest
 from django.forms import EmailField
+from django.test import RequestFactory
 from django.utils.translation import gettext_lazy as _
 
 from chigame.users.forms import UserAdminChangeForm, UserAdminCreationForm, UserSignupForm, generate_unique_username
@@ -75,7 +76,10 @@ class TestUserSignupForm:
             "password1": "somepass123",
             "password2": "somepass123",
         }
-        request = None
+        request = RequestFactory().post("accounts/signup/")
+        request.session = {}
+        request.user = None
+
         user = form.save(request)
         assert user.username is not None
         assert len(user.username) >= 4
