@@ -423,6 +423,34 @@ class MetricScoreView(generics.ListCreateAPIView):
         )
 
 
+class GameLeaderboardView(generics.ListAPIView):
+    """
+    Retieves the all-time leaderboard for a specified game, ranked by
+    each player's highest single-game score.
+    """
+
+    serializer_class = MetricScoreSerializer
+    authentication_classes = [SessionAuthentication]
+    permission_classes = [IsAuthenticated]
+    pagination_class = PageNumberPagination
+
+    def get_queryset(self):
+        game_id = self.kwargs["game_id"]
+        game = get_object_or_404(Game, id=game_id)
+
+        leaderboard = game.leaderboards.first()
+        if not leaderboard:
+            return MetricScore.objects.none()
+
+        return (
+            MetricScore.objects.filter(
+                metric__game_id=game_id,
+            )
+            .order_by("user", "-score")
+            .distinct("user")
+        )
+
+
 class GamePopupsAPIView(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
