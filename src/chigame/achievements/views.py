@@ -82,8 +82,45 @@ def user_achievements(request, user_id=None):
             continue
 
         processed_achievements_for_game = []
-
+    
         for achievement in achievements_for_game:
+            is_unlocked = False
+            progress = 0
+            pinned = False
+            date_earned = None
+            
+            # Check if the user has this achievement in our lookup map
+            user_achievement = user_achievements_map.get(achievement.id)
+
+            if user_achievement:
+                # User has some record of this achievement
+                if achievement.threshold is None or achievement.threshold == 0:
+                    # For non-progress based achievements
+                    is_unlocked = user_achievement.date_earned is not None
+                else:
+                    # For progress-based achievements
+                    is_unlocked = (
+                        user_achievement.progress is not None and user_achievement.progress >= achievement.threshold
+                    )
+
+                progress = user_achievement.progress or 0
+                pinned = user_achievement.pinned
+                date_earned = user_achievement.date_earned
+            # Note: else block removed since we already initialized the default values above
+
+            # Add template-specific attributes
+            achievement.is_unlocked_for_template = is_unlocked
+            achievement.progress_for_template = progress
+            achievement.pinned_for_template = pinned
+            achievement.date_earned_for_template = date_earned
+
+            # Add status for template (this is what your template is looking for)
+            if is_unlocked:
+                achievement.status_for_template = 'completed'
+            elif progress > 0:
+                achievement.status_for_template = 'in_progress'
+            else:
+                achievement.status_for_template = 'not_started'
             # Check if the user has this achievement in our lookup map
             user_achievement = user_achievements_map.get(achievement.id)
 
