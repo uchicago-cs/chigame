@@ -13,10 +13,9 @@ from chigame.games.models import (
     Review,
     Tournament,
     User,
-    UserProfile,
 )
 from chigame.leaderboards.models import MetricScore
-from chigame.users.models import Group
+from chigame.users.models import Group, UserProfile
 
 
 class GameSerializer(serializers.ModelSerializer):
@@ -151,7 +150,7 @@ class MetricScoreSerializer(serializers.ModelSerializer):
 
 class GameLeaderboardSerializer(serializers.ModelSerializer):
     username = serializers.SerializerMethodField()
-    score = serializers.IntegerField(source="max-score")
+    score = serializers.IntegerField(source="max_score")
 
     class Meta:
         model = MetricScore

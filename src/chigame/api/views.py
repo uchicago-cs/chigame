@@ -18,6 +18,7 @@ from chigame.api.serializers import (
     CategorySerializer,
     FeedbackSerializer,
     GameDataSerializer,
+    GameLeaderboardSerializer,
     GameReviewStatsSerializer,
     GameSerializer,
     GroupSerializer,
@@ -430,7 +431,7 @@ class GameLeaderboardView(generics.ListAPIView):
     each player's highest single-game score.
     """
 
-    serializer_class = MetricScoreSerializer
+    serializer_class = GameLeaderboardSerializer
     authentication_classes = [SessionAuthentication]
     permission_classes = [IsAuthenticated]
     pagination_class = PageNumberPagination
