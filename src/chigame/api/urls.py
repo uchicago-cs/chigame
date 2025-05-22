@@ -18,6 +18,10 @@ game_patterns = [
         name="api-user-achievement-assignment",
     ),
     path("<int:pk>/achievements/create/", views.AchievementCreateView.as_view(), name="api-game-achievement-create"),
+    path("<int:pk>/popups/", views.GamePopupsAPIView.as_view(), name="api-game-popups"),
+    path("data/", views.GameDataListView.as_view(), name="api-game-data-list"),
+    path("<int:game_id>/data/<str:key>/", views.GameDataDetailView.as_view(), name="api-game-data-detail"),
+    path("<int:pk>/review-stats/", views.GameReviewStatsAPIView.as_view(), name="api-game-review-stats"),
 ]
 
 lobby_patterns = [
@@ -30,11 +34,13 @@ user_patterns = [
     path("<slug:slug>/", views.UserDetailView.as_view(), name="api-user-detail"),
     path("<slug:slug>/groups/", views.UserGroupsView.as_view(), name="api-user-groups"),
     path("<int:pk>/friends/", views.UserFriendsAPIView.as_view(), name="api-user-friends"),
+    path("<int:pk>/achievements/", views.UserAchievementListView.as_view(), name="api-user-achievements"),
 ]
 
 tournament_patterns = [
     path("chat/", views.MessageView.as_view(), name="api-chat-list"),
     path("chat/feed/", views.MessageFeedView.as_view(), name="api-chat-detail"),
+    path("<int:pk>/simulate/", views.TournamentSimulationView.as_view(), name="api-tournament-simulate"),
     path("<int:pk>/feedback/", views.FeedbackListCreateView.as_view(), name="api-feedback-list-create"),
     path("feedback/<int:pk>/", views.FeedbackDetailView.as_view(), name="api-feedback-detail"),
 ]
