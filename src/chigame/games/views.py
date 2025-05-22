@@ -13,7 +13,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.core.files.storage import FileSystemStorage
 from django.core.paginator import Paginator
-from django.db.models import Avg, Count, ExpressionWrapper, F, FloatField, Q
+from django.db.models import Avg, Case, Count, ExpressionWrapper, F, FloatField, Q, Value, When
 from django.db.models.functions import Lower
 from django.http import HttpResponseForbidden, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -39,6 +39,7 @@ from .models import (
     Checkers,
     CheckersBoard,
     CheckersTurn,
+    Feedback,
     Game,
     GameList,
     InteractiveFictionGame,
@@ -81,6 +82,19 @@ class GameListView(ListView):
 
         return queryset
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.user.is_authenticated:
+            # Ensure 'Favorites' is always first if it exists or is created.
+            favorites_list, _ = GameList.objects.get_or_create(name="Favorites", created_by=self.request.user)
+            other_lists = (
+                GameList.objects.filter(created_by=self.request.user).exclude(pk=favorites_list.pk).order_by("name")
+            )
+            context["game_lists"] = [favorites_list] + list(other_lists)
+        else:
+            context["game_lists"] = []
+        return context
+
 
 class GameDetailView(LoginRequiredMixin, FormMixin, DetailView):
     model = Game
@@ -105,11 +119,17 @@ class GameDetailView(LoginRequiredMixin, FormMixin, DetailView):
 
         # FOR IF/twine GAMES
         context["is_twine_game"] = self.object.twine_file.name.endswith(".html") if self.object.twine_file else False
+        context["recommended_games"] = get_recommended_games(
+            game=self.object,
+            user=self.request.user if self.request.user.is_authenticated else None,
+            limit=4,  # this is to show 4 reccomendations
+        )
         # Include the user's GameLists: default Favorites plus others
         if self.request.user.is_authenticated:
             favorites_list, _ = GameList.objects.get_or_create(name="Favorites", created_by=self.request.user)
             context["favorites_list"] = favorites_list
             context["game_lists"] = GameList.objects.filter(created_by=self.request.user).exclude(pk=favorites_list.pk)
+
         return context
 
     def post(self, request, *args, **kwargs):
@@ -374,20 +394,35 @@ class LobbyDeleteView(DeleteView):
 
 
 def apply_sorting_and_filtering(queryset, sort_param, players_param):
-    # Example value of sort_param: "name-asc" or "year_published-desc".
+    # some examples of sort params are : "name-asc" or "year_published-desc".
     if sort_param:
         sort_field, sort_direction = sort_param.rsplit("-", 1)
         sort_order = "-" if sort_direction == "desc" else ""
-
+        # checking for the type of filter that was selected by user
         if sort_field == "name":
             if sort_direction == "desc":
                 queryset = queryset.order_by(Lower("name").desc())
             else:
                 queryset = queryset.order_by(Lower("name"))
+        elif sort_field == "avg_rating":
+            from django.db.models import Avg
+
+            queryset = queryset.annotate(avg_rating=Avg("review__rating"))
+            if sort_direction == "desc":
+                queryset = queryset.order_by("-avg_rating")
+            else:
+                queryset = queryset.order_by("avg_rating")
+        elif sort_field == "popularity":
+            from django.db.models import Count
+
+            queryset = queryset.annotate(popularity=Count("review"))
+            if sort_direction == "desc":
+                queryset = queryset.order_by("-popularity")
+            else:
+                queryset = queryset.order_by("popularity")
         else:
             queryset = queryset.order_by(f"{sort_order}{sort_field}")
-
-    # Filter by number of players. Handles numeric values and '10+' case.
+    # to filter by # of players
     if players_param:
         if players_param.isdigit():
             players = int(players_param)
@@ -396,6 +431,91 @@ def apply_sorting_and_filtering(queryset, sort_param, players_param):
             queryset = queryset.filter(max_players__gte=10)
 
     return queryset
+
+
+def get_recommended_games(game, user=None, limit=5):
+    """
+    Returns a queryset of recommended games based on multiple weighted factors.
+
+    Args:
+        game: The reference Game object
+        user: Optional User object to check play history
+        limit: Maximum number of games to return
+
+    Returns:
+        QuerySet of Game objects ordered by recommendation score
+    """
+
+    # Settled on a recommendation system that combines multiple factors
+    # (as opposed to having it only be category based):
+    # Game categories (40% weight)
+    # Game mechanics (30% weight)
+    # Game designers/artists (15% weight)
+    # Similar complexity ratings (10% weight)
+    # Similar playtime (5% weight)
+    #
+    # The reason I went with this weighted approach is to provide more well
+    # rounded recommendations than
+    # using categories alone. Also, I deprioritized, but didn't exclude, games
+    # the user has already played.
+
+    all_games = Game.objects.exclude(id=game.id)
+
+    game_categories = game.categories.all()
+    game_mechanics = game.mechanics.all()
+    game_people = game.people.all()
+
+    all_games = all_games.annotate(category_score=Count("categories", filter=Q(categories__in=game_categories)) * 0.4)
+
+    all_games = all_games.annotate(mechanics_score=Count("mechanics", filter=Q(mechanics__in=game_mechanics)) * 0.3)
+
+    all_games = all_games.annotate(people_score=Count("people", filter=Q(people__in=game_people)) * 0.15)
+
+    if game.complexity:
+        # Convert Decimal to float before arithmetic operations
+        complexity_value = float(game.complexity)
+        all_games = all_games.annotate(
+            complexity_score=Case(
+                When(complexity__range=(complexity_value - 0.5, complexity_value + 0.5), then=0.1),
+                When(complexity__range=(complexity_value - 1.0, complexity_value + 1.0), then=0.05),
+                default=Value(0),
+                output_field=FloatField(),
+            )
+        )
+    else:
+        all_games = all_games.annotate(complexity_score=Value(0, output_field=FloatField()))
+    if game.expected_playtime:
+        # Convert to float before arithmetic
+        playtime_value = float(game.expected_playtime)
+        all_games = all_games.annotate(
+            playtime_score=Case(
+                When(expected_playtime__range=(playtime_value * 0.8, playtime_value * 1.2), then=0.05),
+                default=Value(0),
+                output_field=FloatField(),
+            )
+        )
+    else:
+        all_games = all_games.annotate(playtime_score=Value(0, output_field=FloatField()))
+    if user and user.is_authenticated:
+        played_game_ids = Match.objects.filter(players=user).values_list("game_id", flat=True)
+        all_games = all_games.annotate(
+            played_penalty=Case(When(id__in=played_game_ids, then=0.2), default=1.0, output_field=FloatField())
+        )
+    else:
+        all_games = all_games.annotate(played_penalty=Value(1.0, output_field=FloatField()))
+
+    all_games = all_games.annotate(
+        total_score=(
+            F("category_score")
+            + F("mechanics_score")
+            + F("people_score")
+            + F("complexity_score")
+            + F("playtime_score")
+        )
+        * F("played_penalty")
+    ).order_by("-total_score")
+
+    return all_games[:limit]
 
 
 def search_results(request):
@@ -1223,6 +1343,125 @@ class TournamentArchivedListView(ListView):
         return self.request.user.is_staff
 
 
+# Tournament Feedback Views
+@login_required
+def tournament_feedback_list(request, tournament_id):
+    """
+    View to display all feedback for a specific tournament.
+    Only the owner of the tournament can access this view.
+    """
+    tournament = get_object_or_404(Tournament, id=tournament_id)
+
+    # Check if the requesting user is the owner of the tournament
+    if tournament.created_by != request.user:
+        # Redirect or show an error message if the user is not the owner
+        messages.error(request, "You are not authorized to view feedback for this tournament.")
+        return redirect("tournament-list")  # Redirect to the tournament list or another appropriate page
+
+    # Retrieve feedback for the tournament
+    feedback_list = Feedback.objects.filter(tournament=tournament).order_by("-created_at")
+    return render(
+        request,
+        "tournaments/tournament_feedback_list.html",
+        {"tournament": tournament, "feedback_list": feedback_list},
+    )
+
+
+@login_required
+def user_feedback_list(request):
+    """
+    View to display all feedback submitted by the logged-in user.
+    """
+    user_feedback = Feedback.objects.filter(user=request.user).order_by("-created_at")
+
+    # Get the first tournament associated with the user's feedback (if any)
+    tournament = user_feedback.first().tournament if user_feedback.exists() else None
+
+    return render(
+        request,
+        "tournaments/tournament_user_feedback.html",
+        {"user_feedback": user_feedback, "tournament": tournament},
+    )
+
+
+@login_required
+def submit_feedback(request, tournament_id):
+    tournament = get_object_or_404(Tournament, id=tournament_id)
+
+    if request.method == "POST":
+        comment = request.POST.get("content")  # Match the field name in the model
+        rating = request.POST.get("rating")
+
+        if not comment or not rating:
+            messages.error(request, "All fields are required.")
+            return redirect("tournament-detail", pk=tournament.id)
+
+        Feedback.objects.create(
+            tournament=tournament,
+            user=request.user,
+            comment=comment,  # Use 'comment' if that's the field name in the model
+            rating=rating,
+        )
+        print("Submitting feedback by user:", request.user)
+
+        messages.success(request, "Feedback submitted successfully!")
+        return redirect("tournament-detail", pk=tournament.id)
+
+    return render(request, "tournaments/tournament_submit_feedback.html", {"tournament": tournament})
+
+
+@login_required
+def update_feedback_view(request, feedback_id):
+    """
+    View to handle updating feedback.
+    Only the original author or an admin can update feedback.
+    """
+    feedback = get_object_or_404(Feedback, id=feedback_id)
+
+    # Check if the user is authorized to update the feedback
+    if feedback.user != request.user and not request.user.is_staff:
+        return HttpResponseForbidden("You are not authorized to update this feedback.")
+
+    if request.method == "POST":
+        new_comment = request.POST.get("content")
+        new_rating = request.POST.get("rating")
+
+        if not new_comment or not new_rating:
+            messages.error(request, "All fields are required.")
+            return redirect("update-feedback", feedback_id=feedback.id)
+
+        # Update feedback fields
+        feedback.comment = new_comment
+        feedback.rating = new_rating
+        feedback.save()
+
+        messages.success(request, "Feedback updated successfully!")
+        return redirect("user-feedback-list")
+
+    return render(request, "tournaments/tournament_update_feedback.html", {"feedback": feedback})
+
+
+@login_required
+def delete_feedback_view(request, feedback_id):
+    """
+    View to handle deleting feedback.
+    Only the original author or an admin can delete feedback.
+    """
+    feedback = get_object_or_404(Feedback, id=feedback_id)
+
+    # Check if the user is authorized to delete the feedback
+    if feedback.user != request.user and not request.user.is_staff:
+        return HttpResponseForbidden("You are not authorized to delete this feedback.")
+
+    if request.method == "POST":
+        # Delete the feedback
+        feedback.delete()
+        messages.success(request, "Feedback deleted successfully!")
+        return redirect("user-feedback-list")
+
+    return render(request, "tournaments/tournament_delete_feedback.html", {"feedback": feedback})
+
+
 # Placeholder Game
 @login_required
 def coin_flip_game(request, pk):
@@ -1448,3 +1687,15 @@ def checkers_game_get_board_state(request, board_id):
         return Response({"state": board.state})
     except CheckersBoard.DoesNotExist:
         return Response({"error": "Board not found"}, status=404)
+
+
+class GameListDetailView(LoginRequiredMixin, DetailView):
+    """Display the games in a specific GameList."""
+
+    model = GameList
+    template_name = "games/gamelist_detail.html"
+    context_object_name = "gamelist"
+
+    def get_queryset(self):
+        # Ensure users can only view their own game lists
+        return GameList.objects.filter(created_by=self.request.user)
