@@ -1,8 +1,8 @@
 from django.shortcuts import get_object_or_404, render
 
 from chigame.games.models import Game
-from chigame.users.models import UserProfile
 from chigame.leaderboards.models import LeaderboardEntry, Region
+from chigame.users.models import UserProfile
 
 
 def leaderboard_view(request, game_id):
