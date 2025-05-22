@@ -19,7 +19,7 @@
   </div>
 
   {% if leaderboard_data %}
-    <canvas id="leaderboardChart" width="400" height="300"></canvas>
+    <canvas id="leaderboardChart" width="800" height="400"></canvas>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
@@ -28,9 +28,22 @@
         datasets: [{
           label: '{{ score_metric_name }}',
           data: [{% for data in leaderboard_data %} {{ data.score }}, {% endfor %}],
-          backgroundColor: 'rgba(128, 0, 0, 0.8)',
+          backgroundColor: (context) => {
+            const chart = context.chart;
+            const { ctx, chartArea } = chart;
+            if (!chartArea) return 'rgb(128, 0, 0)';
+            const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+            gradient.addColorStop(0, 'rgba(255, 99, 132, 0.8)');
+            gradient.addColorStop(1, 'rgba(54, 162, 235, 0.8)');
+            return gradient;
+          },
           borderColor: 'rgba(128, 0, 0, 1)',
-          borderWidth: 1
+          borderWidth: 1,
+          barThickness: 100,
+          borderRadius: 5,
+          hoverBackgroundColor: 'rgba(255, 99, 132, 0.6)',
+          hoverBorderColor: 'rgba(255, 99, 132, 1)',
+          hoverBorderWidth: 2,
         }]
       };
 
@@ -39,22 +52,50 @@
         data: leaderboardData,
         options: {
           indexAxis: 'y',
+          responsive: true,
           scales: {
             y: {
               beginAtZero: true,
               title: {
-                display: true,
-                text: '{{ score_metric_name }}'
+                display: false,
+              },
+              ticks: {
+                font: {
+                  size: 18,
+                  weight: 'bold',
+                },
+                padding: 10,
               }
             },
             x: {
               title: {
-                display: true,
-                text: 'Player'
+                display: false,
+              },
+              ticks: {
+                font: {
+                  size: 14,
+                },
+                padding: 10,
               }
             }
+          },
+          plugins: {
+            legend: {
+              display: false,
+            },
+            tooltip: {
+              backgroundColor: 'rgba(0, 0, 0, 0.7)',
+              titleColor: 'rgba(255, 255, 255, 1)',
+              bodyColor: 'rgba(255, 255, 255, 1)',
+              borderColor: 'rgba(255, 99, 132, 0.8)',
+              borderWidth: 1,
+            }
+          },
+          animation: {
+            duration: 1000,
+            easing: 'easeInOutBounce',
           }
-        },
+        }
       };
 
       const leaderboardChart = new Chart(
