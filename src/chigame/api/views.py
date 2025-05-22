@@ -614,6 +614,7 @@ class UserAchievementDetailView(generics.RetrieveUpdateDestroyAPIView):
     def perform_update(self, serializer):
         serializer.save()
 
+
 class UserAchievementListView(APIView):
     def get(self, request, pk):
         user_id = self.kwargs["pk"]
