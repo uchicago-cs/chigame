@@ -448,10 +448,10 @@ function highlightValidMoves(scene, piece) {
         // add a slighlty transparent white square on top of that tile to make
         // the tile appear highlighted
         const highlight = scene.add.rectangle(
-          MARGIN + x * TILE_SIZE + TILE_SIZE / 2,
-          MARGIN + y * TILE_SIZE + TILE_SIZE / 2,
-          TILE_SIZE,
-          TILE_SIZE,
+          margin + x * tile_size + tile_size / 2,
+          margin + y * tile_size + tile_size / 2,
+          tile_size,
+          tile_size,
           0xffffff,
           0.3
         );
@@ -528,10 +528,10 @@ function highlightValidMoves(scene, piece) {
         // add a slighlty transparent white square on top of that tile to make
         // the tile appear highlighted
         const highlight = scene.add.rectangle(
-          MARGIN + x * TILE_SIZE + TILE_SIZE / 2,
-          MARGIN + y * TILE_SIZE + TILE_SIZE / 2,
-          TILE_SIZE,
-          TILE_SIZE,
+          margin + x * tile_size + tile_size / 2,
+          margin + y * tile_size + tile_size / 2,
+          tile_size,
+          tile_size,
           0xffffff,
           0.3
         );
@@ -767,7 +767,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // get board position on screen
       const gameDiv = document.getElementById('game');
       const rect = gameDiv.getBoundingClientRect();
-
+      console.log("toggle coordinates");
       // for each index, create a top label and a left label
       for (let i = 0; i < BOARD_SIZE; i++) {
         // Column label
@@ -775,7 +775,7 @@ document.addEventListener('DOMContentLoaded', () => {
         colLabel.textContent = i + 1;
         Object.assign(colLabel.style, {
           position: 'absolute',
-          left: `${rect.left + MARGIN + i * TILE_SIZE + TILE_SIZE / 2}px`,
+          left: `${(rect.left + margin) + (i * tile_size) + (tile_size / 2)}px`,
           top: `${rect.top - 20}px`,
           transform: 'translateX(-50%)',
           fontFamily: '"Outfit", sans-serif',
@@ -792,7 +792,7 @@ document.addEventListener('DOMContentLoaded', () => {
         Object.assign(rowLabel.style, {
           position: 'absolute',
           left: `${rect.left - 20}px`,
-          top: `${rect.top + MARGIN + i * TILE_SIZE + TILE_SIZE / 2}px`,
+          top: `${rect.top + margin + i * tile_size + tile_size / 2}px`,
           transform: 'translateY(-50%)',
           fontFamily: '"Outfit", sans-serif',
           color: '#3b2f2a',
@@ -833,6 +833,16 @@ function resizegame(percentage) {
       margin + y * tile_size + tile_size / 2
     );
     tile.setSize(tile_size, tile_size);
+  });
+
+  highlightedTiles.forEach((highlight, index) => {
+    const x = index % BOARD_SIZE;
+    const y = Math.floor(index / BOARD_SIZE);
+    highlight.setPosition(
+      highlight + x * tile_size + tile_size / 2,
+      highlight + y * tile_size + tile_size / 2
+    );
+    highlight.setSize(tile_size, tile_size);
   });
 
   pieces.forEach((piece) => {

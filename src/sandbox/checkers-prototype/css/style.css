@@ -9,15 +9,6 @@ body {
 canvas {
     display: block;
     background: #d2b48c;
-    margin: auto;
-}
-
-#game {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    width: 100vw;
 }
 
 .main-content {
@@ -26,7 +17,12 @@ canvas {
     align-items: center;
     margin-top: 5vh;
     height: 95vh;
-    width: 100vw;
+}
+
+#game {
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .navbar {
