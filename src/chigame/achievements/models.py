@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from django.db import models
 
 from chigame.games.models import Game
@@ -45,6 +46,15 @@ class UserAchievement(models.Model):
 
     def __str__(self):
         return f"{self.user} - {self.achievement}"
+
+    def clean(self):
+        if self.date_earned and self.date_earned != self.last_updated:
+            raise ValidationError({"date_earned": "date_earned, if not null, cannot differ from last_updated"})
+
+    def save(self, *args, **kwargs):
+        # This approach was borrowed from games/models.py
+        self.full_clean()
+        super().save(*args, **kwargs)
 
     class Meta:
         unique_together = ("user", "achievement")
