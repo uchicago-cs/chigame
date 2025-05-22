@@ -23,6 +23,7 @@ from chigame.api.serializers import (
     MechanicSerializer,
     MessageFeedSerializer,
     MessageSerializer,
+    PopUpInfoSerializer,
     ReviewSerializer,
     UserAchievementSerializer,
     UserSerializer,
@@ -375,6 +376,22 @@ class AchievementCreateView(generics.CreateAPIView):
         )
 
 
+class GamePopupsAPIView(APIView):
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def get(self, request, pk):
+        game = get_object_or_404(Game, pk=pk)
+        data = {
+            "min_players": game.min_players,
+            "max_players": game.max_players,
+            "complexity": float(game.complexity or 0),
+            "min_playtime": game.min_playtime or 0,
+            "max_playtime": game.max_playtime or 0,
+            "description": game.description or "",
+        }
+        return Response(PopUpInfoSerializer(data).data)
+
+
 class GameDataListView(generics.ListCreateAPIView):
     """
     API endpoint to list and create game data for the authenticated user.
@@ -500,9 +517,31 @@ class GameReviewStatsAPIView(APIView):
         return Response(GameReviewStatsSerializer(data).data)
 
 
+
 class UserAchievementDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = UserAchievement.objects.all()
     serializer_class = UserAchievementSerializer
 
     def perform_update(self, serializer):
         serializer.save()
+
+class UserAchievementListView(APIView):
+    def get(self, request, pk):
+        user_id = self.kwargs["pk"]
+        user_achievements = UserAchievement.objects.filter(user__id=user_id)
+
+        data = [
+            {
+                "id": achievement.id,
+                "achievement": achievement.achievement.name,
+                "game": achievement.achievement.game.name,
+                "pinned": achievement.pinned,
+                "date_earned": achievement.date_earned,
+                "last_updated": achievement.last_updated,
+                "progress": achievement.progress,
+            }
+            for achievement in user_achievements
+        ]
+
+        return Response(data)
+
