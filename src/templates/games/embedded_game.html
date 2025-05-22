@@ -40,9 +40,6 @@
       <div>
         <h2>{{ game.name }}</h2>
         <p class="text-muted mb-0">{{ game.description|truncatewords:20 }}</p>
-        {% if settings.DEBUG %}
-          <small class="text-info">Debug: Game ID {{ game.id }} | URL: {{ iframe_url }}</small>
-        {% endif %}
       </div>
     </div>
     <div class="d-flex gap-2">
@@ -73,19 +70,29 @@
       if (iframe.requestFullscreen) {
         iframe.requestFullscreen();
       } else if (iframe.webkitRequestFullscreen) {
+        /* Safari */
         iframe.webkitRequestFullscreen();
       } else if (iframe.msRequestFullscreen) {
+        /* IE11 */
         iframe.msRequestFullscreen();
       }
     }
+
+    // Listen for messages from embedded games (for future game completion tracking)
     window.addEventListener('message', function(event) {
+      // Security check - only accept messages from trusted origins
       const trustedOrigins = [
         'https://zhejiej.github.io'
+        // Add other trusted game origins here
       ];
+
       if (trustedOrigins.some(origin => event.origin.startsWith(origin))) {
         console.log('Received message from embedded game:', event.data);
+
+        // Handle game completion events (for future enhancement)
         if (event.data.type === 'gameCompleted') {
           console.log('Game completed:', event.data);
+          // Future: Send completion data to Django backend
         }
       }
     });

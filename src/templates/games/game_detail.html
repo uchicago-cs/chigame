@@ -37,6 +37,12 @@
         <a href="#"><span class="badge rounded-pill text-bg-secondary">{{ mechanic }}</span></a>
       {% endfor %}
       <div class="btn-group btn-group-lg mt-3">
+        {% if game.game_url %}
+          <a href="{% url 'play-embedded-game' pk=game.pk %}"
+             class="btn btn-success">
+            <i class="bi bi-play-fill"></i> Play Game
+          </a>
+        {% endif %}
         <a href="#" class="btn btn-outline-primary">Join a Match</a>
         <a href="#" class="btn btn-outline-primary">Create a Match</a>
         {% if user.is_authenticated %}

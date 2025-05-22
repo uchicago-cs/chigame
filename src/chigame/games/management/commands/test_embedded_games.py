@@ -23,7 +23,7 @@ class Command(BaseCommand):
         wordle_game, created = Game.objects.get_or_create(
             name="Wordle (Embedded)",
             defaults={
-                "description": "Test Wordle game with embedded URL for testing the play infrastructure.",
+                "description": "Wordle game!",
                 "min_players": 1,
                 "max_players": 1,
                 "complexity": 2.0,

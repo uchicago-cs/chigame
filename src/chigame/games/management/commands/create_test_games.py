@@ -135,7 +135,6 @@ class Command(BaseCommand):
         word_category = Category.objects.get_or_create(name="Word Game")[0]
         puzzle_category = Category.objects.get_or_create(name="Puzzle")[0]
         single_player_mechanic = Mechanic.objects.get_or_create(name="Pattern Recognition")[0]
-
         wordle_game, created = Game.objects.get_or_create(
             name="Wordle",
             defaults={
@@ -146,6 +145,7 @@ class Command(BaseCommand):
                 "expected_playtime": 10,
                 "year_published": 2023,
                 "image": "/static/images/no_picture_available.png",
+                "game_url": "https://zhejiej.github.io/Words-Game/",
             },
         )
 
