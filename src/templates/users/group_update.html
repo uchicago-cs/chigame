@@ -17,5 +17,7 @@
       <a href="{% url 'users:group-detail' form.instance.id %}"
          class="btn btn-secondary">Cancel</a>
     </form>
+    <a href="{% url 'users:group-detail' form.instance.id %}"
+       class="btn btn-link mt-3">Back to Group</a>
   </div>
 {% endblock body %}

@@ -22,6 +22,20 @@
         <ul>
           {% for member in object.members.all %}<li>{{ member.username }}</li>{% endfor %}
         </ul>
+        <div class="mt-3">
+          {% if user in object.members.all %}
+            <a href="{% url 'users:group-leave' object.id %}"
+               class="btn btn-warning">Leave Group</a>
+          {% else %}
+            <a href="{% url 'users:group-join' object.id %}" class="btn btn-primary">Join Group</a>
+          {% endif %}
+          {% if user == object.created_by %}
+            <a href="{% url 'users:group-update' object.id %}" class="btn btn-info">Edit Group</a>
+            <a href="{% url 'users:group-delete' object.id %}"
+               class="btn btn-danger">Delete Group</a>
+          {% endif %}
+          <a href="{% url 'users:group-list' %}" class="btn btn-secondary">Back to Groups</a>
+        </div>
       </div>
     </div>
   </div>

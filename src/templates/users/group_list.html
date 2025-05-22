@@ -7,5 +7,12 @@
 
 {% block content %}
   <h1>Groups</h1>
+  <a href="{% url 'users:group-create' %}" class="btn btn-success mb-3">Create New Group</a>
   {% render_table table %}
+  {% for group in table.data %}
+    <div class="mb-2">
+      <a href="{% url 'users:group-detail' group.id %}"
+         class="btn btn-outline-primary btn-sm">View</a>
+    </div>
+  {% endfor %}
 {% endblock content %}
