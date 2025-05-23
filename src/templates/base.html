@@ -109,6 +109,9 @@
                   <a class="nav-link" href="{% url 'tournament-list' %}">Tournaments</a>
                 </li>
                 <li class="nav-item">
+                  <a class="nav-link" href="{% url 'live-chat-list' %}">Live Chats</a>
+                </li>
+                <li class="nav-item">
                   <a class="nav-link"
                      href="{% url 'users:user-profile' request.user.pk %}">{% translate "My Profile" %}</a>
                 </li>
@@ -229,6 +232,8 @@
             </div>
           </div>
         </div>
+        {% block nav_extension %}
+        {% endblock nav_extension %}
       </nav>
     </div>
     {% block body %}

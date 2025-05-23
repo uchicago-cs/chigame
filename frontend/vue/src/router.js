@@ -4,6 +4,9 @@ import AboutPage from './pages/AboutPage.vue';
 import LoginPage from "./pages/LoginPage.vue";
 import ForumsPage from "./pages/ForumsPage.vue";
 import SignupPage from "./pages/SignupPage.vue";
+import ProfilePage from "./pages/ProfilePage.vue";
+import GameLibrary from "./pages/GameLibrary.vue";
+import TournamentPage from './pages/TournamentPage.vue';
 
 const routes = [
   { path: '/', component: HomePage },
@@ -14,7 +17,9 @@ const routes = [
   },
   { path: '/forums', component: ForumsPage },
   { path: '/signup', component: SignupPage },
-
+  { path: '/profile', component: ProfilePage },
+  { path: '/games', component: GameLibrary },
+  { path: '/tournaments', component: TournamentPage },
 ];
 
 const router = createRouter({
