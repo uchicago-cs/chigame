@@ -565,6 +565,38 @@ class InteractiveFictionView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
+        pk = self.kwargs.get("pk")
+
+        try:
+            game = Game.objects.get(pk=pk)
+        except Game.DoesNotExist:
+            # Optionally, handle if no such game exists:
+            game = None
+
+        if not game:
+            # fallback dummy game to prevent pk=None
+            latest_game = Game.objects.create(
+                name="Untitled IF Game",
+                description="Temporary IF placeholder",
+                min_players=1,
+                max_players=1,
+                complexity=1.0,
+            )
+
+        context["game"] = game
+
+        if game.twine_file:
+            context["uploaded_file_url"] = game.twine_file.url
+
+        return context
+
+
+class IFGameCreateView(TemplateView):
+    template_name = "games/interactive-fiction/IF_game_create.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
         latest_game = Game.objects.filter(twine_file__isnull=False).order_by("-id").first()
 
         if not latest_game:
@@ -582,20 +614,6 @@ class InteractiveFictionView(TemplateView):
         if latest_game.twine_file:
             context["uploaded_file_url"] = latest_game.twine_file.url
 
-        return context
-
-
-class IFGameCreateView(UserPassesTestMixin, CreateView):
-    model = InteractiveFictionGame
-    form_class = IFGameForm
-    template_name = "games/interactive-fiction/IF_game_create.html"
-    success_url = reverse_lazy("game-list")
-
-    def test_func(self):
-        return self.request.user.is_staff
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
         return context
 
 
