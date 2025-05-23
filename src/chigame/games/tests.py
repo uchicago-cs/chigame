@@ -387,3 +387,25 @@ class CheckersGameUpdateBoardStateTests(APITestCase):
            format="json",
        )
        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+class CheckersGameGetBoardStateTests(APITestCase):
+   def setUp(self):
+       self.user1 = UserFactory()
+       self.user2 = UserFactory()
+       self.match = MatchFactory()
+       self.player1 = PlayerFactory(user=self.user1, match=self.match)
+       self.player2 = PlayerFactory(user=self.user2, match=self.match)
+       self.checkers_game = CheckersFactory(player_1=self.player1, player_2=self.player2)
+       self.board = CheckersBoardFactory()
+       self.client.force_login(self.user1)
+
+
+   def test_get_board_state_success(self):
+       response = self.client.get(reverse("checkers-get-state", args=[self.board.id]))
+       self.assertEqual(response.status_code, status.HTTP_200_OK)
+       self.assertIn("state", response.data)
+
+
+   def test_get_board_state_invalid_board(self):
+       response = self.client.get(reverse("checkers-get-state", args=[99999]))
+       self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
