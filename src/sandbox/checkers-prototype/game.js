@@ -705,17 +705,20 @@ function changePieceColor(newColorOne, newColorTwo) {
 // Event listener for the toggle colorblind button
 document.addEventListener('DOMContentLoaded', () => {
   const changeColorButton = document.getElementById('toggle-colorblind');
+  const dot = document.querySelector('.dot');
   changeColorButton.addEventListener('click', () => {
     const firstPieceColor = pieces[0].color;
     // if the first piece is a default color, change to colorblind colors
     if (firstPieceColor === COLORS.red || firstPieceColor === COLORS.black) {
       colorblindMode = true;
+      dot.style.backgroundColor = currentPlayer == COLORS.red ? COLORS.strOrange :COLORS.strBlue;
       changePieceColor(COLORS.colorblind_blue, COLORS.colorblind_orange);
       changeColorButton.classList.add('selected');
     }
     // if the first piece is a colorblind color, change to default colors
     else {
       colorblindMode = false;
+      dot.style.backgroundColor = currentPlayer == COLORS.red ? COLORS.strRed: COLORS.strBlack;
       changePieceColor(COLORS.black, COLORS.red);
       changeColorButton.classList.remove('selected');
     }
@@ -753,9 +756,6 @@ function getLegalMoves(color) {
       }
     });
   });
-
-  return moves;
-}
 
   return moves;
 }
