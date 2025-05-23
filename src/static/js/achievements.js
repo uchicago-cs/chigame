@@ -14,6 +14,33 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
+  // Achievement description expansion
+  document.querySelectorAll('.achievement-desc').forEach(function (desc) {
+    if (desc.textContent.trim().length < 25) return;
+    const actualHeight = desc.scrollHeight;
+    const computedHeight = desc.clientHeight;
+    const hasOverflow = actualHeight > computedHeight * 1.25;
+
+    if (hasOverflow) {
+      const ellipsis = document.createElement('span');
+      const expandButton = document.createElement('span');
+      expandButton.className = 'expand-button';
+      expandButton.innerHTML = '↓';
+      expandButton.setAttribute('aria-label', 'Expand description');
+
+      desc.parentNode.insertBefore(ellipsis, desc.nextSibling);
+      desc.parentNode.insertBefore(expandButton, ellipsis.nextSibling);
+
+      expandButton.addEventListener('click', function (e) {
+        e.stopPropagation();
+        const achievement = this.closest('.achievement');
+        const isExpanded = achievement.classList.toggle('expanded');
+        this.innerHTML = isExpanded ? '↑' : '↓';
+        ellipsis.style.display = isExpanded ? 'none' : 'inline';
+      });
+    }
+  });
+
   // Direct and simple tab switching implementation
   document.querySelectorAll('.nav-tabs li').forEach(function (tab) {
     tab.addEventListener('click', function (event) {
@@ -190,7 +217,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     <p class="achievement-date">
                     ${
                       unlockedDate && unlockedDate !== 'Not yet unlocked'
-                        ? 'Unlocked on ' + unlockedDate : 'Not yet unlocked'
+                        ? 'Unlocked on ' + unlockedDate
+                        : 'Not yet unlocked'
                     }
                     </p>
                   </div>

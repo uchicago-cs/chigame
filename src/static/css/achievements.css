@@ -144,14 +144,13 @@
     }
 
     .achievement-info {
-      max-width: calc(100% - 40px);
       overflow: hidden;
     }
 
     .achievement-info h4 {
       margin: 0 0 5px 0;
       font-size: 1.1em;
-      max-width: 100px;
+      max-width: 140px;
       overflow-wrap: break-word;
     }
 
@@ -165,17 +164,6 @@
       color: #aaa;
     }
 
-    .achievement-percent {
-      position: absolute;
-      right: 10px;
-      top: 10px;
-      font-size: 0.8em;
-      background-color: rgba(0, 0, 0, 0.05);
-      padding: 3px 8px;
-      border-radius: 10px;
-      border: 1px solid rgba(0, 0, 0, 0.125);
-    }
-
     .achievement.not-unlocked .achievement-info h4,
     .achievement.not-unlocked .achievement-info p {
       color: #6c757d;
@@ -184,7 +172,6 @@
     .achievement.hidden .achievement-info p.achievement-desc {
       color: #6c757d;
       font-style: italic;
-      max-width: 90%;
       overflow-wrap: break-word;
     }
 
@@ -286,11 +273,15 @@
     .achievement-desc {
       margin: 0;
       font-size: 0.9em;
-      overflow: hidden;
-      max-width: 90%;
       box-orient: vertical;
       max-height: 3em;
       overflow-wrap: break-word;
+      display: -webkit-box;
+      line-height: 1.4;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;  /* This is the key: set to 2 lines */
+      overflow: hidden;         /* Necessary for -webkit-line-clamp to work */
+      text-overflow: ellipsis;  /* Though often implied by -webkit-line-clamp, it's good to be explicit */
     }
 
     .achievement.expanded .achievement-desc {
@@ -299,7 +290,47 @@
       cursor: pointer;
       word-wrap: break-word;
       overflow-wrap: break-word;
+      display: block;             /* Or its original display type if not 'block'. This overrides 'display: -webkit-box;' */
+      -webkit-line-clamp: unset;  /* Explicitly removes the line clamping. 'none' or 'initial' can also work. */
+      overflow: visible;          /* Allows all text to be seen, overriding 'overflow: hidden;' */
     }
+
+    .achievement-title {
+    word-break: normal !important;
+    white-space: normal;
+    overflow-wrap: normal;
+    }
+
+    .expand-button {
+      display: inline-block;
+      color: var(--accent);
+      background-color: rgba(13, 110, 253, 0.1);
+      padding: 2px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.85em;
+      border: none;
+      position: absolute;
+      left: 12px;
+      margin-left: 12px;
+      top: 60px;
+    }
+
+    .expand-button.hidden {
+      display: none;
+    }
+
+    .expand-button:hover {
+      background-color: rgba(13, 110, 253, 0.2);
+    }
+
+    /* When expanded, show full text */
+    .expanded .achievement-desc {
+      white-space: normal;
+      overflow: visible;
+      max-height: none;
+    }
+
 
     .pin-button {
       background-color: transparent;
@@ -326,15 +357,10 @@
 
     /* Reposition the percentage badge */
     .achievement-percent {
-      position: absolute;
-      right: 45px;
-      top: 10px;
+      display: block;
+      margin: 4px 0 8px 0;
       font-size: 0.8em;
-      background-color: rgba(0, 0, 0, 0.05);
-      padding: 3px 8px;
-      border-radius: 10px;
-      border: 1px solid rgba(0, 0, 0, 0.125);
-      white-space: nowrap;
+      max-width: 120px;
     }
 
     /* Responsive styles */

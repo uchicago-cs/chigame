@@ -87,13 +87,14 @@
                       </span>
                     </div>
                     <div class="achievement-info">
-                      <h4>
+                      <h4 class="achievement-title">
                         {% if achievement.spoiler and not achievement.is_unlocked_for_template %}
                           ??? Secret achievement
                         {% else %}
                           {{ achievement.name }}
                         {% endif %}
                       </h4>
+                      <span class="achievement-percent">{{ achievement.percent_of_players }}% of players</span>
                       <p class="achievement-desc">
                         {% if achievement.spoiler and not achievement.is_unlocked_for_template %}
                           ??? Secret achievement
@@ -114,7 +115,6 @@
                         {% endif %}
                       </p>
                     </div>
-                    <span class="achievement-percent">{{ achievement.percent_of_players }}% of players</span>
                     <button class="pin-button {% if achievement.pinned_for_template %}active{% endif %}"
                             data-achievement-id="{{ achievement.id }}">📌</button>
                     {% if achievement.threshold and achievement.progress_for_template %}
@@ -148,7 +148,7 @@
                 </span>
               </div>
               <div class="achievement-info">
-                <h4>{{ user_achievement.achievement.name }}</h4>
+                <h5>{{ user_achievement.achievement.name }}</h5>
                 <p class="achievement-desc">
                   {{ user_achievement.achievement.description }} in {{ user_achievement.achievement.game.name }}
                 </p>
