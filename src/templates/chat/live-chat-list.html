@@ -2,7 +2,21 @@
 
 {% block content %}
   <div class="container">
-    <h1>Live Chats</h1>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h1 class="mb-0">Live Chats</h1>
+      <form method="post" action="{% url 'toggle-profanity' %}">
+        {% csrf_token %}
+        <button id="profanityToggleBtn"
+                type="button"
+                class="btn btn-sm btn-outline-primary">
+          {% if request.user.userprofile.profanity_enabled %}
+            🔕 Disable Profanity Filter
+          {% else %}
+            🔔 Enable Profanity Filter
+          {% endif %}
+        </button>
+      </form>
+    </div>
     <div class="search-container mb-3">
       <input type="text"
              id="search-input"
@@ -54,6 +68,23 @@
         });
       });
       searchInput.addEventListener('input', handleSearchInput);
+    });
+    document.getElementById("profanityToggleBtn").addEventListener("click", function() {
+      fetch("{% url 'toggle-profanity' %}", {
+          method: "POST",
+          headers: {
+            "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value,
+            "X-Requested-With": "XMLHttpRequest"
+          }
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            this.textContent = data.profanity_enabled ?
+              "🔕 Disable Profanity Filter" :
+              "🔔 Enable Profanity Filter";
+          }
+        });
     });
   </script>
 {% endblock content %}
