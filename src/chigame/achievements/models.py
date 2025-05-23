@@ -29,6 +29,20 @@ class Achievement(models.Model):
     class Meta:
         unique_together = ("name", "game")
 
+    def advance(self, user, amount=1):
+        """
+        Advance the progress of a user towards this achievement.
+        """
+        user_achievement, created = UserAchievement.objects.get_or_create(user=user, achievement=self)
+        if created:
+            amount -= 1
+        if user_achievement.progress >= self.threshold:
+            return
+        user_achievement.progress += amount
+        if user_achievement.progress >= self.threshold:
+            user_achievement.date_earned = models.DateTimeField(auto_now_add=True)
+        user_achievement.save()
+
 
 class UserAchievement(models.Model):
     """
