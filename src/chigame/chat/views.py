@@ -11,12 +11,12 @@ from .models import LiveChat, LiveChatMessage, LiveChatMessageReaction, LiveChat
 def chat(request, chat_id):
     chat = get_object_or_404(LiveChat, id=chat_id)
     messages = LiveChatMessage.objects.filter(live_chat=chat).order_by("sent_at")
-
+    chat_user = LiveChatUser.objects.filter(live_chat=chat, user=request.user).first()
     # if the chat is public, add the request user to the chat
     if request.user.is_authenticated and chat.public and not chat.users.filter(id=request.user.id).exists():
         chat.users.add(request.user)
 
-    return render(request, "chat/index.html", {"chat": chat, "messages": messages})
+    return render(request, "chat/index.html", {"chat": chat, "messages": messages, "chat_user": chat_user})
 
 
 def live_chat_list(request):
