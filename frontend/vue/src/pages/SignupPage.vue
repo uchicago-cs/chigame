@@ -66,8 +66,6 @@ async function handleSubmit() {
       err.response?.data?.message ||
       err.message
   }
-  /* console.log('logging in with', form.value)
-  router.push('/') */
 }
 </script>
 
