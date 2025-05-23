@@ -48,7 +48,6 @@ def toggle_pin_achievement(request, achievement_id):
 
 
 def get_pinned_achievements(request):
-    # Change from request.user.profile to request.user
     pinned_achievements = UserAchievement.objects.filter(user=request.user, pinned=True).select_related(
         "achievement", "achievement__game"
     )
