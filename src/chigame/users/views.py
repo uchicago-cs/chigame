@@ -701,7 +701,7 @@ def move_notification(request, pk):
     if new_category and new_category in dict(Notification.CATEGORY_CHOICES):
         notification.category = new_category
         notification.save()
-        messages.success(request, f"Notification moved to {new_category}.")
+        # messages.success(request, f"Notification moved to {new_category}.")
         return redirect("users:user-inbox-category", pk=request.user.pk, category=next_category)
 
     label_id = request.POST.get("label_id")
@@ -795,12 +795,25 @@ def notifications_by_label(request, label_id):
 
 @login_required
 @require_POST
-def delete_notification_label(request, label_id):
+@csrf_protect 
+def unassign_label_from_notification(request, notification_id, label_id):
+    notification = get_object_or_404(Notification, pk=notification_id, receiver=request.user)
 
-    label = get_object_or_404(NotificationLabel, pk=label_id, user=request.user)
-    label_name = label.name
+    try:
+        # Use the label_id from the URL parameter directly
+        label_to_unassign = NotificationLabel.objects.get(pk=label_id, user=request.user)
+
+        # Check if the label is actually assigned to this notification
+        if label_to_unassign in notification.labels.all():
+            notification.labels.remove(label_to_unassign)
+            messages.success(request, f"Label '{label_to_unassign.name}' removed from notification.")
+        else:
+            messages.info(request, f"Label '{label_to_unassign.name}' was not assigned to this notification.")
+
+    except NotificationLabel.DoesNotExist:
+        messages.error(request, "Label not found or does not belong to you.")
+    except Exception as e: # Catch any other potential errors
+        messages.error(request, f"An error occurred: {str(e)}")
+
+    return redirect(reverse("users:notifications-by-label", kwargs={"label_id": label_id}))
     
-    label.delete()
-    
-    messages.success(request, f"Label '{label_name}' deleted successfully.")
-    return redirect(reverse("users:manage-labels-page"))

@@ -260,3 +260,11 @@ a {
 .bulk-op-buttons {
   margin-bottom: 10px;
 }
+
+.dismiss-label {
+  background-color: transparent;
+}
+
+.dismiss-label.btn:hover {
+  background-color: transparent;
+}

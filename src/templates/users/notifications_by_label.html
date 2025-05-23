@@ -50,8 +50,8 @@
                 <ul class="list-group">
                     {% for notification in notifications %}
                         {% with notification_type=notification.type %}
-                            <div class="inbox-item mb-2">
-                                <li class="notification-container list-group-item d-flex justify-content-between align-items-center border shadow-sm {% if notification.read %}read{% else %}unread{% endif %}"
+                            <div class="inbox-item">
+                                <li class="notification-container list-group-item d-flex justify-content-between align-items-center border shadow-sm notification-hover {% if notification.read %}read{% else %}unread{% endif %}">
                                     <div class="message-row ms-2 me-auto">
                                         <div class="d-flex align-items-center gap-2">
                                             <small class="sender-minimal me-2 text-muted">{{ notification.get_sender_display }}</small>
@@ -59,17 +59,25 @@
                                                 <span>{{ notification.get_rich_message|truncatewords:15 }}</span>
                                             </a>
                                         </div>
-                                        <small class="d-block mt-1">
+                                        <div class="mt-1">
                                             <span class="badge bg-light text-dark border me-1">{{ notification.get_category_display }}</span>
-                                            {% for other_label in notification.labels.all %}
-                                                {% if other_label.id != label.id %} 
-                                                    <span class="badge bg-secondary me-1">{{ other_label.name }}</span>
+                                            {% for other_label_item in notification.labels.all %} {# Renamed loop var for clarity #}
+                                                {% if other_label_item.id != label.id %} 
+                                                    <span class="badge bg-secondary me-1">{{ other_label_item.name }}</span>
                                                 {% endif %}
                                             {% endfor %}
-                                        </small>
+                                        </div>
                                     </div>
-                                    <small class="ms-3 text-muted flex-shrink-0">{{ notification.first_sent|timesince }} ago</small>
+                                    <small class="ms-3 text-muted flex-shrink-0 align-self-center">{{ notification.first_sent|timesince }} ago</small>
                                 </li>
+                                <div class="list-group-item d-flex justify-content-end align-items-center py-1 px-3 border-top-0 shadow-sm">
+                                     <form method="POST" action="{% url 'users:unassign-label-from-notification' notification_id=notification.pk label_id=label.id %}" class="m-0">
+                                        {% csrf_token %}
+                                        <button type="submit" class="dismiss-label btn btn-link text-danger p-0 dismiss-label" title="Remove '{{ label.name }}' label from this notification">
+                                            <i class="bi bi-x-circle icon-lg"></i>
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
                         {% endwith %}
                     {% endfor %}
@@ -91,13 +99,20 @@
 .unread .message-title span { /* Example: If you want unread titles to be bolder within the span */
     /* font-weight: 600; /* This is an alternative to adding fw-bold directly in the class */
 }
-.notification-container:hover {
+.notification-container:hover, .notification-hover:hover { /* MODIFICATION: Added .notification-hover here */
     background-color: #e9ecef; /* Hover effect */
 }
 /* Ensure text-muted looks as expected */
 .text-muted {
     color: #6c757d !important; /* Bootstrap's muted color */
 }
+
+/* If you have a general .icon-lg class, ensure it's defined, e.g.: */
+/*
+.icon-lg {
+    font-size: 1.25rem; /* Adjust size as needed */
+/* }
+*/
 </style>
 
 {% endblock content %}
