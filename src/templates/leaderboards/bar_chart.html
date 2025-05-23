@@ -10,7 +10,7 @@
     </a>
     <a href="{% url 'top_time_played_bar_chart' game.id %}"
        class="btn {% if 'Time' in score_metric_name %}btn-dark active{% else %}btn-outline-dark{% endif %}">
-       Time Played
+       Time Played (min)
     </a>
     <a href="{% url 'top_games_won_bar_chart' game.id %}"
        class="btn {% if 'Games Won' in score_metric_name %}btn-dark active{% else %}btn-outline-dark{% endif %}">

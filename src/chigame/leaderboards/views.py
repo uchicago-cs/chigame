@@ -14,13 +14,13 @@ def get_tier_info(score, metric_name):
         elif score >= 20000:
             tier_name = "Platinum"
             tier_badge = "✨"
-        elif score >= 9000:
+        elif score >= 8000:
             tier_name = "Gold"
             tier_badge = "🥇"
         elif score >= 7000:
             tier_name = "Silver"
             tier_badge = "🥈"
-        elif score > 5000:
+        elif score >= 5000:
             tier_name = "Bronze"
             tier_badge = "🥉"
     elif "Games Won" in metric_name:
@@ -40,10 +40,10 @@ def get_tier_info(score, metric_name):
         if score >= 80:
             tier_name = "Veteran"
             tier_badge = "🕰️"
-        elif score >= 60:
+        elif score >= 65:
             tier_name = "Dedicated"
             tier_badge = "⏳"
-        elif score >= 40:
+        elif score >= 30:
             tier_name = "Active"
             tier_badge = "⚡"
         elif score >= 10:
