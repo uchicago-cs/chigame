@@ -8,6 +8,9 @@ from django.utils import timezone
 
 from chigame.games.models import Game, Lobby, Match, Tournament
 
+from .models import Category, Feedback, Mechanic, Person, Player
+from .views import get_recommended_games
+
 User = get_user_model()
 
 
@@ -353,15 +356,6 @@ class MatchStatsViewTests(TestCase):
         self.assertIsNone(response.context["fastest_match"])
         self.assertIsNone(response.context["slowest_match"])
         self.assertEqual(len(response.context["all_matches"]), 0)
-=======
-
-from django.contrib.auth import get_user_model
-from django.test import TestCase
-from django.urls import reverse
-from django.utils import timezone
-
-from .models import Category, Feedback, Game, Lobby, Match, Mechanic, Person, Player, Tournament
-from .views import get_recommended_games
 
 
 class FeedbackTests(TestCase):
@@ -586,4 +580,3 @@ class RecommendationSystemTest(TestCase):
         recommendations = get_recommended_games(self.game1, user=self.user)
         self.assertIn(self.game2, recommendations)
         self.assertEqual(list(recommendations)[0], self.game3)  # game3 should now be first
-

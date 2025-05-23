@@ -4,13 +4,9 @@ from datetime import timedelta
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
-
-from django.db import models
+from django.db import models, transaction
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-
-from django.db import models, transaction
-
 from django.utils import timezone
 
 from chigame.users.models import Group, Notification, User
@@ -907,9 +903,6 @@ def update_match_timing(sender, instance, **kwargs):
 
 
 # ================ CHECKERS ================
-=======
-# ================ CHECKERS =================
-
 
 
 class Checkers(models.Model):
