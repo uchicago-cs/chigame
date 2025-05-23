@@ -9,6 +9,48 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Press+Start+2P&display=swap"
           rel="stylesheet" />
     <link rel="stylesheet" href="game.css" />
+    <!-- Immediately apply theme preference before page renders -->
+    <script>
+      // Run this immediately - before parsing HTML - to set theme
+      (function() {
+        // Keep document hidden until styles are fully loaded and applied
+        document.documentElement.style.visibility = 'hidden';
+
+        // Apply theme settings from localStorage
+        try {
+          const saved = localStorage.getItem("gameSettings");
+          if (saved) {
+            const settings = JSON.parse(saved);
+            // Disable transitions while applying theme to prevent flash
+            document.documentElement.classList.add('theme-transition-disabled');
+
+            // Apply theme settings
+            if (settings.darkMode) {
+              document.body.classList.add("dark-mode");
+            }
+            if (settings.colorblindMode) {
+              document.body.classList.add("colorblind-mode");
+            }
+          }
+        } catch (e) {
+          console.error('Error applying theme:', e);
+        }
+
+        // Make content visible once page has loaded
+        window.addEventListener('DOMContentLoaded', () => {
+          // Wait for styles to be fully applied
+          setTimeout(() => {
+            // Make page visible
+            document.documentElement.style.visibility = 'visible';
+
+            // Re-enable transitions after a short delay
+            setTimeout(() => {
+              document.documentElement.classList.remove('theme-transition-disabled');
+            }, 100);
+          }, 50);
+        });
+      })();
+    </script>
   </head>
   <body>
     <div id="notification-wrapper">
@@ -17,7 +59,7 @@
     <!-- Dark overlay for menus -->
     <div id="menu-overlay" class="menu-overlay"></div>
     <!-- Word Length Change -->
-    <div id="word-length-modal" class="modal visible">
+    <div id="word-length-modal" class="modal">
       <div class="modal-content">
         <h2>Choose Word Length</h2>
         <select id="word-length-selector">

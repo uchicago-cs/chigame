@@ -3,36 +3,69 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>"Words"</title>
+    <title>Words</title>
     <link rel="stylesheet" href="style.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Press+Start+2P&display=swap"
           rel="stylesheet" />
+    <!-- Immediately apply theme preference before page renders -->
+    <script>
+      // Run this immediately - before parsing HTML - to set theme
+      (function() {
+        // Keep document hidden until styles are fully loaded and applied
+        document.documentElement.style.visibility = 'hidden';
+
+        // Apply theme settings from localStorage
+        try {
+          const saved = localStorage.getItem("gameSettings");
+          if (saved) {
+            const settings = JSON.parse(saved);
+            // Disable transitions while applying theme to prevent flash
+            document.documentElement.classList.add('theme-transition-disabled');
+
+            // Apply theme settings - add dark-mode class if darkMode setting is true
+            if (settings.darkMode) {
+              document.body.classList.add("dark-mode");
+            } else {
+              document.body.classList.remove("dark-mode");
+            }
+
+            if (settings.colorblindMode) {
+              document.body.classList.add("colorblind-mode");
+            }
+          }
+        } catch (e) {
+          console.error('Error applying theme:', e);
+        }
+
+        // Make content visible once page has loaded
+        window.addEventListener('DOMContentLoaded', () => {
+          // Wait for styles to be fully applied
+          setTimeout(() => {
+            // Make page visible
+            document.documentElement.style.visibility = 'visible';
+
+            // Re-enable transitions after a short delay
+            setTimeout(() => {
+              document.documentElement.classList.remove('theme-transition-disabled');
+            }, 100);
+          }, 50);
+        });
+      })();
+    </script>
   </head>
   <body>
     <div id="container">
-      <div id="header">
-        <div class="nav-buttons">
-          <a href="{% url 'index' %}" class="nav-btn">Home</a>
-          <button id="how-to-play-btn" class="nav-btn">How to Play ▼</button>
-          <button id="settings-btn" class="nav-btn">⚙</button>
-        </div>
-        <div class="logo-title">
+      <div id="title">
+        <div class="logo-container">
           <h1 class="name">WORDS</h1>
         </div>
-      </div>
-      <div id="title">
         <h2 class="select">Select Game Mode</h2>
-      </div>
-      <div class="profile-section">
-        <h3>
-          USERNAME: <span id="username">GUEST</span>
-        </h3>
       </div>
       <div class="game-modes">
         <div class="mode">
-          <a href="{% url 'solo' mode=solo %}">
+          <a href="{% url 'solo_game' %}">
             <button class="mode-btn">Solo</button>
           </a>
           <div class="mode-description">
@@ -40,30 +73,37 @@
               <strong>BASIC WORD</strong>
             </p>
             <p>
-              Get a new five-letter word each time you play. No restrictions - play as many times as you want with a different word each game.
+              Get a new four, five, or six-letter word each time you play. No restrictions - play as many times as you want
+              with a different word each game.
             </p>
           </div>
         </div>
         <div class="mode">
-          <a href="{% url 'game' mode=game %}">
+          <a href="{% url 'daily_game' %}">
             <button class="mode-btn">Daily</button>
           </a>
           <div class="mode-description">
             <p>
               <strong>DAILY CHALLENGE</strong>
             </p>
-            <p>One five-letter word per day. Everyone worldwide gets the same word. Come back daily for a new challenge.</p>
+            <p>
+              One word per day of each word length. Everyone worldwide gets the same word. Come back daily for a new
+              challenge.
+            </p>
           </div>
         </div>
         <div class="mode">
-          <a href="#">
-            <button class="mode-btn disabled" onclick="alert('Coming soon!')">Versus</button>
+          <a href="{% url 'versus_game' %}">
+            <button class="mode-btn">Versus</button>
           </a>
           <div class="mode-description">
             <p>
-              <strong>COMING SOON</strong>
+              <strong>Versus Mode</strong>
             </p>
-            <p>Challenge your friends in real-time word battles.</p>
+            <p>
+              Challenge your friends in real-time word battles. Race against the clock to guess words faster
+              than your opponent.
+            </p>
           </div>
         </div>
         <div class="mode">
@@ -79,9 +119,48 @@
         </div>
       </div>
       <footer>
+        <div class="settings">
+          <label class="theme-toggle">
+            <input type="checkbox" id="dark-mode-toggle" />
+            Light Mode
+          </label>
+        </div>
         <p>© 2025 WORDS - UNIVERSITY OF CHICAGO</p>
       </footer>
     </div>
-    <script src="index.js" defer></script>
+    <script>
+      // Theme toggle functionality
+      document.getElementById('dark-mode-toggle').addEventListener('change', function() {
+        document.body.classList.toggle('dark-mode', this.checked);
+
+        // Save setting to localStorage
+        try {
+          const saved = localStorage.getItem("gameSettings");
+          let settings = saved ? JSON.parse(saved) : {};
+          settings.darkMode = this.checked;
+          localStorage.setItem("gameSettings", JSON.stringify(settings));
+        } catch (e) {
+          console.error('Error saving settings:', e);
+        }
+      });
+
+      // Load theme toggle setting from localStorage and apply it immediately
+      document.addEventListener('DOMContentLoaded', function() {
+        try {
+          const saved = localStorage.getItem("gameSettings");
+          if (saved) {
+            const settings = JSON.parse(saved);
+            // Set the checkbox state
+            const checkbox = document.getElementById('dark-mode-toggle');
+            checkbox.checked = settings.darkMode || false;
+
+            // Make sure the class matches the checkbox state
+            document.body.classList.toggle('dark-mode', checkbox.checked);
+          }
+        } catch (e) {
+          console.error('Error loading settings:', e);
+        }
+      });
+    </script>
   </body>
 </html>

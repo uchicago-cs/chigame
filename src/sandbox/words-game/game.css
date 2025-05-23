@@ -30,6 +30,28 @@
     box-sizing: border-box;
 }
 
+/* Prevent Flash of Unstyled Content with critical CSS */
+html { visibility: visible; }
+html.theme-ready { visibility: visible; }
+
+/* Global transition disabling during initial theme load */
+html.theme-transition-disabled,
+html.theme-transition-disabled *,
+.theme-transition-disabled,
+.theme-transition-disabled * {
+    transition: none !important;
+    animation: none !important;
+}
+
+/* Make sure transitions are consistent */
+body, #menu-overlay, .modal, .modal-content, .side-panel, #how-to-play-text, .settings-screen {
+    transition-property: all;
+    transition-duration: 400ms;
+    transition-timing-function: cubic-bezier(0.25, 0.1, 0.25, 1.0);
+    will-change: opacity, transform, background-color;
+    backface-visibility: hidden;
+}
+
 body {
     font-family: 'Poppins', sans-serif;
     background-color: var(--bg-dark);
@@ -800,12 +822,47 @@ body.dark-mode .settings-screen::-webkit-scrollbar-thumb {
 
 
 body.dark-mode {
-    --card-bg: #c4c4c4;
+    /* Background colors */
+    --bg-dark: #ffffff;
+    --bg-darker: #f0f0f0;
+    --card-bg: #f5f5f5;
+    --card-border: #d0d0d0;
+
+    /* Text colors */
     --text: #000000;
-    --bg-dark: #c4c4c4;
-    --accent: #8c703b;
-    --key-bg: #cfcfcf;
+    --text-secondary: #333333;
+
+    /* UI element colors */
+    --key-bg: #e0e0e0;
     --key-text: #000000;
+
+    /* Keep accent colors */
+    --accent: #8c703b;
+
+    /* Make sure shadows are visible */
+    --shadow-color: rgba(0, 0, 0, 0.2);
+}
+
+body.dark-mode h1 {
+    text-shadow: 3px 3px 0px rgba(0, 0, 0, 0.1);
+}
+
+body.dark-mode .nav-btn,
+body.dark-mode .start-game,
+body.dark-mode #restart-btn {
+    box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.15);
+}
+
+body.dark-mode .settings-screen h2,
+body.dark-mode #how-to-play-text h3 {
+    text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.2);
+}
+
+body.dark-mode .keyboard-row button,
+body.dark-mode #word-length-selector,
+body.dark-mode .settings-screen input[type="checkbox"],
+body.dark-mode .settings-screen input[type="range"] {
+    box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.15);
 }
 
 body.colorblind-mode {
