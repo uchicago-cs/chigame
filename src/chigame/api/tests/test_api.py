@@ -2,7 +2,10 @@
 
 # Create your tests here.
 # Compare this snippet from src/chigame/api/tests.py:
+from datetime import timedelta
+
 from django.urls import reverse
+from django.utils import timezone
 
 # Related third party imports
 from rest_framework import status
@@ -11,8 +14,16 @@ from rest_framework.utils.serializer_helpers import ReturnDict
 
 # Local application/library specific imports
 from chigame.api.serializers import GameSerializer
-from chigame.api.tests.factories import ChatFactory, GameFactory, LobbyFactory, TournamentFactory, UserFactory
-from chigame.games.models import Game, Lobby, Message, User
+from chigame.api.tests.factories import (
+    ChatFactory,
+    FeedbackFactory,
+    GameFactory,
+    LobbyFactory,
+    MatchFactory,
+    TournamentFactory,
+    UserFactory,
+)
+from chigame.games.models import Feedback, Game, Lobby, Message, Review, User
 
 
 class GameTests(APITestCase):
@@ -829,3 +840,439 @@ class AccessControlTests(APITestCase):
         data = {"token_id": 0, "tournament": tournament.id}
         response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+class SpamFilterTests(APITestCase):
+    def setUp(self):
+        self.user = UserFactory()
+        self.client.force_authenticate(user=self.user)
+        self.game = GameFactory()
+        self.game.save()
+        self.tournament = TournamentFactory(game=self.game)
+        self.chat = ChatFactory(tournament=self.tournament)
+        self.client.force_authenticate(user=self.user)
+
+    def test_review_rejects_spam(self):
+        url = reverse("api-game-review-create", args=[self.game.id])
+        data = {
+            "title": "Limited offer",
+            "review": "Buy now and save big",  # Spammy content
+            "rating": 1,
+            "is_public": True,
+        }
+        response = self.client.post(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("spam", str(response.data).lower())
+        self.assertEqual(Review.objects.count(), 0)
+
+    # def test_message_rejects_spam(self):
+    #     url = reverse("api-chat-list")
+    #     data = {
+    #         # "sender": self.user.email,
+    #         "tournament": self.tournament.id,
+    #         "content": "Click here to claim free money!",  # Spammy content
+    #         "update_on": None,
+    #     }
+    #     response = self.client.post(url, data, format="json")
+    #     self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+    #     self.assertIn("spam", str(response.data).lower())
+    #     self.assertEqual(Message.objects.count(), 0)
+
+    def test_review_allows_normal_content(self):
+        url = reverse("api-game-review-create", args=[self.game.id])
+
+        print("Game ID:", self.game.id)
+        from chigame.games.models import Game  # add this import at the top if needed
+
+        print("Game exists:", Game.objects.filter(id=self.game.id).exists())
+
+        data = {
+            "title": "Challenging and fun",
+            "review": "Had a great time playing with friends.",
+            "rating": 5,
+            "is_public": True,
+        }
+        response = self.client.post(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Review.objects.count(), 1)
+
+    # def test_message_with_excessive_exclamations_rejected(self):
+    #     url = reverse("api-chat-list")
+    #     data = {
+    #         # "sender": self.user.email,
+    #         "tournament": self.tournament.id,
+    #         "content": "!!!!!!!!!!!!!!!",  # Spam-like behavior
+    #         "update_on": None,
+    #     }
+    #     response = self.client.post(url, data, format="json")
+    #     self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+    #     self.assertIn("spam", str(response.data).lower())
+    #     self.assertEqual(Message.objects.count(), 0)
+
+    def test_review_with_excessive_characters_rejected(self):
+        url = reverse("api-game-review-create", args=[self.game.id])
+        data = {
+            "title": "Spammy symbols",
+            "review": "!!!!!!!!!",  # Detected by repeated character rule
+            "rating": 1,
+            "is_public": True,
+        }
+        response = self.client.post(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("spam", str(response.data).lower())
+        self.assertEqual(Review.objects.count(), 0)
+
+    def test_short_legit_review_passes(self):
+        url = reverse("api-game-review-create", args=[self.game.id])
+        data = {
+            "title": "Fun!",
+            "review": "Quick and intense game",  # short but varied
+            "rating": 4,
+            "is_public": True,
+        }
+        response = self.client.post(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Review.objects.count(), 1)
+
+    def test_review_with_repetitive_words_rejected(self):
+        url = reverse("api-game-review-create", args=[self.game.id])
+        data = {
+            "title": "meh",
+            "review": "good good good",  # Not enough unique words
+            "rating": 3,
+            "is_public": True,
+        }
+        response = self.client.post(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("spam", str(response.data).lower())
+        self.assertEqual(Review.objects.count(), 0)
+
+    def test_review_too_short_rejected(self):
+        url = reverse("api-game-review-create", args=[self.game.id])
+        data = {
+            "title": "Too short",
+            "review": "ab",  # Only two characters
+            "rating": 2,
+            "is_public": True,
+        }
+        response = self.client.post(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("spam", str(response.data).lower())
+        self.assertEqual(Review.objects.count(), 0)
+
+
+class SimulationTests(APITestCase):
+    def setUp(self):
+        self.user = UserFactory()
+        self.game = GameFactory()
+        self.tournament = TournamentFactory(game=self.game, created_by=self.user)
+
+        self.matches = []
+        # Create 4 matches that are properly wired to this tournament + game
+        for _ in range(4):
+            players = UserFactory.create_batch(2)
+            lobby = LobbyFactory(game=self.game, created_by=self.user)
+            lobby.members.set(players)
+            lobby.save()
+
+            match = MatchFactory(game=self.game, lobby=lobby, players=players)
+            self.tournament.matches.add(match)
+            self.matches.append(match)
+        # # create 4 matches under that tournament
+        # for _ in range(4):
+        #     m = MatchFactory()
+        #     self.tournament.matches.add(m)
+
+        self.url = reverse("api-tournament-simulate", args=[self.tournament.pk])
+        self.client.force_authenticate(self.user)
+
+    def test_single_elimination(self):
+        # Simulate a tournament with single elimination
+        resp = self.client.post(self.url, {}, format="json")
+        self.assertEqual(resp.status_code, 200)
+        self.assertFalse(resp.data["is_double_elimination"])
+        self.assertIn("rounds", resp.data)
+        # the winner must be one of the players in your matches
+        all_player_ids = {u.id for m in self.tournament.matches.all() for u in m.players.all()}
+        self.assertIn(resp.data["tournament_winner"], all_player_ids)
+
+    def test_double_elimination(self):
+        # Simulate a tournament with double elimination
+        resp = self.client.post(self.url, {"double_elimination": True}, format="json")
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(resp.data["is_double_elimination"])
+
+    def test_simulation_with_no_matches(self):
+        # Simulate a tournament with no matches (edge case)
+
+        # Remove all matches from tournament
+        self.tournament.matches.clear()
+
+        resp = self.client.post(self.url, {}, format="json")
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.data["rounds"], {})
+        self.assertIsNone(resp.data["tournament_winner"])
+
+    def test_simulated_round_match_counts(self):
+        # Ensures that the number of matches in the first round is equal to the number of matches in the tournament
+        # This prevents duplicate mathces
+        resp = self.client.post(self.url, {}, format="json")
+        self.assertEqual(resp.status_code, 200)
+
+        rounds = resp.data["rounds"]
+        round1_matches = rounds[1]["winners"]
+        self.assertEqual(len(round1_matches), self.tournament.matches.count())
+
+    def test_double_elimination_includes_losers_bracket(self):
+        resp = self.client.post(self.url, {"double_elimination": True}, format="json")
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn("losers", resp.data["rounds"][2])
+
+    def test_double_elimination_final_match_present(self):
+        # Checks that double elimination includes a final match
+        resp = self.client.post(self.url, {"double_elimination": True}, format="json")
+        self.assertEqual(resp.status_code, 200)
+
+        final_matches = resp.data["rounds"].get("3", {}).get("final", [])
+        if len(final_matches) > 0:
+            self.assertIn("players", final_matches[0])
+
+
+class FeedbackTests(APITestCase):
+    def setUp(self):
+        self.user = UserFactory()
+        self.game = GameFactory()
+
+        now = timezone.now()
+
+        self.tournament = TournamentFactory(
+            game=self.game,
+            created_by=self.user,
+            registration_start_date=now + timedelta(days=1),
+            registration_end_date=now + timedelta(days=2),
+            tournament_start_date=now + timedelta(days=3),
+            tournament_end_date=now + timedelta(days=4),
+        )
+
+        # self.tournament = TournamentFactory(game=self.game, created_by=self.user)
+        self.endpoint = reverse("api-feedback-list-create", args=[self.tournament.id])
+        self.client.force_authenticate(user=self.user)
+
+    def test_create_feedback(self):
+        self.client.force_authenticate(user=self.user)
+
+        data = {"rating": 5, "comment": "Awesome tournament!"}
+        response = self.client.post(self.endpoint, data, format="json")
+
+        print(response.status_code)
+        print(response.data)
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data["rating"], data["rating"])
+        self.assertEqual(response.data["comment"], data["comment"])
+        self.assertEqual(response.data["tournament"], self.tournament.id)
+        self.assertEqual(response.data["user"], self.user.id)
+
+    def test_list_feedback_ordering(self):
+        FeedbackFactory(tournament=self.tournament, user=self.user, rating=3, comment="First comment")
+        FeedbackFactory(tournament=self.tournament, user=self.user, rating=4, comment="Second comment")
+
+        response = self.client.get(self.endpoint)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        results = response.data["results"]
+        self.assertEqual(len(results), 2)
+        # Check reverse chronological order by created_at
+        self.assertGreaterEqual(results[0]["created_at"], results[1]["created_at"])
+
+    def test_update_feedback(self):
+        feedback = FeedbackFactory(tournament=self.tournament, user=self.user, rating=2)
+        detail_url = reverse("api-feedback-detail", args=[feedback.id])
+
+        data = {"rating": 4, "comment": "Updated comment"}
+
+        response = self.client.patch(detail_url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["rating"], 4)
+        self.assertEqual(response.data["comment"], "Updated comment")
+
+    def test_delete_feedback(self):
+        feedback = FeedbackFactory(tournament=self.tournament, user=self.user, rating=2)
+        detail_url = reverse("api-feedback-detail", args=[feedback.id])
+
+        response = self.client.delete(detail_url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(Feedback.objects.filter(id=feedback.id).exists())
+
+
+class JWTAuthenticationTests(APITestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="testuser", email="test@example.com", password="testpassword123")
+        self.token_url = reverse("token-obtain-pair")
+
+        # we use lobby since it requries authorization
+        self.game = GameFactory()
+        self.protected_url = reverse("api-lobby-list")
+        self.protected_data = {
+            "game": self.game.id,
+            "name": "New Lobby",
+            "min_players": 2,
+            "max_players": 4,
+            "members": [self.user.id],
+            "created_by": self.user.id,
+        }
+
+    def test_obtain_token(self):
+        response = self.client.post(
+            self.token_url, {"username": "testuser", "password": "testpassword123"}, format="json"  # try username
+        )
+
+        # if username doesn't work us e email
+        if response.status_code != status.HTTP_200_OK:
+            response = self.client.post(
+                self.token_url, {"email": "test@example.com", "password": "testpassword123"}, format="json"
+            )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("access", response.data)
+        self.assertIn("refresh", response.data)
+        return response.data["access"], response.data["refresh"]
+
+    def test_access_protected_endpoint_with_token(self):
+        try:
+            access_token, _ = self.test_obtain_token()
+            self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access_token}")
+            response = self.client.post(self.protected_url, self.protected_data, format="json")
+            self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        except AssertionError as e:
+            self.fail(f"Failed to access protected endpoint: {e}")
+
+    def test_token_refresh(self):
+        try:
+            _, refresh_token = self.test_obtain_token()
+
+            # se refresh token to get new access token
+            refresh_url = reverse("token-refresh")
+            refresh_response = self.client.post(refresh_url, {"refresh": refresh_token}, format="json")
+
+            self.assertEqual(refresh_response.status_code, status.HTTP_200_OK)
+            self.assertIn("access", refresh_response.data)
+        except AssertionError as e:
+            self.fail(f"Failed to refresh token: {e}")
+
+    def test_endpoint_rejects_unauthenticated_requests(self):
+        # dont' set credentials
+        response = self.client.post(self.protected_url, self.protected_data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_endpoint_rejects_malformed_token(self):
+        # set a malformed token
+        self.client.credentials(HTTP_AUTHORIZATION="Bearer invalid_token_string")
+        response = self.client.post(self.protected_url, self.protected_data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+class GameDataTests(APITestCase):
+    def setUp(self):
+        self.user1 = UserFactory()
+        self.user2 = UserFactory()
+
+        self.game1 = GameFactory()
+        self.game2 = GameFactory()
+
+        self.list_url = reverse("api-game-data-list")
+
+        self.test_data = {"game": self.game1.id, "key": "test_key", "value": "test_value"}
+
+        self.client.force_authenticate(user=self.user1)
+        self.client.post(self.list_url, self.test_data)
+        self.client.post(self.list_url, {"game": self.game1.id, "key": "another_key", "value": "another_value"})
+        self.client.post(self.list_url, {"game": self.game2.id, "key": "game2_key", "value": "game2_value"})
+
+        self.client.force_authenticate(user=self.user2)
+        self.client.post(self.list_url, {"game": self.game1.id, "key": "user2_key", "value": "user2_value"})
+
+        self.client.force_authenticate(user=None)
+
+    def test_unauthenticated_access_rejected(self):
+        # list attempt
+        response = self.client.get(self.list_url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+        # create attempt
+        response = self.client.post(self.list_url, self.test_data)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+        # access detail endpoint
+        detail_url = reverse("api-game-data-detail", args=[self.game1.id, "test_key"])
+        response = self.client.get(detail_url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_list_gamedata(self):
+        self.client.force_authenticate(user=self.user1)
+        response = self.client.get(self.list_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data["results"]), 3)
+
+    def test_filter_by_game(self):
+        self.client.force_authenticate(user=self.user1)
+        response = self.client.get(f"{self.list_url}?game={self.game1.id}")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data["results"]), 2)
+
+    def test_create_gamedata(self):
+        self.client.force_authenticate(user=self.user1)
+        new_data = {"game": self.game1.id, "key": "new_key", "value": "new_value"}
+        response = self.client.post(self.list_url, new_data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data["key"], "new_key")
+        self.assertEqual(response.data["value"], "new_value")
+
+    def test_update_existing_by_create(self):
+        self.client.force_authenticate(user=self.user1)
+        updated_data = {"game": self.game1.id, "key": "test_key", "value": "updated_value"}
+        response = self.client.post(self.list_url, updated_data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # verify updated value
+        detail_url = reverse("api-game-data-detail", args=[self.game1.id, "test_key"])
+        response = self.client.get(detail_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["value"], "updated_value")
+
+        # check the count didn't increase
+        response = self.client.get(self.list_url)
+        self.assertEqual(len(response.data["results"]), 3)
+
+    def test_retrieve_gamedata(self):
+        self.client.force_authenticate(user=self.user1)
+        detail_url = reverse("api-game-data-detail", args=[self.game1.id, "test_key"])
+        response = self.client.get(detail_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["key"], "test_key")
+        self.assertEqual(response.data["value"], "test_value")
+
+    def test_update_gamedata_put(self):
+        self.client.force_authenticate(user=self.user1)
+        detail_url = reverse("api-game-data-detail", args=[self.game1.id, "test_key"])
+        update_data = {"game": self.game1.id, "key": "test_key", "value": "updated_via_put"}
+        response = self.client.put(detail_url, update_data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["value"], "updated_via_put")
+
+    def test_update_gamedata_patch(self):
+        self.client.force_authenticate(user=self.user1)
+        detail_url = reverse("api-game-data-detail", args=[self.game1.id, "test_key"])
+        patch_data = {"value": "updated_via_patch"}
+        response = self.client.patch(detail_url, patch_data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["value"], "updated_via_patch")
+
+    def test_delete_gamedata(self):
+        self.client.force_authenticate(user=self.user1)
+        detail_url = reverse("api-game-data-detail", args=[self.game1.id, "test_key"])
+        response = self.client.delete(detail_url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+        response = self.client.get(detail_url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
