@@ -59,13 +59,30 @@
     }
 
     .popup {
-      border: solid;
-      border-radius: 10px;
-      padding: 1rem;
+      opacity: 0;
+      transform: translate(-50%, -50%) translateY(20px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      background: white;
       border-radius: 1rem;
+      padding: 1rem;
       border: solid;
-      display: none;
-      text-align: center;
+      border-radius: 1rem;
+      pointer-events: none; /* ignore mouse events when hidden */
+      /* Keep popup in the layout but invisible */
+    }
+
+    .popup.show {
+      opacity: 1;
+      transform: translate(-50%, -50%) translateY(0);
+      pointer-events: auto; /* enable mouse events when visible */
+    }
+
+    .popup.hide {
+      opacity: 0;
+      transform: translate(-50%, -50%) translateY(20px); /* slide back down */
     }
   </style>
 {% endblock css %}
@@ -83,10 +100,10 @@
       <button type="submit" class="button button6">Click here</button>
     </form>
     <div id="popup1" class="popup">
-      Achievement <b>Click a button</b> earned!
+      Achievement&nbsp;<b>Click a button</b>&nbsp;earned!
     </div>
     <div id="popup2" class="popup">
-      Achievement <b>Click a button five times</b> earned!
+      Achievement&nbsp;<b>Click a button five times</b>&nbsp;earned!
     </div>
     <script>
       // Get both popups
@@ -96,13 +113,21 @@
       let count = 0;
 
       function showPopup(popup) {
-        popup.style.display = 'block';
+        popup.classList.add('show');
+
         // Hide the popup after 3 seconds
-        setTimeout(() => hidePopup(popup), 3000);
+        setTimeout(() => {
+          hidePopup(popup);
+        }, 3000);
       }
 
       function hidePopup(popup) {
-        popup.style.display = 'none';
+        popup.classList.remove('show');
+
+        // Wait for the fade-out to finish before hiding
+        setTimeout(() => {
+          popup.style.display = 'none';
+        }, 500); // match the transition duration
       }
 
       const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
