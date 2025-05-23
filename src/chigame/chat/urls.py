@@ -9,4 +9,5 @@ urlpatterns = [
     path("live-chat-list/leave/<int:chat_id>/", views.leave_chat, name="leave-chat"),
     path("message/<int:message_id>/delete", views.delete_message, name="delete-message"),
     path("message/<int:message_id>/react", views.react_to_message, name="react-to-message"),
+    path("api/live-chat-preview/", views.live_chat_preview_api, name="live-chat-preview-api"),
 ]

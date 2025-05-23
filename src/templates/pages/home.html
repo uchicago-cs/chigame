@@ -226,9 +226,14 @@
     <!-- Live Chat -->
     <div class="homepage-block live-chat flex-grow-1">
       <div class="d-flex flex-row justify-content-between">
-        <span>Live Chat</span><span class="d-flex flex-column justify-content-around"><span class="see-more-link">>> See all</span></span>
+        <span>Live Chat</span>
+        <span class="d-flex flex-column justify-content-around">
+          <span class="see-more-link">
+            <a class="nav-link" href="{% url 'chat/live-chat-list'}">>> See all</a>
+          </span>
+        </span>
       </div>
-      <div class="live-chat-block tournament-name">(live chat preview here)</div>
+      <div id="chatPreviewList" class="live-chat-block d-flex flex-column gap-2"></div>
     </div>
     <!-- Forum -->
     <div class="homepage-block forum">
@@ -261,31 +266,43 @@
   </div>
 {% endblock content %}
 {% block javascript %}
-  {{ block.super }}
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const swiper = new Swiper('.swiper', {
-        effect: 'coverflow',
-        grabCursor: true,
-        centeredSlides: true,
-        slidesPerView: 'auto',
-        loop: true,
-        autoplay: {
-          delay: 2500, // 2.5 seconds
-          disableOnInteraction: false, // keeps moving even if clicked
-        },
-        coverflowEffect: {
-          rotate: 30, // tilt
-          stretch: 0,
-          depth: 100,
-          modifier: 1,
-          slideShadows: true,
-        },
-        pagination: {
-          el: '.swiper-pagination',
-          clickable: true,
-        },
-      });
-    });
-  </script>
+  {{ block.super }} <script>
+   document.addEventListener('DOMContentLoaded', function() {
+         const swiper = new Swiper('.swiper', {
+             effect: 'coverflow',
+             grabCursor: true,
+             centeredSlides: true,
+             slidesPerView: 'auto',
+             loop: true,
+             autoplay: {
+               delay: 2500, // 2.5 seconds disableOnInteraction: false, // keeps moving even if clicked }, coverflowEffect: { rotate: 30, // tilt stretch: 0, depth: 100, modifier: 1, slideShadows: true, }, pagination: { el: '.swiper-pagination', clickable: true, }, }); }); document.addEventListener("DOMContentLoaded", function () { fetchChatPreviews(); });  async function fetchChatPreviews() { try { const res = await fetch("/chat/api/live-chat-preview/"); const data = await res.json(); const container = document.getElementById("chatPreviewList"); container.innerHTML = "";  if (!data.chats || data.chats.length === 0) { container.innerHTML = "<div class='text-muted'>No chats available</div>";
+               return;
+             }
+
+             data.chats.forEach(chat => {
+               const chatDiv = document.createElement("div");
+               chatDiv.className = "p-2 rounded shadow-sm bg-white border";
+               chatDiv.style.cursor = "pointer";
+               chatDiv.onclick = () => window.location.href = `/chat/${chat.id}/`;
+
+               const name = document.createElement("div");
+               name.className = "fw-bold text-danger small";
+               name.textContent = chat.name;
+
+               const description = document.createElement("div");
+               description.className = "small text-muted mt-1";
+               description.textContent = chat.description || "Tap to join chat";
+
+               chatDiv.appendChild(name);
+               chatDiv.appendChild(description);
+               container.appendChild(chatDiv);
+             });
+           }
+           catch (err) {
+             console.error("Error loading chat previews", err);
+             document.getElementById("chatPreviewList").innerHTML =
+               "<div class='text-danger'>Failed to load chats</div>";
+           }
+         }
+ </script>
 {% endblock javascript %}
