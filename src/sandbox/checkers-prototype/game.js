@@ -49,7 +49,7 @@ let drawOffered = false;
 let drawOfferedBy = null;
 
 //BOT SETTINGS
-let vsEasyBot = true;
+let botMode = 'none';
 
 // ----------------------------------------------------------------------------
 
@@ -85,7 +85,7 @@ function create() {
   const playAgainPrompt = document.getElementById('playAgainPrompt');
   const playAgainYes = document.getElementById('playAgainYes');
   const playAgainNo = document.getElementById('playAgainNo');
-  const easyBot = document.getElementById('toggle-bot');
+  const botToggle = document.getElementById('toggle-bot');
 
   // Score display
   const score = document.getElementById('score');
@@ -189,10 +189,17 @@ function create() {
       resetDrawOffer();
     }
   });
-  easyBot.textContent = `Easy Bot: ${vsEasyBot ? 'ON' : 'OFF'}`;
-  easyBot.addEventListener('click', () => {
-    vsEasyBot = !vsEasyBot;
-    easyBot.textContent = `Easy Bot: ${vsEasyBot ? 'ON' : 'OFF'}`;
+  botToggle.textContent = 'Bot: OFF';
+  botToggle.addEventListener('click', () => {
+    if (botMode === 'none'){botMode = 'easy';}
+    else if (botMode === 'easy'){botMode = 'medium';}
+    else {botMode = 'none';}
+    const labels = { none: 'OFF', easy: 'Easy', medium: 'Medium' };
+    botToggle.textContent = `Bot: ${labels[botMode]}`;
+    if (currentPlayer === COLORS.black && botMode !== 'none'){
+        const func = botMode === 'easy' ? easyBot : mediumBot;
+        scene.time.delayedCall(300, func, [scene], scene)
+    }
   });
 }
 
@@ -433,6 +440,13 @@ function endTurn(scene) {
 
   // switch between red and black player turn
   currentPlayer = currentPlayer === COLORS.red ? COLORS.black : COLORS.red;
+  //if black and bot is on, schedule bot move
+  if (currentPlayer === COLORS.black) {
+    if(botMode === 'easy'){
+    //delay so user has time to process bot movw after their own
+    scene.time.delayedCall(300, easyBot, [scene], scene);}
+    if(botMode === 'medium'){scene.time.delayedCall(300, mediumBot, [scene], scene);}
+  }
   // remove the highlight after a move is made
   clearHighlightedTiles();
 }
@@ -606,11 +620,7 @@ function giveHint() {
     drawBtn.textContent = 'Offer Draw';
     declineDrawBtn.style.display = 'none';
   }
-  //if black and bot is on, schedule bot move
-  if (vsEasyBot && currentPlayer === COLORS.black) {
-    //delay so user has time to process bot movw after their own
-    scene.time.delayedCall(300, easyBot, [scene], scene);
-  }
+  
 }
 
 // Retrieves a 2D array representation of the board state where 0 are unoccupied
@@ -698,6 +708,16 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
+//function to determine if a given move is a capture for bot use
+function is_capture(piece, x, y) {
+    return Math.abs(x - piece.x) === 2 && Math.abs(y - piece.y) === 2;
+}
+//coordinate dist from peice coords to board center for bot use
+function get_dist_from_center(x, y) {
+    const center = (BOARD_SIZE - 1) / 2;
+    return Math.hypot(x - center, y - center);
+  }
+
 //return arr of legal moves for given player
 function getLegalMoves(color) {
   //arr to store legal moves
@@ -710,22 +730,29 @@ function getLegalMoves(color) {
     if (piece.color !== color) return; //return for other p;layer peices
     // simple moves
     [-1, 1].forEach(diagonal => { //try L and R diagonals
-      const col = piece.x + diagonal; //new col
-      const row = piece.y + direction; //new row
+      const x = piece.x + diagonal; //new col
+      const y = piece.y + direction; //new row
       if ( //check if mvoe is valid
-        col >= 0 && col < BOARD_SIZE && row >= 0 && row < BOARD_SIZE &&
-        !getPiece(col, row) && isValidMove(piece, col, row)) {
-        moves.push({ piece, x: col, y: row }); //add move to arr
+        x >= 0 && x < BOARD_SIZE && y >= 0 && y < BOARD_SIZE &&
+        !getPiece(x, y) && isValidMove(piece, x, y)) {
+            move = {piece, x, y};//gather the move 
+            capture_bool = is_capture(piece, x, y);//is it a capture?
+            center_dist = get_dist_from_center(x, y);//how far from middle
+            //add move, if it is a capture, and how far from center to arr
+            moves.push([move, capture_bool, center_dist]); //add move to arr
       }
     });
     // jump moves for captures
     [-2, 2].forEach(jump => {
-      const jump_col = piece.x + jump;
-      const jump_row = piece.y + 2 * direction;
+      const x = piece.x + jump;
+      const y = piece.y + 2 * direction;
       if (
-        jump_col >= 0 && jump_col < BOARD_SIZE && jump_row >= 0 && jump_row < BOARD_SIZE &&
-        !getPiece(jump_col, jump_row) && isValidMove(piece, jump_col, jump_row)) {
-        moves.push({ piece, x: jump_col, y: jump_row });
+        x >= 0 && x < BOARD_SIZE && y >= 0 && y < BOARD_SIZE &&
+        !getPiece(x, y) && isValidMove(piece, x, y)) {
+            move = {piece, x, y}; //gather the move 
+            capture_bool = is_capture(piece, x, y);//is it a capture?
+            center_dist = get_dist_from_center(x, y);//how far from middle
+            moves.push([move, capture_bool, center_dist]);
       }
     });
   });
@@ -746,12 +773,37 @@ function easyBot(scene) {
     return;
   }
   //get random move
-  const move = Phaser.Utils.Array.GetRandom(legalMoves);
+  const [move] = Phaser.Utils.Array.GetRandom(legalMoves);
   //execute move
   movePiece(move.piece, move.x, move.y);
   // end bot's turn
   endTurn(scene);
 }
+
+//Easy bot: Prioritizes 1) Captures 2 central moves
+function mediumBot(scene){
+    const moves = getLegalMoves(COLORS.black);
+    if (moves.length === 0){//no moves
+        console.log('Cant move');
+        return;
+    }
+    let [bestMove, capture, closestDist] = moves[0]; //init first move as best move
+    for(const[move, c_bool, dist] of moves){ //loop through moves
+        if (c_bool){
+            bestMove = move;
+            break; //whatever the first capture is we do it
+        }
+        if (!capture && dist < closestDist){ //if dist is closer to middle
+            bestMove = move; //this is new best move
+            closestDist = dist; //this is new closest dist
+        }
+    
+    }   //end loop
+    movePiece(bestMove.piece, bestMove.x, bestMove.y);
+    endTurn(scene);
+}
+
+
 
 // Coordinates overlay button
 document.addEventListener('DOMContentLoaded', () => {
