@@ -89,6 +89,7 @@
       Achievement <b>Click a button five times</b> earned!
     </div>
     <script>
+      // Get both popups
       const popup1 = document.getElementById('popup1');
       const popup2 = document.getElementById('popup2');
       const form = document.getElementById('apiForm');
@@ -108,6 +109,7 @@
       form.addEventListener('submit', function(event) {
         event.preventDefault();
 
+        // Increment count every time a button is clicked
         count++;
         console.log(count);
 
@@ -117,6 +119,7 @@
           data[key] = value;
         });
 
+        // Award the threshold achievement if 5 clicks have been registered
         if (count == 5) {
           fetch('api/award-threshold-achievement/', {
               method: 'POST',
