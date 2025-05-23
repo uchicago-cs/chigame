@@ -105,6 +105,9 @@ class GameDetailView(LoginRequiredMixin, FormMixin, DetailView):
     # for twine files, redirect to different IF view
     def dispatch(self, request, *args, **kwargs):
         self.object = self.get_object()
+        # Redirect to IF detail if this is a Twine file game
+        if self.object.twine_file and self.object.twine_file.name.endswith(".html"):
+            return redirect('interactive-fiction-detail', pk=self.object.pk)
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
@@ -557,7 +560,7 @@ def search_results(request):
 
 # =============== Interactive Fiction Views ===============
 class InteractiveFictionView(TemplateView):
-    template_name = "games/interactive-fiction/IF_game_create.html"
+    template_name = "games/interactive-fiction/IF_game_detail.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -617,7 +620,7 @@ class UploadFileView(View):
             )
 
             messages.success(request, f"Game '{game.name}' uploaded successfully!")
-            return redirect("game-detail", pk=game.pk)
+            return redirect("game-list")
 
         messages.error(request, "No file selected.")
         return redirect("interactive-fiction")
