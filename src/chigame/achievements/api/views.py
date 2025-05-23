@@ -48,6 +48,7 @@ def award_achievement(request):
     # Same for the achievement and user achievement
     # Assigns the user achievement to the currently logged in user
     if request.method == "POST":
+        print(request)
         if request.user.is_authenticated:
             popup = "F"  # Variable to decide whether a popup will occur
             game = Game.objects.get_or_create(
@@ -66,3 +67,32 @@ def award_achievement(request):
                 popup = "T"
             response_data = {"message": popup}
             return JsonResponse(response_data)
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(["POST"])
+def award_threshold_achievement(request):
+    # Awards a threshold achievement
+    # Doesn't function like an actual threshold achievement
+    # but whatever
+    if request.method == "POST":
+        if request.user.is_authenticated:
+            popup = "F"  # Variable to decide whether a popup will occur
+            game = Game.objects.get_or_create(
+                name="Demo Game",
+                description="Game for demonstrating achievements.",
+                min_players=1,
+                max_players=1,
+                complexity=1,
+            )[0]
+            threshold_achievement = Achievement.objects.get_or_create(name="Clicked a Button 5 Times", rarity=1, game=game, threshold=5)[0]
+            user = request.user
+            user_achievement = UserAchievement.objects.get_or_create(
+                user=user, achievement=threshold_achievement, date_earned="2025-04-24T21:45:37.084000Z"
+            )
+            if user_achievement[1]:
+                popup = "T"
+            response_data = {"message": popup}
+            return JsonResponse(response_data)
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST)

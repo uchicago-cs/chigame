@@ -65,6 +65,7 @@
       border-radius: 1rem;
       border: solid;
       display: none;
+      text-align: center;
     }
   </style>
 {% endblock css %}
@@ -81,20 +82,25 @@
       <button type="submit" class="button button5">Click here</button>
       <button type="submit" class="button button6">Click here</button>
     </form>
-    <div id="popup" class="popup">
-      Achievement <b>Click Button</b> earned!
+    <div id="popup1" class="popup">
+      Achievement <b>Click a button</b> earned!
+    </div>
+    <div id="popup2" class="popup">
+      Achievement <b>Click a button five times</b> earned!
     </div>
     <script>
-      const popup = document.getElementById('popup');
+      const popup1 = document.getElementById('popup1');
+      const popup2 = document.getElementById('popup2');
       const form = document.getElementById('apiForm');
+      let count = 0;
 
-      function showPopup() {
+      function showPopup(popup) {
         popup.style.display = 'block';
         // Hide the popup after 3 seconds
         setTimeout(hidePopup, 3000);
       }
 
-      function hidePopup() {
+      function hidePopup(popup) {
         popup.style.display = 'none';
       }
 
@@ -102,40 +108,76 @@
       form.addEventListener('submit', function(event) {
         event.preventDefault();
 
+        count++;
+        console.log(count);
+
         const formData = new FormData(form);
         const data = {};
         formData.forEach((value, key) => {
           data[key] = value;
         });
 
-        fetch('api/award-achievement/', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-CSRFToken': csrfToken
-            },
-            credentials: 'include',
-            body: JSON.stringify(data)
-          })
-          .then(response => {
-            if (!response.ok) {
-              throw new Error('Network response was not ok');
-            }
-            return response.json();
-          })
-          .then(data => {
-            console.log('Success:', data);
-            console.log(data.message)
-            if (data.message === "T") {
-              console.log("showing popup");
-              showPopup();
-            } else {
-              console.log("not showing popup");
-            }
-          })
-          .catch(error => {
-            console.error('Error:', error);
-          });
+
+
+          if (count == 5) {
+            fetch('api/award-threshold-achievement/', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+              },
+              credentials: 'include',
+              body: JSON.stringify(data)
+            })
+            .then(response => {
+              if (!response.ok) {
+                throw new Error('Network response was not ok');
+              }
+              return response.json();
+            })
+            .then(data => {
+              console.log('Success:', data);
+              console.log(data.message)
+              if (data.message === "T") {
+                console.log("showing popup");
+                showPopup(popup2);
+              } else {
+                console.log("not showing popup");
+              }
+            })
+            .catch(error => {
+              console.error('Error:', error);
+            });
+          } else {
+          fetch('api/award-achievement/', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+              },
+              credentials: 'include',
+              body: JSON.stringify(data)
+            })
+            .then(response => {
+              if (!response.ok) {
+                throw new Error('Network response was not ok');
+              }
+              return response.json();
+            })
+            .then(data => {
+              console.log('Success:', data);
+              console.log(data.message)
+              if (data.message === "T") {
+                console.log("showing popup");
+                showPopup(popup1);
+              } else {
+                console.log("not showing popup");
+              }
+            })
+            .catch(error => {
+              console.error('Error:', error);
+            });
+          }
       });
     </script>
   </body>
