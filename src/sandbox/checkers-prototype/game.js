@@ -826,7 +826,7 @@ document.addEventListener('DOMContentLoaded', () => {
   resizeSlider.addEventListener("mouseover", () => {
     resizeDisplay.style.opacity = "100";
     resizeDisplay.style.visibility = "visible";
-    updateVolume();
+    updateSize();
   });
 
   resizeSlider.addEventListener("mouseout", () => {
