@@ -392,6 +392,7 @@ function movePiece(piece, moveX, moveY) {
     y: newY,
     duration: 300,
     ease: 'Power3',
+    // onComplete is needed so crown icon only loads after animation is over
     onComplete: () => {
       // Check for king promotion
       if (
