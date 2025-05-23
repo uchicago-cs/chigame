@@ -1,6 +1,9 @@
+from django.http import JsonResponse
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+
+from chigame.games.models import Game
 
 from ..models import Achievement, UserAchievement
 from .serializers import AchievementSerializer, UserAchievementSerializer
@@ -24,7 +27,7 @@ def get_achievements(request):
 
 @api_view(["POST", "GET"])
 def get_user_achievements(request):
-    # Awards an achievement to the user
+    # Post an achievement
     if request.method == "POST":
         serializer = UserAchievementSerializer(data=request.data)
         if serializer.is_valid():
@@ -36,3 +39,28 @@ def get_user_achievements(request):
         user_achievements = UserAchievement.objects.all()
         serializer = UserAchievementSerializer(user_achievements, many=True)
         return Response(serializer.data)
+
+
+@api_view(["POST"])
+def award_achievement(request):
+    # Award an achievement for the demo game
+    # Creates or gets a game called Demo Game
+    # Same for the achievement and user achievement
+    # Assigns the user achievement to the currently logged in user
+    if request.method == "POST":
+        if request.user.is_authenticated:
+            game = Game.objects.get_or_create(
+                name="Demo Game",
+                description="Game for demonstrating achievements.",
+                min_players=1,
+                max_players=1,
+                complexity=1,
+            )[0]
+            achievement = Achievement.objects.get_or_create(name="Clicked a Button", rarity=1, game=game)[0]
+            user = request.user
+            UserAchievement.objects.get_or_create(
+                user=user, achievement=achievement, date_earned="2025-04-24T21:45:37.084000Z"
+            )
+
+            response_data = {"message": "Button press received"}
+            return JsonResponse(response_data)
