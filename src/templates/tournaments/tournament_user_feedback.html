@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block extra_head %}
+  <style>
+    .feedback-list {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    .feedback-item {
+      margin-bottom: 20px;
+      border-bottom: 1px solid #ccc;
+      padding-bottom: 10px;
+    }
+
+    .feedback-actions {
+      margin-top: 10px;
+    }
+
+    .inline-form {
+      display: inline;
+    }
+
+    .form-button {
+      background-color: #dc3545;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .form-button:hover {
+      background-color: #c82333;
+    }
+  </style>
+{% endblock extra_head %}
+{% block content %}
+  <h1>My Feedback</h1>
+  {% if user_feedback %}
+    <ul class="feedback-list">
+      {% for feedback in user_feedback %}
+        <li class="feedback-item">
+          <p>
+            <strong>Tournament:</strong> {{ feedback.tournament.name }}
+          </p>
+          <p>
+            <strong>Comment:</strong> {{ feedback.comment }}
+          </p>
+          <p>
+            <strong>Rating:</strong> {{ feedback.rating }}
+          </p>
+          <div class="feedback-actions">
+            <a href="{% url 'update-feedback' feedback.id %}">Update</a>
+            <form method="post"
+                  action="{% url 'delete-feedback' feedback.id %}"
+                  class="inline-form">
+              {% csrf_token %}
+              <button type="submit"
+                      class="form-button"
+                      onclick="return confirm('Are you sure you want to delete this feedback?');">Delete</button>
+            </form>
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>You have not submitted any feedback yet.</p>
+  {% endif %}
+  <!-- Button to return to the Tournament Detail page -->
+  {% if tournament %}
+    <a href="{% url 'tournament-detail' tournament.id %}">
+      <button type="button">Back to Tournament</button>
+    </a>
+  {% endif %}
+{% endblock content %}
