@@ -104,8 +104,26 @@
   <div class="d-flex align-items-center justify-content-between mb-3">
     <h1 class="display-1 mt-3 mb-3">Games</h1>
     <div class="d-flex align-items-center">
-      <a href="{% url 'favorite-list' %}"
-         class="btn btn-outline-primary me-3 mt-3">My Favorites</a>
+      {% if user.is_authenticated and game_lists %}
+        <div class="btn-group me-3 mt-3">
+          <button class="btn btn-outline-primary dropdown-toggle"
+                  type="button"
+                  data-bs-toggle="dropdown"
+                  aria-expanded="false">My Game Lists</button>
+          <ul class="dropdown-menu">
+            {% for glist in game_lists %}
+              <li>
+                <a class="dropdown-item" href="{% url 'gamelist-detail' glist.pk %}">{{ glist.name }}</a>
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+      {% elif user.is_authenticated %}
+        {# Fallback if user is authenticated but has no lists yet - direct link to favorites #}
+        {# This also handles the case where get_or_create for Favorites might be the only list #}
+        <a href="{% url 'favorite-list' %}"
+           class="btn btn-outline-primary me-3 mt-3">My Favorites</a>
+      {% endif %}
       <form id="filter-form" class="d-flex gap-2" method="get">
         <!-- Include the search query as a hidden field -->
         {% if query_type %}<input type="hidden" name="query_type" value="{{ query_type }}" />{% endif %}
@@ -215,6 +233,8 @@
   {% if user.is_staff %}
     <div class="container mt-4 mb-4">
       <a class="btn btn-outline-success" href="{% url 'game-create' %}">Create New Game</a>
+      <a class="btn btn-outline-success"
+         href="{% url 'interactive-fiction' %}">Create Interactive Fiction Game</a>
     </div>
   {% endif %}
   <div class="container mt-5 mb-3">
