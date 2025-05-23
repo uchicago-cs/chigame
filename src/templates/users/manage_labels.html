@@ -1,105 +1,119 @@
 {% extends "base.html" %}
 
-{% block title %}Manage Notification Labels{% endblock title %}
-
+{% block title %}
+  Manage Notification Labels
+{% endblock title %}
 {% block content %}
-<div class="container mt-4">
+  <div class="container mt-4">
     <h2>Manage Your Notification Labels</h2>
-
     {% if messages %}
-        {% for message in messages %}
-            <div class="alert {% if message.tags %}alert-{{ message.tags }}{% else %}alert-info{% endif %} alert-dismissible fade show" role="alert">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        {% endfor %}
+      {% for message in messages %}
+        <div class="alert {% if message.tags %}alert-{{ message.tags }}{% else %}alert-info{% endif %} alert-dismissible fade show"
+             role="alert">
+          {{ message }}
+          <button type="button"
+                  class="btn-close"
+                  data-bs-dismiss="alert"
+                  aria-label="Close"></button>
+        </div>
+      {% endfor %}
     {% endif %}
-
     <div class="row mt-4">
-        <div class="col-md-7">
-            <h4>Your Existing Labels</h4>
-            {% if labels %}
-                <ul class="list-group">
-                    {% for label_item in labels %}
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            <a href="{% url 'users:notifications-by-label' label_item.id %}" class="text-decoration-none">{{ label_item.name }}</a>
-                            <span> 
-                                <button type="button" class="btn btn-link text-danger p-0 delete-label-btn"
-                                        data-bs-toggle="modal" data-bs-target="#deleteLabelModal"
-                                        data-label-name="{{ label_item.name|escapejs }}"
-                                        data-delete-url="{% url 'users:delete-notification-label' label_item.id %}"
-                                        title="Delete label '{{ label_item.name }}'">
-                                    <i class="bi bi-trash icon-lg"></i> 
-                                </button>
-                            </span>
-                        </li>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <p>You haven't created any labels yet.</p>
-            {% endif %}
-        </div>
-
-        <div class="col-md-5">
-            <h4>Create New Label</h4>
-            <form method="POST" action="{% url 'users:create-notification-label' %}">
-                {% csrf_token %}
-                <div class="input-group mb-3">
-                    <input type="text" name="label_name" class="form-control" placeholder="Enter new label name" required>
-                    <button class="btn btn-primary" type="submit">Create Label</button>
-                </div>
-            </form>
-        </div>
+      <div class="col-md-7">
+        <h4>Your Existing Labels</h4>
+        {% if labels %}
+          <ul class="list-group">
+            {% for label_item in labels %}
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                <a href="{% url 'users:notifications-by-label' label_item.id %}"
+                   class="text-decoration-none">{{ label_item.name }}</a>
+                <span>
+                  <button type="button"
+                          class="btn btn-link text-danger p-0 delete-label-btn"
+                          data-bs-toggle="modal"
+                          data-bs-target="#deleteLabelModal"
+                          data-label-name="{{ label_item.name|escapejs }}"
+                          data-delete-url="{% url 'users:delete-notification-label' label_item.id %}"
+                          title="Delete label '{{ label_item.name }}'">
+                    <i class="bi bi-trash icon-lg"></i>
+                  </button>
+                </span>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p>You haven't created any labels yet.</p>
+        {% endif %}
+      </div>
+      <div class="col-md-5">
+        <h4>Create New Label</h4>
+        <form method="post" action="{% url 'users:create-notification-label' %}">
+          {% csrf_token %}
+          <div class="input-group mb-3">
+            <input type="text"
+                   name="label_name"
+                   class="form-control"
+                   placeholder="Enter new label name"
+                   required />
+            <button class="btn btn-primary" type="submit">Create Label</button>
+          </div>
+        </form>
+      </div>
     </div>
-
     <div class="mt-4">
-        <a href="{% url 'users:user-inbox' pk=request.user.pk %}" class="btn btn-outline-secondary">Back to Inbox</a>
+      <a href="{% url 'users:user-inbox' pk=request.user.pk %}"
+         class="btn btn-outline-secondary">Back to Inbox</a>
     </div>
-</div>
-
-<div class="modal fade" id="deleteLabelModal" tabindex="-1" aria-labelledby="deleteLabelModalLabel" aria-hidden="true">
+  </div>
+  <div class="modal fade"
+       id="deleteLabelModal"
+       tabindex="-1"
+       aria-labelledby="deleteLabelModalLabel"
+       aria-hidden="true">
     <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="deleteLabelModalLabel">Confirm Deletion</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                Are you sure you want to delete the label "<strong><span id="labelNameToDeleteModal"></span></strong>"?
-                This will remove the label from all associated notifications.
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <form id="confirmDeleteLabelForm" method="POST" action="">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-danger">Delete Label</button>
-                </form>
-            </div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="deleteLabelModalLabel">Confirm Deletion</h5>
+          <button type="button"
+                  class="btn-close"
+                  data-bs-dismiss="modal"
+                  aria-label="Close"></button>
         </div>
+        <div class="modal-body">
+          Are you sure you want to delete the label "<strong><span id="labelNameToDeleteModal"></span></strong>"?
+          This will remove the label from all associated notifications.
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <form id="confirmDeleteLabelForm" method="post" action="">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Delete Label</button>
+          </form>
+        </div>
+      </div>
     </div>
-</div>
+  </div>
 {% endblock content %}
-
 {% block inline_javascript %}
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    var deleteLabelModalElement = document.getElementById('deleteLabelModal');
-    if (deleteLabelModalElement) {
-        deleteLabelModalElement.addEventListener('show.bs.modal', function (event) {
-            var button = event.relatedTarget;
-            var labelName = button.getAttribute('data-label-name');
-            var deleteUrl = button.getAttribute('data-delete-url');
-            var modalBodyLabelNameSpan = deleteLabelModalElement.querySelector('#labelNameToDeleteModal');
-            var confirmDeleteForm = deleteLabelModalElement.querySelector('#confirmDeleteLabelForm');
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      var deleteLabelModalElement = document.getElementById('deleteLabelModal');
+      if (deleteLabelModalElement) {
+        deleteLabelModalElement.addEventListener('show.bs.modal', function(event) {
+          var button = event.relatedTarget;
+          var labelName = button.getAttribute('data-label-name');
+          var deleteUrl = button.getAttribute('data-delete-url');
+          var modalBodyLabelNameSpan = deleteLabelModalElement.querySelector('#labelNameToDeleteModal');
+          var confirmDeleteForm = deleteLabelModalElement.querySelector('#confirmDeleteLabelForm');
 
-            if (modalBodyLabelNameSpan) {
-                modalBodyLabelNameSpan.textContent = labelName;
-            }
-            if (confirmDeleteForm) {
-                confirmDeleteForm.action = deleteUrl;
-            }
+          if (modalBodyLabelNameSpan) {
+            modalBodyLabelNameSpan.textContent = labelName;
+          }
+          if (confirmDeleteForm) {
+            confirmDeleteForm.action = deleteUrl;
+          }
         });
-    }
-});
-</script>
+      }
+    });
+  </script>
 {% endblock inline_javascript %}

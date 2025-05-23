@@ -598,7 +598,9 @@ def act_on_inbox_notification(request, pk, action):
         notification = Notification.objects.get(pk=pk)
         if notification.receiver.pk != request.user.pk:
             messages.error(request, "You can not perform actions on this notification")
-            return redirect(reverse("users:user-inbox-category", kwargs={"pk": request.user.pk, "category": next_category}))
+            return redirect(
+                reverse("users:user-inbox-category", kwargs={"pk": request.user.pk, "category": next_category})
+            )
 
         if action == "mark_read":
             notification.mark_as_read()
@@ -612,7 +614,6 @@ def act_on_inbox_notification(request, pk, action):
         messages.error(request, "Something went wrong. This notification does not exist")
 
     return redirect(reverse("users:user-inbox-category", kwargs={"pk": request.user.pk, "category": next_category}))
-
 
 
 @login_required
@@ -711,7 +712,6 @@ def move_notification(request, pk):
     return redirect("users:user-inbox-category", pk=request.user.pk, category=next_category)
 
 
-
 @login_required
 def create_notification_label(request):
     if request.method == "POST":
@@ -724,15 +724,17 @@ def create_notification_label(request):
                 messages.info(request, f"Label '{label_name}' already exists.")
         else:
             messages.error(request, "Label name cannot be empty.")
-    return redirect(reverse("users:manage-labels-page")) 
+    return redirect(reverse("users:manage-labels-page"))
+
 
 @login_required
 def manage_labels_page_view(request):
-    user_labels = NotificationLabel.objects.filter(user=request.user).order_by('name')
+    user_labels = NotificationLabel.objects.filter(user=request.user).order_by("name")
     context = {
         "labels": user_labels,
     }
     return render(request, "users/manage_labels.html", context)
+
 
 @login_required
 @require_POST
@@ -744,6 +746,7 @@ def delete_notification_label(request, label_id):
 
     messages.success(request, f"Label '{label_name}' deleted successfully.")
     return redirect(reverse("users:manage-labels-page"))
+
 
 @login_required
 def assign_label_to_notification(request, notification_id):
@@ -781,25 +784,25 @@ def notifications_by_label(request, label_id):
     label = get_object_or_404(NotificationLabel, pk=label_id, user=request.user)
     # Fetch only visible (non-deleted) notifications for the current user that have this label
     notifications = label.notifications.filter(
-        receiver=request.user,
-        visible=True  # <-- This is the crucial addition
-    ).order_by('-first_sent')
+        receiver=request.user, visible=True  # <-- This is the crucial addition
+    ).order_by("-first_sent")
 
-    all_user_labels = NotificationLabel.objects.filter(user=request.user).order_by('name')
+    all_user_labels = NotificationLabel.objects.filter(user=request.user).order_by("name")
 
     context = {
         "label": label,
         "notifications": notifications,
-        "active_category": f"label-{label.id}", 
+        "active_category": f"label-{label.id}",
         "category_choices": Notification.CATEGORY_CHOICES,
         "labels": all_user_labels,
         "pk": request.user.pk,
     }
     return render(request, "users/notifications_by_label.html", context)
 
+
 @login_required
 @require_POST
-@csrf_protect 
+@csrf_protect
 def unassign_label_from_notification(request, notification_id, label_id):
     notification = get_object_or_404(Notification, pk=notification_id, receiver=request.user)
 
@@ -816,8 +819,7 @@ def unassign_label_from_notification(request, notification_id, label_id):
 
     except NotificationLabel.DoesNotExist:
         messages.error(request, "Label not found or does not belong to you.")
-    except Exception as e: # Catch any other potential errors
+    except Exception as e:  # Catch any other potential errors
         messages.error(request, f"An error occurred: {str(e)}")
 
     return redirect(reverse("users:notifications-by-label", kwargs={"label_id": label_id}))
-    
