@@ -10,6 +10,7 @@
             "is_active": true,
             "date_joined": "2023-10-30T03:15:43.052Z",
             "username": "player1",
+            "name": "player1",
             "email": "player1@example.com",
             "groups": [],
             "user_permissions": []
@@ -26,6 +27,7 @@
             "is_active": true,
             "date_joined": "2023-10-30T03:15:43.052Z",
             "username": "player2",
+            "name": "player2",
             "email": "player2@example.com",
             "groups": [],
             "user_permissions": []
