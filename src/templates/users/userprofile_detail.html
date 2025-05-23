@@ -23,20 +23,28 @@
       text-align: center;
     }
 
-    .btn {
+    .btn-base {
+      border-radius: 6px;
+      font-size: 15px;
+      transition: border-color 0.3s, box-shadow 0.3s;
+      text-align: center;
+      cursor: pointer;
+    }
+
+    .btn-maroon {
       border: 1px solid #ccc;
       border-radius: 6px;
       font-size: 15px;
       transition: border-color 0.3s, box-shadow 0.3s;
     }
 
-    .btn:focus {
+    .btn-maroon:focus {
       outline: none;
       border-color: #800000;
       box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.2);
     }
 
-    .btn {
+    .btn-maroon {
       background-color: #800000;
       color: white;
       text-align: center;
@@ -44,8 +52,16 @@
       cursor: pointer;
     }
 
-    .btn:hover {
+    .btn-maroon:hover {
       background-color: #800000;
+    }
+
+    .friend-request {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #80000015;
+      border-radius: 12px;
+      border: 1px solid #ddd;
     }
 
     .profile-bio {
@@ -134,38 +150,52 @@
                 {% endif %}
                 {% if profile.user == request.user %}
                   <a href="{% url 'users:detail' request.user.pk %}"
-                     class="btn btn-primary">Account</a>
+                     class="btn btn-maroon">Account</a>
                   <a href="{% url 'users:friend-list' profile.user.id %}"
-                     class="btn btn-primary">Friend List</a>
+                     class="btn btn-maroon">Friend List</a>
                   <a href="{% url 'users:user-history' profile.user.pk %}"
-                     class="btn btn-primary">Stats</a>
+                     class="btn btn-maroon">Stats</a>
                 {% elif is_friend %}
                   <a href="{% url 'users:remove-friend' profile.user.pk %}"
-                     class="btn btn-primary">Remove Friend</a>
+                     class="btn btn-maroon">Remove Friend</a>
                   <a href="{% url 'users:user-history' profile.user.pk %}"
-                     class="btn btn-primary">Stats</a>
-                {% elif is_friend %}
-                  <a href="{% url 'users:remove-friend' profile.user.pk %}"
-                     class="btn btn-primary">Remove Friend</a>
-                  <a href="{% url 'users:user-history' profile.user.pk %}"
-                     class="btn btn-primary">Stats</a>
-                {% elif friendship_request %}
-                  {% if friendship_request.sender_id == request.user.pk %}
-                    <a href="{% url 'users:cancel-friend-invitation' profile.user.id %}"
-                       class="btn btn-primary">Cancel Friendship Request</a>
-                  {% else %}
-                    <a href="{% url 'users:accept-friend-invitation' friendship_request.id %}"
-                       class="btn btn-primary">Accept Friendship Request</a>
-                    <a href="{% url 'users:decline-friend-invitation' friendship_request.id %}"
-                       class="btn btn-primary">Decline Friendship Request</a>
+                     class="btn btn-maroon">Stats</a>
+                {% else %}
+                  {% if not friendship_request %}
+                    <a href="{% url 'users:add-friend' profile.user.pk %}"
+                       class="btn btn-maroon">Add Friend</a>
                   {% endif %}
                   <a href="{% url 'users:user-history' profile.user.pk %}"
-                     class="btn btn-primary">Stats</a>
-                {% else %}
-                  <a href="{% url 'users:add-friend' profile.user.pk %}"
-                     class="btn btn-primary">Add Friend</a>
+                     class="btn btn-maroon">Stats</a>
                 {% endif %}
               </div>
+              {% if friendship_request %}
+                <div class="friend-request card p-3 mb-3 shadow-sm border-0">
+                  {% if friendship_request.sender_id == request.user.pk %}
+                    <div class="d-flex gap-2 align-items-center">
+                      <div class="flex-grow-1">
+                        <h4 class="mb-0">Request Sent</h4>
+                      </div>
+                      <div class="d-flex gap-2">
+                        <a href="{% url 'users:cancel-friend-invitation' profile.user.id %}"
+                           class="btn btn-base btn-outline-danger">Cancel</a>
+                      </div>
+                    </div>
+                  {% else %}
+                    <div class="d-flex gap-2 align-items-center">
+                      <div class="flex-grow-1">
+                        <h4 class="mb-0">Friendship Request</h4>
+                      </div>
+                      <div class="d-flex gap-2">
+                        <a href="{% url 'users:accept-friend-invitation' friendship_request.id %}"
+                           class="btn btn-base btn-outline-success">Accept</a>
+                        <a href="{% url 'users:decline-friend-invitation' friendship_request.id %}"
+                           class="btn btn-base btn-outline-danger">Decline</a>
+                      </div>
+                    </div>
+                  {% endif %}
+                </div>
+              {% endif %}
               <div class="profile-bio">
                 <h4>Bio:</h4>
                 {% if profile.bio == "" %}
