@@ -1,11 +1,13 @@
 from allauth.account.forms import SignupForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
+from django.db import models
 from django.shortcuts import get_object_or_404, redirect
 from django.views import View
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, status
 from rest_framework.decorators import api_view
+from rest_framework.authentication import SessionAuthentication
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import SAFE_METHODS, BasePermission, IsAuthenticated, IsAuthenticatedOrReadOnly
@@ -18,19 +20,28 @@ from chigame.api.serializers import (
     AchievementSerializer,
     CategorySerializer,
     FeedbackSerializer,
+    GameDataSerializer,
+    GameLeaderboardSerializer,
+    GameReviewStatsSerializer,
     GameSerializer,
     GroupSerializer,
+    LiveChatSerializer,
     LobbySerializer,
     MechanicSerializer,
     MessageFeedSerializer,
     MessageSerializer,
+    MetricScoreSerializer,
+    PopUpInfoSerializer,
     ReviewSerializer,
     UserAchievementSerializer,
     UserSerializer,
 )
 from chigame.api.spam_utils import is_spam
-from chigame.games.models import Feedback, Game, Lobby, Message, Review, Tournament
-from chigame.users.models import Group, User
+from chigame.chat.models import LiveChat, LiveChatUser
+from chigame.games.models import Feedback, Game, GameData, Lobby, Message, Review, Tournament
+from chigame.games.simulation_utils import run_complete_tournament_simulation
+from chigame.leaderboards.models import LeaderboardEntry, Match, Metric, MetricScore
+from chigame.users.models import Group, User, UserProfile
 
 
 # Helper function to get user from slug
@@ -375,6 +386,162 @@ class AchievementCreateView(generics.CreateAPIView):
         )
 
 
+class MetricScoreView(generics.ListCreateAPIView):
+    """
+    View to handle MetricScore creation and retrieval.
+    """
+
+    serializer_class = MetricScoreSerializer
+    authentication_classes = [SessionAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        game_id = self.kwargs["game_id"]
+        return MetricScore.objects.filter(metric__game=game_id)
+
+    def perform_create(self, serializer):
+        game_id = self.kwargs["game_id"]
+
+        user = self.request.user
+        user_profile, created = UserProfile.objects.get_or_create(user=user, defaults={})
+        game = get_object_or_404(Game, id=game_id)
+
+        metric_id = self.request.data.get("metric_id")
+        match_id = self.request.data.get("match_id")
+
+        metric = get_object_or_404(Metric, id=metric_id, game=game)
+        match = get_object_or_404(Match, id=match_id, game=game)
+
+        leaderboard = metric.game.leaderboards.first()
+        if not leaderboard:
+            raise ValidationError("No leaderboard found for this game.")
+
+        leaderboard_entry, _ = LeaderboardEntry.objects.get_or_create(
+            leaderboard=leaderboard,
+            user=user_profile,
+            defaults={"rank": 0},
+        )
+
+        serializer.save(
+            user=user_profile,
+            metric=metric,
+            match=match,
+            leaderboard_entry=leaderboard_entry,
+        )
+
+
+class GameLeaderboardView(generics.ListAPIView):
+    """
+    Retieves the all-time leaderboard for a specified game, ranked by
+    each player's highest single-game score.
+    """
+
+    serializer_class = GameLeaderboardSerializer
+    authentication_classes = [SessionAuthentication]
+    permission_classes = [IsAuthenticated]
+    pagination_class = PageNumberPagination
+
+    def get_queryset(self):
+        game_id = self.kwargs["game_id"]
+        game = get_object_or_404(Game, id=game_id)
+
+        primary_metric = game.metrics.first()
+        if not primary_metric:
+            return MetricScore.objects.none()
+
+        # get the highest score per user for the primary metric
+        return (
+            MetricScore.objects.filter(metric=primary_metric)
+            .values("user")
+            .annotate(max_score=models.Max("score"))
+            .order_by("-max_score")
+        )
+
+
+class GamePopupsAPIView(APIView):
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def get(self, request, pk):
+        game = get_object_or_404(Game, pk=pk)
+        data = {
+            "min_players": game.min_players,
+            "max_players": game.max_players,
+            "complexity": float(game.complexity or 0),
+            "min_playtime": game.min_playtime or 0,
+            "max_playtime": game.max_playtime or 0,
+            "description": game.description or "",
+        }
+        return Response(PopUpInfoSerializer(data).data)
+
+
+class GameDataListView(generics.ListCreateAPIView):
+    """
+    API endpoint to list and create game data for the authenticated user.
+    """
+
+    serializer_class = GameDataSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # Allow filtering by game
+        game_id = self.request.query_params.get("game", None)
+        if game_id:
+            return GameData.objects.filter(user=self.request.user, game_id=game_id)
+        return GameData.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        # Check if this key already exists for the user and game
+        key = serializer.validated_data.get("key")
+        game = serializer.validated_data.get("game")
+
+        try:
+            existing = GameData.objects.get(user=self.request.user, game=game, key=key)
+            # Update the existing record instead
+            existing.value = serializer.validated_data.get("value")
+            existing.save()
+        except GameData.DoesNotExist:
+            # Create a new record
+            serializer.save(user=self.request.user)
+
+
+class GameDataDetailView(generics.RetrieveUpdateDestroyAPIView):
+    """
+    API endpoint to retrieve, update or delete a specific game data entry.
+    """
+
+    serializer_class = GameDataSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return GameData.objects.filter(user=self.request.user)
+
+    def get_object(self):
+        game_id = self.kwargs.get("game_id")
+        key = self.kwargs.get("key")
+        return get_object_or_404(GameData, user=self.request.user, game_id=game_id, key=key)
+
+    def perform_update(self, serializer):
+        serializer.save(user=self.request.user)
+
+
+class TournamentSimulationView(APIView):
+    """
+    POST /api/tournaments/{pk}/simulate/
+    Body: { "double_elimination": <bool> }
+    Returns a full simulated bracket JSON without touching the DB.
+    """
+
+    permission_classes = []
+
+    def post(self, request, pk):
+        tournament = get_object_or_404(Tournament, pk=pk)
+        # read flag (default to single‐elim)
+        is_double = request.data.get("double_elimination", False)
+        # run the simulator
+        bracket = run_complete_tournament_simulation(tournament, is_double)
+        return Response(bracket, status=status.HTTP_200_OK)
+
+
 class FeedbackListCreateView(generics.ListCreateAPIView):
     serializer_class = FeedbackSerializer
     permission_classes = []
@@ -410,7 +577,97 @@ class FeedbackDetailView(generics.RetrieveUpdateDestroyAPIView):
         if instance.user != user:
             raise PermissionDenied("You can only delete your own feedback.")
         instance.delete()
+        
 
+class GameReviewStatsAPIView(APIView):
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def get(self, request, pk):
+        game = get_object_or_404(Game, pk=pk)
+        reviews = game.reviews.filter(is_public=True)
+
+        ratings = reviews.exclude(rating__isnull=True).values_list("rating", flat=True)
+
+        avg_rating = round(sum(ratings) / len(ratings), 2) if ratings else None
+        popularity = reviews.count()
+
+        data = {
+            "average_rating": avg_rating,
+            "popularity": popularity,
+        }
+
+        return Response(GameReviewStatsSerializer(data).data)
+
+
+class LiveChatCreateView(generics.CreateAPIView):
+    queryset = LiveChat.objects.all()
+    serializer_class = LiveChatSerializer
+    permission_classes = []
+
+    def perform_create(self, serializer):
+        user = User.objects.first()
+        if not user:
+            raise ValueError("No user exists in the database to assign to the LiveChatUser")
+
+        chat = serializer.save()
+        LiveChatUser.objects.create(user=user, live_chat=chat)
+
+
+class LiveChatAddUserView(APIView):
+    permission_classes = []
+
+    def post(self, request, chat_id):
+        chat = LiveChat.objects.get(id=chat_id)
+        user_ids = request.data.get("user_ids", [])
+        for uid in user_ids:
+            user = User.objects.get(id=uid)
+            LiveChatUser.objects.get_or_create(user=user, live_chat=chat)
+        return Response({"id": chat.id, "name": chat.name, "users": user_ids})
+
+
+class LiveChatListView(generics.ListAPIView):
+    serializer_class = LiveChatSerializer
+    permission_classes = []
+
+    def get_queryset(self):
+        user = User.objects.first()
+        return LiveChat.objects.filter(users=user)
+
+
+class LiveChatDetailView(generics.RetrieveAPIView):
+    queryset = LiveChat.objects.all()
+    serializer_class = LiveChatSerializer
+    permission_classes = []
+
+
+class UserAchievementDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = UserAchievement.objects.all()
+    serializer_class = UserAchievementSerializer
+
+    def perform_update(self, serializer):
+        serializer.save()
+
+
+class UserAchievementListView(APIView):
+    def get(self, request, pk):
+        user_id = self.kwargs["pk"]
+        user_achievements = UserAchievement.objects.filter(user__id=user_id)
+
+        data = [
+            {
+                "id": achievement.id,
+                "achievement": achievement.achievement.name,
+                "game": achievement.achievement.game.name,
+                "pinned": achievement.pinned,
+                "date_earned": achievement.date_earned,
+                "last_updated": achievement.last_updated,
+                "progress": achievement.progress,
+            }
+            for achievement in user_achievements
+        ]
+
+        return Response(data)
+      
 
 @api_view(["POST"])
 def Signup(request):
@@ -430,3 +687,4 @@ def Signup(request):
         return JsonResponse({"status": "success"})
     else:
         return JsonResponse({"status": "error", "errors": form.errors}, status=400)
+      
