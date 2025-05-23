@@ -1435,6 +1435,25 @@ class ReviewListView(ListView):
         return context
 
 
+# Views for a review page
+@login_required
+def add_review(request, pk):
+    game = get_object_or_404(Game, pk=pk)
+
+    if request.method == "POST":
+        form = ReviewForm(request.POST)
+        if form.is_valid():
+            review = form.save(commit=False)
+            review.user = request.user
+            review.game = game
+            review.save()
+            return redirect("game-detail", pk=game.pk)
+    else:
+        form = ReviewForm()
+
+    return render(request, "games/game_add_review.html", {"form": form, "game": game})
+
+
 @login_required
 def add_to_favorites(request, pk):
     """Add a game to the current user's 'Favorites' list."""
