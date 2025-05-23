@@ -132,16 +132,18 @@
    * Reacts to a message on the frontend.
    */
   function reactToMessage(content = "❤️") {
+    const messageId = replyToMessageId;
     replyToMessageId = null;
     replyToUsername = null;
     replyToContent = null;
     const inputElement = document.getElementById("id_message_send_input");
-    inputElement.value = content || "";
+    inputElement.value = "";
+
     inputElement.focus();
     document.getElementById("replying-to-preview").classList.add("d-none");
     console.log("reacting to message");
     try {
-      const messageId = replyToMessageId;
+
       fetch(`/chat/message/${messageId}/react`, {
           method: 'POST',
           headers: {
@@ -178,7 +180,7 @@
       span.dataset.reaction = content;
       span.dataset.messageId = messageId;
       span.innerHTML = `${content} <span class="reaction-count">1</span>`;
-      span.onclick = () => reactToMessage(content);
+      span.onclick = () => reactToMessage(content, messageId);
       container.appendChild(span);
     }
   }
