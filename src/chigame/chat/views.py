@@ -21,7 +21,8 @@ def chat(request, chat_id):
 
 def live_chat_list(request):
     chats = LiveChat.objects.filter(public=True)
-    return render(request, "chat/live-chat-list.html", {"chats": chats})
+    chat_user = LiveChatUser.objects.filter(user=request.user).first()
+    return render(request, "chat/live-chat-list.html", {"chats": chats, "chat_user": chat_user})
 
 
 def delete_message(request, message_id):
@@ -159,8 +160,10 @@ def toggle_profanity(request):
         if not chat_user:
             return JsonResponse({"error": "LiveChatUser not found"}, status=404)
 
-        chat_user.profanity = not chat_user.profanity
-        chat_user.save()
+        chat_users = LiveChatUser.objects.filter(user=request.user)
+        for cu in chat_users:
+            cu.profanity = not cu.profanity
+            cu.save()
 
         return JsonResponse({"success": True, "profanity_enabled": chat_user.profanity})
 

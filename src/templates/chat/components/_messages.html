@@ -145,7 +145,7 @@
             {% endif %}
             <div class="fw-bold small text-danger">{{ message.user.username }}</div>
             <div class="mt-1">
-              {% if request.chat_user.profanity %}
+              {% if chat_user.profanity %}
                 {{ message.content|profanity_filter }}
               {% else %}
                 {{ message.content }}

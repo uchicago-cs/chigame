@@ -4,18 +4,16 @@
   <div class="container">
     <div class="d-flex justify-content-between align-items-center mb-3">
       <h1 class="mb-0">Live Chats</h1>
-      <form method="post" action="{% url 'toggle-profanity' %}">
-        {% csrf_token %}
-        <button id="profanityToggleBtn"
-                type="button"
-                class="btn btn-sm btn-outline-primary">
-          {% if request.user.userprofile.profanity_enabled %}
-            🔕 Disable Profanity Filter
-          {% else %}
-            🔔 Enable Profanity Filter
-          {% endif %}
-        </button>
-      </form>
+      {% csrf_token %}
+      <button id="profanityToggleBtn"
+              type="button"
+              class="btn btn-sm btn-outline-primary">
+        {% if chat_user.profanity %}
+          🔕 Disable Profanity Filter
+        {% else %}
+          🔔 Enable Profanity Filter
+        {% endif %}
+      </button>
     </div>
     <div class="search-container mb-3">
       <input type="text"
@@ -80,9 +78,8 @@
         .then(res => res.json())
         .then(data => {
           if (data.success) {
-            this.textContent = data.profanity_enabled ?
-              "🔕 Disable Profanity Filter" :
-              "🔔 Enable Profanity Filter";
+            // Reload the page so the chat view is re-rendered
+            location.reload();
           }
         });
     });

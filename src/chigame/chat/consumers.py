@@ -7,7 +7,7 @@ from django.core.cache import cache
 
 from chigame.users.models import User
 
-from .models import LiveChat, LiveChatMessage
+from .models import LiveChat, LiveChatMessage, LiveChatUser
 from .utils import ProfanityFilter
 
 # Rate limiting constants
@@ -164,7 +164,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
             reply_to_id = text_data_json.get("reply_to")
 
         # Apply profanity filter to message
-        filtered_message = self.profanity_filter.censor_message(message)
+        chat_user = await database_sync_to_async(LiveChatUser.objects.get)(user=self.user, live_chat=self.live_chat)
+        if chat_user.profanity:
+            filtered_message = self.profanity_filter.censor_message(message)
+        else:
+            filtered_message = message
 
         # Save message to database once when first received from client
         username, message_id = await self.save_message(self.chat_id, user_id, filtered_message, reply_to_id)

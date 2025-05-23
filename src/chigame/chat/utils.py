@@ -61,3 +61,7 @@ class ProfanityFilter:
             str: The censored message.
         """
         return self.pattern.sub(lambda m: "*" * len(m.group()), message)
+
+    def profanity_filter(text):
+        pf = ProfanityFilter()
+        return pf.censor_message(text)
