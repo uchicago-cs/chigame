@@ -59,7 +59,13 @@ urlpatterns = [
     path("notifications/<int:pk>/bookmarked/", view=view_bookmarked_notifications, name="bookmarked-notifications"),
     path("upload-photo/", upload_profile_photo, name="upload-photo"),
     path("notifications/<int:pk>/move/", views.move_notification, name="move-notification"),
+    path("<slug:slug>/groups/", UserGroupsView.as_view(), name="api-user-groups"),
     path("labels/create/", views.create_notification_label, name="create-notification-label"),
+    path(
+        "notifications/<int:notification_id>/assign_label/",
+        views.assign_label_to_notification,
+        name="assign-notification-label",
+    ),
     path("labels/<int:label_id>/notifications/", views.notifications_by_label, name="notifications-by-label"),
     path("inbox/<int:pk>/<str:category>/", views.user_inbox_view, name="user-inbox-category"),
     # Group paths

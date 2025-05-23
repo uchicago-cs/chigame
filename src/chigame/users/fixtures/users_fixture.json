@@ -117,22 +117,6 @@
   }
 },
 {
-  "model": "users.user",
-  "pk": 8,
-  "fields": {
-    "password": "foo",
-    "last_login": null,
-    "is_superuser": false,
-    "is_staff": false,
-    "is_active": true,
-    "date_joined": "2023-10-26T13:53:08.045Z",
-    "name": "user8",
-    "email": "user8@example.com",
-    "groups": [],
-    "user_permissions": []
-  }
-},
-{
     "model": "users.userprofile",
     "pk": 1,
     "fields": {
