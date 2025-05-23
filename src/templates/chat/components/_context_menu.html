@@ -2,7 +2,8 @@
   <div class="small text-muted mb-1" id="replyPreview"></div>
   <button class="btn btn-sm btn-light w-100" onclick="pinningMessage()">Pinning Messages</button>
   <button class="btn btn-sm btn-light w-100" onclick="replyToMessage()">Reply</button>
-  <button class="btn btn-sm btn-light w-100" onclick="editMessage()">Edit Message</button>
+  <button class="btn btn-sm btn-light w-100"
+          onclick="editMessage(replyToMessageId, replyToContent)">Edit Message</button>
   <button class="btn btn-sm btn-light w-100" onclick="reactToMessage()">React to Message</button>
   <button class="btn btn-sm btnlight w-100" onclick="reactToMessage('❤️')">Add Reactions</button>
   <button class="btn btn-sm btn-danger w-100"
@@ -11,10 +12,6 @@
 </div>
 {% csrf_token %}
 <script>
-  let replyToMessageId = null;
-  let replyToUsername = null;
-  let replyToContent = null;
-
   function showContextMenu(event, messageId, username, content) {
     const contextMenu = document.getElementById('contextMenu');
     const replyPreview = document.getElementById('replyPreview');
@@ -43,15 +40,23 @@
     document.removeEventListener('click', hideContextMenu);
   }
 
-  function editMessage() {
-    const messageId = replyToMessageId;
+  function editMessage(messageId, content) {
+    // 🧹 Clear accidental reply state
+    replyToMessageId = null;
+    replyToUsername = null;
+    replyToContent = null;
+    document.getElementById("replying-to-preview").classList.add("d-none");
+
+    const inputElement = document.getElementById("id_message_send_input");
+    inputElement.value = content || "";
+    inputElement.focus();
+
     const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
     const contentElement = messageElement?.querySelector(".mt-1");
     const oldContent = contentElement?.innerText || "";
 
-    const newContent = prompt("Edit your message: ", oldContent);
+    const newContent = prompt("Edit your message:", oldContent);
     if (!newContent) return;
-
 
     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
@@ -70,19 +75,13 @@
             contentElement.innerText = newContent;
           }
 
-
           const existingTag = messageElement.querySelector(".edited-tag");
-          if (existingTag) {
-            existingTag.remove();
-          }
+          if (existingTag) existingTag.remove();
 
           const editedTag = document.createElement("div");
           editedTag.className = "text-end text-muted small mt-1 edited-tag fst-italic";
           editedTag.innerText = "(edited)";
           messageElement.appendChild(editedTag);
-
-
-
         } else {
           console.error('Failed to edit message');
         }
@@ -93,6 +92,7 @@
 
     hideContextMenu();
   }
+
 
   /**
    * Focuses on the message input field and hides the context menu.
@@ -132,6 +132,13 @@
    * Reacts to a message on the frontend.
    */
   function reactToMessage(content = "❤️") {
+    replyToMessageId = null;
+    replyToUsername = null;
+    replyToContent = null;
+    const inputElement = document.getElementById("id_message_send_input");
+    inputElement.value = content || "";
+    inputElement.focus();
+    document.getElementById("replying-to-preview").classList.add("d-none");
     console.log("reacting to message");
     try {
       const messageId = replyToMessageId;
@@ -193,16 +200,6 @@
   }
 
   function pinningMessage() {
-    hideContextMenu();
-
-  }
-
-  function editMessage() {
-    hideContextMenu();
-
-  }
-
-  function reactToMessage() {
     hideContextMenu();
 
   }
