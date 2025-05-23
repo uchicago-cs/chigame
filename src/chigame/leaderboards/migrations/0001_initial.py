@@ -76,6 +76,15 @@ class Migration(migrations.Migration):
             ],
         ),
         migrations.CreateModel(
+            name="Region",
+            fields=[
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("continent", models.CharField(max_length=100)),
+                ("country", models.CharField(max_length=100)),
+                ("region", models.CharField(max_length=100)),
+            ],
+        ),
+        migrations.CreateModel(
             name="MetricScore",
             fields=[
                 ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),

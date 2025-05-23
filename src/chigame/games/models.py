@@ -766,6 +766,9 @@ class GameData(models.Model):
         return f"{self.user.username} - {self.game.name}: {self.key}"
 
 
+# ================ CHECKERS =================
+
+
 class Checkers(models.Model):
     """
     A game of Checkers stores:
@@ -794,7 +797,6 @@ class CheckersBoard(models.Model):
     """
 
     state = models.JSONField()  # store positions/pieces as a 2D array
-    # state_bits = models.IntegerField() # stores positions as bits
 
     def __str__(self):
         return f"Board {self.id}"
