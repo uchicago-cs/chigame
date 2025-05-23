@@ -132,7 +132,7 @@
 .notification-item {
   display: flex;
   flex-direction: column;
-  background-color: #f8f9fa;
+  background-color: #ffffff !important;
   padding: 0.75rem 1rem;
   border-left: 4px solid #7aa5d5; /* friend request style fallback */
   /*border-radius: 6px;*/
@@ -142,7 +142,7 @@
 }
 
 .notification-item:hover {
-  background-color: #eef2f5;
+  background-color: #eef2f5 !important;
 }
 
 /* Slight icon enhancement */
@@ -187,23 +187,18 @@
 }
 
 .notification-style-friend {
-  background-color: #f8f9fa;
   border-left: 3px solid #7aa5d5;
 }
 .notification-style-group {
-  background-color: #f8f9fa;
   border-left: 3px solid #85c799;
 }
 .notification-style-match {
-  background-color: #f8f9fa;
   border-left: 3px solid #f0ad4e;
 }
 .notification-style-achievement {
-  background-color: #f8f9fa;
   border-left: 3px solid #d9534f;
 }
 .notification-style-system {
-  background-color: #f8f9fa;
   border-left: 3px solid #5bc0de;
 }
 .notification-style-default {
