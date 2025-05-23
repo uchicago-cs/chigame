@@ -116,7 +116,7 @@ function create() {
     drawBtn.textContent = 'Offer Draw';
     forfeitBtn.style.display = 'block';
     declineDrawBtn.style.display = 'none';
-    score.innerHTML = "Red: 0<br>Black: 0";
+    score.innerHTML = 'Red: 0<br>Black: 0';
 
     // Repopulate the board using the stored scene reference
     populatePieces(scene);
@@ -174,7 +174,6 @@ function create() {
       gameOverMessage.classList.add('show');
       drawBtn.textContent = 'Accept Draw';
       declineDrawBtn.style.display = 'flex';
-
     } else {
       // Accept Draw (second click)
       gameOver = true;
@@ -353,7 +352,7 @@ function isValidMove(piece, moveX, moveY) {
 // Updates score on frontend
 function updateScore() {
   const score = document.getElementById('score');
-  score.innerHTML = "Red: " + redCaptured + "<br>Black: " + blackCaptured;
+  score.innerHTML = 'Red: ' + redCaptured + '<br>Black: ' + blackCaptured;
 }
 
 function movePiece(piece, moveX, moveY) {
@@ -393,6 +392,21 @@ function movePiece(piece, moveX, moveY) {
     y: newY,
     duration: 300,
     ease: 'Power3',
+    onComplete: () => {
+      // Check for king promotion
+      if (
+        (piece.color === COLORS.red && piece.y === 0) ||
+        (piece.color === COLORS.black && piece.y === BOARD_SIZE - 1)
+      ) {
+        if (!piece.isKing) {
+          piece.isKing = true;
+
+          const crown = piece.sprite.scene.add.image(newX, newY, 'crown');
+          crown.setDisplaySize(TILE_SIZE, TILE_SIZE);
+          piece.kingIcon = crown;
+        }
+      }
+    },
   });
 
   // Move king icon if applicable
@@ -409,20 +423,8 @@ function movePiece(piece, moveX, moveY) {
   // Play move sound
   piece.sprite.scene.sound.play('slide');
 
-  // Check for king promotion
-  if (
-    (piece.color === COLORS.red && piece.y === 0) ||
-    (piece.color === COLORS.black && piece.y === BOARD_SIZE - 1)
-  ) {
-    if (!piece.isKing) {
-      piece.isKing = true;
-      const crown = piece.sprite.scene.add.image(newX, newY, 'crown');
-      crown.setDisplaySize(TILE_SIZE, TILE_SIZE);
-      piece.kingIcon = crown;
-    }
-  }
-
   console.log('Current board state:', getBoardState());
+}
 
 // Check if the game is over due to all pieces of one color being captured
 function checkGameOver() {
@@ -431,7 +433,7 @@ function checkGameOver() {
 
   if (redPieces.length === 0) {
     gameOver = true;
-    const gameOverPrompts = document.getElementById('gameOverPrompts')
+    const gameOverPrompts = document.getElementById('gameOverPrompts');
     const gameOverMessage = document.getElementById('gameOverMessage');
     gameOverPrompts.classList.add('show');
     gameOverMessage.textContent = 'All red pieces captured! Black wins!';
@@ -441,7 +443,7 @@ function checkGameOver() {
     document.getElementById('forfeitBtn').style.display = 'none';
   } else if (blackPieces.length === 0) {
     gameOver = true;
-    const gameOverPrompts = document.getElementById('gameOverPrompts')
+    const gameOverPrompts = document.getElementById('gameOverPrompts');
     const gameOverMessage = document.getElementById('gameOverMessage');
     gameOverPrompts.classList.add('show');
     gameOverMessage.textContent = 'All black pieces captured! Red wins!';
@@ -538,7 +540,8 @@ function giveHint() {
     // way of calling a specific square on the board. For now, I just have it return
     // the row and col on the matrix.
     alert(
-      `Hint: Move ${currentPlayer === COLORS.red ? 'red' : 'black'} piece at (row ${randomHint.piece.y
+      `Hint: Move ${currentPlayer === COLORS.red ? 'red' : 'black'} piece at (row ${
+        randomHint.piece.y
       }, column ${randomHint.piece.x}) to (row ${randomHint.y}, column ${randomHint.x})`
     );
   } else {
@@ -617,14 +620,14 @@ function giveHint() {
     // way of calling a specific square on the board. For now, I just have it return
     // the row and col on the matrix.
     alert(
-      `Hint: Move ${currentPlayer === COLORS.red ? 'red' : 'black'} piece at (row ${randomHint.piece.y
+      `Hint: Move ${currentPlayer === COLORS.red ? 'red' : 'black'} piece at (row ${
+        randomHint.piece.y
       }, column ${randomHint.piece.x}) to (row ${randomHint.y}, column ${randomHint.x})`
     );
   } else {
     // in a normal checkers game, the player loses if there are no moves left
     alert('No valid moves.');
   }
-
 
   // reset draw offer if it was made by the current player
   if (drawOffered && drawOfferedBy === currentPlayer) {
@@ -727,7 +730,6 @@ document.addEventListener('DOMContentLoaded', () => {
     else {
       changePieceColor(COLORS.black, COLORS.red);
       changeColorButton.classList.remove('selected');
-
     }
   });
 });
@@ -740,25 +742,37 @@ function getLegalMoves(color) {
   const direction = color === COLORS.red ? -1 : 1;
 
   //loop thru pieces
-  pieces.forEach(piece => {
+  pieces.forEach((piece) => {
     if (piece.color !== color) return; //return for other p;layer peices
     // simple moves
-    [-1, 1].forEach(diagonal => { //try L and R diagonals
+    [-1, 1].forEach((diagonal) => {
+      //try L and R diagonals
       const col = piece.x + diagonal; //new col
       const row = piece.y + direction; //new row
-      if ( //check if mvoe is valid
-        col >= 0 && col < BOARD_SIZE && row >= 0 && row < BOARD_SIZE &&
-        !getPiece(col, row) && isValidMove(piece, col, row)) {
+      if (
+        //check if mvoe is valid
+        col >= 0 &&
+        col < BOARD_SIZE &&
+        row >= 0 &&
+        row < BOARD_SIZE &&
+        !getPiece(col, row) &&
+        isValidMove(piece, col, row)
+      ) {
         moves.push({ piece, x: col, y: row }); //add move to arr
       }
     });
     // jump moves for captures
-    [-2, 2].forEach(jump => {
+    [-2, 2].forEach((jump) => {
       const jump_col = piece.x + jump;
       const jump_row = piece.y + 2 * direction;
       if (
-        jump_col >= 0 && jump_col < BOARD_SIZE && jump_row >= 0 && jump_row < BOARD_SIZE &&
-        !getPiece(jump_col, jump_row) && isValidMove(piece, jump_col, jump_row)) {
+        jump_col >= 0 &&
+        jump_col < BOARD_SIZE &&
+        jump_row >= 0 &&
+        jump_row < BOARD_SIZE &&
+        !getPiece(jump_col, jump_row) &&
+        isValidMove(piece, jump_col, jump_row)
+      ) {
         moves.push({ piece, x: jump_col, y: jump_row });
       }
     });
@@ -766,7 +780,6 @@ function getLegalMoves(color) {
 
   return moves;
 }
-
 
 // Easy bot: pick a random legal move and play it
 function easyBot(scene) {
@@ -835,10 +848,9 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.appendChild(rowLabel);
         coordElements.push(rowLabel);
       }
-
     } else {
       // remove coordinates
-      coordElements.forEach(el => document.body.removeChild(el));
+      coordElements.forEach((el) => document.body.removeChild(el));
       coordElements.length = 0;
     }
   });
