@@ -5,6 +5,7 @@ from django.utils import timezone
 from factory import Faker, Iterator, LazyAttribute, LazyFunction, Sequence, SubFactory, post_generation
 from factory.django import DjangoModelFactory
 
+from chigame.chat.models import LiveChat, LiveChatUser
 from chigame.games.models import Category, Chat, Feedback, Game, Lobby, Match, Mechanic, Review, Tournament
 from chigame.users.models import User
 
@@ -182,3 +183,18 @@ class ReviewFactory(factory.django.DjangoModelFactory):
     is_public = True
     user = factory.SubFactory(UserFactory)
     game = factory.SubFactory(GameFactory)
+
+
+class LiveChatFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = LiveChat
+
+    name = factory.Sequence(lambda n: f"LiveChat {n}")
+
+    @factory.post_generation
+    def users(self, create, extracted, **kwargs):
+        if not create:
+            return
+        if extracted:
+            for user in extracted:
+                LiveChatUser.objects.create(user=user, live_chat=self)
