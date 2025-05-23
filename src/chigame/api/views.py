@@ -1,8 +1,11 @@
+from allauth.account.forms import SignupForm
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.views import View
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, status
+from rest_framework.decorators import api_view
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import SAFE_METHODS, BasePermission, IsAuthenticated, IsAuthenticatedOrReadOnly
@@ -407,3 +410,23 @@ class FeedbackDetailView(generics.RetrieveUpdateDestroyAPIView):
         if instance.user != user:
             raise PermissionDenied("You can only delete your own feedback.")
         instance.delete()
+
+
+@api_view(["POST"])
+def Signup(request):
+    data = request.data
+    form = SignupForm(
+        {
+            "email": data.get("email"),
+            "password1": data.get("password1"),
+            "password2": data.get("password2"),
+        }
+    )
+
+    if form.is_valid():
+        user = form.save(request)
+        user.name = data.get("name")
+        user.save()
+        return JsonResponse({"status": "success"})
+    else:
+        return JsonResponse({"status": "error", "errors": form.errors}, status=400)

@@ -5,19 +5,19 @@
       <form @submit.prevent="handleSubmit">
 
         <label for="first-name">First Name</label>
-        <input id="first-name" type="first-name" required />
+        <input id="first-name" type="first-name" v-model="form.firstName" required />
 
         <label for="last-name">Last Name</label>
-        <input id="last-name" type="last-name" required />
+        <input id="last-name" type="last-name" v-model="form.lastName" required />
 
         <label for="email">Email</label>
-        <input id="email" type="email" required />
+        <input id="email" type="email" v-model="form.email" required />
 
         <label for="password">Password</label>
-        <input id="password" type="password" required />
+        <input id="password" type="password" v-model="form.password" required />
 
         <label for="confirm-password">Confirm Password</label>
-        <input id="confirm-password" type="password" required />
+        <input id="confirm-password" type="password" v-model="form.confirmPassword" required />
 
         <button type="submit">Sign Up</button>
         <div class="mt-3" style="min-height: 20vh;">
@@ -34,7 +34,41 @@
 
 
 <script setup>
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import axios from 'axios'
 
+const router = useRouter()
+const form = ref({ firstName: '', lastName: '', email: '', password: '', confirmPassword: '' })
+const error = ref(null)
+
+const api = axios.create({
+  baseURL: 'http://127.0.0.1:8000',
+})
+
+async function handleSubmit() {
+  error.value = null
+  if (form.value.password !== form.value.confirmPassword) {
+    error.value = "Passwords do not match"
+    return
+  }
+
+  try {
+    await api.post('/api/login/signup/', {
+      name: `${form.value.firstName} ${form.value.lastName}`,
+      email: form.value.email,
+      password1: form.value.password,
+      password2: form.value.confirmPassword
+    })
+    router.push('/login')
+  } catch (err) {
+    error.value =
+      err.response?.data?.message ||
+      err.message
+  }
+  /* console.log('logging in with', form.value)
+  router.push('/') */
+}
 </script>
 
 <style scoped>
