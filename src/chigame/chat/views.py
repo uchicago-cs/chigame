@@ -54,6 +54,43 @@ def delete_message(request, message_id):
     return JsonResponse({"message": "Message deleted successfully"}, status=200)
 
 
+def pin_message(request, message_id):
+    """
+    Pins a message in the chat
+
+    Args:
+        request: The request object.
+        message_id: The id of the message to delete.
+
+    Returns:
+        A JSON response.
+    """
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "Unauthorized"}, status=401)
+
+    message = get_object_or_404(LiveChatMessage, id=message_id)
+
+    if not message.live_chat.users.filter(id=request.user.id).exists():
+        return JsonResponse({"error": "Unauthorized"}, status=401)
+
+    chat = message.live_chat
+    chat.pinned_message = message
+    chat.save()
+
+    return JsonResponse(
+        {
+            "message": "Message pinned successfully",
+            "pinned_message": {
+                "id": message.id,
+                "content": message.content,
+                "username": message.user.username or message.user.email,
+                "is_pinned": True,
+            },
+        },
+        status=200,
+    )
+
+
 @csrf_exempt
 @require_POST
 def react_to_message(request, message_id):
@@ -85,3 +122,32 @@ def react_to_message(request, message_id):
             return JsonResponse({"status": "reacted", "content": content}, status=200)
     except ValidationError as e:
         return JsonResponse({"error": str(e)}, status=400)  # not a single emoji
+
+
+def edit_message(request, message_id):
+    """
+    Edits a message from the database.
+
+    Args:
+        request: The request object.
+        message_id: The id of the message to edit.
+
+    Returns:
+        A JSON response.
+    """
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "Unauthorized"}, status=401)
+
+    message = get_object_or_404(LiveChatMessage, id=message_id)
+
+    if not request.user == message.user:
+        return JsonResponse({"error": "Unauthorized"}, status=401)
+
+    if request.method == "POST":
+        content = request.POST.get("content")
+        message.edited = True
+        message.content = content
+        message.save()
+        return JsonResponse({"message": "Message edited successfully", "edited": message.edited}, status=200)
+
+    return JsonResponse({"message": "Type of request not allowed"}, status=405)
