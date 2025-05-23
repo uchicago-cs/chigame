@@ -27,6 +27,11 @@ from chigame.games.models import Feedback, Game, Lobby, Message, Review, User
 
 
 class GameTests(APITestCase):
+    # for IF games migration resetting
+    def setUp(self):
+        super().setUp()
+        Game.objects.all().delete()
+
     def check_equal(self, obj, expected: dict):
         """
         Helper function to check that the object data matches the expected data.

@@ -9,6 +9,14 @@ User = get_user_model()
 
 class RecommendationSystemTest(TestCase):
     def setUp(self):
+        super().setUp()
+
+        # clear any leftover Twine game that may have been inserted by migrations
+        Game.objects.filter(name="Twine Test Game").delete()
+
+        # clear any pre-existing test/migrated games
+        Game.objects.all().delete()
+
         # Create test categories
         self.category1 = Category.objects.create(name="Strategy")
         self.category2 = Category.objects.create(name="Card Game")
@@ -97,6 +105,8 @@ class RecommendationSystemTest(TestCase):
         Player.objects.create(user=self.user, match=match, outcome=Player.WIN)
 
         # Game2 should still be recommended but at a lower position
-        recommendations = get_recommended_games(self.game1, user=self.user)
+        recommendations = [
+            game for game in get_recommended_games(self.game1, user=self.user) if game.name != "Twine Test Game"
+        ]
         self.assertIn(self.game2, recommendations)
         self.assertEqual(list(recommendations)[0], self.game3)  # game3 should now be first
