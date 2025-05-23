@@ -1,3 +1,51 @@
+<script setup>
+import { ref } from 'vue'
+import { Swiper, SwiperSlide } from 'swiper/vue'
+import 'swiper/css'
+import 'swiper/css/pagination'
+import 'swiper/css/effect-coverflow'
+import 'swiper/css/autoplay'
+
+import { Autoplay, Pagination, EffectCoverflow } from 'swiper/modules'
+
+import managementImg from './images/management.png'
+import checkersImg from './images/checkers.png'
+import wordgameImg from './images/wordgame.png'
+import reversiImg from './images/reversi.png'
+
+const tournaments = ref([
+  {
+    id: 1,
+    name: 'Checkers Showdown',
+    description: 'A classic checkers tournament for all skill levels.',
+    image: checkersImg,
+    status: 'Upcoming'
+  },
+  {
+    id: 2,
+    name: 'Word Masters',
+    description: 'Compete in Not Wordle for the top spot!',
+    image: wordgameImg,
+    status: 'Ongoing'
+  },
+  {
+    id: 3,
+    name: 'Reversi Blitz',
+    description: 'Fast-paced reversi action. Join now!',
+    image: reversiImg,
+    status: 'Completed'
+  }
+])
+
+const trendingGames = ref([
+  { src: managementImg, alt: 'Management' },
+  { src: checkersImg, alt: 'Checkers' },
+  { src: wordgameImg, alt: 'Word Game' },
+  { src: reversiImg, alt: 'Reversi' }
+])
+</script>
+
+
 <template>
 <div class="hero-section">
   <div class="hero-content">
@@ -180,33 +228,22 @@
 </div>
 <!-- Third row of homepage (Tournaments) -->
 <div class="homepage-block tournaments">
-  <div class="d-flex flex-row justify-content-between">
-    Tournaments
-    <span class="d-flex flex-column justify-content-around"><span class="see-more-link"><a class="nav-link" href="/">>> See all</a></span></span>
-  </div>
-  <div class="d-flex flex-row justify-content-between tournaments-block">
-    <div class="tournament">
-      <img src="https://cf.geekdo-images.com/oWcB33sfig9QF_KBEv7iLQ__original/img/retN48ZHxCC5YaECdlWjRdWHPGs=/0x0/filters:format(png)/pic2439783.png"
-           class="tournament-img"
-           alt="battleship" />
-      <p class="tournament-name">Tournament Name</p>
-      <p class="tournament-description">Tournament Description</p>
+    <div class="d-flex flex-row justify-content-between">
+      <span>Tournaments</span>
+      <span class="d-flex flex-column justify-content-around">
+        <span class="see-more-link">
+          <router-link class="nav-link" to="/tournaments">&gt;&gt; See all</router-link>
+        </span>
+      </span>
     </div>
-    <div class="tournament">
-      <img src="https://cf.geekdo-images.com/0_RWFMNapgr5yCrdhvGi_Q__original/img/c4SiusUQuh7uc0k6HDwIXYsEc8M=/0x0/filters:format(jpeg)/pic8785991.jpg"
-           class="tournament-img"
-           alt="chess" />
-      <p class="tournament-name">Tournament Name</p>
-      <p class="tournament-description">Tournament Description</p>
+    <div class="d-flex flex-row justify-content-between tournaments-block">
+      <div class="tournament" v-for="tournament in tournaments" :key="tournament.id">
+        <img :src="tournament.image" class="tournament-img" :alt="tournament.name" />
+        <p class="tournament-name">{{ tournament.name }}</p>
+        <p class="tournament-description">{{ tournament.description }}</p>
+        <span class="tournament-status" :class="tournament.status.toLowerCase()">{{ tournament.status }}</span>
+      </div>
     </div>
-    <div class="tournament">
-      <img src="https://cf.geekdo-images.com/-DHiHBBSnvaLu0Do8CIykQ__original/img/fRfoyWezpQsumExNKVxf1cwtJfg=/0x0/filters:format(jpeg)/pic8204165.jpg"
-           class="tournament-img"
-           alt="uno" />
-      <p class="tournament-name">Tournament Name</p>
-      <p class="tournament-description">Tournament Description</p>
-    </div>
-  </div>
 </div>
 <!-- Fourth row of homepage -->
 <div class="d-flex flex-row justify-content-between">
@@ -248,28 +285,6 @@
 </div>
 </template>
 
-<script setup>
-import { ref } from 'vue';
-import { Swiper, SwiperSlide } from 'swiper/vue';
-import 'swiper/css';
-import 'swiper/css/pagination';
-import 'swiper/css/effect-coverflow';
-import 'swiper/css/autoplay';
-
-import { Autoplay, Pagination, EffectCoverflow } from 'swiper/modules';
-
-import managementImg from './images/management.png';
-import checkersImg from './images/checkers.png';
-import wordgameImg from './images/wordgame.png';
-import reversiImg from './images/reversi.png';
-
-const trendingGames = ref([
-  { src: managementImg, alt: 'Management' },
-  { src: checkersImg, alt: 'Checkers' },
-  { src: wordgameImg, alt: 'Word Game' },
-  { src: reversiImg, alt: 'Reversi' },
-]);
-</script>
 
 <style lang="css" scoped>
 
@@ -384,12 +399,14 @@ height: 90%;
 }
 
 .tournaments {
-height: 60vh;
 margin-top: 0.5rem;
+margin-bottom: 2rem;
 }
 
 .tournaments-block {
-height: 90%;
+display: flex;
+flex-direction: row;
+gap: 1.5rem;
 }
 
 .tournament {
@@ -417,6 +434,26 @@ font-size: 1.3vw;
 font-weight: normal;
 margin-top: 0rem;
 }
+
+.tournament-status {
+  display: inline-block;
+  margin-top: 0.3vw;
+  padding: 0.2vw 1vw;
+  border-radius: 1vw;
+  font-size: 0.95vw;
+  font-weight: bold;
+}
+.tournament-status.upcoming {
+    background: #e0ffe0;
+    color: #228B22;
+}
+.tournament-status.ongoing {
+    background: #fff3cd;
+    color: #856404;
+}
+.tournament-status.completed {
+    background: #ffe5e5;
+    color: #800000; }
 
 .live-chat {
 height: 60vh;
