@@ -1,3 +1,6 @@
+{% extends "base.html" %}
+
+{% block content %}
 <h1>{{ leaderboard.name }}</h1>
 <p>{{ leaderboard.description }}</p>
 <table>
@@ -12,9 +15,10 @@
     {% for entry in entries %}
       <tr>
         <td>{{ entry.rank }}</td>
-        <td>{{ entry.user.display_name }}</td>
+        <td>{{ entry.user.user.name }}</td>
         <td>{{ entry.user.region }}</td>
       </tr>
     {% endfor %}
   </tbody>
 </table>
+{% endblock content %}
