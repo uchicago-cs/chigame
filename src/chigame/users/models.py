@@ -307,6 +307,21 @@ class Notification(models.Model):
 
     DEFAULT_MESSAGES = {FRIEND_REQUEST: "You have a friend invitation"}
 
+    # Auto-categorization mapping for notification types
+    CATEGORY_MAPPING = {
+        FRIEND_REQUEST: "social",
+        GROUP_INVITATION: "social",
+        REMINDER: "updates",
+        UPCOMING_MATCH: "updates",
+        MATCH_INVITATION: "updates",
+        ACHIEVEMENT: "promotions",
+        TOURNAMENT_INVITATION: "social",
+        TOURNAMENT_INVITATION_ACCEPTED: "social",
+        TOURNAMENT_STARTING: "updates",
+        TOURNAMENT_ROUND_COMPLETED: "updates",
+        TOURNAMENT_COMPLETED: "updates",
+    }
+
     category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default="inbox")
     receiver = models.ForeignKey(User, on_delete=models.CASCADE)
     first_sent = models.DateTimeField(auto_now_add=True)
@@ -324,6 +339,12 @@ class Notification(models.Model):
 
     class Meta:
         unique_together = ["receiver", "actor_content_type", "actor_object_id", "type"]
+
+    def save(self, *args, **kwargs):
+        # Auto-categorize notification if category is still default "inbox"
+        if self.category == "inbox" and self.type in self.CATEGORY_MAPPING:
+            self.category = self.CATEGORY_MAPPING[self.type]
+        super().save(*args, **kwargs)
 
     def mark_as_read(self):
         if not self.read:
@@ -417,23 +438,6 @@ class Notification(models.Model):
             return "bi-info-circle-fill"
         else:
             return "bi-bell-fill"
-
-    def get_default_category(self):
-        """Get the default category for this notification type."""
-        type_to_category = {
-            self.FRIEND_REQUEST: "social",
-            self.GROUP_INVITATION: "social",
-            self.REMINDER: "updates",
-            self.UPCOMING_MATCH: "updates",
-            self.MATCH_INVITATION: "updates",
-            self.ACHIEVEMENT: "promotions",
-        }
-        return type_to_category.get(self.type, "inbox")
-
-    def save(self, *args, **kwargs):
-        if not self.category or self.category == "inbox":
-            self.category = self.get_default_category()
-        super().save(*args, **kwargs)
 
 
 class BaseNotificationHandler:
