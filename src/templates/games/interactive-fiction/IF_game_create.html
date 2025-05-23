@@ -405,11 +405,6 @@
     </div>
     <hr />
     <h3>Upload Game Files</h3>
-  </form>
-  <form method="post"
-        action="{% url 'upload-file' pk=game.pk %}"
-        enctype="multipart/form-data">
-    {% csrf_token %}
     <div class="upload-zone" data-input-id="myFile">
       Drag &amp; drop a file here
       <br />
