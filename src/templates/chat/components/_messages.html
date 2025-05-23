@@ -126,6 +126,8 @@
     font-weight: bold;
   }
 </style>
+{% load profanity_tags %}
+
 <div id="message-container"
      class="chat-messages-scroll flex-grow-1 overflow-auto p-3 bg-light d-flex flex-column">
   <div class="d-flex flex-column h-100">
@@ -142,7 +144,13 @@
               </div>
             {% endif %}
             <div class="fw-bold small text-danger">{{ message.user.username }}</div>
-            <div class="mt-1">{{ message.content }}</div>
+            <div class="mt-1">
+              {% if request.chat_user.profanity %}
+                {{ message.content|profanity_filter }}
+              {% else %}
+                {{ message.content }}
+              {% endif %}
+            </div>
             <div class="message-meta text-end text-muted small mt-1">
               {% if message.id == chat.pinned_message.id %}
                 <span class="text-warning small ms-1 pinned-label">📌 Pinned</span>
