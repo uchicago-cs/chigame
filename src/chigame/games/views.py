@@ -82,6 +82,19 @@ class GameListView(ListView):
 
         return queryset
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.user.is_authenticated:
+            # Ensure 'Favorites' is always first if it exists or is created.
+            favorites_list, _ = GameList.objects.get_or_create(name="Favorites", created_by=self.request.user)
+            other_lists = (
+                GameList.objects.filter(created_by=self.request.user).exclude(pk=favorites_list.pk).order_by("name")
+            )
+            context["game_lists"] = [favorites_list] + list(other_lists)
+        else:
+            context["game_lists"] = []
+        return context
+
 
 class GameDetailView(LoginRequiredMixin, FormMixin, DetailView):
     model = Game
@@ -773,6 +786,16 @@ class TournamentDetailView(DetailView):
 
         return self.render_to_response(context)
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        tournament = self.get_object()
+
+        # Fetch the user's feedback for this tournament
+        user_feedback = Feedback.objects.filter(tournament=tournament, user=self.request.user).first()
+        context["user_feedback"] = user_feedback
+
+        return context
+
     def post(self, request, *args, **kwargs):
         tournament = Tournament.objects.get(id=request.POST.get("tournament_id"))
         simulation_type = self.get_simulation_type(request, tournament.id)
@@ -1330,6 +1353,156 @@ class TournamentArchivedListView(ListView):
         return self.request.user.is_staff
 
 
+# Placeholder Game
+@login_required
+def coin_flip_game(request, pk):
+    # check if user has already played game
+    if Player.objects.filter(user=request.user, match_id__lobby__id=pk).exists():
+        return render(request, "games/game_already_played.html")
+    return render(request, "games/game_coinflip.html", {"lobby_id": pk})
+
+
+@login_required
+def check_guess(request, pk):
+    user_guess = request.POST.get("user_guess")
+    coin_result = choice(["heads", "tails"])
+    correct_guess = user_guess == coin_result
+
+    lobby = get_object_or_404(Lobby, id=pk)
+
+    # allows two users to play the game
+    if Match.objects.filter(lobby__id=pk).exists():
+        match = get_object_or_404(Match, lobby__id=pk)
+    else:
+        # Create Match instance linked to the fetched Lobby
+        match = Match.objects.create(
+            game_id=lobby.game.id,
+            lobby=lobby,
+            date_played=timezone.now()
+            # Add other fields as needed
+        )
+
+    player = Player.objects.create(
+        user=request.user,
+        match=match,
+    )
+    if correct_guess:
+        player.outcome = Player.WIN
+    else:
+        player.outcome = Player.LOSE
+    player.save()
+
+    # Checks if everyone has played
+    if match.players.all().count() == lobby.members.all().count():
+        lobby.match_status = 3
+    match.save()
+    lobby.save()
+    return render(
+        request,
+        "games/game_coinresult.html",
+        {"user_guess": user_guess, "coin_result": coin_result, "correct_guess": correct_guess, "lobby_id": pk},
+    )
+
+
+@login_required
+def TournamentChatDetailView(request, pk):
+    try:
+        tournament = Tournament.objects.get(pk=pk)
+        context = {"tournament": tournament}
+        if not tournament.chat:
+            messages.error(request, "This tournament does not have a chat yet.")
+            return redirect(reverse_lazy("tournament-detail", kwargs={"pk": pk}))
+        return render(request, "tournaments/tournament_chat.html", context)
+    except ObjectDoesNotExist:
+        messages.error(request, "This tournament does not have a chat yet.")
+        return redirect(reverse_lazy("tournament-detail", kwargs={"pk": pk}))
+
+
+class ReviewListView(ListView):
+    model = Review
+    template_name = "games/game_reviews.html"
+    context_object_name = "reviews"
+
+    def get_queryset(self):
+        game_pk = self.kwargs["pk"]
+        game = get_object_or_404(Game, pk=game_pk)
+        return Review.objects.filter(game=game, is_public=True)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        game_pk = self.kwargs["pk"]
+        context["game"] = get_object_or_404(Game, pk=game_pk)
+        return context
+
+
+# Views for a review page
+@login_required
+def add_review(request, pk):
+    game = get_object_or_404(Game, pk=pk)
+
+    if request.method == "POST":
+        form = ReviewForm(request.POST)
+        if form.is_valid():
+            review = form.save(commit=False)
+            review.user = request.user
+            review.game = game
+            review.save()
+            return redirect("game-detail", pk=game.pk)
+    else:
+        form = ReviewForm()
+
+    return render(request, "games/game_add_review.html", {"form": form, "game": game})
+
+
+@login_required
+def add_to_favorites(request, pk):
+    """Add a game to the current user's 'Favorites' list."""
+    game = get_object_or_404(Game, pk=pk)
+    favorites_list, _ = GameList.objects.get_or_create(name="Favorites", created_by=request.user)
+    favorites_list.games.add(game)
+    return redirect("favorite-list")
+
+
+@login_required
+def remove_from_favorites(request, pk):
+    """Remove a game from the current user's 'Favorites' list."""
+    game = get_object_or_404(Game, pk=pk)
+    try:
+        favorites_list = GameList.objects.get(name="Favorites", created_by=request.user)
+        favorites_list.games.remove(game)
+    except GameList.DoesNotExist:
+        pass
+    return redirect("favorite-list")
+
+
+class FavoriteListView(LoginRequiredMixin, ListView):
+    """Display the current user's favorite games."""
+
+    model = Game
+    template_name = "games/favorites_list.html"
+    context_object_name = "favorite_games"
+
+    def get_queryset(self):
+        favorites_list, _ = GameList.objects.get_or_create(name="Favorites", created_by=self.request.user)
+        return favorites_list.games.all()
+
+
+@login_required
+def add_to_gamelist(request, pk, list_pk):
+    game = get_object_or_404(Game, pk=pk)
+    game_list = get_object_or_404(GameList, pk=list_pk, created_by=request.user)
+    game_list.games.add(game)
+    return redirect("game-detail", pk=pk)
+
+
+@login_required
+def remove_from_gamelist(request, pk, list_pk):
+    game = get_object_or_404(Game, pk=pk)
+    game_list = get_object_or_404(GameList, pk=list_pk, created_by=request.user)
+    game_list.games.remove(game)
+    return redirect("game-detail", pk=pk)
+
+
 # Tournament Feedback Views
 @login_required
 def tournament_feedback_list(request, tournament_id):
@@ -1449,137 +1622,6 @@ def delete_feedback_view(request, feedback_id):
     return render(request, "tournaments/tournament_delete_feedback.html", {"feedback": feedback})
 
 
-# Placeholder Game
-@login_required
-def coin_flip_game(request, pk):
-    # check if user has already played game
-    if Player.objects.filter(user=request.user, match_id__lobby__id=pk).exists():
-        return render(request, "games/game_already_played.html")
-    return render(request, "games/game_coinflip.html", {"lobby_id": pk})
-
-
-@login_required
-def check_guess(request, pk):
-    user_guess = request.POST.get("user_guess")
-    coin_result = choice(["heads", "tails"])
-    correct_guess = user_guess == coin_result
-
-    lobby = get_object_or_404(Lobby, id=pk)
-
-    # allows two users to play the game
-    if Match.objects.filter(lobby__id=pk).exists():
-        match = get_object_or_404(Match, lobby__id=pk)
-    else:
-        # Create Match instance linked to the fetched Lobby
-        match = Match.objects.create(
-            game_id=lobby.game.id,
-            lobby=lobby,
-            date_played=timezone.now()
-            # Add other fields as needed
-        )
-
-    player = Player.objects.create(
-        user=request.user,
-        match=match,
-    )
-    if correct_guess:
-        player.outcome = Player.WIN
-    else:
-        player.outcome = Player.LOSE
-    player.save()
-
-    # Checks if everyone has played
-    if match.players.all().count() == lobby.members.all().count():
-        lobby.match_status = 3
-    match.save()
-    lobby.save()
-    return render(
-        request,
-        "games/game_coinresult.html",
-        {"user_guess": user_guess, "coin_result": coin_result, "correct_guess": correct_guess, "lobby_id": pk},
-    )
-
-
-@login_required
-def TournamentChatDetailView(request, pk):
-    try:
-        tournament = Tournament.objects.get(pk=pk)
-        context = {"tournament": tournament}
-        if not tournament.chat:
-            messages.error(request, "This tournament does not have a chat yet.")
-            return redirect(reverse_lazy("tournament-detail", kwargs={"pk": pk}))
-        return render(request, "tournaments/tournament_chat.html", context)
-    except ObjectDoesNotExist:
-        messages.error(request, "This tournament does not have a chat yet.")
-        return redirect(reverse_lazy("tournament-detail", kwargs={"pk": pk}))
-
-
-class ReviewListView(ListView):
-    model = Review
-    template_name = "games/game_reviews.html"
-    context_object_name = "reviews"
-
-    def get_queryset(self):
-        game_pk = self.kwargs["pk"]
-        game = get_object_or_404(Game, pk=game_pk)
-        return Review.objects.filter(game=game, is_public=True)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        game_pk = self.kwargs["pk"]
-        context["game"] = get_object_or_404(Game, pk=game_pk)
-        return context
-
-
-@login_required
-def add_to_favorites(request, pk):
-    """Add a game to the current user's 'Favorites' list."""
-    game = get_object_or_404(Game, pk=pk)
-    favorites_list, _ = GameList.objects.get_or_create(name="Favorites", created_by=request.user)
-    favorites_list.games.add(game)
-    return redirect("favorite-list")
-
-
-@login_required
-def remove_from_favorites(request, pk):
-    """Remove a game from the current user's 'Favorites' list."""
-    game = get_object_or_404(Game, pk=pk)
-    try:
-        favorites_list = GameList.objects.get(name="Favorites", created_by=request.user)
-        favorites_list.games.remove(game)
-    except GameList.DoesNotExist:
-        pass
-    return redirect("favorite-list")
-
-
-class FavoriteListView(LoginRequiredMixin, ListView):
-    """Display the current user's favorite games."""
-
-    model = Game
-    template_name = "games/favorites_list.html"
-    context_object_name = "favorite_games"
-
-    def get_queryset(self):
-        favorites_list, _ = GameList.objects.get_or_create(name="Favorites", created_by=self.request.user)
-        return favorites_list.games.all()
-
-
-@login_required
-def add_to_gamelist(request, pk, list_pk):
-    game = get_object_or_404(Game, pk=pk)
-    game_list = get_object_or_404(GameList, pk=list_pk, created_by=request.user)
-    game_list.games.add(game)
-    return redirect("game-detail", pk=pk)
-
-
-@login_required
-def remove_from_gamelist(request, pk, list_pk):
-    game = get_object_or_404(Game, pk=pk)
-    game_list = get_object_or_404(GameList, pk=list_pk, created_by=request.user)
-    game_list.games.remove(game)
-    return redirect("game-detail", pk=pk)
-
-
 # =============== Word Game Views ===============
 
 
@@ -1599,6 +1641,9 @@ def wordle_game_page(request):
     return render(request, "games/wordle.html", {"iframe_url": iframe_url})
 
 
+# ============== Checkers ============
+
+
 @login_required
 def checkers_game_view(request, pk):
     game = get_object_or_404(Checkers, id=pk)
@@ -1614,6 +1659,7 @@ def checkers_game_view(request, pk):
     if latest_turn:
         board = latest_turn.board
     else:
+        # First time loading, create default board
         default_state = [
             [0, 2, 0, 2, 0, 2, 0, 2],
             [2, 0, 2, 0, 2, 0, 2, 0],
@@ -1624,6 +1670,7 @@ def checkers_game_view(request, pk):
             [0, 1, 0, 1, 0, 1, 0, 1],
             [1, 0, 1, 0, 1, 0, 1, 0],
         ]
+        # Save first turn
         board = CheckersBoard.objects.create(state=default_state)
         CheckersTurn.objects.create(game=game, board=board, turn_number=1, player=game.player_1)
 
@@ -1669,3 +1716,15 @@ def checkers_game_get_board_state(request, board_id):
         return Response({"state": board.state})
     except CheckersBoard.DoesNotExist:
         return Response({"error": "Board not found"}, status=404)
+
+
+class GameListDetailView(LoginRequiredMixin, DetailView):
+    """Display the games in a specific GameList."""
+
+    model = GameList
+    template_name = "games/gamelist_detail.html"
+    context_object_name = "gamelist"
+
+    def get_queryset(self):
+        # Ensure users can only view their own game lists
+        return GameList.objects.filter(created_by=self.request.user)
