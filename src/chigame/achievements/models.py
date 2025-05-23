@@ -23,8 +23,25 @@ class Achievement(models.Model):
     threshold = models.FloatField(null=True, blank=True, default=1)
     # threshold is amount needed to earn achievement (e.g. 5.0 wins)
 
+    def __str__(self):
+        return f"{self.name} ({self.game})"
+
     class Meta:
         unique_together = ("name", "game")
+
+    def advance(self, user, amount=1):
+        """
+        Advance the progress of a user towards this achievement.
+        """
+        user_achievement, created = UserAchievement.objects.get_or_create(user=user, achievement=self)
+        if created:
+            amount -= 1
+        if user_achievement.progress >= self.threshold:
+            return
+        user_achievement.progress += amount
+        if user_achievement.progress >= self.threshold:
+            user_achievement.date_earned = models.DateTimeField(auto_now_add=True)
+        user_achievement.save()
 
 
 class UserAchievement(models.Model):
@@ -35,9 +52,13 @@ class UserAchievement(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     achievement = models.ForeignKey(Achievement, on_delete=models.CASCADE)
     pinned = models.BooleanField(default=False)
-    date_earned = models.DateTimeField()
+    date_earned = models.DateTimeField(null=True, blank=True)
+    last_updated = models.DateTimeField(auto_now=True)
     progress = models.FloatField(null=True, blank=True, default=1)
-    # progress can be updated as user makes progress on an achievement with a threshold
+    # progress can be updated if achievement has a threshold
+
+    def __str__(self):
+        return f"{self.user} - {self.achievement}"
 
     class Meta:
         unique_together = ("user", "achievement")

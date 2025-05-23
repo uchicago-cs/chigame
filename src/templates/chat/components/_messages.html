@@ -67,17 +67,86 @@
     padding: 20px;
     font-style: italic;
   }
+
+  .message-reply {
+    background-color: rgba(0, 0, 0, 0.05);
+    border-left: 3px solid #800000;
+    padding: 8px;
+    margin-bottom: 8px;
+    border-radius: 4px;
+    font-size: 0.9em;
+  }
+
+  .message-reply__sender {
+    color: #800000;
+    font-weight: bold;
+  }
+
+  .message-reply__content {
+    color: #666;
+  }
+
+  .context-menu {
+    position: fixed;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    padding: 8px;
+    z-index: 1000;
+    display: none;
+  }
+
+  .message-reactions {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+    font-size: 1.1em;
+  }
+
+  .reaction-pill {
+    display: inline-block;
+    background-color: #ffe6ea;
+    color: #b30000;
+    border-radius: 12px;
+    padding: 2px 8px;
+    margin-right: 6px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: background-color 0.2s ease;
+  }
+
+  .reaction-pill:hover {
+    background-color: #ffccd5;
+  }
+
+  .reaction-count {
+    margin-left: 4px;
+    font-weight: bold;
+  }
 </style>
-<div class="bg-light flex-grow-1 overflow-auto border border-light p-3">
+<div id="message-container"
+     class="chat-messages-scroll flex-grow-1 overflow-auto p-3 bg-light d-flex flex-column">
   <div class="d-flex flex-column h-100">
     {% if messages %}
       {% for message in messages %}
-        <div class="mb-3 {% if message.user == request.user %}align-self-end{% else %}align-self-start{% endif %}">
+        <div class="mb-3 {% if message.user == request.user %}align-self-end{% else %}align-self-start{% endif %}"
+             data-message-id="{{ message.id }}"
+             oncontextmenu="showContextMenu(event, '{{ message.id }}', '{{ message.user.username }}', '{{ message.content }}'); return false;">
           <div class="{% if message.user == request.user %}bg-success-subtle{% else %}bg-white{% endif %} rounded p-2 shadow-sm">
+            {% if message.reply_to %}
+              <div class="message-reply">
+                <div class="message-reply__sender">{{ message.reply_to.user.username }}</div>
+                <div class="message-reply__content">{{ message.reply_to.content }}</div>
+              </div>
+            {% endif %}
             <div class="fw-bold small text-danger">{{ message.user.username }}</div>
             <div class="mt-1">{{ message.content }}</div>
-            <div class="text-end text-muted small mt-1">{{ message.created_at|date:"g:i A" }}</div>
+            <div class="text-end text-muted small mt-1">{{ message.sent_at|date:"g:i A" }}</div>
+            <div class="message-reactions mt-1" id="reactions-{{ message.id }}"></div>
           </div>
+          {% if message.edited %}<div class="text-end text-muted small mt-1 fst-italic">(edited)</div>{% endif %}
         </div>
       {% endfor %}
     {% else %}
@@ -85,3 +154,4 @@
     {% endif %}
   </div>
 </div>
+{% include "chat/components/_context_menu.html" %}
