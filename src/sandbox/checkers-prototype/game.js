@@ -30,6 +30,10 @@ const COLORS = {
   white: 0xffffff,
   colorblind_blue: 0x1e88e5,
   colorblind_orange: 0xffc107,
+  strRed: '#ff0000', // string needed b/c hex cannot be used to change css
+  strBlack: '#000000',
+  strBlue: '#1e88e5',
+  strOrange: '#ffc107',
 };
 let pieces = [];
 let selectedPiece = null;
@@ -48,6 +52,8 @@ let gameOver = false;
 let drawOffered = false;
 let drawOfferedBy = null;
 
+let colorblindMode = false;
+
 //BOT SETTINGS
 let vsEasyBot = true;
 
@@ -60,7 +66,6 @@ function preload() {
   this.load.audio('slide', 'sfx/slide.mp3');
   this.load.audio('hint', 'sfx/bling.mp3');
 }
-
 
 function create() {
   // Store reference to the scene
@@ -92,6 +97,12 @@ function create() {
   // Score display
   const score = document.getElementById('score');
 
+  // current turn indicator
+  const turn = document.getElementById('player-turn');
+  const dot = document.querySelector('.dot');
+  turn.textContent = 'Red';
+  dot.style.backgroundColor = COLORS.strRed;
+
   function resetGame() {
     // Clear all pieces
     pieces.forEach((piece) => piece.sprite.destroy());
@@ -115,7 +126,8 @@ function create() {
     drawBtn.textContent = 'Offer Draw';
     forfeitBtn.style.display = 'block';
     declineDrawBtn.style.display = 'none';
-    score.innerHTML = "Red: 0<br>Black: 0";
+    score.innerHTML = 'Red: 0<br>Black: 0';
+    turn.textContent = 'Red';
 
     // Repopulate the board using the stored scene reference
     populatePieces(scene);
@@ -191,7 +203,7 @@ function create() {
       resetDrawOffer();
     }
   });
-  easyBot.textContent =  `Easy Bot: ${vsEasyBot ? 'ON' : 'OFF'}`;
+  easyBot.textContent = `Easy Bot: ${vsEasyBot ? 'ON' : 'OFF'}`;
   easyBot.addEventListener('click', () => {
     vsEasyBot = !vsEasyBot;
     easyBot.textContent = `Easy Bot: ${vsEasyBot ? 'ON' : 'OFF'}`;
@@ -344,7 +356,7 @@ function isValidMove(piece, moveX, moveY) {
 // Updates score on frontend
 function updateScore() {
   const score = document.getElementById('score');
-  score.innerHTML = "Red: " + redCaptured + "<br>Black: " + blackCaptured;
+  score.innerHTML = 'Red: ' + redCaptured + '<br>Black: ' + blackCaptured;
 }
 
 function movePiece(piece, moveX, moveY) {
@@ -377,7 +389,7 @@ function movePiece(piece, moveX, moveY) {
 
   // Play move sound effect
   piece.sprite.scene.sound.play('slide');
-  console.log("Current board state:", getBoardState());
+  console.log('Current board state:', getBoardState());
 }
 
 // Check if the game is over due to all pieces of one color being captured
@@ -387,7 +399,7 @@ function checkGameOver() {
 
   if (redPieces.length === 0) {
     gameOver = true;
-    const gameOverPrompts = document.getElementById('gameOverPrompts')
+    const gameOverPrompts = document.getElementById('gameOverPrompts');
     const gameOverMessage = document.getElementById('gameOverMessage');
     gameOverPrompts.classList.add('show');
     gameOverMessage.textContent = 'All red pieces captured! Black wins!';
@@ -397,7 +409,7 @@ function checkGameOver() {
     document.getElementById('forfeitBtn').style.display = 'none';
   } else if (blackPieces.length === 0) {
     gameOver = true;
-    const gameOverPrompts = document.getElementById('gameOverPrompts')
+    const gameOverPrompts = document.getElementById('gameOverPrompts');
     const gameOverMessage = document.getElementById('gameOverMessage');
     gameOverPrompts.classList.add('show');
     gameOverMessage.textContent = 'All black pieces captured! Red wins!';
@@ -425,6 +437,17 @@ function endTurn(scene) {
   currentPlayer = currentPlayer === COLORS.red ? COLORS.black : COLORS.red;
   // remove the highlight after a move is made
   clearHighlightedTiles();
+
+  // update turn indicator
+  const turn = document.getElementById('player-turn');
+  const dot = document.querySelector('.dot');
+  if (currentPlayer === COLORS.red) {
+    turn.textContent = 'Red';
+    dot.style.backgroundColor = colorblindMode ? COLORS.strOrange: COLORS.strRed;
+  } else {
+    turn.textContent = 'Black';
+    dot.style.backgroundColor = colorblindMode ? COLORS.strBlue: COLORS.strBlack;
+  }
 }
 
 // helper function to highlight the valid moves for the selected piece
@@ -583,7 +606,6 @@ function giveHint() {
     alert('No valid moves.');
   }
 
-
   // reset draw offer if it was made by the current player
   if (drawOffered && drawOfferedBy === currentPlayer) {
     const gameOverPrompts = document.getElementById('gameOverPrompts');
@@ -599,7 +621,7 @@ function giveHint() {
     declineDrawBtn.style.display = 'none';
   }
   //if black and bot is on, schedule bot move
-  if (vsEasyBot && currentPlayer === COLORS.black){
+  if (vsEasyBot && currentPlayer === COLORS.black) {
     //delay so user has time to process bot movw after their own
     scene.time.delayedCall(300, easyBot, [scene], scene);
   }
@@ -678,72 +700,84 @@ document.addEventListener('DOMContentLoaded', () => {
     const firstPieceColor = pieces[0].color;
     // if the first piece is a default color, change to colorblind colors
     if (firstPieceColor === COLORS.red || firstPieceColor === COLORS.black) {
+      colorblindMode = true;
       changePieceColor(COLORS.colorblind_blue, COLORS.colorblind_orange);
       changeColorButton.classList.add('selected');
     }
     // if the first piece is a colorblind color, change to default colors
     else {
+      colorblindMode = false;
       changePieceColor(COLORS.black, COLORS.red);
       changeColorButton.classList.remove('selected');
-
     }
   });
 });
 
 //return arr of legal moves for given player
 function getLegalMoves(color) {
-    //arr to store legal moves
-    const moves = [];
-    //moving up or down board?
-    const direction = color === COLORS.red ? -1 : 1;
+  //arr to store legal moves
+  const moves = [];
+  //moving up or down board?
+  const direction = color === COLORS.red ? -1 : 1;
 
-    //loop thru pieces
-    pieces.forEach(piece => {
-      if (piece.color !== color) return; //return for other p;layer peices
-      // simple moves
-      [-1, 1].forEach(diagonal => { //try L and R diagonals
-        const col = piece.x + diagonal; //new col
-        const row = piece.y + direction; //new row
-        if ( //check if mvoe is valid
-          col >= 0 && col < BOARD_SIZE && row >= 0 && row < BOARD_SIZE &&
-          !getPiece(col, row) && isValidMove(piece, col, row)) {
-          moves.push({ piece, x: col, y: row }); //add move to arr
-        }
-      });
-      // jump moves for captures
-      [-2, 2].forEach(jump => {
-        const jump_col = piece.x + jump;
-        const jump_row = piece.y + 2 * direction;
-        if (
-          jump_col >= 0 && jump_col < BOARD_SIZE && jump_row >= 0 && jump_row < BOARD_SIZE &&
-          !getPiece(jump_col, jump_row) && isValidMove(piece, jump_col, jump_row)) {
-          moves.push({ piece, x: jump_col, y: jump_row });
-        }
-      });
+  //loop thru pieces
+  pieces.forEach((piece) => {
+    if (piece.color !== color) return; //return for other p;layer peices
+    // simple moves
+    [-1, 1].forEach((diagonal) => {
+      //try L and R diagonals
+      const col = piece.x + diagonal; //new col
+      const row = piece.y + direction; //new row
+      if (
+        //check if mvoe is valid
+        col >= 0 &&
+        col < BOARD_SIZE &&
+        row >= 0 &&
+        row < BOARD_SIZE &&
+        !getPiece(col, row) &&
+        isValidMove(piece, col, row)
+      ) {
+        moves.push({ piece, x: col, y: row }); //add move to arr
+      }
     });
+    // jump moves for captures
+    [-2, 2].forEach((jump) => {
+      const jump_col = piece.x + jump;
+      const jump_row = piece.y + 2 * direction;
+      if (
+        jump_col >= 0 &&
+        jump_col < BOARD_SIZE &&
+        jump_row >= 0 &&
+        jump_row < BOARD_SIZE &&
+        !getPiece(jump_col, jump_row) &&
+        isValidMove(piece, jump_col, jump_row)
+      ) {
+        moves.push({ piece, x: jump_col, y: jump_row });
+      }
+    });
+  });
 
-    return moves;
-  }
+  return moves;
+}
 
-
-  // Easy bot: pick a random legal move and play it
+// Easy bot: pick a random legal move and play it
 function easyBot(scene) {
-    //get legal moves
-    //check if game over
-    //it not do a random legal move
-    const legalMoves = getLegalMoves(COLORS.black);
-    //if No legal moves
-    if (legalMoves.length === 0) {
-      console.log('Cant move');
-      return;
-    }
-    //get random move
-    const move = Phaser.Utils.Array.GetRandom(legalMoves);
-    //execute move
-    movePiece(move.piece, move.x, move.y);
-    // end bot's turn
-    endTurn(scene);
+  //get legal moves
+  //check if game over
+  //it not do a random legal move
+  const legalMoves = getLegalMoves(COLORS.black);
+  //if No legal moves
+  if (legalMoves.length === 0) {
+    console.log('Cant move');
+    return;
   }
+  //get random move
+  const move = Phaser.Utils.Array.GetRandom(legalMoves);
+  //execute move
+  movePiece(move.piece, move.x, move.y);
+  // end bot's turn
+  endTurn(scene);
+}
 
 // Coordinates overlay button
 document.addEventListener('DOMContentLoaded', () => {
@@ -793,10 +827,9 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.appendChild(rowLabel);
         coordElements.push(rowLabel);
       }
-
     } else {
       // remove coordinates
-      coordElements.forEach(el => document.body.removeChild(el));
+      coordElements.forEach((el) => document.body.removeChild(el));
       coordElements.length = 0;
     }
   });
