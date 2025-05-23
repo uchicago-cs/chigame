@@ -482,47 +482,44 @@
       <a href="{% url 'tournament-update' tournament.id %}">Update</a>
     </p>
   {% endif %}
-
   {% if tournament.status == "tournament ended" %}
     <a href="{% url 'tournament-match-stats' tournament.id %}"
        class="stats-button">View Match Analytics</a>
-
-  <!-- Feedback Creation Section -->
-  <h2>Submit Feedback</h2>
-  <form method="post" action="{% url 'submit-feedback' tournament.id %}">
-    {% csrf_token %}
-    <label for="feedback-content">Feedback:</label>
-    <br />
-    <textarea id="feedback-content"
-              name="content"
-              placeholder="Write your feedback here"
-              rows="5"
-              cols="50"></textarea>
-    <br />
-    <br />
-    <label for="feedback-rating">Rating (1-5):</label>
-    <br />
-    <input type="number"
-           id="feedback-rating"
-           name="rating"
-           min="1"
-           max="5"
-           placeholder="Rating (1-5)" />
-    <br />
-    <br />
-    <button type="submit">Submit Feedback</button>
-  </form>
-  <!-- Link to All Feedback -->
-  {% if request.user == tournament.created_by %}
-    <p>
-      <a href="{% url 'tournament-feedback-list' tournament.id %}">All Feedback</a>
-    </p>
-  {% endif %}
-  <!-- Link to User's Own Feedback -->
-  {% if user_feedback %}
-    <p>
-      <a href="{% url 'user-feedback-list' %}">My Feedback</a>
-    </p>
-
-  {% endif %}
-{% endblock content %}
+    <!-- Feedback Creation Section -->
+    <h2>Submit Feedback</h2>
+    <form method="post" action="{% url 'submit-feedback' tournament.id %}">
+      {% csrf_token %}
+      <label for="feedback-content">Feedback:</label>
+      <br />
+      <textarea id="feedback-content"
+                name="content"
+                placeholder="Write your feedback here"
+                rows="5"
+                cols="50"></textarea>
+      <br />
+      <br />
+      <label for="feedback-rating">Rating (1-5):</label>
+      <br />
+      <input type="number"
+             id="feedback-rating"
+             name="rating"
+             min="1"
+             max="5"
+             placeholder="Rating (1-5)" />
+      <br />
+      <br />
+      <button type="submit">Submit Feedback</button>
+    </form>
+    <!-- Link to All Feedback -->
+    {% if request.user == tournament.created_by %}
+      <p>
+        <a href="{% url 'tournament-feedback-list' tournament.id %}">All Feedback</a>
+      </p>
+    {% endif %}
+    <!-- Link to User's Own Feedback -->
+    {% if user_feedback %}
+      <p>
+        <a href="{% url 'user-feedback-list' %}">My Feedback</a>
+      </p>
+    {% endif %}
+  {% endblock content %}
