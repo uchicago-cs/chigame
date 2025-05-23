@@ -280,6 +280,12 @@ class Tournament(models.Model):
     num_winner = models.PositiveIntegerField(default=1)  # number of possible winners for the tournament
     archived = models.BooleanField(default=False)  # whether the tournament is archived by the admin
 
+    # Prize fields
+    prize_description = models.TextField(blank=True, null=True)  # description of the prizes offered
+    first_place_prize = models.CharField(max_length=255, blank=True, null=True)  # prize for the first place winner
+    second_place_prize = models.CharField(max_length=255, blank=True, null=True)  # prize for the second place winner
+    third_place_prize = models.CharField(max_length=255, blank=True, null=True)  # prize for the third place winner
+
     matches = models.ManyToManyField(Match, related_name="tournament", blank=True)
     winners = models.ManyToManyField(User, related_name="won_tournaments", blank=True)  # allow multiple winners
     players = models.ManyToManyField(User, related_name="joined_tournaments", blank=True)

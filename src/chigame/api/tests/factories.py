@@ -102,6 +102,10 @@ class TournamentFactory(DjangoModelFactory):
     rules = Faker("text")
     draw_rules = Faker("text")
     num_winner = Faker("pyint", min_value=1, max_value=1000)
+    prize_description = Faker("text", max_nb_chars=200)
+    first_place_prize = Faker("sentence", nb_words=5)
+    second_place_prize = Faker("sentence", nb_words=4)
+    third_place_prize = Faker("sentence", nb_words=3)
 
 
 class ChatFactory(DjangoModelFactory):
