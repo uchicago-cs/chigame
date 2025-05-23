@@ -135,6 +135,43 @@
     .inline-form {
       display: inline;
     }
+
+    /* Prize section styling */
+    .prize-section {
+      margin: 20px 0;
+      padding: 15px;
+      border: 1px solid #ffd700;
+      border-radius: 5px;
+      background-color: #fffdf0;
+    }
+
+    .prize-section h3 {
+      color: #b8860b;
+      margin-bottom: 10px;
+    }
+
+    .prize-description {
+      margin-bottom: 15px;
+      font-style: italic;
+    }
+
+    .prizes-list {
+      list-style: none;
+      padding-left: 10px;
+    }
+
+    .prizes-list li {
+      margin: 10px 0;
+    }
+
+    .prize-position {
+      font-weight: bold;
+      color: #333;
+    }
+
+    .prize-value {
+      font-size: 1.1em;
+    }
   </style>
 {% endblock css %}
 {% block content %}
@@ -254,6 +291,33 @@
   <p>Description: {{ tournament.description }}</p>
   <p>Rules: {{ tournament.rules }}</p>
   <p>Draw rules: {{ tournament.draw_rules }}</p>
+  <!-- Prize Section -->
+  {% if tournament.prize_description or tournament.first_place_prize or tournament.second_place_prize or tournament.third_place_prize %}
+    <div class="prize-section">
+      <h3>Tournament Prizes</h3>
+      {% if tournament.prize_description %}<p class="prize-description">{{ tournament.prize_description }}</p>{% endif %}
+      <ul class="prizes-list">
+        {% if tournament.first_place_prize %}
+          <li>
+            <span class="prize-position">🥇 First Place:</span>
+            <span class="prize-value">{{ tournament.first_place_prize }}</span>
+          </li>
+        {% endif %}
+        {% if tournament.second_place_prize %}
+          <li>
+            <span class="prize-position">🥈 Second Place:</span>
+            <span class="prize-value">{{ tournament.second_place_prize }}</span>
+          </li>
+        {% endif %}
+        {% if tournament.third_place_prize %}
+          <li>
+            <span class="prize-position">🥉 Third Place:</span>
+            <span class="prize-value">{{ tournament.third_place_prize }}</span>
+          </li>
+        {% endif %}
+      </ul>
+    </div>
+  {% endif %}
   <p>Players:</p>
   <ul>
     {% for player in tournament.get_all_players %}

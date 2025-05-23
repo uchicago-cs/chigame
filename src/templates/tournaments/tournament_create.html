@@ -92,6 +92,28 @@
           {{ form.draw_rules }}
           {% if form.draw_rules.errors %}<div class="text-danger">{{ form.draw_rules.errors }}</div>{% endif %}
         </div>
+        <!-- Prize fields -->
+        <div class="col-12 mb-3">
+          <h4>Tournament Prizes</h4>
+          <label for="{{ form.prize_description.id_for_label }}" class="form-label">Prize Description</label>
+          {{ form.prize_description }}
+          {% if form.prize_description.errors %}<div class="text-danger">{{ form.prize_description.errors }}</div>{% endif %}
+        </div>
+        <div class="col-md-4 mb-3">
+          <label for="{{ form.first_place_prize.id_for_label }}" class="form-label">First Place Prize</label>
+          {{ form.first_place_prize }}
+          {% if form.first_place_prize.errors %}<div class="text-danger">{{ form.first_place_prize.errors }}</div>{% endif %}
+        </div>
+        <div class="col-md-4 mb-3">
+          <label for="{{ form.second_place_prize.id_for_label }}" class="form-label">Second Place Prize</label>
+          {{ form.second_place_prize }}
+          {% if form.second_place_prize.errors %}<div class="text-danger">{{ form.second_place_prize.errors }}</div>{% endif %}
+        </div>
+        <div class="col-md-4 mb-3">
+          <label for="{{ form.third_place_prize.id_for_label }}" class="form-label">Third Place Prize</label>
+          {{ form.third_place_prize }}
+          {% if form.third_place_prize.errors %}<div class="text-danger">{{ form.third_place_prize.errors }}</div>{% endif %}
+        </div>
         <!-- Players selection -->
         <div class="col-12 mb-3">
           <label for="{{ form.players.id_for_label }}" class="form-label">Players</label>
