@@ -12,6 +12,8 @@
       <li><router-link to="/forums">Forums</router-link></li>
       <li><router-link to="/lobbies">Lobbies</router-link></li>
       <li><router-link to="/profile">Profile</router-link></li>
+      <li><router-link to="/tournaments">Tournaments</router-link></li>
+
     </ul>
 
     <div class="search-bar">
@@ -21,7 +23,11 @@
     <div class="auth-btn">
       <router-link to="/login" class="sign-in">Sign In</router-link>
       <router-link to="/signup" class="sign-up">Sign Up</router-link>
+      <router-link to="/profile">
+        <img src="./images/profile_logo2.jpeg" alt="Profile" class="profile-img" />
+      </router-link>
     </div>
+
   </nav>
 </template>
 
@@ -103,6 +109,7 @@ export default {
   text-decoration: none;
   font-weight: 600;
   margin-left: 0.5rem;
+  margin-right: 1.5rem;
 }
 
 .auth-btn .sign-up:hover {
@@ -120,6 +127,19 @@ export default {
   border-radius: 4px;
   font-size: 0.9rem;
   background-color: #fff;
+}
+
+.profile-icon {
+  display: flex;
+  align-items: center;
+}
+
+.profile-img {
+  height: 28px;
+  width: 28px;
+  border-radius: 50%; /* Makes it circular if using a square image */
+  object-fit: cover;
+  cursor: pointer;
 }
 
 </style>
