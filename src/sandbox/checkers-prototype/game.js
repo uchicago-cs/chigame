@@ -30,6 +30,10 @@ const COLORS = {
   white: 0xffffff,
   colorblind_blue: 0x1e88e5,
   colorblind_orange: 0xffc107,
+  strRed: '#ff0000', // string needed b/c hex cannot be used to change css
+  strBlack: '#000000',
+  strBlue: '#1e88e5',
+  strOrange: '#ffc107',
 };
 let pieces = [];
 let selectedPiece = null;
@@ -42,6 +46,7 @@ const HIGHLIGHT_SIZE = 3;
 let gameOver = false;
 let drawOffered = false;
 let drawOfferedBy = null;
+let colorblindMode = false;
 
 // ----------------------------------------------------------------------------
 
@@ -66,7 +71,9 @@ function create() {
 
   // current turn indicator
   const turn = document.getElementById('player-turn');
+  const dot = document.querySelector('.dot');
   turn.textContent = 'Red';
+  dot.style.backgroundColor = COLORS.strRed;
 
   function resetGame() {
     // Clear all pieces
@@ -364,10 +371,13 @@ function endTurn() {
 
   // change current turn indicator
   const turn = document.getElementById('player-turn');
+  const dot = document.querySelector('.dot');
   if (currentPlayer === COLORS.red) {
     turn.textContent = 'Red';
+    dot.style.backgroundColor = colorblindMode ? COLORS.strOrange: COLORS.strRed;
   } else {
     turn.textContent = 'Black';
+    dot.style.backgroundColor = colorblindMode ? COLORS.strBlue: COLORS.strBlack;
   }
 
   // reset draw offer if it was made by the current player
@@ -458,10 +468,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // if the first piece is a default color, change to colorblind colors
     if (firstPieceColor === COLORS.red || firstPieceColor === COLORS.black) {
       changePieceColor(COLORS.colorblind_blue, COLORS.colorblind_orange);
+      colorblindMode = true;
     }
     // if the first piece is a colorblind color, change to default colors
     else {
       changePieceColor(COLORS.black, COLORS.red);
+      colorblindMode = false;
     }
   });
 });

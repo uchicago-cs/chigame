@@ -1,177 +1,192 @@
 body {
-    margin: 0;
-    background: #e7d3b5;
-    color: #3b2f2a;
-    font-family: "Outfit", sans-serif;
-    font-style: normal;
+  margin: 0;
+  background: #e7d3b5;
+  color: #3b2f2a;
+  font-family: 'Outfit', sans-serif;
+  font-style: normal;
 }
 
 canvas {
-    display: inline-block;
-    background: #d2b48c;
+  display: inline-block;
+  background: #d2b48c;
 }
 
 .main-content {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
 }
 
 .navbar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem 2rem;
-    background-color: #a67c52;
-    box-sizing: border-box;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
-    max-height: 10%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background-color: #a67c52;
+  box-sizing: border-box;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+  max-height: 10%;
 }
 
 .nav-btns {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    gap: 1.5rem;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 1.5rem;
 }
 
 .navbar h1 {
-    margin: 0;
-    color: white;
-    font-size: 40px;
+  margin: 0;
+  color: white;
+  font-size: 40px;
 }
 
 .navbar h1::after {
-    content: " | CHECKERS";
-    font-weight: 100;
+  content: ' | CHECKERS';
+  font-weight: 100;
 }
 
 .btn {
-    font-family: inherit;
-    font-size: 20px;
-    border: none;
-    padding: 15px 20px;
-    border-radius: 50px;
-    cursor: pointer;
-    position: relative;
-    display: inline-block;
-    transition: transform 0.2s;
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+  font-family: inherit;
+  font-size: 20px;
+  border: none;
+  padding: 15px 20px;
+  border-radius: 50px;
+  cursor: pointer;
+  position: relative;
+  display: inline-block;
+  transition: transform 0.2s;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
 }
 
 .btn:hover {
-    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
-    transform: translateY(2px);
-    opacity: 0.8;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
+  transform: translateY(2px);
+  opacity: 0.8;
 }
 
 .game-over-message {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-family: "Outfit", sans-serif;
-    font-size: 24px;
-    color: rgb(138, 90, 68);
-    text-align: center;
-    display: none;
-    background-color: rgba(255, 255, 255, 0.9);
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
-    z-index: 1000;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'Outfit', sans-serif;
+  font-size: 24px;
+  color: rgb(138, 90, 68);
+  text-align: center;
+  display: none;
+  background-color: rgba(255, 255, 255, 0.9);
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
 }
 
 .game-over-message.show {
-    display: block;
+  display: block;
 }
 
 #declineDrawBtn {
-    display: none;
+  display: none;
 }
 
 .play-again-prompt {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-family: "Outfit", sans-serif;
-    font-size: 24px;
-    color: rgb(138, 90, 68);
-    text-align: center;
-    background-color: rgba(255, 255, 255, 0.9);
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
-    z-index: 1000;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'Outfit', sans-serif;
+  font-size: 24px;
+  color: rgb(138, 90, 68);
+  text-align: center;
+  background-color: rgba(255, 255, 255, 0.9);
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
 }
 
 .play-again-prompt p {
-    margin: 0 0 15px 0;
+  margin: 0 0 15px 0;
 }
 
 .play-again-btns {
-    display: flex;
-    gap: 10px;
-    justify-content: center;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
 }
 
 .play-again-btns .btn {
-    font-size: 18px;
-    padding: 10px 25px;
+  font-size: 18px;
+  padding: 10px 25px;
 }
 
 .hidden {
-    display: none;
+  display: none;
 }
 
 /* Settings Menu Styles */
 /* for the menu itself and the button to toggle it*/
 .settings-menu {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 10%;
-    height: 90%;
-    background-color: #a67c52;
-    color: white;
-    padding: 1rem;
-    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
-    transform: translateX(-100%);
-    transition: transform 0.3s ease-in-out;
-    z-index: 1000;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 10%;
+  height: 90%;
+  background-color: #a67c52;
+  color: white;
+  padding: 1rem;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+  transform: translateX(-100%);
+  transition: transform 0.3s ease-in-out;
+  z-index: 1000;
 }
 
 .settings-menu h2 {
-    margin-top: 0;
+  margin-top: 0;
 }
 
 .settings-button {
-    position: fixed;
-    bottom: 20px;
-    left: 20px;
-    font-size: 24px;
-    border: none;
-    background-color: #a67c52;
-    color: white;
-    border-radius: 50%;
-    width: 50px;
-    height: 50px;
-    cursor: pointer;
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
-    transition: transform 0.2s;
-    z-index: 1001;
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  font-size: 24px;
+  border: none;
+  background-color: #a67c52;
+  color: white;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  cursor: pointer;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s;
+  z-index: 1001;
 }
 
 .settings-button:hover {
-    transform: scale(1.1);
+  transform: scale(1.1);
 }
 
 .settings-menu.active {
-    transform: translateX(0);
+  transform: translateX(0);
+}
+
+.turn-indicator {
+  display: flex;
+  align-items: center;
+}
+
+.turn-indicator .dot {
+  height: 25px;
+  width: 25px;
+  background-color: #ff0000;
+  border-radius: 50%;
+  display: inline-block;
+  border: 1px solid black;
+  margin-right: 5px;
 }
