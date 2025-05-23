@@ -48,12 +48,22 @@
       min-height: 6rem;
     }
 
+    #game_form textarea {
+      vertical-align: top;
+      white-space: pre-wrap;
+    }
+
     #game_form input[type="checkbox"] {
       margin-right: 0.5rem;
       vertical-align: middle;
     }
 
     .btn-success {
+      margin-top: 2rem;
+    }
+
+    .btn-success,
+    .btn-secondary {
       background-color: #16a34a;
       color: #fff;
       border: none;
@@ -62,7 +72,18 @@
       cursor: pointer;
       font-size: 1rem;
       text-align: left;
+    }
+
+    .btn-secondary {
+      margin-left: 0.5rem;
+      background-color: #0d9b40;
+      /* slightly darker to differentiate */
+      text-decoration: none;
       margin-top: 50px;
+    }
+
+    .custom-label-section .btn-secondary {
+      margin-top: 0;
     }
 
     .upload-zone {
@@ -73,6 +94,7 @@
       cursor: pointer;
       color: #555;
       width: 568px;
+      width: 568px;
     }
 
     .upload-zone.hover {
@@ -81,6 +103,45 @@
 
     .if-file-input {
       display: none;
+    }
+
+    /* custom‑label input wrapper */
+    .label-add-wrapper {
+      margin-top: 0.75rem;
+      display: flex;
+      gap: 10px;
+    }
+
+    .label-add-wrapper input {
+      flex: 1;
+    }
+
+    /* custom-label section styling */
+    .custom-label-section {
+      margin-top: 1rem;
+      background-color: #f8f9fa;
+      padding: 12px 15px;
+      border-radius: 4px;
+      border: 1px solid #e9ecef;
+    }
+
+    .custom-label-prompt {
+      font-size: 0.95rem;
+      color: #495057;
+      margin-bottom: 10px;
+      margin-top: 0;
+    }
+
+    .custom-label-input {
+      padding: 8px 12px;
+      border: 1px solid #ced4da;
+      border-radius: 4px;
+      transition: border-color 0.2s;
+    }
+
+    .custom-label-input:focus {
+      border-color: #0d9b40;
+      outline: none;
     }
   </style>
   <script>
@@ -102,6 +163,60 @@
       }
 
       // Upload zone logic
+      /* ---------- Choices.js on labels ---------- */
+      const labelSelect = document.getElementById('id_labels');
+      let labelChoices = null;
+
+      if (labelSelect) {
+        labelChoices = new Choices(labelSelect, {
+          removeItemButton: true,
+          placeholder: true,
+          placeholderValue: 'Select or type to add a label',
+          searchEnabled: true,
+          shouldSort: false,
+          duplicateItemsAllowed: false,
+          addItems: true,
+          addItemFilter: value => value.trim().length > 0,
+        });
+      }
+
+      /* ---------- custom‑label button logic ---------- */
+      const addBtn = document.getElementById('add_label_btn');
+      const inputField = document.getElementById('custom_label_input');
+
+      function addCustomLabel() {
+        const newLabel = (inputField.value || '').trim();
+        if (!newLabel || !labelChoices) return;
+
+        // prevent duplicates (Choices keeps choices in config.choices)
+        const exists = labelChoices.config.choices.some(
+          c => c.label.toLowerCase() === newLabel.toLowerCase()
+        );
+        if (exists) {
+          inputField.value = '';
+          return;
+        }
+
+        // add & select
+        labelChoices.setChoices(
+          [{
+            value: newLabel,
+            label: newLabel,
+            selected: true
+          }],
+          'value', 'label', false
+        );
+        inputField.value = '';
+      }
+
+      if (addBtn && inputField) {
+        addBtn.addEventListener('click', addCustomLabel);
+        inputField.addEventListener('keyup', e => {
+          if (e.key === 'Enter') addCustomLabel();
+        });
+      }
+
+      /* ---------- upload‑zone logic ---------- */
       document.querySelectorAll('.upload-zone').forEach(zone => {
         const inputId = zone.dataset.inputId;
         const input = document.getElementById(inputId);
@@ -112,24 +227,41 @@
             <div>
               <strong>Selected file:</strong><br />
               ${file.name}<br />
-            </div>
-          `;
+            </div>`;
+        }
+
+        function isHtmlFile(file) {
+          return file && file.name.toLowerCase().endsWith('.html');
+        }
+
+        function handleFile(file) {
+          if (!isHtmlFile(file)) {
+            alert('Only .html files are allowed!');
+            input.value = '';
+            zone.innerHTML = 'Drag & drop a file here<br />or click to browse';
+            return false;
+          }
+          showFileName(file);
+          return true;
         }
 
         zone.addEventListener('click', () => input.click());
+
         zone.addEventListener('dragover', e => {
           e.preventDefault();
           zone.classList.add('hover');
         });
-        zone.addEventListener('dragleave', () => {
-          zone.classList.remove('hover');
-        });
+
+
+        zone.addEventListener('dragleave', () => zone.classList.remove('hover'));
+
+
         zone.addEventListener('drop', e => {
           e.preventDefault();
           zone.classList.remove('hover');
-          if (e.dataTransfer.files.length) {
+          const file = e.dataTransfer.files[0];
+          if (file && handleFile(file)) {
             input.files = e.dataTransfer.files;
-            showFileName(e.dataTransfer.files[0]);
           }
         });
 
@@ -137,7 +269,9 @@
           const file = input.files[0];
           if (file) {
             showFileName(file);
+            handleFile(file);
           }
+
         });
       });
     });
@@ -154,7 +288,7 @@
              required />
     </div>
     <div>
-      <label for="id_author">Author Name</label>
+      <label for="id_author">Author Name:</label>
       <input type="text"
              name="author"
              id="id_author"
@@ -166,7 +300,7 @@
       <textarea name="description" id="id_description" required>{{ form.description.value }}</textarea>
     </div>
     <div>
-      <label for="id_genre">Genre</label>
+      <label for="id_genre">Genre:</label>
       <select name="genre" id="id_genre">
         {% for genre in form.genre.field.queryset %}
           <option value="{{ genre.pk }}"
@@ -175,11 +309,67 @@
       </select>
     </div>
     <div>
-      <label for="id_content_warnings">Content Warnings</label>
-      <input type="text"
-             name="content_warnings"
-             id="id_content_warnings"
-             value="{{ form.content_warnings.value }}" />
+      <label for="id_labels">Game Labels:</label>
+      <select id="id_labels" name="labels" multiple>
+        <!-- Tone & Mood -->
+        <optgroup label="Tone & Mood">
+          <option value="Dark">Dark</option>
+          <option value="Uplifting">Uplifting</option>
+          <option value="Surreal">Surreal</option>
+          <option value="Satirical">Satirical</option>
+          <option value="Tense">Tense</option>
+          <option value="Dreamlike">Dreamlike</option>
+        </optgroup>
+        <!-- Accessibility & Audience -->
+        <optgroup label="Accessibility & Audience">
+          <option value="All Ages">All Ages</option>
+          <option value="Teen">Teen</option>
+          <option value="Mature">Mature</option>
+          <option value="Screen‑reader Friendly">Screen‑reader Friendly</option>
+          <option value="Translated">Translated</option>
+        </optgroup>
+        <!-- Languages -->
+        <optgroup label="Languages">
+          <option value="English">English</option>
+          <option value="Spanish">Spanish</option>
+          <option value="French">French</option>
+          <option value="German">German</option>
+          <option value="Portuguese">Portuguese</option>
+        </optgroup>
+        <!-- Difficulty -->
+        <optgroup label="Difficulty">
+          <option value="Easy">Easy</option>
+          <option value="Beginner‑friendly">Beginner‑friendly</option>
+          <option value="Medium">Medium</option>
+          <option value="Intermediate">Intermediate</option>
+          <option value="Hard">Hard</option>
+        </optgroup>
+        <!-- Length -->
+        <optgroup label="Length">
+          <option value="Short">Short</option>
+          <option value="Medium Length">Medium</option>
+          <option value="Long">Long</option>
+          <option value="10‑20 minutes">10‑20 minutes</option>
+          <option value="1‑2 hours">1‑2 hours</option>
+        </optgroup>
+        <!-- Release Status -->
+        <optgroup label="Release Status">
+          <option value="Demo">Demo</option>
+          <option value="Beta">Beta</option>
+          <option value="Complete">Complete</option>
+        </optgroup>
+      </select>
+      <!-- custom label add -->
+      <div class="custom-label-section">
+        <p class="custom-label-prompt">Don't see your label above? Type in a custom label below.</p>
+        <div class="label-add-wrapper">
+          <input type="text"
+                 id="custom_label_input"
+                 placeholder="Type custom label"
+                 class="custom-label-input" />
+          <button type="button" id="add_label_btn" class="btn-secondary">Add&nbsp;Label</button>
+        </div>
+      </div>
     </div>
     <div>
       <label for="id_labels">Labels</label>
@@ -243,7 +433,11 @@
       <br />
       or click to browse
     </div>
-    <input type="file" id="myFile" name="uploaded_file" class="if-file-input" />
+    <input type="file"
+           id="myFile"
+           name="uploaded_file"
+           class="if-file-input"
+           accept=".html" />
     <button type="submit" class="btn-success">Upload Game</button>
   </form>
   <h3>Publish Story</h3>
