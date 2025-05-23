@@ -111,13 +111,13 @@
       background-color: white;
       border-radius: 8px;
       padding: 10px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
       transition: transform 0.2s;
     }
 
     .favorite-game-card:hover {
       transform: translateY(-2px);
-      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
     }
 
     .favorite-game-image {
@@ -236,7 +236,6 @@
                   <p>{{ profile.bio }}</p>
                 {% endif %}
               </div>
-              
               <!-- Favorite Games Section -->
               <div class="favorite-games-section">
                 <h4>
@@ -252,12 +251,12 @@
                       <div class="favorite-game-card">
                         <a href="{% url 'game-detail' game.pk %}">
                           {% if game.image %}
-                            <img src="{{ game.image }}" 
-                                 alt="{{ game.name }}" 
+                            <img src="{{ game.image }}"
+                                 alt="{{ game.name }}"
                                  class="favorite-game-image" />
                           {% else %}
-                            <img src="{% static 'images/no_picture_available.png' %}" 
-                                 alt="{{ game.name }}" 
+                            <img src="{% static 'images/no_picture_available.png' %}"
+                                 alt="{{ game.name }}"
                                  class="favorite-game-image" />
                           {% endif %}
                           <span class="favorite-game-name">{{ game.name }}</span>
@@ -267,15 +266,15 @@
                   </div>
                   {% if profile.user == request.user %}
                     <div style="text-align: center; margin-top: 15px;">
-                      <a href="{% url 'favorite-list' %}" class="btn btn-sm" style="background-color: #6c757d;">
-                        View All Favorites
-                      </a>
+                      <a href="{% url 'favorite-list' %}"
+                         class="btn btn-sm"
+                         style="background-color: #6c757d">View All Favorites</a>
                     </div>
                   {% endif %}
                 {% else %}
                   <div class="no-favorites">
                     {% if profile.user == request.user %}
-                      You haven't added any favorite games yet. 
+                      You haven't added any favorite games yet.
                       <a href="{% url 'game-list' %}" style="color: #800000;">Browse games</a> to add some!
                     {% else %}
                       {{ profile.user.name }} hasn't added any favorite games yet.
