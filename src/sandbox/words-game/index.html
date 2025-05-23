@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Words</title>
     <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="achievements.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Press+Start+2P&display=swap"
@@ -54,13 +55,57 @@
         });
       })();
     </script>
+    <style>
+      /* Adding menu overlay styles directly to index.html */
+      .menu-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0);
+        z-index: 900;
+        transition: background-color 0.4s cubic-bezier(0.25, 0.1, 0.25, 1.0);
+        pointer-events: none;
+        visibility: hidden;
+        will-change: background-color;
+      }
+
+      .menu-overlay.visible {
+        background-color: rgba(0, 0, 0, 0.7);
+        pointer-events: auto;
+        visibility: visible;
+      }
+
+      /* Consistent positioning for achievements button */
+      #title {
+        position: relative;
+      }
+
+      /* Fixed position for achievements button */
+      #title .achievements-btn {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+      }
+    </style>
   </head>
   <body>
+    <!-- Notification wrapper for achievements -->
+    <div id="notification-wrapper">
+      <div id="notification"></div>
+    </div>
+    <!-- Dark overlay for menus -->
+    <div id="menu-overlay" class="menu-overlay"></div>
     <div id="container">
       <div id="title">
         <div class="logo-container">
           <h1 class="name">WORDS</h1>
         </div>
+        <!-- Add achievements button -->
+        <button id="achievements-btn"
+                class="achievements-btn"
+                onclick="toggleAchievementsPanel()">achievements</button>
         <h2 class="select">Select Game Mode</h2>
       </div>
       <div class="game-modes">
@@ -128,6 +173,12 @@
         <p>© 2025 WORDS - UNIVERSITY OF CHICAGO</p>
       </footer>
     </div>
+    <!-- Achievements Panel -->
+    <div id="achievements-panel">
+      <button class="achievements-close" onclick="closeAchievementsPanel()">x</button>
+      <h2>Achievements</h2>
+      <div class="achievements-list"></div>
+    </div>
     <script>
       // Theme toggle functionality
       document.getElementById('dark-mode-toggle').addEventListener('change', function() {
@@ -160,7 +211,88 @@
         } catch (e) {
           console.error('Error loading settings:', e);
         }
+
+        // Make sure the Achievement toggle functions are available
+        window.toggleAchievementsPanel = function() {
+          const panel = document.getElementById('achievements-panel');
+          const overlay = document.getElementById('menu-overlay');
+
+          if (panel) {
+            panel.classList.toggle('visible');
+
+            if (panel.classList.contains('visible')) {
+              overlay.classList.add('visible');
+              renderAchievements();
+            } else {
+              overlay.classList.remove('visible');
+            }
+          }
+        };
+
+        window.closeAchievementsPanel = function() {
+          const panel = document.getElementById('achievements-panel');
+          const overlay = document.getElementById('menu-overlay');
+
+          if (panel) {
+            panel.classList.remove('visible');
+            overlay.classList.remove('visible');
+          }
+        };
+
+        // Close panel when clicking overlay
+        const overlay = document.getElementById('menu-overlay');
+        if (overlay) {
+          overlay.addEventListener('click', function() {
+            closeAchievementsPanel();
+          });
+        }
+
+        // Render achievements in the panel
+        window.renderAchievements = function() {
+          if (typeof window.Achievements === 'undefined') return;
+
+          const achievementsList = document.querySelector('.achievements-list');
+          if (!achievementsList) return;
+
+          // Clear existing achievements
+          achievementsList.innerHTML = '';
+
+          // Get user achievements
+          const userAchievements = loadUserAchievements();
+
+          // Render each achievement
+          window.Achievements.achievements.forEach(achievement => {
+            const isUnlocked = userAchievements[achievement.id]?.unlocked || false;
+
+            const achievementElement = document.createElement('div');
+            achievementElement.className = `achievement-item achievement-${achievement.rarity} ${!isUnlocked ? 'achievement-locked' : ''}`;
+
+            achievementElement.innerHTML = `
+                        <div class="achievement-icon">${achievement.icon}</div>
+                        <div class="achievement-info">
+                            <div class="achievement-title">${achievement.title}</div>
+                            <div class="achievement-description">${achievement.description}</div>
+                        </div>
+                    `;
+
+            achievementsList.appendChild(achievementElement);
+          });
+        };
+
+        // Load user achievements from localStorage
+        window.loadUserAchievements = function() {
+          try {
+            const saved = localStorage.getItem("userAchievements");
+            return saved ? JSON.parse(saved) : {};
+          } catch (e) {
+            console.error('Error loading achievements:', e);
+            return {};
+          }
+        };
       });
     </script>
+    <script src="achievements.js"></script>
+    <!-- DEVELOPMENT TOOLS - Will be removed in production -->
+    <script src="dev-tools.js"></script>
   </body>
 </html>

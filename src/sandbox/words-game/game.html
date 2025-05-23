@@ -9,6 +9,25 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Press+Start+2P&display=swap"
           rel="stylesheet" />
     <link rel="stylesheet" href="game.css" />
+    <link rel="stylesheet" href="achievements.css" />
+    <style>
+      /* Adding consistent positioning for the navigation buttons */
+      .nav-buttons {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+        position: absolute;
+        top: 1rem;
+        left: 1rem;
+      }
+
+      /* Ensure the achievements button is positioned correctly */
+      #achievements-btn {
+        position: fixed !important;
+        top: 1rem !important;
+        right: 1rem !important;
+      }
+    </style>
     <!-- Immediately apply theme preference before page renders -->
     <script>
       // Run this immediately - before parsing HTML - to set theme
@@ -83,6 +102,10 @@
         <div class="logo-title">
           <h1 class="name">WORDS</h1>
         </div>
+        <!-- Add achievements button directly -->
+        <button id="achievements-btn"
+                class="achievements-btn"
+                onclick="toggleAchievementsPanel()">achievements</button>
       </div>
       <div id="streak">
         <h3>Streak:</h3>
@@ -196,11 +219,101 @@
         </label>
       </div>
     </div>
+    <!-- Achievements Panel -->
+    <div id="achievements-panel">
+      <button class="achievements-close" onclick="closeAchievementsPanel()">x</button>
+      <h2>Achievements</h2>
+      <div class="achievements-list"></div>
+    </div>
     <script>
       const urlParams = new URLSearchParams(window.location.search);
       const mode = urlParams.get('mode');
       window.gameMode = mode;
+
+      // Define achievement functions for use in this page
+      document.addEventListener('DOMContentLoaded', function() {
+        // Make sure the Achievement toggle functions are available
+        window.toggleAchievementsPanel = function() {
+          const panel = document.getElementById('achievements-panel');
+          const overlay = document.getElementById('menu-overlay');
+
+          if (panel) {
+            panel.classList.toggle('visible');
+
+            if (panel.classList.contains('visible')) {
+              overlay.classList.add('visible');
+              renderAchievements();
+            } else {
+              overlay.classList.remove('visible');
+            }
+          }
+        };
+
+        window.closeAchievementsPanel = function() {
+          const panel = document.getElementById('achievements-panel');
+          const overlay = document.getElementById('menu-overlay');
+
+          if (panel) {
+            panel.classList.remove('visible');
+            overlay.classList.remove('visible');
+          }
+        };
+
+        // Close panel when clicking overlay
+        const overlay = document.getElementById('menu-overlay');
+        if (overlay) {
+          overlay.addEventListener('click', function() {
+            closeAchievementsPanel();
+          });
+        }
+
+        // Render achievements in the panel
+        window.renderAchievements = function() {
+          if (typeof window.Achievements === 'undefined') return;
+
+          const achievementsList = document.querySelector('.achievements-list');
+          if (!achievementsList) return;
+
+          // Clear existing achievements
+          achievementsList.innerHTML = '';
+
+          // Get user achievements
+          const userAchievements = loadUserAchievements();
+
+          // Render each achievement
+          window.Achievements.achievements.forEach(achievement => {
+            const isUnlocked = userAchievements[achievement.id]?.unlocked || false;
+
+            const achievementElement = document.createElement('div');
+            achievementElement.className = `achievement-item achievement-${achievement.rarity} ${!isUnlocked ? 'achievement-locked' : ''}`;
+
+            achievementElement.innerHTML = `
+                        <div class="achievement-icon">${achievement.icon}</div>
+                        <div class="achievement-info">
+                            <div class="achievement-title">${achievement.title}</div>
+                            <div class="achievement-description">${achievement.description}</div>
+                        </div>
+                    `;
+
+            achievementsList.appendChild(achievementElement);
+          });
+        };
+
+        // Load user achievements from localStorage
+        window.loadUserAchievements = function() {
+          try {
+            const saved = localStorage.getItem("userAchievements");
+            return saved ? JSON.parse(saved) : {};
+          } catch (e) {
+            console.error('Error loading achievements:', e);
+            return {};
+          }
+        };
+      });
     </script>
+    <script src="achievements.js"></script>
     <script src="game.js" defer></script>
+    <!-- DEVELOPMENT TOOLS - Will be removed in production -->
+    <script src="dev-tools.js"></script>
   </body>
 </html>
