@@ -710,7 +710,7 @@ function getLegalMoves(color) {
       }
     });
   });
-  
+
   return moves;
 }
 
