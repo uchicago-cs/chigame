@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% load static %}
+
 {% block title %}
   Search Results
 {% endblock title %}
@@ -77,25 +79,41 @@
           {% endfor %}
         </div>
       </div>
-      <li>
-        email: {{ profile.user.email }} |
-        name: {{ profile.display_name }} |
-        <a href="{% url 'users:user-profile' profile.user_id %}">profile</a>
-      </li>
-    {% endfor %}
-  {% elif query_type == "Games" %}
-    {% for game in object_list %}
-      <li>
-        <a href="{% url 'game-detail' game.id %}">{{ game.name }}</a>
-      </li>
-    {% endfor %}
-  {% elif query_type == "Notifications" %}
-    {% for notification in object_list %}
-      <li>
-        <a href="{% url 'users:notification-detail' notification.id %}">{{ notification.message }}</a>
-      </li>
-    {% endfor %}
-  {% endif %}
-</ul>
+    {% elif query_type == "Games" %}
+      <div class="container my-4">
+        <div class="row row-cols-1 row-cols-md-1 row-cols-lg-1 g-4">
+          {% for game in object_list %}
+            <div class="col-12">
+              <div class="card h-100 shadow-sm border-0">
+                <div class="card-body d-flex align-items-center">
+                  <div class="d-flex align-items-center">{{ game.name }}</div>
+                  <div class="ms-auto">
+                    <a href="{% url 'game-detail' game.id %}" class="btn btn-primary">View Game</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% elif query_type == "Notifications" %}
+      <div class="container my-4">
+        <div class="row row-cols-1 row-cols-md-1 row-cols-lg-1 g-4">
+          {% for notification in object_list %}
+            <div class="col-12">
+              <div class="card h-100 shadow-sm border-0">
+                <div class="card-body d-flex align-items-center">
+                  <div class="d-flex align-items-center">{{ notification.message }}</div>
+                  <div class="ms-auto">
+                    <a href="{% url 'users:notification-detail' notification.id %}"
+                       class="btn btn-primary">View Notification</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+  </ul>
 {% endblock content %}
-{% load static %}
