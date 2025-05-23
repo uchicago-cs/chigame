@@ -1,11 +1,11 @@
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.http import JsonResponse
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import get_object_or_404, render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
-from .models import LiveChat, LiveChatMessage, LiveChatMessageReaction
+from .models import LiveChat, LiveChatMessage, LiveChatMessageReaction, LiveChatUser
 
 
 def chat(request, chat_id):
@@ -149,17 +149,20 @@ def edit_message(request, message_id):
 
 @login_required
 def toggle_profanity(request):
-    if not request.user.is_authenticated:
-        return JsonResponse({"error": "Unauthorized"}, status=401)
-
     if request.method != "POST":
         return JsonResponse({"error": "Method not allowed"}, status=405)
 
-    profile = request.user.userprofile
-    profile.profanity_enabled = not profile.profanity_enabled
-    profile.save()
+    try:
+        # Find the LiveChatUser object for the current user across any chat
+        # (You may want to scope this per chat ID if needed)
+        chat_user = LiveChatUser.objects.filter(user=request.user).first()
+        if not chat_user:
+            return JsonResponse({"error": "LiveChatUser not found"}, status=404)
 
-    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
-        return JsonResponse({"success": True, "profanity_enabled": profile.profanity_enabled})
+        chat_user.profanity = not chat_user.profanity
+        chat_user.save()
 
-    return redirect("live-chat-list")
+        return JsonResponse({"success": True, "profanity_enabled": chat_user.profanity})
+
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
