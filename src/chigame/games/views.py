@@ -786,6 +786,16 @@ class TournamentDetailView(DetailView):
 
         return self.render_to_response(context)
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        tournament = self.get_object()
+
+        # Fetch the user's feedback for this tournament
+        user_feedback = Feedback.objects.filter(tournament=tournament, user=self.request.user).first()
+        context["user_feedback"] = user_feedback
+
+        return context
+
     def post(self, request, *args, **kwargs):
         tournament = Tournament.objects.get(id=request.POST.get("tournament_id"))
         simulation_type = self.get_simulation_type(request, tournament.id)
