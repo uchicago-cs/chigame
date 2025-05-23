@@ -140,10 +140,28 @@
                        class="btn btn-primary">Friend List</a>
                     <a href="{% url 'users:user-history' object.user.pk %}"
                        class="btn btn-primary">Stats</a>
-                    <a href="{% url 'users:toggle-profanity' object.user.pk %}"
-                       class="btn btn-primary {% if object.user.profanity_filter %}btn-success{% else %}btn-danger{% endif %}">
-                      Toggle Profanity Filter
-                    </a>
+                    <div class="d-flex justify-content-center align-items-center mt-4">
+                      <form method="post"
+                            action="{% url 'users:toggle-profanity' profile.user.pk %}">
+                        {% csrf_token %}
+                        <div class="form-check form-switch">
+                          <input class="form-check-input"
+                                 type="checkbox"
+                                 name="profanity_filter"
+                                 id="profanitySwitch"
+                                 onchange="this.form.submit();"
+                                 {% if profile.user.profanity_filter %}checked{% endif %} />
+                          <label class="form-check-label" for="profanitySwitch">
+                            Profanity Filter
+                            {% if request.user.profanity_filter %}
+                              (On)
+                            {% else %}
+                              (Off)
+                            {% endif %}
+                          </label>
+                        </div>
+                      </form>
+                    </div>
                   {% elif is_friend %}
                     <a href="{% url 'users:remove-friend' object.user.pk %}"
                        class="btn btn-primary">Remove Friend</a>
