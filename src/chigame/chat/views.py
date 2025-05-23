@@ -156,16 +156,17 @@ def toggle_profanity(request):
     try:
         # Find the LiveChatUser object for the current user across any chat
         # (You may want to scope this per chat ID if needed)
-        chat_user = LiveChatUser.objects.filter(user=request.user).first()
-        if not chat_user:
-            return JsonResponse({"error": "LiveChatUser not found"}, status=404)
-
         chat_users = LiveChatUser.objects.filter(user=request.user)
+        if not chat_users.exists():
+            return JsonResponse({"error": "No chat user records found"}, status=404)
+
+        new_value = not chat_users.first().profanity
+
         for cu in chat_users:
-            cu.profanity = not cu.profanity
+            cu.profanity = new_value
             cu.save()
 
-        return JsonResponse({"success": True, "profanity_enabled": chat_user.profanity})
+        return JsonResponse({"success": True, "profanity_enabled": new_value})
 
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
