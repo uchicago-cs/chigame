@@ -5,7 +5,7 @@
   border-radius: 0 !important;       /* Remove rounding except for ends */
   padding: 0.75rem 1rem;             /* Clean spacing */
   transition: background-color 0.2s ease, box-shadow 0.2s ease;
-  
+
 }
 
 .inbox-category.active {

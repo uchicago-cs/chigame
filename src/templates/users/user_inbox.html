@@ -10,19 +10,17 @@
         <div class="list-group">
           {% for key, label in category_choices %}
             <a href="{% url 'users:user-inbox-category' pk=pk category=key %}"
-              class="inbox-category list-group-item list-group-item-action {% if active_category == key %}active{% endif %}">
+               class="inbox-category list-group-item list-group-item-action {% if active_category == key %}active{% endif %}">
               {{ label }}
             </a>
           {% endfor %}
-
           <!-- Deleted Notifications section -->
           <a href="{% url 'users:user-inbox-category' pk=pk category='deleted' %}"
-            class="inbox-category list-group-item list-group-item-action {% if active_category == 'deleted' %}active{% endif %}">
+             class="inbox-category list-group-item list-group-item-action {% if active_category == 'deleted' %}active{% endif %}">
             Deleted
           </a>
         </div>
       </div>
-        
       <!-- Main Content (Right) -->
       <div class="col-md-9">
         <ul class="list-group">
@@ -38,9 +36,7 @@
               {% with notification_type=notification.type %}
                 <div class="inbox-item">
                   <li class="notification-container list-group-item d-flex justify-content-between align-items-center border shadow-sm notification-hover {% if notification.read %}read{% else %}unread{% endif %}"
-                      {% if active_category != 'deleted' %}
-                        oncontextmenu="openContextMenu(event, '{{ notification.id }}')"
-                      {% endif %}>
+                      {% if active_category != 'deleted' %}oncontextmenu="openContextMenu(event, '{{ notification.id }}')"{% endif %}>
                     <div class="message-row ms-2 me-auto">
                       <div class="d-flex align-items-center gap-2">
                         {% if active_category != 'deleted' %}
@@ -48,94 +44,87 @@
                             <input type="checkbox" name="notification[]" value="{{ notification.id }}" />
                           </label>
                         {% else %}
-                          <label><input type="checkbox" disabled /></label>
+                          <label>
+                            <input type="checkbox" disabled />
+                          </label>
                         {% endif %}
-
                         <small class="sender-minimal me-2">{{ notification.get_sender_display }}</small>
-
                         {% if active_category != 'deleted' %}
-                          <a class="message-title" href="{% url 'users:notification-detail' notification.pk %}">
+                          <a class="message-title"
+                             href="{% url 'users:notification-detail' notification.pk %}">
                             <span>{{ notification.get_rich_message|truncatewords:15 }}</span>
                           </a>
                         {% else %}
                           <span class="text-muted">{{ notification.get_rich_message|truncatewords:15 }}</span>
                         {% endif %}
                       </div>
-
                       <span class="badge bg-info ms-2">{{ notification.get_category_display }}</span>
                     </div>
                   </li>
-
                   <div class="button-container list-group-item d-flex justify-content-between align-items-center border shadow-sm">
                     {% if active_category == "deleted" %}
                       <a href="{% url 'users:act-on-inbox-notification' notification.pk 'move_to_inbox' %}?next={{ active_category }}"
-                        class="text-decoration-none text-primary"
-                        title="Restore">
+                         class="text-decoration-none text-primary"
+                         title="Restore">
                         <i class="bi bi-inbox icon-lg"></i>
                       </a>
                     {% else %}
                       {% if notification.read %}
-                        <a href="{% url 'users:act-on-inbox-notification' notification.pk 'mark_unread' %}?next={{ active_category }}
-"
-                          class="text-decoration-none text-primary"
-                          title="Mark as Unread">
+                        <a href="{% url 'users:act-on-inbox-notification' notification.pk 'mark_unread' %}?next={{ active_category }} "
+                           class="text-decoration-none text-primary"
+                           title="Mark as Unread">
                           <i class="bi bi-envelope icon-lg"></i>
                         </a>
                       {% else %}
-                        <a href="{% url 'users:act-on-inbox-notification' notification.pk 'mark_read' %}?next={{ active_category }}
-"
-                          class="text-decoration-none text-primary"
-                          title="Mark as Read">
+                        <a href="{% url 'users:act-on-inbox-notification' notification.pk 'mark_read' %}?next={{ active_category }} "
+                           class="text-decoration-none text-primary"
+                           title="Mark as Read">
                           <i class="bi bi-envelope-open icon-lg"></i>
                         </a>
                       {% endif %}
-
-                        <a href="{% url 'users:act-on-inbox-notification' notification.pk 'delete' %}?next={{ active_category }}"
-                          class="text-danger text-decoration-none"
-                          title="Delete">
-                          <i class="bi bi-trash icon-lg"></i>
+                      <a href="{% url 'users:act-on-inbox-notification' notification.pk 'delete' %}?next={{ active_category }}"
+                         class="text-danger text-decoration-none"
+                         title="Delete">
+                        <i class="bi bi-trash icon-lg"></i>
+                      </a>
+                      <!-- Custom dropdown triggered by icon link -->
+                      <div class="dropdown">
+                        <a href="#"
+                           class="text-muted text-decoration-none"
+                           title="Move"
+                           role="button"
+                           data-bs-toggle="dropdown"
+                           aria-expanded="false">
+                          <i class="bi bi-folder2-open icon-lg"></i>
                         </a>
-
-
-                        <!-- Custom dropdown triggered by icon link -->
-                        <div class="dropdown">
-                          <a href="#"
-                            class="text-muted text-decoration-none"
-                            title="Move"
-                            role="button"
-                            data-bs-toggle="dropdown"
-                            aria-expanded="false">
-                            <i class="bi bi-folder2-open icon-lg"></i>
-                          </a>
-
-                          <ul class="dropdown-menu dropdown-menu-end">
-
-                            <!-- Move to Category -->
-                            <li class="dropdown-header">Move to Category</li>
-                            {% for key, dd_cat_label_text in category_choices %}  
-                              <li>
-                                <button type="button" class="dropdown-item"
-                                        onclick="jsMoveNotification('{{ notification.pk }}', '{{ key }}', '{{ active_category }}', '{% url 'users:move-notification' notification.pk %}')">
-                                  {{ dd_cat_label_text }}
-                                </button>
-                              </li>
-                            {% endfor %}
-
-                            <li><hr class="dropdown-divider"></li>
-
-                            <!-- Assign Label -->
-                            <li class="dropdown-header">Assign Label</li>
-                            {% for label_obj_dd in labels %}
-                              <li>
-                                <button type="button" class="dropdown-item"
-                                        onclick="jsAssignLabel('{{ notification.pk }}', '{{ label_obj_dd.id }}', '{% url 'users:assign-label-to-notification' notification.pk %}')">
-                                  {{ label_obj_dd.name }}
-                                </button>
-                              </li>
-                            {% endfor %}
-                          </ul>
-                        </div>
-
+                        <ul class="dropdown-menu dropdown-menu-end">
+                          <!-- Move to Category -->
+                          <li class="dropdown-header">Move to Category</li>
+                          {% for key, dd_cat_label_text in category_choices %}
+                            <li>
+                              <button type="button"
+                                      class="dropdown-item"
+                                      onclick="jsMoveNotification('{{ notification.pk }}', '{{ key }}', '{{ active_category }}', '{% url 'users:move-notification' notification.pk %}')">
+                                {{ dd_cat_label_text }}
+                              </button>
+                            </li>
+                          {% endfor %}
+                          <li>
+                            <hr class="dropdown-divider" />
+                          </li>
+                          <!-- Assign Label -->
+                          <li class="dropdown-header">Assign Label</li>
+                          {% for label_obj_dd in labels %}
+                            <li>
+                              <button type="button"
+                                      class="dropdown-item"
+                                      onclick="jsAssignLabel('{{ notification.pk }}', '{{ label_obj_dd.id }}', '{% url 'users:assign-label-to-notification' notification.pk %}')">
+                                {{ label_obj_dd.name }}
+                              </button>
+                            </li>
+                          {% endfor %}
+                        </ul>
+                      </div>
                     {% endif %}
                   </div>
                 </div>
@@ -149,55 +138,55 @@
   <meta name="csrf-token" content="{{ csrf_token }}" />
   <script>
     function jsMoveNotification(notificationPk, targetCategory, currentCategory, actionUrl) {
-        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-        const formData = new FormData();
-        formData.append('category', targetCategory);
-        formData.append('next', currentCategory);
+      const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+      const formData = new FormData();
+      formData.append('category', targetCategory);
+      formData.append('next', currentCategory);
 
-        fetch(actionUrl, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': csrfToken
-            },
-            body: formData
+      fetch(actionUrl, {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': csrfToken
+          },
+          body: formData
         })
         .then(response => {
-            if (response.ok) {
-                window.location.href = response.url;
-            } else {
-                console.error('Move notification failed. Status:', response.status);
-                alert('Failed to move notification. Please try again.');
-            }
+          if (response.ok) {
+            window.location.href = response.url;
+          } else {
+            console.error('Move notification failed. Status:', response.status);
+            alert('Failed to move notification. Please try again.');
+          }
         })
         .catch(error => {
-            console.error('Error during move notification:', error);
-            alert('An error occurred while moving notification. Please try again.');
+          console.error('Error during move notification:', error);
+          alert('An error occurred while moving notification. Please try again.');
         });
     }
 
     function jsAssignLabel(notificationPk, labelId, actionUrl) {
-        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-        const formData = new FormData();
-        formData.append('label_id', labelId); 
+      const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+      const formData = new FormData();
+      formData.append('label_id', labelId);
 
-        fetch(actionUrl, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': csrfToken
-            },
-            body: formData
+      fetch(actionUrl, {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': csrfToken
+          },
+          body: formData
         })
         .then(response => {
-            if (response.ok) {
-                window.location.href = response.url;
-            } else {
-                console.error('Assign label failed. Status:', response.status);
-                alert('Failed to assign label. Please try again.');
-            }
+          if (response.ok) {
+            window.location.href = response.url;
+          } else {
+            console.error('Assign label failed. Status:', response.status);
+            alert('Failed to assign label. Please try again.');
+          }
         })
         .catch(error => {
-            console.error('Error during assign label:', error);
-            alert('An error occurred while assigning label. Please try again.');
+          console.error('Error during assign label:', error);
+          alert('An error occurred while assigning label. Please try again.');
         });
     }
   </script>

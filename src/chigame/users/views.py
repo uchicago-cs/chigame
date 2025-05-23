@@ -598,7 +598,9 @@ def act_on_inbox_notification(request, pk, action):
         notification = Notification.objects.get(pk=pk)
         if notification.receiver.pk != request.user.pk:
             messages.error(request, "You can not perform actions on this notification")
-            return redirect(reverse("users:user-inbox-category", kwargs={"pk": request.user.pk, "category": next_category}))
+            return redirect(
+                reverse("users:user-inbox-category", kwargs={"pk": request.user.pk, "category": next_category})
+            )
 
         if action == "mark_read":
             notification.mark_as_read()
@@ -612,7 +614,6 @@ def act_on_inbox_notification(request, pk, action):
         messages.error(request, "Something went wrong. This notification does not exist")
 
     return redirect(reverse("users:user-inbox-category", kwargs={"pk": request.user.pk, "category": next_category}))
-
 
 
 @login_required
@@ -709,7 +710,6 @@ def move_notification(request, pk):
 
     messages.error(request, "Invalid category or label.")
     return redirect("users:user-inbox-category", pk=request.user.pk, category=next_category)
-
 
 
 @login_required
