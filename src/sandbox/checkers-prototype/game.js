@@ -381,13 +381,8 @@ function movePiece(piece, moveX, moveY) {
   }
 
   // Move the piece
-  piece.x = moveX;
-  piece.y = moveY;
-  piece.sprite.x = margin + piece.x * tile_size + tile_size / 2;
-  piece.sprite.y = margin + piece.y * tile_size + tile_size / 2;
-
-  const newX = MARGIN + moveX * TILE_SIZE + TILE_SIZE / 2;
-  const newY = MARGIN + moveY * TILE_SIZE + TILE_SIZE / 2;
+  let newX = margin + moveX * tile_size + tile_size / 2;
+  let newY = margin + moveY * tile_size + tile_size / 2;
 
   // Animate the piece movement
   checkers.scene.scenes[0].tweens.add({
@@ -398,6 +393,10 @@ function movePiece(piece, moveX, moveY) {
     // https://docs.phaser.io/phaser/concepts/tweens
     // https://rexrainbow.github.io/phaser3-rex-notes/docs/site/ease-function/
     ease: 'Power3',
+    onComplete: () => {
+      piece.x = moveX;
+      piece.y = moveY;
+    }
   });
 
   // Play move sound effect
