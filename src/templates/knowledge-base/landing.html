@@ -1,6 +1,15 @@
 {% extends "knowledge-base/base.html" %}
 
+{% load static %}
+
 {% block page-content %}
+  {% if unseen_feedbacks %}
+    <div class="alert alert-primary" role="alert">
+      You have <b>{{ unseen_feedbacks|length }}</b> status update{{ unseen_feedbacks|length|pluralize }}!
+      <a href="{% url 'contributor-manage-guide' %}"
+         class="alert-link view-details-link">View Details</a>
+    </div>
+  {% endif %}
   <div class="knowledge-base container">
     <div class="d-flex justify-content-between align-items-center pb-4">
       <h1 class="m-0">Knowledge Base</h1>

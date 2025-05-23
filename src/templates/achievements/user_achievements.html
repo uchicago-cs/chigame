@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block title %}
+  ChiGame - {{ user_profile.name }}'s Achievements
+{% endblock title %}
+{% block css %}
+  {{ block.super }}
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/css/bootstrap.min.css"
+        integrity="sha512-SbiR/eusphKoMVVXysTKG/7VseWii+Y3FdHrt0EpKgpToZeemhqHeZeLWLhJutz/2ut2Vw1uQEj2MbRF+TVBUA=="
+        crossorigin="anonymous"
+        referrerpolicy="no-referrer" />
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css" />
+  <link rel="stylesheet" href="{% static 'css/achievements.css' %}" />
+{% endblock css %}
+{% block content %}
+  {% csrf_token %}
+  <div class="container">
+    <div class="user-info">
+      <div class="user-avatar">
+        {% if user_profile.avatar %}
+          <img src="{{ user_profile.avatar.url }}"
+               alt="{{ user_profile.name }}'s avatar" />
+        {% else %}
+          <span class="large-avatar">
+            {% if user_profile.name %}
+              {{ user_profile.name|first|upper }}
+            {% elif user_profile.email %}
+              {{ user_profile.email|first|upper }}
+            {% else %}
+              ?
+            {% endif %}
+          </span>
+        {% endif %}
+      </div>
+      <div>
+        <h3>{{ user_profile.name }}'s Achievements</h3>
+        <p>Member since {{ join_date }}</p>
+      </div>
+      {% if not viewing_own_profile %}
+        <div class="ms-auto">
+          <a href="{% url 'achievements:user_achievements' %}"
+             class="btn btn-primary toggle-button">View My Achievements</a>
+        </div>
+      {% endif %}
+    </div>
+    <div class="user-stats">
+      <h4>Achievement Progress</h4>
+      <p>Overall: {{ overall_stats.unlocked }} achievements unlocked out of {{ overall_stats.total }}</p>
+      <div class="progress-bar">
+        <div class="progress-fill-dynamic"
+             data-progress="{{ overall_stats.progress|floatformat:1 }}"></div>
+      </div>
+    </div>
+    <ul class="nav-tabs">
+      <li class="active" data-tab="all-games">All Games</li>
+      <li data-tab="pinned-achievements">Pinned Achievements</li>
+    </ul>
+    <div class="tab-content">
+      <!-- First tab content -->
+      <div id="all-games" class="active">
+        <div class="games-list">
+          {% for game_data in games_with_achievements %}
+            <!-- Game Card -->
+            <div class="game-card">
+              <div class="game-header">
+                <div>
+                  <h3 class="game-title">{{ game_data.game.name }}</h3>
+                  <p>{{ game_data.truly_unlocked_for_game }} of {{ game_data.game.total_achievements }} achievements unlocked</p>
+                  <div class="progress-bar">
+                    <div class="progress-fill"
+                         data-progress="{{ game_data.progress|floatformat:1 }}"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="achievements-list">
+                {% for achievement in game_data.achievements %}
+                  <div class="achievement {% if achievement.rarity == 1 %}common{% endif %} {% if achievement.rarity == 2 %}uncommon{% endif %} {% if achievement.rarity == 3 %}rare{% endif %} {% if achievement.rarity == 4 %}precious{% endif %} {% if not achievement.is_unlocked_for_template %}not-unlocked{% endif %} {% if achievement.spoiler and not achievement.is_unlocked_for_template %}hidden{% endif %} {% if achievement.pinned_for_template %}pinned{% endif %}"
+                       data-achievement-id="{{ achievement.id }}">
+                    <div class="achievement-icon">
+                      <span class="trophy-icon">
+                        <img src="{% static 'images/achievement_icons/' %}{{ achievement.rarity }}.png"
+                             alt="Achievement Trophy" />
+                      </span>
+                    </div>
+                    <div class="achievement-info">
+                      <h4>
+                        {% if achievement.spoiler and not achievement.is_unlocked_for_template %}
+                          ??? Secret achievement
+                        {% else %}
+                          {{ achievement.name }}
+                        {% endif %}
+                      </h4>
+                      <p class="achievement-desc">
+                        {% if achievement.spoiler and not achievement.is_unlocked_for_template %}
+                          ??? Secret achievement
+                        {% else %}
+                          {{ achievement.description }}
+                        {% endif %}
+                      </p>
+                      <p class="achievement-date">
+                        {% if achievement.date_earned_for_template and achievement.progress_for_template >= achievement.threshold %}
+                          Unlocked on {{ achievement.date_earned_for_template|date:"F j, Y" }}
+                        {% elif achievement.date_earned_for_template %}
+                          In progress ({{ achievement.progress_for_template|floatformat:0 }}/{{ achievement.threshold|floatformat:0 }})
+                        {% else %}
+                          Not yet unlocked
+                          {% if achievement.threshold and achievement.progress_for_template %}
+                            ({{ achievement.progress_for_template|floatformat:0 }}/{{ achievement.threshold|floatformat:0 }})
+                          {% endif %}
+                        {% endif %}
+                      </p>
+                    </div>
+                    <span class="achievement-percent">{{ achievement.percent_of_players }}% of players</span>
+                    <button class="pin-button {% if achievement.pinned_for_template %}active{% endif %}"
+                            data-achievement-id="{{ achievement.id }}">📌</button>
+                    {% if achievement.threshold and achievement.progress_for_template %}
+                      {% if achievement.threshold > achievement.progress_for_template %}
+                        <div class="achievement-progress-bar">
+                          <div class="achievement-progress-fill"
+                               data-progress="{{ achievement.progress_percent_for_template|floatformat:0 }}"></div>
+                        </div>
+                      {% endif %}
+                    {% endif %}
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
+          {% empty %}
+            <div class="alert alert-info">No games with achievements found.</div>
+          {% endfor %}
+        </div>
+      </div>
+      <!-- Second tab content -->
+      <div id="pinned-achievements">
+        <h3>Pinned Achievements</h3>
+        <div class="achievements-list">
+          {% for user_achievement in pinned_achievements %}
+            <div class="achievement {% if user_achievement.achievement.rarity == 1 %}common{% endif %} {% if user_achievement.achievement.rarity == 2 %}uncommon{% endif %} {% if user_achievement.achievement.rarity == 3 %}rare{% endif %} {% if user_achievement.achievement.rarity == 4 %}precious{% endif %} pinned"
+                 data-achievement-id="{{ user_achievement.achievement.id }}">
+              <div class="achievement-icon">
+                <span class="trophy-icon">
+                  <img src="{% static 'images/achievement_icons/' %}{{ user_achievement.achievement.rarity }}.png"
+                       alt="Achievement Trophy" />
+                </span>
+              </div>
+              <div class="achievement-info">
+                <h4>{{ user_achievement.achievement.name }}</h4>
+                <p class="achievement-desc">
+                  {{ user_achievement.achievement.description }} in {{ user_achievement.achievement.game.name }}
+                </p>
+                <p class="achievement-date">Unlocked on {{ user_achievement.date_earned|date:"F j, Y" }}</p>
+              </div>
+              <button class="pin-button active"
+                      data-achievement-id="{{ user_achievement.achievement.id }}">📌</button>
+            </div>
+          {% empty %}
+            <div class="empty-pinned-message">
+              <p>No achievements pinned yet. Pin your favorite achievements to see them here!</p>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock content %}
+{% block inline_javascript %}
+  {{ block.super }}
+  <script src="{% static 'js/achievements.js' %}"></script>
+{% endblock inline_javascript %}
