@@ -162,7 +162,6 @@ class GameLeaderboardSerializer(serializers.ModelSerializer):
         return user_profile.user.username
 
 
-
 class PopUpInfoSerializer(serializers.Serializer):
     min_players = serializers.IntegerField()
     max_players = serializers.IntegerField()
