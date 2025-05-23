@@ -12,14 +12,14 @@ def chat(request, chat_id):
     messages = LiveChatMessage.objects.filter(live_chat=chat).order_by("sent_at")
 
     # if the chat is public, add the request user to the chat
-    if chat.public and not chat.users.filter(id=request.user.id).exists():
+    if request.user.is_authenticated and chat.public and not chat.users.filter(id=request.user.id).exists():
         chat.users.add(request.user)
 
     return render(request, "chat/index.html", {"chat": chat, "messages": messages})
 
 
 def live_chat_list(request):
-    chats = LiveChat.objects.all()
+    chats = LiveChat.objects.filter(public=True)
     return render(request, "chat/live-chat-list.html", {"chats": chats})
 
 
@@ -78,3 +78,32 @@ def react_to_message(request, message_id):
             return JsonResponse({"status": "reacted", "content": content}, status=200)
     except ValidationError as e:
         return JsonResponse({"error": str(e)}, status=400)  # not a single emoji
+
+
+def edit_message(request, message_id):
+    """
+    Edits a message from the database.
+
+    Args:
+        request: The request object.
+        message_id: The id of the message to edit.
+
+    Returns:
+        A JSON response.
+    """
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "Unauthorized"}, status=401)
+
+    message = get_object_or_404(LiveChatMessage, id=message_id)
+
+    if not request.user == message.user:
+        return JsonResponse({"error": "Unauthorized"}, status=401)
+
+    if request.method == "POST":
+        content = request.POST.get("content")
+        message.edited = True
+        message.content = content
+        message.save()
+        return JsonResponse({"message": "Message edited successfully", "edited": message.edited}, status=200)
+
+    return JsonResponse({"message": "Type of request not allowed"}, status=405)
