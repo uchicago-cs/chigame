@@ -12,6 +12,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap"
           rel="stylesheet" />
+    <!-- imported icons -->
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
   </head>
   <body>
     <!-- linking to game.js -->
@@ -50,16 +53,15 @@
           <button id="toggle-colorblind" class="setting-btn">Toggle Colorblind Mode</button>
           <button id="toggle-coordinates" class="setting-btn">Toggle Coordinates</button>
           <!-- Board Scale Slider -->
-          <div class="slider-container">
-            <label for="resize-slider">
-              Board Scale: <span id="resize-value">100%</span>
-            </label>
+          <div class="setting-option">
+            <i class="fa-solid fa-maximize"></i>
             <input type="range"
                    id="resize-slider"
                    min="50"
                    max="120"
                    value="100"
                    step="5" />
+            <div id="resize-display" class="value-display"></div>
           </div>
         </div>
       </div>
