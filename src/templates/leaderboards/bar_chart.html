@@ -4,7 +4,7 @@
   <h1>{{ leaderboard.name }}</h1>
 
   <div style="margin-bottom: 20px;">
-    <a href="{% url 'bar_chart' game.id %}"
+    <a href="{% url 'points_bar_chart' game.id %}"
        class="btn {% if 'Points' in score_metric_name %}btn-dark active{% else %}btn-outline-dark{% endif %}">
        Points
     </a>

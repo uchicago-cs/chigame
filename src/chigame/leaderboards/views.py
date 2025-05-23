@@ -85,7 +85,7 @@ def leaderboard_view(request, game_id):
     )
 
 
-def bar_chart(request, game_id):
+def points_bar_chart(request, game_id):
     game = get_object_or_404(Game, id=game_id)
     leaderboard = game.leaderboards.first()
 
