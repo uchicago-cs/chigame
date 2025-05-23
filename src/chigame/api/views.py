@@ -1,13 +1,13 @@
 from allauth.account.forms import SignupForm
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import JsonResponse
 from django.db import models
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.views import View
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, status
-from rest_framework.decorators import api_view
 from rest_framework.authentication import SessionAuthentication
+from rest_framework.decorators import api_view
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import SAFE_METHODS, BasePermission, IsAuthenticated, IsAuthenticatedOrReadOnly
@@ -577,7 +577,7 @@ class FeedbackDetailView(generics.RetrieveUpdateDestroyAPIView):
         if instance.user != user:
             raise PermissionDenied("You can only delete your own feedback.")
         instance.delete()
-        
+
 
 class GameReviewStatsAPIView(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
@@ -667,7 +667,7 @@ class UserAchievementListView(APIView):
         ]
 
         return Response(data)
-      
+
 
 @api_view(["POST"])
 def Signup(request):
@@ -687,4 +687,3 @@ def Signup(request):
         return JsonResponse({"status": "success"})
     else:
         return JsonResponse({"status": "error", "errors": form.errors}, status=400)
-      
