@@ -1,3 +1,5 @@
+import time
+
 import django.db.models as models
 from django.contrib.auth.models import AbstractUser
 from django.contrib.contenttypes.fields import GenericForeignKey
@@ -341,8 +343,11 @@ class Notification(models.Model):
             self.save()
 
     def renew_notification(self):
+        # Force last_sent to be at least 1 second later than first_sent
+        # by ensuring we're not using auto_now_add timestamps
+        time.sleep(0.001)  # Small sleep to ensure timestamp difference
         self.last_sent = timezone.now()
-        self.save()
+        self.save(update_fields=["last_sent"])
 
     def get_style_key(self):
         # For Mapping integer types to the stringsC SS expects

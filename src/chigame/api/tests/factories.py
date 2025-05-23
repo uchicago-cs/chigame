@@ -5,7 +5,8 @@ from django.utils import timezone
 from factory import Faker, Iterator, LazyAttribute, LazyFunction, Sequence, SubFactory, post_generation
 from factory.django import DjangoModelFactory
 
-from chigame.games.models import Category, Chat, Feedback, Game, Lobby, Match, Mechanic, Tournament
+from chigame.chat.models import LiveChat, LiveChatUser
+from chigame.games.models import Category, Chat, Feedback, Game, Lobby, Match, Mechanic, Review, Tournament
 from chigame.users.models import User
 
 
@@ -84,7 +85,7 @@ class UserFactory(DjangoModelFactory):
     name = Faker("name")
     email = Faker("email")
     password = Faker("password")
-    username = Faker("user_name")
+    username = factory.Sequence(lambda n: f"user{n}")
 
 
 class TournamentFactory(DjangoModelFactory):
@@ -170,3 +171,30 @@ class FeedbackFactory(factory.django.DjangoModelFactory):
     user = factory.SubFactory(UserFactory)
     rating = 4
     comment = "This is a test comment"
+
+
+class ReviewFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Review
+
+    title = factory.Faker("sentence", nb_words=4)
+    review = factory.Faker("text", max_nb_chars=200)
+    rating = factory.Faker("pydecimal", left_digits=1, right_digits=1, min_value=1, max_value=5)
+    is_public = True
+    user = factory.SubFactory(UserFactory)
+    game = factory.SubFactory(GameFactory)
+
+
+class LiveChatFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = LiveChat
+
+    name = factory.Sequence(lambda n: f"LiveChat {n}")
+
+    @factory.post_generation
+    def users(self, create, extracted, **kwargs):
+        if not create:
+            return
+        if extracted:
+            for user in extracted:
+                LiveChatUser.objects.create(user=user, live_chat=self)
