@@ -79,25 +79,25 @@
     const escapedUsername = escapeHTML(data.username);
     const escapedMessage = escapeHTML(data.message);
     messageContainer.setAttribute("oncontextmenu", `showContextMenu(event, ${data.message_id}, '${escapedUsername}', '${escapedMessage}'); return false;`);
-    const escapeHtml = (str) =>
-      str.replace(
-        /[&<>'"]/g,
-        (char) =>
-        ({
-          "&": "&amp;",
-          "<": "&lt;",
-          ">": "&gt;",
-          "'": "&#39;",
-          '"': "&quot;",
-        } [char])
-      );
+    // const escapeHtml = (str) =>
+    //   str.replace(
+    //     /[&<>'"]/g,
+    //     (char) =>
+    //     ({
+    //       "&": "&amp;",
+    //       "<": "&lt;",
+    //       ">": "&gt;",
+    //       "'": "&#39;",
+    //       '"': "&quot;",
+    //     } [char])
+    //   );
 
-    const escapedUsername = escapeHtml(data.username);
-    const escapedMessage = escapeHtml(data.message);
-    messageContainer.setAttribute(
-      "oncontextmenu",
-      `showContextMenu(event, ${data.message_id}, '${escapedUsername}', '${escapedMessage}'); return false;`
-    );
+    // //const escapedUsername = escapeHtml(data.username);
+    // //const escapedMessage = escapeHtml(data.message);
+    // messageContainer.setAttribute(
+    //   "oncontextmenu",
+    //   `showContextMenu(event, ${data.message_id}, '${escapedUsername}', '${escapedMessage}'); return false;`
+    // );
     // Create message bubble
     const messageBubble = document.createElement("div");
     messageBubble.className = `${
