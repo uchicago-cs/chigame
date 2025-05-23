@@ -579,8 +579,11 @@ class InteractiveFictionView(TemplateView):
         return context
 
 
-class IFGameCreateView(TemplateView):
+class IFGameCreateView(CreateView):
+    model = Game
+    form_class = GameForm
     template_name = "games/interactive-fiction/IF_game_create.html"
+    raise_exception = True  # if user is not staff member, raise exception
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -608,7 +611,12 @@ class IFGameCreateView(TemplateView):
 class UploadFileView(View):
     def post(self, request, pk=None):
         uploaded_file = request.FILES.get("uploaded_file")
+        game_name = request.POST.get("name", "").strip() or "DEFAULT"
 
+        print("Name:", game_name)
+        print("POST:", request.POST)
+        print("FILES:", request.FILES)
+        
         if uploaded_file:
             # Save the file to twine_games/
             fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, "twine_games"))
@@ -617,7 +625,7 @@ class UploadFileView(View):
 
             # Create a basic Game instance
             game = Game.objects.create(
-                name=uploaded_file.name.replace(".html", ""),
+                name=game_name,
                 description="Uploaded Twine game",
                 min_players=1,
                 max_players=1,
