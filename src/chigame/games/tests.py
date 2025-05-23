@@ -311,3 +311,79 @@ class CheckersTurnFactory(DjangoModelFactory):
    board = SubFactory(CheckersBoardFactory)
    turn_number = Sequence(lambda n: n + 1)
    player = SubFactory(PlayerFactory)
+
+
+class CheckersGameViewTests(TestCase):
+   def setUp(self):
+       self.user1 = UserFactory()
+       self.user2 = UserFactory()
+       self.match = MatchFactory()
+       self.player1 = PlayerFactory(user=self.user1, match=self.match)
+       self.player2 = PlayerFactory(user=self.user2, match=self.match)
+       self.checkers_game = CheckersFactory(player_1=self.player1, player_2=self.player2)
+
+
+   def test_checkers_game_view_authenticated_player(self):
+       self.client.force_login(self.user1)
+       response = self.client.get(reverse("checkers-game", args=[self.checkers_game.id]))
+       self.assertEqual(response.status_code, 200)
+
+
+   def test_checkers_game_view_unauthorized_user(self):
+       other_user = UserFactory()
+       self.client.force_login(other_user)
+       response = self.client.get(reverse("checkers-game", args=[self.checkers_game.id]))
+       self.assertEqual(response.status_code, 403)
+
+
+   def test_checkers_game_view_unauthenticated(self):
+       response = self.client.get(reverse("checkers-game", args=[self.checkers_game.id]))
+       self.assertEqual(response.status_code, 302)
+
+class CheckersGameUpdateBoardStateTests(APITestCase):
+   def setUp(self):
+       self.user1 = UserFactory()
+       self.user2 = UserFactory()
+       self.match = MatchFactory()
+       self.player1 = PlayerFactory(user=self.user1, match=self.match)
+       self.player2 = PlayerFactory(user=self.user2, match=self.match)
+       self.checkers_game = CheckersFactory(player_1=self.player1, player_2=self.player2)
+       self.board = CheckersBoardFactory()
+       self.client.force_login(self.user1)
+
+
+   def test_update_board_state_success(self):
+       new_state = [
+           [0, 1, 0, 1, 0, 1, 0, 1],
+           [1, 0, 1, 0, 1, 0, 1, 0],
+           [0, 1, 0, 1, 0, 1, 0, 1],
+           [0, 0, 0, 0, 0, 0, 0, 0],
+           [0, 0, 0, 0, 0, 0, 0, 0],
+           [2, 0, 2, 0, 2, 0, 2, 0],
+           [0, 2, 0, 2, 0, 2, 0, 2],
+           [2, 0, 2, 0, 2, 0, 2, 0],
+       ]
+       response = self.client.post(
+           reverse("update_board_state", args=[self.board.id]),
+           {"state": new_state},
+           format="json",
+       )
+       self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+   def test_update_board_state_missing_state(self):
+       response = self.client.post(
+           reverse("update_board_state", args=[self.board.id]),
+           {},
+           format="json",
+       )
+       self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+   def test_update_board_state_invalid_board(self):
+       response = self.client.post(
+           reverse("update_board_state", args=[99999]),
+           {"state": []},
+           format="json",
+       )
+       self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
