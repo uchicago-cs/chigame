@@ -620,7 +620,7 @@ function giveHint() {
     drawBtn.textContent = 'Offer Draw';
     declineDrawBtn.style.display = 'none';
   }
-  
+
 }
 
 // Retrieves a 2D array representation of the board state where 0 are unoccupied
@@ -735,7 +735,7 @@ function getLegalMoves(color) {
       if ( //check if mvoe is valid
         x >= 0 && x < BOARD_SIZE && y >= 0 && y < BOARD_SIZE &&
         !getPiece(x, y) && isValidMove(piece, x, y)) {
-            move = {piece, x, y};//gather the move 
+            move = {piece, x, y};//gather the move
             capture_bool = is_capture(piece, x, y);//is it a capture?
             center_dist = get_dist_from_center(x, y);//how far from middle
             //add move, if it is a capture, and how far from center to arr
@@ -749,7 +749,7 @@ function getLegalMoves(color) {
       if (
         x >= 0 && x < BOARD_SIZE && y >= 0 && y < BOARD_SIZE &&
         !getPiece(x, y) && isValidMove(piece, x, y)) {
-            move = {piece, x, y}; //gather the move 
+            move = {piece, x, y}; //gather the move
             capture_bool = is_capture(piece, x, y);//is it a capture?
             center_dist = get_dist_from_center(x, y);//how far from middle
             moves.push([move, capture_bool, center_dist]);
@@ -797,7 +797,7 @@ function mediumBot(scene){
             bestMove = move; //this is new best move
             closestDist = dist; //this is new closest dist
         }
-    
+
     }   //end loop
     movePiece(bestMove.piece, bestMove.x, bestMove.y);
     endTurn(scene);
