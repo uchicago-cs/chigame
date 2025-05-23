@@ -293,12 +293,13 @@ class Notification(models.Model):
         (TOURNAMENT_COMPLETED, "TOURNAMENT_COMPLETED"),
     )
 
-    DEFAULT_MESSAGES = {FRIEND_REQUEST: "You have a friend invitation",
-                        REMINDER: "You have a reminder",
-                        UPCOMING_MATCH: "You have an upcoming match",
-                        MATCH_INVITATION: "You have a match invite",
-                        GROUP_INVITATION: "You have a group invitation",
-                        ACHIEVEMENT: "You have an achievement",
+    DEFAULT_MESSAGES = {
+        FRIEND_REQUEST: "You have a friend invitation",
+        REMINDER: "You have a reminder",
+        UPCOMING_MATCH: "You have an upcoming match",
+        MATCH_INVITATION: "You have a match invite",
+        GROUP_INVITATION: "You have a group invitation",
+        ACHIEVEMENT: "You have an achievement",
     }
 
     category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default="inbox")
@@ -391,7 +392,6 @@ class Notification(models.Model):
         except Exception:
             return fallback
 
-
     def get_icon_class(self):
         if self.type == self.FRIEND_REQUEST:
             return "bi-person-plus-fill"
@@ -407,7 +407,7 @@ class Notification(models.Model):
             return "bi-info-circle-fill"
         else:
             return "bi-bell-fill"
-        
+
     def get_sender_display(self):
         """
         Returns a string representing the sender (if the actor has one),

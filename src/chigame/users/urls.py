@@ -63,6 +63,10 @@ urlpatterns = [
     path("labels/<int:label_id>/notifications/", views.notifications_by_label, name="notifications-by-label"),
     path("inbox/<int:pk>/<str:category>/", views.user_inbox_view, name="user-inbox-category"),
     path("labels/manage/", views.manage_labels_page_view, name="manage-labels-page"),
-    path('notifications/<int:notification_id>/assign-label/', views.assign_label_to_notification, name='assign-label-to-notification'),
+    path(
+        "notifications/<int:notification_id>/assign-label/",
+        views.assign_label_to_notification,
+        name="assign-label-to-notification",
+    ),
     path("labels/<int:label_id>/delete/", views.delete_notification_label, name="delete-notification-label"),
 ]

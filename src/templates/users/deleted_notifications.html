@@ -16,21 +16,19 @@
               <div class="message-row ms-2 me-auto">
                 <div class="d-flex align-items-center gap-2">
                   <label>
-                    <input type="checkbox" disabled />  <!-- Disabled since deleted -->
+                    <input type="checkbox" disabled />
+                    <!-- Disabled since deleted -->
                   </label>
-
                   <small class="sender-minimal me-2">{{ notification.get_sender_display }}</small>
-
-                    <span class="text-muted">{{ notification.get_rich_message|truncatewords:15 }}</span>
-                    
+                  <span class="text-muted">{{ notification.get_rich_message|truncatewords:15 }}</span>
                 </div>
                 <span class="badge bg-info ms-2">{{ notification.get_category_display }}</span>
               </div>
             </li>
-
             <div class="button-container list-group-item d-flex justify-content-between align-items-center border shadow-sm">
               <a href="{% url 'users:act-on-inbox-notification' notification.pk 'move_to_inbox' %}"
-                class="text-decoration-none text-primary" title="Restore">
+                 class="text-decoration-none text-primary"
+                 title="Restore">
                 <i class="bi bi-inbox icon-lg"></i>
               </a>
             </div>

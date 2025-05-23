@@ -196,14 +196,12 @@
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end notifications-dropdown"
                         aria-labelledby="notification-btn">
-                      <li class="dropdown-header notifications-title">
-                        Notifications
-                      </li>
+                      <li class="dropdown-header notifications-title">Notifications</li>
                       {% if header_notifications %}
                         {% for n in header_notifications %}
                           <a href="{% url 'users:notification-detail' n.pk %}"
-                            class="notification-item dropdown dropdown-item text-reset text-decoration-none {% if not n.read %}notification-unread{% endif %} notification-style-{{ n.get_style_key }}"
-                            id="notification-{{ n.id }}">
+                             class="notification-item dropdown dropdown-item text-reset text-decoration-none {% if not n.read %}notification-unread{% endif %} notification-style-{{ n.get_style_key }}"
+                             id="notification-{{ n.id }}">
                             <div class="d-flex justify-content-between align-items-start">
                               <!-- Icon + Content -->
                               <div class="notification-icon d-flex">
@@ -219,7 +217,6 @@
                                       onclick="event.preventDefault(); dismissNotification({{ n.id }})"></button>
                             </div>
                           </a>
-
                         {% endfor %}
                       {% else %}
                         <li class="dropdown-item text-muted">No new notifications</li>
