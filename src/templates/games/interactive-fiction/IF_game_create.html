@@ -205,6 +205,8 @@
         const input = document.getElementById(inputId);
         if (!input) return;
 
+        const zoneType = inputId.includes('cover_image') ? 'image' : 'html';
+
         function showFileName(file) {
           zone.innerHTML = `
             <div>
@@ -213,20 +215,49 @@
             </div>`;
         }
 
+        function isImageFile(file) {
+          return file && file.type.startsWith('image/');
+        }
+
         function isHtmlFile(file) {
           return file && file.name.toLowerCase().endsWith('.html');
         }
 
-        function handleFile(file) {
-          if (!isHtmlFile(file)) {
-            alert('Only .html files are allowed!');
+        function handleFile(file, zoneType) {
+          const isValid = zoneType === 'image' ?
+            isImageFile(file) :
+            isHtmlFile(file);
+
+          if (!isValid) {
+            alert(zoneType === 'image' ?
+              'Only image files are allowed!' :
+              'Only .html files are allowed!');
             input.value = '';
             zone.innerHTML = 'Drag & drop a file here<br />or click to browse';
             return false;
           }
-          showFileName(file);
+
+          if (zoneType === 'image') {
+            const reader = new FileReader();
+            reader.onload = () => {
+              zone.innerHTML = `
+                <div>
+                  <strong>Selected Image</strong><br />
+                  <img src="${reader.result}" alt="Image Preview" style="max-width: 100%; max-height: 150px;" />
+                </div>`;
+            };
+            reader.readAsDataURL(file);
+          } else {
+            zone.innerHTML = `
+              <div>
+                <strong>Selected file:</strong><br />
+                ${file.name}<br />
+              </div>`;
+          }
+
           return true;
         }
+
 
         zone.addEventListener('click', () => input.click());
 
@@ -243,7 +274,7 @@
           e.preventDefault();
           zone.classList.remove('hover');
           const file = e.dataTransfer.files[0];
-          if (file && handleFile(file)) {
+          if (file && handleFile(file, zoneType)) {
             input.files = e.dataTransfer.files;
           }
         });
@@ -251,8 +282,8 @@
         input.addEventListener('change', () => {
           const file = input.files[0];
           if (file) {
-            showFileName(file);
-            handleFile(file);
+            // showFileName(file);
+            handleFile(file, zoneType);
           }
 
         });
@@ -380,7 +411,8 @@
       <input type="file"
              id="id_cover_image"
              name="uploaded_file"
-             class="if-file-input" />
+             class="if-file-input"
+             accept="image/*" />
     </div>
     <div>
       <label for="id_allow_comments">
