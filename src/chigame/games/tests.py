@@ -8,6 +8,14 @@ from django.utils import timezone
 from .models import Category, Feedback, Game, Lobby, Match, Mechanic, Person, Player, Tournament
 from .views import get_recommended_games
 
+from rest_framework import status
+from rest_framework.test import APITestCase
+
+from chigame.api.tests.factories import UserFactory
+from chigame.games.models import Checkers, CheckersBoard, CheckersTurn
+from factory.django import DjangoModelFactory
+from factory import SubFactory, Sequence
+
 
 class FeedbackTests(TestCase):
     def setUp(self):
@@ -231,3 +239,75 @@ class RecommendationSystemTest(TestCase):
         recommendations = get_recommended_games(self.game1, user=self.user)
         self.assertIn(self.game2, recommendations)
         self.assertEqual(list(recommendations)[0], self.game3)  # game3 should now be first
+
+
+# ================ CHECKERS TESTS =================
+
+class GameFactory(DjangoModelFactory):
+   class Meta:
+       model = Game
+
+   name = "Test Game"
+   description = "Test Description"
+   min_players = 2
+   max_players = 2
+   complexity = 2.5
+
+class LobbyFactory(DjangoModelFactory):
+   class Meta:
+       model = Lobby
+
+   name = "Test Lobby"
+   game = SubFactory(GameFactory)
+   created_by = SubFactory(UserFactory)
+   min_players = 2
+   max_players = 2
+   match_status = 1
+
+class MatchFactory(DjangoModelFactory):
+   class Meta:
+       model = Match
+
+   game = SubFactory(GameFactory)
+   lobby = SubFactory(LobbyFactory)
+   date_played = timezone.now()
+
+class PlayerFactory(DjangoModelFactory):
+   class Meta:
+       model = Player
+
+   user = SubFactory(UserFactory)
+   match = SubFactory(MatchFactory)
+   outcome = None
+
+class CheckersBoardFactory(DjangoModelFactory):
+   class Meta:
+       model = CheckersBoard
+
+   state = [
+       [0, 1, 0, 1, 0, 1, 0, 1],
+       [1, 0, 1, 0, 1, 0, 1, 0],
+       [0, 1, 0, 1, 0, 1, 0, 1],
+       [0, 0, 0, 0, 0, 0, 0, 0],
+       [0, 0, 0, 0, 0, 0, 0, 0],
+       [2, 0, 2, 0, 2, 0, 2, 0],
+       [0, 2, 0, 2, 0, 2, 0, 2],
+       [2, 0, 2, 0, 2, 0, 2, 0],
+   ]
+
+class CheckersFactory(DjangoModelFactory):
+   class Meta:
+       model = Checkers
+
+   player_1 = SubFactory(PlayerFactory)
+   player_2 = SubFactory(PlayerFactory)
+   start_time = timezone.now()
+
+class CheckersTurnFactory(DjangoModelFactory):
+   class Meta:
+       model = CheckersTurn
+
+   game = SubFactory(CheckersFactory)
+   board = SubFactory(CheckersBoardFactory)
+   turn_number = Sequence(lambda n: n + 1)
+   player = SubFactory(PlayerFactory)
