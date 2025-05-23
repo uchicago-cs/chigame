@@ -1,3 +1,4 @@
+import json
 import os
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta
@@ -15,6 +16,7 @@ from django.core.files.storage import FileSystemStorage
 from django.core.paginator import Paginator
 from django.db.models import Avg, Case, Count, ExpressionWrapper, F, FloatField, Q, Value, When
 from django.db.models.functions import Lower
+from django.forms import ValidationError
 from django.http import HttpResponseForbidden, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
@@ -53,7 +55,8 @@ from .simulation_utils import (
     MultiStageSimulator,
     RoundRobinSimulator,
     TournamentSimulator,
-    run_complete_tournament_simulation,
+    compute_seeds,
+    get_ordered_players_by_seeds,
 )
 from .tables import LobbyTable
 
@@ -736,6 +739,19 @@ class TournamentDetailView(DetailView):
         else:
             return "single"
 
+    def get_seeded_players_from_fixture(self, tournament):
+        fixture_path = "src/chigame/games/fixtures/seeding_tournaments_fixtures.json"
+        with open(fixture_path) as f:
+            fixture_data = json.load(f)
+
+        seed_data = compute_seeds(fixture_data)
+
+        tournament_players = list(tournament.players.all())
+        id_to_user = {u.id: u for u in tournament_players}
+        seeded_players = get_ordered_players_by_seeds(seed_data, id_to_user)
+
+        return seeded_players
+
     def get(self, request, *args, **kwargs):
         super().get(request, *args, **kwargs)
         tournament = Tournament.objects.get(id=self.kwargs["pk"])
@@ -761,12 +777,24 @@ class TournamentDetailView(DetailView):
                 if simulation_type == "single":
                     simulator = TournamentSimulator(tournament)
                     simulator.set_tournament_type(False)
+
+                    # Include seeded players if enabled
+                    if request.session.get("seeding_mode", False):
+                        seeded_players = self.get_seeded_players_from_fixture(tournament)
+                        simulator.set_seeded_players(seeded_players)
+
                     simulator.initialize_simulation()
                     simulator_data = simulator.get_bracket_data()
 
                 elif simulation_type == "double":
                     simulator = TournamentSimulator(tournament)
                     simulator.set_tournament_type(True)
+
+                    # Include seeded players if enabled
+                    if request.session.get("seeding_mode", False):
+                        seeded_players = self.get_seeded_players_from_fixture(tournament)
+                        simulator.set_seeded_players(seeded_players)
+
                     simulator.initialize_simulation()
                     simulator_data = simulator.get_bracket_data()
 
@@ -785,16 +813,6 @@ class TournamentDetailView(DetailView):
             context["simulation_data"] = simulator_data
 
         return self.render_to_response(context)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        tournament = self.get_object()
-
-        # Fetch the user's feedback for this tournament
-        user_feedback = Feedback.objects.filter(tournament=tournament, user=self.request.user).first()
-        context["user_feedback"] = user_feedback
-
-        return context
 
     def post(self, request, *args, **kwargs):
         tournament = Tournament.objects.get(id=request.POST.get("tournament_id"))
@@ -893,8 +911,17 @@ class TournamentDetailView(DetailView):
 
         # single and double elimination simulation
         elif simulation_type == "single" or simulation_type == "double":
-            if request.POST.get("action") == "simulate_match":
-                # Simulate a specific match
+            if request.POST.get("action") == "set_seeding_mode":
+                use_seeding = request.POST.get("use_seeding")
+                if use_seeding == "true":
+                    request.session["seeding_mode"] = True
+                elif use_seeding == "false":
+                    request.session["seeding_mode"] = False
+                else:
+                    request.session["seeding_mode"] = None
+                request.session.modified = True
+                return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
+            elif request.POST.get("action") == "simulate_match":
                 match_id = request.POST.get("match_id")
 
                 # Get the simulator data from the session
@@ -903,19 +930,16 @@ class TournamentDetailView(DetailView):
                     messages.error(request, "Simulation data not found. Please restart the simulation.")
                     return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
 
-                # Create a simulator instance and load the data
                 simulator = TournamentSimulator(tournament)
                 simulator.set_tournament_type(
                     request.session.get(f"tournament_{tournament.id}_double_elimination", False)
                 )
-                simulator.initialize_simulation()
 
-                # Update the simulator with the current state
+                # Do not initialize again – just restore
                 simulator.simulated_matches = {}
                 for round_num, brackets in simulator_data["rounds"].items():
                     for bracket_type, matches in brackets.items():
                         for match in matches:
-                            # Ensure match ID is a string
                             match_id_in_data = str(match["id"])
                             match_data = {
                                 "match": None,
@@ -937,14 +961,12 @@ class TournamentDetailView(DetailView):
 
                 simulator.current_round = simulator_data["current_round"]
 
-                # Simulate the match
                 if match_id not in simulator.simulated_matches:
                     messages.error(request, f"Match ID {match_id} not found in simulation data")
                     return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
 
                 winner, loser = simulator.simulate_match_outcome(match_id)
 
-                # Save the updated simulator data
                 updated_data = simulator.get_bracket_data()
                 request.session[f"tournament_{tournament.id}_simulator_data"] = updated_data
                 request.session.modified = True
@@ -1042,12 +1064,49 @@ class TournamentDetailView(DetailView):
                 return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
 
             elif request.POST.get("action") == "run_full_simulation":
-                # Run a complete simulation
                 is_double_elimination = request.session.get(f"tournament_{tournament.id}_double_elimination", False)
-                simulation_data = run_complete_tournament_simulation(tournament, is_double_elimination)
-                request.session[f"tournament_{tournament.id}_simulator_data"] = simulation_data
 
-                messages.success(request, "Full tournament simulation completed")
+                # Pull seeding preference from session if not passed in POST
+                use_seeding = request.POST.get("use_seeding")
+                if use_seeding is None:
+                    use_seeding = request.session.get("seeding_mode", False)
+                use_seeding = str(use_seeding).lower() == "true"
+
+                simulator = TournamentSimulator(tournament)
+                simulator.set_tournament_type(is_double_elimination)
+
+                if use_seeding:
+                    seeded_players = self.get_seeded_players_from_fixture(tournament)
+                    simulator.set_seeded_players(seeded_players)
+
+                simulator.initialize_simulation()
+
+                # Simulate all matches in the first round
+                for match_id in simulator.simulated_matches:
+                    simulator.simulate_match_outcome(match_id)
+
+                # Create and simulate all remaining rounds
+                while True:
+                    next_round_matches = simulator.create_next_round_matches()
+                    if not next_round_matches:
+                        break
+                    for match_id in next_round_matches:
+                        simulator.simulate_match_outcome(match_id)
+
+                # For double elimination, simulate final match if needed
+                if is_double_elimination:
+                    final_match = simulator.create_final_match()
+                    if final_match:
+                        simulator.simulate_match_outcome(f"sim_final_{simulator.current_round + 1}")
+
+                # Save the full bracket to session
+                simulation_data = simulator.get_bracket_data()
+                request.session[f"tournament_{tournament.id}_simulator_data"] = simulation_data
+                request.session.modified = True
+
+                messages.success(
+                    request, "Full tournament simulation completed" + (" with seeding" if use_seeding else "")
+                )
                 return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
 
         elif request.POST.get("action") == "join":
@@ -1157,6 +1216,13 @@ class TournamentCreateView(CreateView):
         "players",  # This field should be removed in the production version. For testing only.
     ]
 
+    def form_invalid(self, form):
+        # this is wo so we handle invalid form submission
+        for field, errors in form.errors.items():
+            for error in errors:
+                messages.error(self.request, f"{field}: {error}")
+        return super().form_invalid(form)
+
     def form_valid(self, form):
         user = self.request.user
 
@@ -1165,32 +1231,40 @@ class TournamentCreateView(CreateView):
             return redirect(reverse_lazy("tournament-create"))
 
         # Check if the user is not a staff member and has less than one token
+
         if not user.is_staff and user.tokens < 1:
             messages.error(self.request, "You do not have enough tokens to create a tournament.")
             return redirect("tournament-list")
 
-        # If the user is not staff, deduct a token
-        if not user.is_staff:
-            user.tokens -= 1
-            user.save()
+        try:
+            # Save the form instance but don't commit to the database yet
 
-        # Save the form instance but don't commit to the database yet
-        tournament = form.save(commit=False)
-        tournament.created_by = user
-        tournament.save()
+            tournament = form.save(commit=False)
+            tournament.created_by = user
+            tournament.full_clean()  # trigger the model's clean() method
+            tournament.save()
 
-        players = form.cleaned_data["players"]
-        tournament.players.add(*players)
+            players = form.cleaned_data["players"]
+            tournament.players.add(*players)
 
-        # Auto-create a chat for this respective tournament
-        chat = Chat(tournament=tournament)
-        chat.save()
+            # Auto-create a chat for this respective tournament
+            chat = Chat(tournament=tournament)
+            chat.save()
 
-        # (Optional) Insert bracket-related logic here if needed
+            # If the user is not staff, deduct a token after successful creation
+            if not user.is_staff:
+                user.tokens -= 1
+                user.save()
 
-        # Redirect to the tournament's detail page or another appropriate response
-        self.object = tournament
-        return HttpResponseRedirect(self.get_success_url())
+            # Redirect to the tournament's detail page
+            self.object = tournament
+            return HttpResponseRedirect(self.get_success_url())
+        except ValidationError as e:
+            # this w should handle validation errors from the model's clean() method?
+            for field, errors in e.message_dict.items():
+                for error in errors:
+                    messages.error(self.request, f"{field}: {error}")
+            return self.form_invalid(form)
 
     def get_success_url(self):
         return reverse("tournament-detail", kwargs={"pk": self.object.pk})
@@ -1353,137 +1427,6 @@ class TournamentArchivedListView(ListView):
         return self.request.user.is_staff
 
 
-# Placeholder Game
-@login_required
-def coin_flip_game(request, pk):
-    # check if user has already played game
-    if Player.objects.filter(user=request.user, match_id__lobby__id=pk).exists():
-        return render(request, "games/game_already_played.html")
-    return render(request, "games/game_coinflip.html", {"lobby_id": pk})
-
-
-@login_required
-def check_guess(request, pk):
-    user_guess = request.POST.get("user_guess")
-    coin_result = choice(["heads", "tails"])
-    correct_guess = user_guess == coin_result
-
-    lobby = get_object_or_404(Lobby, id=pk)
-
-    # allows two users to play the game
-    if Match.objects.filter(lobby__id=pk).exists():
-        match = get_object_or_404(Match, lobby__id=pk)
-    else:
-        # Create Match instance linked to the fetched Lobby
-        match = Match.objects.create(
-            game_id=lobby.game.id,
-            lobby=lobby,
-            date_played=timezone.now()
-            # Add other fields as needed
-        )
-
-    player = Player.objects.create(
-        user=request.user,
-        match=match,
-    )
-    if correct_guess:
-        player.outcome = Player.WIN
-    else:
-        player.outcome = Player.LOSE
-    player.save()
-
-    # Checks if everyone has played
-    if match.players.all().count() == lobby.members.all().count():
-        lobby.match_status = 3
-    match.save()
-    lobby.save()
-    return render(
-        request,
-        "games/game_coinresult.html",
-        {"user_guess": user_guess, "coin_result": coin_result, "correct_guess": correct_guess, "lobby_id": pk},
-    )
-
-
-@login_required
-def TournamentChatDetailView(request, pk):
-    try:
-        tournament = Tournament.objects.get(pk=pk)
-        context = {"tournament": tournament}
-        if not tournament.chat:
-            messages.error(request, "This tournament does not have a chat yet.")
-            return redirect(reverse_lazy("tournament-detail", kwargs={"pk": pk}))
-        return render(request, "tournaments/tournament_chat.html", context)
-    except ObjectDoesNotExist:
-        messages.error(request, "This tournament does not have a chat yet.")
-        return redirect(reverse_lazy("tournament-detail", kwargs={"pk": pk}))
-
-
-class ReviewListView(ListView):
-    model = Review
-    template_name = "games/game_reviews.html"
-    context_object_name = "reviews"
-
-    def get_queryset(self):
-        game_pk = self.kwargs["pk"]
-        game = get_object_or_404(Game, pk=game_pk)
-        return Review.objects.filter(game=game, is_public=True)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        game_pk = self.kwargs["pk"]
-        context["game"] = get_object_or_404(Game, pk=game_pk)
-        return context
-
-
-@login_required
-def add_to_favorites(request, pk):
-    """Add a game to the current user's 'Favorites' list."""
-    game = get_object_or_404(Game, pk=pk)
-    favorites_list, _ = GameList.objects.get_or_create(name="Favorites", created_by=request.user)
-    favorites_list.games.add(game)
-    return redirect("favorite-list")
-
-
-@login_required
-def remove_from_favorites(request, pk):
-    """Remove a game from the current user's 'Favorites' list."""
-    game = get_object_or_404(Game, pk=pk)
-    try:
-        favorites_list = GameList.objects.get(name="Favorites", created_by=request.user)
-        favorites_list.games.remove(game)
-    except GameList.DoesNotExist:
-        pass
-    return redirect("favorite-list")
-
-
-class FavoriteListView(LoginRequiredMixin, ListView):
-    """Display the current user's favorite games."""
-
-    model = Game
-    template_name = "games/favorites_list.html"
-    context_object_name = "favorite_games"
-
-    def get_queryset(self):
-        favorites_list, _ = GameList.objects.get_or_create(name="Favorites", created_by=self.request.user)
-        return favorites_list.games.all()
-
-
-@login_required
-def add_to_gamelist(request, pk, list_pk):
-    game = get_object_or_404(Game, pk=pk)
-    game_list = get_object_or_404(GameList, pk=list_pk, created_by=request.user)
-    game_list.games.add(game)
-    return redirect("game-detail", pk=pk)
-
-
-@login_required
-def remove_from_gamelist(request, pk, list_pk):
-    game = get_object_or_404(Game, pk=pk)
-    game_list = get_object_or_404(GameList, pk=list_pk, created_by=request.user)
-    game_list.games.remove(game)
-    return redirect("game-detail", pk=pk)
-
-
 # Tournament Feedback Views
 @login_required
 def tournament_feedback_list(request, tournament_id):
@@ -1601,6 +1544,156 @@ def delete_feedback_view(request, feedback_id):
         return redirect("user-feedback-list")
 
     return render(request, "tournaments/tournament_delete_feedback.html", {"feedback": feedback})
+
+
+# Placeholder Game
+@login_required
+def coin_flip_game(request, pk):
+    # check if user has already played game
+    if Player.objects.filter(user=request.user, match_id__lobby__id=pk).exists():
+        return render(request, "games/game_already_played.html")
+    return render(request, "games/game_coinflip.html", {"lobby_id": pk})
+
+
+@login_required
+def check_guess(request, pk):
+    user_guess = request.POST.get("user_guess")
+    coin_result = choice(["heads", "tails"])
+    correct_guess = user_guess == coin_result
+
+    lobby = get_object_or_404(Lobby, id=pk)
+
+    # allows two users to play the game
+    if Match.objects.filter(lobby__id=pk).exists():
+        match = get_object_or_404(Match, lobby__id=pk)
+    else:
+        # Create Match instance linked to the fetched Lobby
+        match = Match.objects.create(
+            game_id=lobby.game.id,
+            lobby=lobby,
+            date_played=timezone.now()
+            # Add other fields as needed
+        )
+
+    player = Player.objects.create(
+        user=request.user,
+        match=match,
+    )
+    if correct_guess:
+        player.outcome = Player.WIN
+    else:
+        player.outcome = Player.LOSE
+    player.save()
+
+    # Checks if everyone has played
+    if match.players.all().count() == lobby.members.all().count():
+        lobby.match_status = 3
+    match.save()
+    lobby.save()
+    return render(
+        request,
+        "games/game_coinresult.html",
+        {"user_guess": user_guess, "coin_result": coin_result, "correct_guess": correct_guess, "lobby_id": pk},
+    )
+
+
+@login_required
+def TournamentChatDetailView(request, pk):
+    try:
+        tournament = Tournament.objects.get(pk=pk)
+        context = {"tournament": tournament}
+        if not tournament.chat:
+            messages.error(request, "This tournament does not have a chat yet.")
+            return redirect(reverse_lazy("tournament-detail", kwargs={"pk": pk}))
+        return render(request, "tournaments/tournament_chat.html", context)
+    except ObjectDoesNotExist:
+        messages.error(request, "This tournament does not have a chat yet.")
+        return redirect(reverse_lazy("tournament-detail", kwargs={"pk": pk}))
+
+
+class ReviewListView(ListView):
+    model = Review
+    template_name = "games/game_reviews.html"
+    context_object_name = "reviews"
+
+    def get_queryset(self):
+        game_pk = self.kwargs["pk"]
+        game = get_object_or_404(Game, pk=game_pk)
+        return Review.objects.filter(game=game, is_public=True)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        game_pk = self.kwargs["pk"]
+        context["game"] = get_object_or_404(Game, pk=game_pk)
+        return context
+
+
+# Views for a review page
+@login_required
+def add_review(request, pk):
+    game = get_object_or_404(Game, pk=pk)
+
+    if request.method == "POST":
+        form = ReviewForm(request.POST)
+        if form.is_valid():
+            review = form.save(commit=False)
+            review.user = request.user
+            review.game = game
+            review.save()
+            return redirect("game-detail", pk=game.pk)
+    else:
+        form = ReviewForm()
+
+    return render(request, "games/game_add_review.html", {"form": form, "game": game})
+
+
+@login_required
+def add_to_favorites(request, pk):
+    """Add a game to the current user's 'Favorites' list."""
+    game = get_object_or_404(Game, pk=pk)
+    favorites_list, _ = GameList.objects.get_or_create(name="Favorites", created_by=request.user)
+    favorites_list.games.add(game)
+    return redirect("favorite-list")
+
+
+@login_required
+def remove_from_favorites(request, pk):
+    """Remove a game from the current user's 'Favorites' list."""
+    game = get_object_or_404(Game, pk=pk)
+    try:
+        favorites_list = GameList.objects.get(name="Favorites", created_by=request.user)
+        favorites_list.games.remove(game)
+    except GameList.DoesNotExist:
+        pass
+    return redirect("favorite-list")
+
+
+class FavoriteListView(LoginRequiredMixin, ListView):
+    """Display the current user's favorite games."""
+
+    model = Game
+    template_name = "games/favorites_list.html"
+    context_object_name = "favorite_games"
+
+    def get_queryset(self):
+        favorites_list, _ = GameList.objects.get_or_create(name="Favorites", created_by=self.request.user)
+        return favorites_list.games.all()
+
+
+@login_required
+def add_to_gamelist(request, pk, list_pk):
+    game = get_object_or_404(Game, pk=pk)
+    game_list = get_object_or_404(GameList, pk=list_pk, created_by=request.user)
+    game_list.games.add(game)
+    return redirect("game-detail", pk=pk)
+
+
+@login_required
+def remove_from_gamelist(request, pk, list_pk):
+    game = get_object_or_404(Game, pk=pk)
+    game_list = get_object_or_404(GameList, pk=list_pk, created_by=request.user)
+    game_list.games.remove(game)
+    return redirect("game-detail", pk=pk)
 
 
 # =============== Word Game Views ===============
