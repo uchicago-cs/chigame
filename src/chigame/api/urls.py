@@ -63,8 +63,8 @@ group_patterns = [
 login_patterns = [
     path("token/", TokenObtainPairView.as_view(), name="token-obtain-pair"),
     path("token/refresh/", TokenRefreshView.as_view(), name="token-refresh"),
+    path("checkauth/", views.CheckAuth, name="check-authentication"),
 ]
-
 
 livechat_patterns = [
     path("create/", views.LiveChatCreateView.as_view(), name="api-livechat-create"),

@@ -1,247 +1,251 @@
 <template>
-<div class="hero-section">
-  <div class="hero-content">
-    <div class="hero">
-      <p class="hero-title">Welcome to</p>
-      <p class="pixeltext">Chigame.</p>
-      <p class="hero-description">Make games. Play with friends. Get competitive.</p>
-    </div>
-  </div>
-</div>
-<div class="side-rect left-rect"></div>
-<div class="side-rect right-rect"></div>
-<img class="img-fluid logo"
-     src="/logo.png"
-     alt="ChiGame Logo" />
-<div class="auth-buttons">
-  <router-link to="login" class="auth-button">Sign Up</router-link>
-  <router-link to="login" class="auth-button">Sign In</router-link>
-</div>
-<!-- First row of homepage for logged in users (Favorite Games and Friends List)-->
-  <div class="d-flex flex-row justify-content-between">
-    <!-- Favorite Games -->
-    <div class="homepage-block favorite-games">
-      <div class="d-flex flex-row justify-content-between">
-        <span>Favorite Games</span><span class="d-flex flex-column justify-content-around"><span class="see-more-link"><a class="nav-link" href="/">>> Games</a></span></span>
-      </div>
-      <div class="d-flex flex-row justify-content-between game-row">
-        <div class="fave-game">
-          <img src="https://cf.geekdo-images.com/oWcB33sfig9QF_KBEv7iLQ__original/img/retN48ZHxCC5YaECdlWjRdWHPGs=/0x0/filters:format(png)/pic2439783.png"
-               class="game-img"
-               alt="battleship" />
-        </div>
-        <div class="fave-game">
-          <img src="https://cf.geekdo-images.com/0_RWFMNapgr5yCrdhvGi_Q__original/img/c4SiusUQuh7uc0k6HDwIXYsEc8M=/0x0/filters:format(jpeg)/pic8785991.jpg"
-               class="game-img"
-               alt="chess" />
-        </div>
-        <div class="fave-game">
-          <img src="https://cf.geekdo-images.com/-DHiHBBSnvaLu0Do8CIykQ__original/img/fRfoyWezpQsumExNKVxf1cwtJfg=/0x0/filters:format(jpeg)/pic8204165.jpg"
-               class="game-img"
-               alt="uno" />
-        </div>
-      </div>
-      <div class="d-flex flex-row justify-content-between game-row">
-        <div class="fave-game">
-          <img src="https://cf.geekdo-images.com/9nGoBZ0MRbi6rdH47sj2Qg__original/img/bA8irydTCNlE38QSzM9EhcUIuNU=/0x0/filters:format(jpeg)/pic5786795.jpg"
-               class="game-img"
-               alt="monopoly" />
-        </div>
-        <div class="fave-game">
-          <img src="https://cf.geekdo-images.com/tjhapy1XoNga-YGrDj4BZQ__original/img/JLkqE0LUdShELen6FBEYis1mkTs=/0x0/filters:format(png)/pic8419491.png"
-               class="game-img"
-               alt="hello" />
-        </div>
-        <div class="fave-game">
-          <img src="https://cf.geekdo-images.com/dp-pJkUemCjhrwi9QItrPA__original/img/eeYPdva8ti4Hi2PYxkTLRPrtfKk=/0x0/filters:format(jpeg)/pic378237.jpg"
-               class="game-img"
-               alt="yahtzee" />
+<div v-if="!isLoading">
+  <div v-if="!isAuth">
+    <div class="hero-section">
+      <div class="hero-content">
+        <div class="hero">
+          <p class="hero-title">Welcome to</p>
+          <p class="pixeltext">Chigame.</p>
+          <p class="hero-description">Make games. Play with friends. Get competitive.</p>
         </div>
       </div>
     </div>
-    <!-- Friends List -->
-    <div class="homepage-block friends-list flex-grow-1">
-      <div class="d-flex flex-row justify-content-between">
-        <span>Friends</span><span class="d-flex flex-column justify-content-around"><span class="see-more-link"><a class="nav-link" href="/">>> See all</a></span></span>
-      </div>
-      <div class="d-flex flex-column justify-content-between friends-list-block">
-        <div class="friend d-flex flex-row justify-content-around">
-          <div class="d-flex flex-column justify-content-around">
-            <img src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
-                 class="profile-pic"
-                 alt="profile-pic" />
+    <div class="side-rect left-rect"></div>
+    <div class="side-rect right-rect"></div>
+    <img class="img-fluid logo"
+        src="/logo.png"
+        alt="ChiGame Logo"/>
+    <div class="auth-buttons">
+      <router-link to="login" class="auth-button">Sign Up</router-link>
+      <router-link to="login" class="auth-button">Sign In</router-link>
+    </div>
+  </div>
+  <!-- First row of homepage for logged in users (Favorite Games and Friends List)-->
+    <div class="d-flex flex-row justify-content-between" v-if="isAuth">
+      <!-- Favorite Games -->
+      <div class="homepage-block favorite-games">
+        <div class="d-flex flex-row justify-content-between">
+          <span>Favorite Games</span><span class="d-flex flex-column justify-content-around"><span class="see-more-link"><a class="nav-link" href="/">>> Games</a></span></span>
+        </div>
+        <div class="d-flex flex-row justify-content-between game-row">
+          <div class="fave-game">
+            <img src="https://cf.geekdo-images.com/oWcB33sfig9QF_KBEv7iLQ__original/img/retN48ZHxCC5YaECdlWjRdWHPGs=/0x0/filters:format(png)/pic2439783.png"
+                class="game-img"
+                alt="battleship" />
           </div>
-          <div class="friend-block d-flex flex-column justify-content-around">
-            <p class="friend-name">Friend Name</p>
-            <p class="friend-status">Online: Currently playing [Game]</p>
-            <p class="friend-status">Friend Status Message</p>
+          <div class="fave-game">
+            <img src="https://cf.geekdo-images.com/0_RWFMNapgr5yCrdhvGi_Q__original/img/c4SiusUQuh7uc0k6HDwIXYsEc8M=/0x0/filters:format(jpeg)/pic8785991.jpg"
+                class="game-img"
+                alt="chess" />
           </div>
-          <div class="d-flex flex-column justify-content-around">
-            <span class="dot"></span>
+          <div class="fave-game">
+            <img src="https://cf.geekdo-images.com/-DHiHBBSnvaLu0Do8CIykQ__original/img/fRfoyWezpQsumExNKVxf1cwtJfg=/0x0/filters:format(jpeg)/pic8204165.jpg"
+                class="game-img"
+                alt="uno" />
           </div>
         </div>
-        <div class="friend d-flex flex-row justify-content-around">
-          <div class="d-flex flex-column justify-content-around">
-            <img src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
-                 class="profile-pic"
-                 alt="profile-pic" />
+        <div class="d-flex flex-row justify-content-between game-row">
+          <div class="fave-game">
+            <img src="https://cf.geekdo-images.com/9nGoBZ0MRbi6rdH47sj2Qg__original/img/bA8irydTCNlE38QSzM9EhcUIuNU=/0x0/filters:format(jpeg)/pic5786795.jpg"
+                class="game-img"
+                alt="monopoly" />
           </div>
-          <div class="friend-block d-flex flex-column justify-content-around">
-            <p class="friend-name">Friend Name</p>
-            <p class="friend-status">Online: Currently playing [Game]</p>
-            <p class="friend-status">Friend Status Message</p>
+          <div class="fave-game">
+            <img src="https://cf.geekdo-images.com/tjhapy1XoNga-YGrDj4BZQ__original/img/JLkqE0LUdShELen6FBEYis1mkTs=/0x0/filters:format(png)/pic8419491.png"
+                class="game-img"
+                alt="hello" />
           </div>
-          <div class="d-flex flex-column justify-content-around">
-            <span class="dot"></span>
-          </div>
-        </div>
-        <div class="friend d-flex flex-row justify-content-around">
-          <div class="d-flex flex-column justify-content-around">
-            <img src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
-                 class="profile-pic"
-                 alt="profile-pic" />
-          </div>
-          <div class="friend-block d-flex flex-column justify-content-around">
-            <p class="friend-name">Friend Name</p>
-            <p class="friend-status">Online: Currently playing [Game]</p>
-            <p class="friend-status">Friend Status Message</p>
-          </div>
-          <div class="d-flex flex-column justify-content-around">
-            <span class="dot"></span>
-          </div>
-        </div>
-        <div class="friend d-flex flex-row justify-content-around">
-          <div class="d-flex flex-column justify-content-around">
-            <img src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
-                 class="profile-pic"
-                 alt="profile-pic" />
-          </div>
-          <div class="friend-block d-flex flex-column justify-content-around">
-            <p class="friend-name">Friend Name</p>
-            <p class="friend-status">Online: Currently playing [Game]</p>
-            <p class="friend-status">Friend Status Message</p>
-          </div>
-          <div class="d-flex flex-column justify-content-around">
-            <span class="dot"></span>
-          </div>
-        </div>
-        <div class="friend d-flex flex-row justify-content-around">
-          <div class="d-flex flex-column justify-content-around">
-            <img src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
-                 class="profile-pic"
-                 alt="profile-pic" />
-          </div>
-          <div class="friend-block d-flex flex-column justify-content-around">
-            <p class="friend-name">Friend Name</p>
-            <p class="friend-status">Online: Currently playing [Game]</p>
-            <p class="friend-status">Friend Status Message</p>
-          </div>
-          <div class="d-flex flex-column justify-content-around">
-            <span class="dot"></span>
+          <div class="fave-game">
+            <img src="https://cf.geekdo-images.com/dp-pJkUemCjhrwi9QItrPA__original/img/eeYPdva8ti4Hi2PYxkTLRPrtfKk=/0x0/filters:format(jpeg)/pic378237.jpg"
+                class="game-img"
+                alt="yahtzee" />
           </div>
         </div>
       </div>
+      <!-- Friends List -->
+      <div class="homepage-block friends-list flex-grow-1">
+        <div class="d-flex flex-row justify-content-between">
+          <span>Friends</span><span class="d-flex flex-column justify-content-around"><span class="see-more-link"><a class="nav-link" href="/">>> See all</a></span></span>
+        </div>
+        <div class="d-flex flex-column justify-content-between friends-list-block">
+          <div class="friend d-flex flex-row justify-content-around">
+            <div class="d-flex flex-column justify-content-around">
+              <img src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
+                  class="profile-pic"
+                  alt="profile-pic" />
+            </div>
+            <div class="friend-block d-flex flex-column justify-content-around">
+              <p class="friend-name">Friend Name</p>
+              <p class="friend-status">Online: Currently playing [Game]</p>
+              <p class="friend-status">Friend Status Message</p>
+            </div>
+            <div class="d-flex flex-column justify-content-around">
+              <span class="dot"></span>
+            </div>
+          </div>
+          <div class="friend d-flex flex-row justify-content-around">
+            <div class="d-flex flex-column justify-content-around">
+              <img src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
+                  class="profile-pic"
+                  alt="profile-pic" />
+            </div>
+            <div class="friend-block d-flex flex-column justify-content-around">
+              <p class="friend-name">Friend Name</p>
+              <p class="friend-status">Online: Currently playing [Game]</p>
+              <p class="friend-status">Friend Status Message</p>
+            </div>
+            <div class="d-flex flex-column justify-content-around">
+              <span class="dot"></span>
+            </div>
+          </div>
+          <div class="friend d-flex flex-row justify-content-around">
+            <div class="d-flex flex-column justify-content-around">
+              <img src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
+                  class="profile-pic"
+                  alt="profile-pic" />
+            </div>
+            <div class="friend-block d-flex flex-column justify-content-around">
+              <p class="friend-name">Friend Name</p>
+              <p class="friend-status">Online: Currently playing [Game]</p>
+              <p class="friend-status">Friend Status Message</p>
+            </div>
+            <div class="d-flex flex-column justify-content-around">
+              <span class="dot"></span>
+            </div>
+          </div>
+          <div class="friend d-flex flex-row justify-content-around">
+            <div class="d-flex flex-column justify-content-around">
+              <img src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
+                  class="profile-pic"
+                  alt="profile-pic" />
+            </div>
+            <div class="friend-block d-flex flex-column justify-content-around">
+              <p class="friend-name">Friend Name</p>
+              <p class="friend-status">Online: Currently playing [Game]</p>
+              <p class="friend-status">Friend Status Message</p>
+            </div>
+            <div class="d-flex flex-column justify-content-around">
+              <span class="dot"></span>
+            </div>
+          </div>
+          <div class="friend d-flex flex-row justify-content-around">
+            <div class="d-flex flex-column justify-content-around">
+              <img src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
+                  class="profile-pic"
+                  alt="profile-pic" />
+            </div>
+            <div class="friend-block d-flex flex-column justify-content-around">
+              <p class="friend-name">Friend Name</p>
+              <p class="friend-status">Online: Currently playing [Game]</p>
+              <p class="friend-status">Friend Status Message</p>
+            </div>
+            <div class="d-flex flex-column justify-content-around">
+              <span class="dot"></span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
-<!-- Second row of homepage (Trending Games) -->
-<div class="homepage-block trending-games-title flex-grow-1">
-  <div class="d-flex flex-row justify-content-between">
-    <span>Trending Games</span>
-    <span class="d-flex flex-column justify-content-around">
-      <span class="see-more-link">>> See all</span>
-    </span>
-  </div>
-</div>
-<div class="trending-games homepage-block trending-games-block">
-  <Swiper
-    :modules="[Pagination, EffectCoverflow, Autoplay]"
-    effect="coverflow"
-    :pagination="true"
-    :autoplay="true"
-    class="mySwiper"
-    :grabCursor="true"
-    :centeredSlides="true"
-    slidesPerView="auto"
-    :coverflowEffect="{
-      rotate: 50,
-      stretch: 0,
-      depth: 100,
-      modifier: 1,
-      slideShadows: true
-    }"
-  >
-    <SwiperSlide v-for="(game, index) in trendingGames" :key="'trend-'+index">
-    <div class="game-slide">
-        <img :src="game.src" :alt="game.alt" class="game-img" />
-        <div class="game-name">{{ game.name }}</div>
-    </div>
-    </SwiperSlide>
-  </Swiper>
-</div>
-<!-- Third row of homepage (Tournaments) -->
-<div class="homepage-block tournaments">
-  <div class="d-flex flex-row justify-content-between">
-    Tournaments
-    <span class="d-flex flex-column justify-content-around"><span class="see-more-link"><a class="nav-link" href="/">>> See all</a></span></span>
-  </div>
-  <div class="d-flex flex-row justify-content-between tournaments-block">
-    <div class="tournament">
-      <img src="https://cf.geekdo-images.com/oWcB33sfig9QF_KBEv7iLQ__original/img/retN48ZHxCC5YaECdlWjRdWHPGs=/0x0/filters:format(png)/pic2439783.png"
-           class="tournament-img"
-           alt="battleship" />
-      <p class="tournament-name">Tournament Name</p>
-      <p class="tournament-description">Tournament Description</p>
-    </div>
-    <div class="tournament">
-      <img src="https://cf.geekdo-images.com/0_RWFMNapgr5yCrdhvGi_Q__original/img/c4SiusUQuh7uc0k6HDwIXYsEc8M=/0x0/filters:format(jpeg)/pic8785991.jpg"
-           class="tournament-img"
-           alt="chess" />
-      <p class="tournament-name">Tournament Name</p>
-      <p class="tournament-description">Tournament Description</p>
-    </div>
-    <div class="tournament">
-      <img src="https://cf.geekdo-images.com/-DHiHBBSnvaLu0Do8CIykQ__original/img/fRfoyWezpQsumExNKVxf1cwtJfg=/0x0/filters:format(jpeg)/pic8204165.jpg"
-           class="tournament-img"
-           alt="uno" />
-      <p class="tournament-name">Tournament Name</p>
-      <p class="tournament-description">Tournament Description</p>
-    </div>
-  </div>
-</div>
-<!-- Fourth row of homepage -->
-<div class="d-flex flex-row justify-content-between">
-  <!-- Live Chat -->
-  <div class="homepage-block live-chat flex-grow-1">
+  <!-- Second row of homepage (Trending Games) -->
+  <div class="homepage-block trending-games-title flex-grow-1">
     <div class="d-flex flex-row justify-content-between">
-      <span>Live Chat</span><span class="d-flex flex-column justify-content-around"><span class="see-more-link">>> See all</span></span>
+      <span>Trending Games</span>
+      <span class="d-flex flex-column justify-content-around">
+        <span class="see-more-link">>> See all</span>
+      </span>
     </div>
-    <div class="live-chat-block tournament-name">(live chat preview here)</div>
   </div>
-  <!-- Forum -->
-  <div class="homepage-block forum">
+  <div class="trending-games homepage-block trending-games-block">
+    <Swiper
+      :modules="[Pagination, EffectCoverflow, Autoplay]"
+      effect="coverflow"
+      :pagination="true"
+      :autoplay="true"
+      class="mySwiper"
+      :grabCursor="true"
+      :centeredSlides="true"
+      slidesPerView="auto"
+      :coverflowEffect="{
+        rotate: 50,
+        stretch: 0,
+        depth: 100,
+        modifier: 1,
+        slideShadows: true
+      }"
+    >
+      <SwiperSlide v-for="(game, index) in trendingGames" :key="'trend-'+index">
+      <div class="game-slide">
+          <img :src="game.src" :alt="game.alt" class="game-img" />
+          <div class="game-name">{{ game.name }}</div>
+      </div>
+      </SwiperSlide>
+    </Swiper>
+  </div>
+  <!-- Third row of homepage (Tournaments) -->
+  <div class="homepage-block tournaments">
     <div class="d-flex flex-row justify-content-between">
-      <span>Trending Discussion</span><span class="d-flex flex-column justify-content-around"><span class="see-more-link"><a class="nav-link" href="/">>> See all</a></span></span>
+      Tournaments
+      <span class="d-flex flex-column justify-content-around"><span class="see-more-link"><a class="nav-link" href="/">>> See all</a></span></span>
     </div>
-    <div class="d-flex flex-column justify-content-between forum-block">
-      <div class="forum-topic d-flex flex-column justify-content-between">
-        <p class="forum-post-title">Post Title</p>
-        <p class="forum-post-body">Post Body</p>
-        <p class="forum-post-author">Post Author</p>
+    <div class="d-flex flex-row justify-content-between tournaments-block">
+      <div class="tournament">
+        <img src="https://cf.geekdo-images.com/oWcB33sfig9QF_KBEv7iLQ__original/img/retN48ZHxCC5YaECdlWjRdWHPGs=/0x0/filters:format(png)/pic2439783.png"
+            class="tournament-img"
+            alt="battleship" />
+        <p class="tournament-name">Tournament Name</p>
+        <p class="tournament-description">Tournament Description</p>
       </div>
-      <div class="forum-topic d-flex flex-column justify-content-between">
-        <p class="forum-post-title">Post Title</p>
-        <p class="forum-post-body">Post Body</p>
-        <p class="forum-post-author">Post Author</p>
+      <div class="tournament">
+        <img src="https://cf.geekdo-images.com/0_RWFMNapgr5yCrdhvGi_Q__original/img/c4SiusUQuh7uc0k6HDwIXYsEc8M=/0x0/filters:format(jpeg)/pic8785991.jpg"
+            class="tournament-img"
+            alt="chess" />
+        <p class="tournament-name">Tournament Name</p>
+        <p class="tournament-description">Tournament Description</p>
       </div>
-      <div class="forum-topic d-flex flex-column justify-content-between">
-        <p class="forum-post-title">Post Title</p>
-        <p class="forum-post-body">Post Body</p>
-        <p class="forum-post-author">Post Author</p>
+      <div class="tournament">
+        <img src="https://cf.geekdo-images.com/-DHiHBBSnvaLu0Do8CIykQ__original/img/fRfoyWezpQsumExNKVxf1cwtJfg=/0x0/filters:format(jpeg)/pic8204165.jpg"
+            class="tournament-img"
+            alt="uno" />
+        <p class="tournament-name">Tournament Name</p>
+        <p class="tournament-description">Tournament Description</p>
       </div>
-      <div class="forum-topic d-flex flex-column justify-content-between">
-        <p class="forum-post-title">Post Title</p>
-        <p class="forum-post-body">Post Body</p>
-        <p class="forum-post-author">Post Author</p>
+    </div>
+  </div>
+  <!-- Fourth row of homepage -->
+  <div class="d-flex flex-row justify-content-between">
+    <!-- Live Chat -->
+    <div class="homepage-block live-chat flex-grow-1">
+      <div class="d-flex flex-row justify-content-between">
+        <span>Live Chat</span><span class="d-flex flex-column justify-content-around"><span class="see-more-link">>> See all</span></span>
+      </div>
+      <div class="live-chat-block tournament-name">(live chat preview here)</div>
+    </div>
+    <!-- Forum -->
+    <div class="homepage-block forum">
+      <div class="d-flex flex-row justify-content-between">
+        <span>Trending Discussion</span><span class="d-flex flex-column justify-content-around"><span class="see-more-link"><a class="nav-link" href="/">>> See all</a></span></span>
+      </div>
+      <div class="d-flex flex-column justify-content-between forum-block">
+        <div class="forum-topic d-flex flex-column justify-content-between">
+          <p class="forum-post-title">Post Title</p>
+          <p class="forum-post-body">Post Body</p>
+          <p class="forum-post-author">Post Author</p>
+        </div>
+        <div class="forum-topic d-flex flex-column justify-content-between">
+          <p class="forum-post-title">Post Title</p>
+          <p class="forum-post-body">Post Body</p>
+          <p class="forum-post-author">Post Author</p>
+        </div>
+        <div class="forum-topic d-flex flex-column justify-content-between">
+          <p class="forum-post-title">Post Title</p>
+          <p class="forum-post-body">Post Body</p>
+          <p class="forum-post-author">Post Author</p>
+        </div>
+        <div class="forum-topic d-flex flex-column justify-content-between">
+          <p class="forum-post-title">Post Title</p>
+          <p class="forum-post-body">Post Body</p>
+          <p class="forum-post-author">Post Author</p>
+        </div>
       </div>
     </div>
   </div>
@@ -249,7 +253,8 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
+import { useAuth } from '../composables/auth';
 import { Swiper, SwiperSlide } from 'swiper/vue';
 import 'swiper/css';
 import 'swiper/css/pagination';
@@ -262,6 +267,12 @@ import managementImg from './images/management.png';
 import checkersImg from './images/checkers.png';
 import wordgameImg from './images/wordgame.png';
 import reversiImg from './images/reversi.png';
+
+const { isAuth, isLoading, checkAuth, api } = useAuth()
+
+onMounted(() => {
+  checkAuth()
+})
 
 const trendingGames = ref([
   { src: managementImg, alt: 'Management' },
