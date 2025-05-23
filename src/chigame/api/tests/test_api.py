@@ -18,6 +18,7 @@ from chigame.api.tests.factories import (
     ChatFactory,
     FeedbackFactory,
     GameFactory,
+    LiveChatFactory,
     LobbyFactory,
     MatchFactory,
     TournamentFactory,
@@ -1170,3 +1171,160 @@ class JWTAuthenticationTests(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION="Bearer invalid_token_string")
         response = self.client.post(self.protected_url, self.protected_data, format="json")
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+class GameDataTests(APITestCase):
+    def setUp(self):
+        self.user1 = UserFactory()
+        self.user2 = UserFactory()
+
+        self.game1 = GameFactory()
+        self.game2 = GameFactory()
+
+        self.list_url = reverse("api-game-data-list")
+
+        self.test_data = {"game": self.game1.id, "key": "test_key", "value": "test_value"}
+
+        self.client.force_authenticate(user=self.user1)
+        self.client.post(self.list_url, self.test_data)
+        self.client.post(self.list_url, {"game": self.game1.id, "key": "another_key", "value": "another_value"})
+        self.client.post(self.list_url, {"game": self.game2.id, "key": "game2_key", "value": "game2_value"})
+
+        self.client.force_authenticate(user=self.user2)
+        self.client.post(self.list_url, {"game": self.game1.id, "key": "user2_key", "value": "user2_value"})
+
+        self.client.force_authenticate(user=None)
+
+    def test_unauthenticated_access_rejected(self):
+        # list attempt
+        response = self.client.get(self.list_url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+        # create attempt
+        response = self.client.post(self.list_url, self.test_data)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+        # access detail endpoint
+        detail_url = reverse("api-game-data-detail", args=[self.game1.id, "test_key"])
+        response = self.client.get(detail_url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_list_gamedata(self):
+        self.client.force_authenticate(user=self.user1)
+        response = self.client.get(self.list_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data["results"]), 3)
+
+    def test_filter_by_game(self):
+        self.client.force_authenticate(user=self.user1)
+        response = self.client.get(f"{self.list_url}?game={self.game1.id}")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data["results"]), 2)
+
+    def test_create_gamedata(self):
+        self.client.force_authenticate(user=self.user1)
+        new_data = {"game": self.game1.id, "key": "new_key", "value": "new_value"}
+        response = self.client.post(self.list_url, new_data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data["key"], "new_key")
+        self.assertEqual(response.data["value"], "new_value")
+
+    def test_update_existing_by_create(self):
+        self.client.force_authenticate(user=self.user1)
+        updated_data = {"game": self.game1.id, "key": "test_key", "value": "updated_value"}
+        response = self.client.post(self.list_url, updated_data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # verify updated value
+        detail_url = reverse("api-game-data-detail", args=[self.game1.id, "test_key"])
+        response = self.client.get(detail_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["value"], "updated_value")
+
+        # check the count didn't increase
+        response = self.client.get(self.list_url)
+        self.assertEqual(len(response.data["results"]), 3)
+
+    def test_retrieve_gamedata(self):
+        self.client.force_authenticate(user=self.user1)
+        detail_url = reverse("api-game-data-detail", args=[self.game1.id, "test_key"])
+        response = self.client.get(detail_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["key"], "test_key")
+        self.assertEqual(response.data["value"], "test_value")
+
+    def test_update_gamedata_put(self):
+        self.client.force_authenticate(user=self.user1)
+        detail_url = reverse("api-game-data-detail", args=[self.game1.id, "test_key"])
+        update_data = {"game": self.game1.id, "key": "test_key", "value": "updated_via_put"}
+        response = self.client.put(detail_url, update_data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["value"], "updated_via_put")
+
+    def test_update_gamedata_patch(self):
+        self.client.force_authenticate(user=self.user1)
+        detail_url = reverse("api-game-data-detail", args=[self.game1.id, "test_key"])
+        patch_data = {"value": "updated_via_patch"}
+        response = self.client.patch(detail_url, patch_data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["value"], "updated_via_patch")
+
+    def test_delete_gamedata(self):
+        self.client.force_authenticate(user=self.user1)
+        detail_url = reverse("api-game-data-detail", args=[self.game1.id, "test_key"])
+        response = self.client.delete(detail_url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+        response = self.client.get(detail_url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+
+class TestLiveChatAPI(APITestCase):
+    def setUp(self):
+        self.user1 = UserFactory()
+        self.user2 = UserFactory()
+        self.user3 = UserFactory()
+
+        self.client.force_authenticate(user=self.user1)
+
+    def test_create_livechat(self):
+        url = reverse("api-livechat-create")
+        response = self.client.post(url, {"name": "Test Chat"})
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data["name"], "Test Chat")
+        self.assertEqual(response.data["users"], [self.user1.id])
+
+    def test_add_users_to_chat(self):
+        chat = LiveChatFactory(users=[self.user1])
+        url = reverse("api-livechat-add-user", args=[chat.id])
+
+        response = self.client.post(url, {"user_ids": [self.user2.id, self.user3.id]}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Reloads LiveChat from the database to get the latest state
+        chat.refresh_from_db()
+        user_ids = set(chat.users.values_list("id", flat=True))
+        self.assertSetEqual(user_ids, {self.user1.id, self.user2.id, self.user3.id})
+
+    def test_list_chats_user_is_in(self):
+        # user1 is only in this one
+        chat = LiveChatFactory(name="Test Chat", users=[self.user1])
+        LiveChatFactory(users=[self.user1])
+        LiveChatFactory(users=[self.user2])
+
+        url = reverse("api-livechat-list")
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["count"], 2)
+        self.assertEqual(response.data["results"][0]["id"], chat.id)
+
+    def test_livechat_detail(self):
+        chat = LiveChatFactory(users=[self.user1, self.user2])
+        url = reverse("api-livechat-detail", args=[chat.id])
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["id"], chat.id)
+        self.assertEqual(set(response.data["users"]), {self.user1.id, self.user2.id})
