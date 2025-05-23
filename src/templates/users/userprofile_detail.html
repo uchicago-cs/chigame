@@ -58,30 +58,6 @@
       font-size: 16px;
     }
 
-    .favorite-games {
-      margin-top: 20px;
-      padding: 15px;
-      background-color: #f8f9fa;
-      border-radius: 12px;
-      border: 1px solid #ddd;
-    }
-
-    .game-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px;
-      border-bottom: 1px solid #eee;
-    }
-
-    .game-item:last-child {
-      border-bottom: none;
-    }
-
-    .inline-form {
-      display: inline;
-    }
-
     .profile-photo {
       width: 200px;
       height: 200px;
@@ -113,6 +89,64 @@
 
     .photo-upload-form label:hover {
       background-color: #600000;
+    }
+
+    .favorite-games-section {
+      margin-top: 30px;
+      padding: 20px;
+      background-color: #f8f9fa;
+      border-radius: 12px;
+      border: 1px solid #ddd;
+    }
+
+    .favorite-games-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 15px;
+      margin-top: 15px;
+    }
+
+    .favorite-game-card {
+      text-align: center;
+      background-color: white;
+      border-radius: 8px;
+      padding: 10px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      transition: transform 0.2s;
+    }
+
+    .favorite-game-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+
+    .favorite-game-image {
+      width: 100%;
+      height: 100px;
+      object-fit: cover;
+      border-radius: 6px;
+      margin-bottom: 8px;
+    }
+
+    .favorite-game-name {
+      font-size: 12px;
+      font-weight: bold;
+      color: #333;
+      text-decoration: none;
+      display: block;
+      line-height: 1.2;
+    }
+
+    .favorite-game-name:hover {
+      color: #800000;
+      text-decoration: none;
+    }
+
+    .no-favorites {
+      text-align: center;
+      color: #666;
+      font-style: italic;
+      margin-top: 15px;
     }
   </style>
   <div class="container mt-5">
@@ -168,6 +202,11 @@
                      class="btn btn-primary">Remove Friend</a>
                   <a href="{% url 'users:user-history' profile.user.pk %}"
                      class="btn btn-primary">Stats</a>
+                {% elif is_friend %}
+                  <a href="{% url 'users:remove-friend' profile.user.pk %}"
+                     class="btn btn-primary">Remove Friend</a>
+                  <a href="{% url 'users:user-history' profile.user.pk %}"
+                     class="btn btn-primary">Stats</a>
                 {% elif friendship_request %}
                   {% if friendship_request.sender_id == request.user.pk %}
                     <a href="{% url 'users:cancel-friend-invitation' profile.user.id %}"
@@ -197,39 +236,50 @@
                   <p>{{ profile.bio }}</p>
                 {% endif %}
               </div>
-              <div class="favorite-games">
-                <h4>Favorite Games:</h4>
-                {% if profile.favorite_games.all %}
-                  <ul class="custom-list">
-                    {% for game in profile.favorite_games.all %}
-                      <li class="game-item">
-                        <span>{{ game.name }}</span>
-                        {% if profile.user == request.user %}
-                          <form method="post"
-                                action="{% url 'users:remove-favorite-game' game.id %}"
-                                class="inline-form">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-sm btn-danger">Remove</button>
-                          </form>
-                        {% endif %}
-                      </li>
+              
+              <!-- Favorite Games Section -->
+              <div class="favorite-games-section">
+                <h4>
+                  {% if profile.user == request.user %}
+                    My Favorite Games
+                  {% else %}
+                    {{ profile.user.name }}'s Favorite Games
+                  {% endif %}
+                </h4>
+                {% if favorite_games %}
+                  <div class="favorite-games-grid">
+                    {% for game in favorite_games %}
+                      <div class="favorite-game-card">
+                        <a href="{% url 'game-detail' game.pk %}">
+                          {% if game.image %}
+                            <img src="{{ game.image }}" 
+                                 alt="{{ game.name }}" 
+                                 class="favorite-game-image" />
+                          {% else %}
+                            <img src="{% static 'images/no_picture_available.png' %}" 
+                                 alt="{{ game.name }}" 
+                                 class="favorite-game-image" />
+                          {% endif %}
+                          <span class="favorite-game-name">{{ game.name }}</span>
+                        </a>
+                      </div>
                     {% endfor %}
-                  </ul>
+                  </div>
+                  {% if profile.user == request.user %}
+                    <div style="text-align: center; margin-top: 15px;">
+                      <a href="{% url 'favorite-list' %}" class="btn btn-sm" style="background-color: #6c757d;">
+                        View All Favorites
+                      </a>
+                    </div>
+                  {% endif %}
                 {% else %}
-                  <p>No favorite games added yet.</p>
-                {% endif %}
-                {% if profile.user == request.user %}
-                  <div class="mt-3">
-                    <form method="post"
-                          action="{% url 'users:add-favorite-game' %}"
-                          class="form-inline">
-                      {% csrf_token %}
-                      <select name="game_id" class="form-control mr-3">
-                        <option value="">Select a game...</option>
-                        {% for game in available_games %}<option value="{{ game.id }}">{{ game.name }}</option>{% endfor %}
-                      </select>
-                      <button type="submit" class="btn btn-primary">Add Game</button>
-                    </form>
+                  <div class="no-favorites">
+                    {% if profile.user == request.user %}
+                      You haven't added any favorite games yet. 
+                      <a href="{% url 'game-list' %}" style="color: #800000;">Browse games</a> to add some!
+                    {% else %}
+                      {{ profile.user.name }} hasn't added any favorite games yet.
+                    {% endif %}
                   </div>
                 {% endif %}
               </div>
