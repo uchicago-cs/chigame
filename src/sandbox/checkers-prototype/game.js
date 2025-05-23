@@ -390,7 +390,7 @@ function movePiece(piece, moveX, moveY) {
     targets: piece.sprite,
     x: newX,
     y: newY,
-    duration: 300,
+    duration: 250, // I think best to have this in 200-300 ms range
     ease: 'Power3',
     // onComplete is needed so crown icon only loads after animation is over
     onComplete: () => {
