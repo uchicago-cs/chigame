@@ -9,7 +9,7 @@
             "is_staff": true,
             "is_active": true,
             "date_joined": "2023-10-30T03:15:43.052Z",
-            "name": "player1",
+            "username": "player1",
             "email": "player1@example.com",
             "groups": [],
             "user_permissions": []
