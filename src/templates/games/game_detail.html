@@ -7,9 +7,17 @@
   {{ game.name }} Details
 {% endblock title %}
 {% block content %}
+  <style>
+    .recommendation-img {
+      height: 150px;
+      object-fit: cover;
+    }
+  </style>
   <div class="row mt-3 mb-3">
     <div class="col-md-3">
       <img src="{{ game.image }}" class="img-thumbnail" alt="game cover" />
+      <a href="{% url 'add-review' pk=game.pk %}"
+         class="btn btn-outline-dark mt-2">Write a Review</a>
     </div>
     <div class="col-md-9">
       <h1 class="display-1">{{ game.name }}</h1>
@@ -95,9 +103,9 @@
           </p>
         {% endif %}
         <p>{{ game.description|linebreaksbr }}</p>
-        {% if uploaded_file_url %}
+        {% if is_twine_game %}
           <h3>Play Twine Game</h3>
-          <a href="{{ uploaded_file_url }}"
+          <a href="{{ game.twine_file.url }}"
              target="_blank"
              class="btn btn-success">Open Game in New Tab</a>
         {% endif %}
@@ -125,12 +133,6 @@
         <h3 id="rule-description">Rules</h3>
         <div class="mb-4">
           <p>{{ game.rules }}</p>
-          <h3 id="new-review">Write a Review</h3>
-          <form method="post" action="{% url 'game-detail' pk=game.pk %}">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit" class="btn btn-primary">Submit Review</button>
-          </form>
           {% if game.pk == 9999 %}
             {# for interactive fiction games #}
             <hr />
@@ -152,6 +154,55 @@
       </div>
     </div>
   </div>
+  {% if recommended_games %}
+    <div class="row mt-4 mb-4 bg-light p-3 rounded-2">
+      <div class="col-12">
+        <h3 id="recommendations">Games You Might Also Enjoy</h3>
+        <p class="text-muted">Based on similar categories, mechanics, and designers</p>
+      </div>
+      <div class="row">
+        {% for rec_game in recommended_games %}
+          <div class="col-md-3 mb-3">
+            <div class="card h-100 {% if rec_game.played_penalty < 1 %}border-info{% endif %}">
+              <a href="{% url 'game-detail' rec_game.id %}"
+                 class="text-decoration-none text-dark">
+                <img src="{{ rec_game.image }}"
+                     class="card-img-top recommendation-img"
+                     alt="{{ rec_game.name }}" />
+                <div class="card-body">
+                  <h5 class="card-title">{{ rec_game.name }}</h5>
+                  <div class="d-flex mb-2 flex-wrap">
+                    {% for category in rec_game.categories.all|slice:":2" %}
+                      <span class="badge text-bg-primary me-1 mb-1">{{ category }}</span>
+                    {% endfor %}
+                    {% for mechanic in rec_game.mechanics.all|slice:":1" %}
+                      <span class="badge text-bg-secondary me-1 mb-1">{{ mechanic }}</span>
+                    {% endfor %}
+                  </div>
+                  <p class="card-text small">{{ rec_game.description|truncatewords:10 }}</p>
+                  {% if rec_game.played_penalty < 1 %}
+                    <div class="mt-2">
+                      <span class="badge text-bg-info">Previously Played</span>
+                    </div>
+                  {% endif %}
+                </div>
+                <div class="card-footer bg-transparent">
+                  <small class="text-muted">
+                    {% if rec_game.min_players == rec_game.max_players %}
+                      {{ rec_game.min_players }} players
+                    {% else %}
+                      {{ rec_game.min_players }}-{{ rec_game.max_players }} players
+                    {% endif %}
+                    • Complexity: {{ rec_game.complexity|floatformat:1 }}/5
+                  </small>
+                </div>
+              </a>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
   {% if user.is_staff %}
     <div class="btn-group">
       <a href="{% url 'game-edit' game.pk %}" class="btn btn-outline-primary">Edit</a>

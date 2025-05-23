@@ -1,0 +1,92 @@
+{% extends "knowledge-base/base.html" %}
+
+{% load static %}
+
+{% block javascript %}
+  {{ block.super }}
+  <script src="{% static 'js/knowledge-base/like-favorite.js' %}"></script>
+{% endblock javascript %}
+{% block css %}
+  {{ block.super }}
+  <link rel="stylesheet"
+        href="{% static 'css/knowledge-base/markdown.css' %}" />
+  <link rel="stylesheet"
+        href="{% static 'css/knowledge-base/single-guide.css' %}" />
+{% endblock css %}
+{% block page-content %}
+  {% if published %}
+    <div class="guide-detail-header nav w-100 bg-light border rounded rounded-lg d-flex flex-row justify-content-between p-2 px-4">
+      <!-- first row, "authored by..." and a list of categories -->
+      <div class="d-flex flex-column justify-content-between">
+        <p>Authored by {{ guide.author }}</p>
+        <p>Last edited {{ guide.recent_upload }}</p>
+        <p>
+          <span id="like-count">{{ guide.likes.count }} ♥</span> and
+          <span id="fav-count">{{ guide.favorites.count }} ★</span>
+        </p>
+      </div>
+      <!-- second row, "last edited..." and a link to access the game -->
+      <div class="d-flex flex-column align-items-end justify-content-between text-end">
+        <div>
+          {% if guide.game_id.categories.exists %}
+            {% for category in guide.game_id.categories.all %}
+              <span class="badge bg-secondary">{{ category.name }}</span>
+            {% endfor %}
+          {% else %}
+            <span class="text-muted">N/A</span>
+          {% endif %}
+        </div>
+        <div>
+          <a href="{% url 'game-detail' guide.game_id.pk %}">
+            <p class="visit-game-link">Visit Game</p>
+          </a>
+        </div>
+      </div>
+    </div>
+    <div>{{ rendered_content|safe }}</div>
+  {% else %}
+    <h2>Guide Detail Page</h2>
+    This guide object is NOT published. If you are looking for a guide for game
+    {{ guide.game_id }}, please go back to the
+    <a href="{% url 'knowledge-base' %}">knowledge base landing page</a>.
+  {% endif %}
+  {% if request.user.is_authenticated %}
+    <span type="submit"
+          id="like-span"
+          class="likefav-button"
+          data-user="{{ request.user }}"
+          data-like-url="{% url 'like-unlike-guide' guide.pk %}">
+      <i id="like-icon"
+        class="
+        {% if request.user in guide.likes.all %}
+          heart-liked
+        {% else %}
+          heart-hollow
+        {% endif %}"">♥</i>
+        <span id="like-text" class="likefav-text">
+          {% if request.user in guide.likes.all %}
+            Unlike
+          {% else %}
+            Like
+          {% endif %}
+        </span>
+      </span>
+      &nbsp;
+      <span type="submit"
+            id="fav-span"
+            class="likefav-button"
+            data-user="{{ request.user }}"
+            data-fav-url="{% url 'fav-unfav-guide' guide.pk %}">
+        <i id="fav-icon"
+           class=" {% if request.user in guide.favorites.all %} star-faved {% else %} star-hollow {% endif %}">★</i>
+        <span id="fav-text" class="likefav-text">
+          {% if request.user in guide.favorites.all %}
+            Unfavorite
+          {% else %}
+            Favorite
+          {% endif %}
+        </span>
+      </span>
+      {% csrf_token %}
+    {% endif %}
+  {% endblock page-content %}

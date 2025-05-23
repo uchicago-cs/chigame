@@ -4,45 +4,64 @@
 
 <link rel="stylesheet" href="{% static 'css/knowledge-base-styles.css' %}" />
 {% block page-content %}
-  <h1 class="contributor-title">Manage My Guides</h1>
-  <a href="{% url 'knowledge-base-guide-upload' %}" class="upload-button">Create New Guide</a>
+  {% if messages %}
+    <ul class="messages">
+      {% for message in messages %}
+        {% if 'guide-upload' in message.tags %}
+          <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert"
+                    aria-label="Close"></button>
+          </div>
+        {% endif %}
+      {% endfor %}
+    </ul>
+  {% endif %}
+  <h1 class="mb-4">Manage My Guides</h1>
+  <div class="contributor-header-box">
+    <form method="get" class="mb-3 d-flex align-items-center gap-2">
+      <select name="sort" class="form-select w-auto">
+        <option value="">Sort by: Most Recent Updates</option>
+        <option value="old" {% if request.GET.sort == "old" %}selected{% endif %}>Oldest Update</option>
+      </select>
+      <button type="submit" class="btn btn-outline-secondary">Search</button>
+    </form>
+    <a href="{% url 'knowledge-base-guide-upload' %}"
+       class="btn btn-primary create-guide-btn">Create New Guide</a>
+  </div>
   <div class="table-responsive">
-    <table id="contributor-manage-guide"
-           class="table table-striped table-hover align-middle">
+    <table class="table table-striped table-hover align-middle">
       <thead class="table-light">
         <tr>
           <th>Your Guides</th>
-          <th>Unique ID</th>
           <th>Upload Time</th>
           <th>Status</th>
-          <th>Actions</th>
         </tr>
       </thead>
       <tbody>
         {% for guide in guides %}
           <tr>
             <td>
-              Guide for {{ guide.game_id }}
-              <!--<a href="{% url 'download-guide' guide.pk %}" class="maroon">[Download]</a>-->
+              <a href="{% url 'download-guide' guide.pk %}"
+                 class="btn btn-outline-secondary"><i class="fas fa-download"></i></a>
+              &nbsp;
+              Guide for {{ guide.game_id }}(ID={{ guide.pk }})
             </td>
-            <td>{{ guide.pk }}</td>
             <td>Last Upload: {{ guide.recent_upload }}</td>
             <td>
               {% if guide.status == 0 %}
-                <span class="badge bg-warning text-light">{{ guide.get_status_display }}&nbsp;</span>
+                <span class="status-pending"><b>Pending...</b></span>
               {% elif guide.status == 1 %}
-                <span class="badge bg-success">{{ guide.get_status_display }}&nbsp;</span>
+                <a class="btn btn-success text-dark"
+                   href="{% url 'feedback-detail' guide.latest_feedback.pk %}">{{ guide.get_status_display }}&nbsp;</a>
               {% elif guide.status == 2 %}
-                <span class="badge bg-danger text-dark">{{ guide.get_status_display }}&nbsp;</span>
+                <a class="btn btn-danger text-dark"
+                   href="{% url 'feedback-detail' guide.latest_feedback.pk %}">{{ guide.get_status_display }}&nbsp;</a>
               {% elif guide.status == 3 %}
-                <a href="{% url 'knowledge-base-guide-reupload' guide.pk %}"
-                   class="upload-button">Resubmit</a>
-              {% endif %}
-            </td>
-            <td>
-              {% if guide.status != 0 %}
-                <a href="{% url 'feedback-detail' guide.latest_feedback.pk %}"
-                   class="maroon">View Details</a> &nbsp;
+                <a class="btn btn-warning text-dark"
+                   href="{% url 'feedback-detail' guide.latest_feedback.pk %}">{{ guide.get_status_display }}&nbsp;</a>
               {% endif %}
             </td>
           </tr>

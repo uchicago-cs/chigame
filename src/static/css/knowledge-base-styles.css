@@ -1,51 +1,84 @@
+/* Knowledge Base Navigation */
+
+.knowledge-base-nav-container {
+  margin-top: -0.25rem !important;
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  position: sticky;
+  top: 0;
+  z-index: 99;
+}
+
+.knowledge-base-nav-container > div {
+  max-width: 1000px;
+  padding-left: 2rem;
+  padding-right: 2rem;
+}
+
+.knowledge-base-4ddnav-container .breadcrumbs, .knowledge-base-nav-container .breadcrumbs * {
+  color: #555 !important;
+  text-decoration: none;
+}
+
+/* Other Knowledge Base Styles */
+
+
 .knowledge-base.container {
   max-width: 1000px;
 }
 
-.knowledge-base .nav a {
+/*.knowledge-base .nav a {
   color: gray;
   text-decoration: none;
 }
 
 .knowledge-base .nav {
   margin-bottom: 20px;
-}
+}*/
 
 .knowledge-base .page-content {
   padding: 10px;
 }
 
+.landing-page-feedback-alert-header {
+    margin-bottom: 0;
+}
+
+.status-updates-num{
+    font-weight: bold;
+}
+
+.view-details-link{
+    float:right;
+    padding-right:1%;
+}
+
+.landing-page-accepted{
+    color:green;
+    font-weight: bold;
+}
+
+.landing-page-rejected{
+    color:red;
+    font-weight: bold;
+}
+
+.landing-page-changes-requested{
+    color:#FFA500;
+    font-weight: bold;
+}
+
 /* In Contributor Manage Guide Page */
-.contributor-title {
-  padding-bottom: 10px;
+.contributor-header-box{
+    display: flex;
+    justify-content: space-between;
 }
 
-/* a {
-  color: #7F1616;
-} */
-
-
-#contributor-manage-guide {
-    width: 95%;
-    height: fit-content;
-    margin: 20px 0;
-    border-collapse: collapse;
-    border: 1px solid black;
+.create-guide-btn {
+    margin-bottom:1rem !important;
 }
 
-#contributor-manage-guide th{
-    background: #BFBFBF;
-    text-align: left;
-    font-size: large;
-    padding:15px
-}
-
-#contributor-manage-guide td{
-    border-top: 1px solid black;
-    border-bottom: 1px solid black;
-    padding: 10px;
-    text-align: left;
-    font-size: medium;
+.status-pending{
+    margin-left:0.75rem;
 }
 
 
@@ -130,8 +163,6 @@ a.upload-button:active {
   color: #7F1616;
 }
 
-
-
 /* This is added for backend viewer landing page. Pls replace this when styling
  in front end. */
  .grid-container {
@@ -170,4 +201,8 @@ a.upload-button:active {
 }
 .game-card:hover {
   box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.min-h-200 {
+  min-height: 200px;
 }
