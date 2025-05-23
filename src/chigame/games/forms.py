@@ -1,7 +1,7 @@
 from django import forms
 from django.core.validators import MaxValueValidator, MinValueValidator
 
-from .models import Game, InteractiveFictionGame, Lobby, Review
+from .models import Game, InteractiveFictionGame, Lobby, Review, Genre, Label
 
 
 class GameForm(forms.ModelForm):
@@ -24,23 +24,41 @@ class GameForm(forms.ModelForm):
 class IFGameForm(forms.ModelForm):
     class Meta:
         model = InteractiveFictionGame
-        fields = ["name", "description", "image", "categories", "suggested_age", "rules", "year_published"]
+        fields = [
+            "name", "description", "image", "categories", "genre", "labels",
+            "suggested_age", "rules", "year_published"
+        ]
 
     image = forms.CharField(
         widget=forms.TextInput(attrs={"placeholder": "Enter Image URL"}),
-        required=False,  # If the image URL is optional
+        required=False,
     )
 
     suggested_age = forms.IntegerField(
-        required=False, widget=forms.NumberInput(attrs={"placeholder": "Suggested Age"})
+        required=False,
+        widget=forms.NumberInput(attrs={"placeholder": "Suggested Age"})
     )
 
     rules = forms.CharField(
-        required=False, widget=forms.Textarea(attrs={"cols": 80, "rows": 4, "placeholder": "Enter Rules"})
+        required=False,
+        widget=forms.Textarea(attrs={"cols": 80, "rows": 4, "placeholder": "Enter Rules"})
     )
 
     year_published = forms.IntegerField(
-        required=False, widget=forms.NumberInput(attrs={"placeholder": "Year Published"})
+        required=False,
+        widget=forms.NumberInput(attrs={"placeholder": "Year Published"})
+    )
+
+    genre = forms.ModelChoiceField(
+        queryset=Genre.objects.all(),
+        required=False,
+        widget=forms.Select(attrs={"placeholder": "Select Genre"})
+    )
+
+    labels = forms.ModelMultipleChoiceField(
+        queryset=Label.objects.all(),
+        required=False,
+        widget=forms.CheckboxSelectMultiple
     )
 
 

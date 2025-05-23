@@ -9,6 +9,19 @@ from django.utils import timezone
 from chigame.users.models import Group, Notification, User
 
 
+class Label(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        return self.name
+    
+
+class Genre(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        return self.name
+
 class Game(models.Model):
     """
     A game like Chess, Checkers, Go, etc.
@@ -33,6 +46,8 @@ class Game(models.Model):
 
     # interactive fiction  - twine file
     twine_file = models.FileField(upload_to="twine_games/", null=True, blank=True)
+    genre = models.ForeignKey(Genre, on_delete=models.SET_NULL, null=True, blank=True)
+    labels = models.ManyToManyField(Label, blank=True)
 
     suggested_age = models.PositiveSmallIntegerField(
         null=True, blank=True
@@ -94,6 +109,7 @@ class InteractiveFictionGame(Game):
 
     def __str__(self):
         return f"Interactive Fiction: {self.name}"
+
 
 
 class Person(models.Model):
