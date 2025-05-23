@@ -57,6 +57,8 @@ from .simulation_utils import (
 )
 from .tables import LobbyTable
 
+# TODO Implement the Front-End Game Queue View
+
 
 # =============== Games CRUD and Search Views ===============
 class GameListView(ListView):
