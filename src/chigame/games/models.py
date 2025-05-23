@@ -794,6 +794,10 @@ class CheckersBoard(models.Model):
     """
 
     state = models.JSONField()  # store positions/pieces as a 2D array
+    current_turn_player = models.ForeignKey(
+        "games.Player", on_delete=models.CASCADE, null=True, blank=True, related_name="current_turn_boards"
+    )
+    # state_bits = models.IntegerField() # stores positions as bits
 
     def __str__(self):
         return f"Board {self.id}"
