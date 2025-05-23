@@ -4,30 +4,98 @@
   Search Results
 {% endblock title %}
 {% block content %}
+  <style>
+    .profile-photo {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      object-fit: cover;
+      display: block;
+      border: 3px solid #800000;
+    }
+
+    .btn {
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 15px;
+      transition: border-color 0.3s, box-shadow 0.3s;
+      font-size: 13px;
+      padding: 2px 4px;
+    }
+
+    .btn:focus {
+      outline: none;
+      border-color: #800000;
+      box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.2);
+    }
+
+    .btn {
+      background-color: #800000;
+      color: white;
+      text-align: center;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn:hover {
+      background-color: #800000;
+    }
+  </style>
   <h1>{{ query_type }} Search Results</h1>
   <ul>
     {% if not found %}
       <p>Oops! No {{ query_type }} matching your search criteria. Please try again with different search parameters.</p>
     {% elif query_type == "Users" %}
-      {% for profile in object_list %}
-        <li>
-          email: {{ profile.user.email }} |
-          name: {{ profile.display_name }} |
-          <a href="{% url 'users:user-profile' profile.user_id %}">profile</a>
-        </li>
-      {% endfor %}
-    {% elif query_type == "Games" %}
-      {% for game in object_list %}
-        <li>
-          <a href="{% url 'game-detail' game.id %}">{{ game.name }}</a>
-        </li>
-      {% endfor %}
-    {% elif query_type == "Notifications" %}
-      {% for notification in object_list %}
-        <li>
-          <a href="{% url 'users:notification-detail' notification.id %}">{{ notification.message }}</a>
-        </li>
-      {% endfor %}
-    {% endif %}
-  </ul>
+      <div class="container my-4">
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+          {% for profile in object_list %}
+            <div class="col-12 col-md-8">
+              <div class="card h-100 shadow-sm border-0">
+                <div class="card-body d-flex align-items-center">
+                  <div class="d-flex align-items-center">
+                    {% if profile.profile_photo %}
+                      <img src="{{ profile.profile_photo.url }}"
+                           alt="{{ profile.user.username|default:'No username' }}'s profile picture"
+                           class="profile-photo rounded-circle me-3" />
+                    {% else %}
+                      <img src="{% static 'images/no_picture_available.png' %}"
+                           alt="Default Profile Photo"
+                           class="profile-photo rounded-circle me-3" />
+                    {% endif %}
+                    <div>
+                      {% if profile.user.username %}<h5 class="card-title mb-0">@{{ profile.user.username }}</h5>{% endif %}
+                      {% if profile.user.name %}<small class="text-muted">{{ profile.user.name }}</small>{% endif %}
+                    </div>
+                  </div>
+                  <div class="ms-auto">
+                    <a href="{% url 'users:user-profile' profile.user_id %}"
+                       class="btn btn-primary">View Profile</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+      <li>
+        email: {{ profile.user.email }} |
+        name: {{ profile.display_name }} |
+        <a href="{% url 'users:user-profile' profile.user_id %}">profile</a>
+      </li>
+    {% endfor %}
+  {% elif query_type == "Games" %}
+    {% for game in object_list %}
+      <li>
+        <a href="{% url 'game-detail' game.id %}">{{ game.name }}</a>
+      </li>
+    {% endfor %}
+  {% elif query_type == "Notifications" %}
+    {% for notification in object_list %}
+      <li>
+        <a href="{% url 'users:notification-detail' notification.id %}">{{ notification.message }}</a>
+      </li>
+    {% endfor %}
+  {% endif %}
+</ul>
 {% endblock content %}
+{% load static %}
