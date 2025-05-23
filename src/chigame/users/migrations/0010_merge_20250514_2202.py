@@ -5,7 +5,7 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("users", "0008_user_profanity_filter"),
+        ("users", "0008_remove_userprofile_display_name"),
         ("users", "0009_notification_bookmarked_notification_category_and_more"),
     ]
 
