@@ -1,4 +1,5 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db import models
 from django.shortcuts import get_object_or_404, redirect
 from django.views import View
 from django_filters.rest_framework import DjangoFilterBackend
@@ -17,9 +18,11 @@ from chigame.api.serializers import (
     CategorySerializer,
     FeedbackSerializer,
     GameDataSerializer,
+    GameLeaderboardSerializer,
     GameReviewStatsSerializer,
     GameSerializer,
     GroupSerializer,
+    LiveChatSerializer,
     LobbySerializer,
     MechanicSerializer,
     MessageFeedSerializer,
@@ -31,6 +34,7 @@ from chigame.api.serializers import (
     UserSerializer,
 )
 from chigame.api.spam_utils import is_spam
+from chigame.chat.models import LiveChat, LiveChatUser
 from chigame.games.models import Feedback, Game, GameData, Lobby, Message, Review, Tournament
 from chigame.games.simulation_utils import run_complete_tournament_simulation
 from chigame.leaderboards.models import LeaderboardEntry, Match, Metric, MetricScore
@@ -423,6 +427,34 @@ class MetricScoreView(generics.ListCreateAPIView):
         )
 
 
+class GameLeaderboardView(generics.ListAPIView):
+    """
+    Retieves the all-time leaderboard for a specified game, ranked by
+    each player's highest single-game score.
+    """
+
+    serializer_class = GameLeaderboardSerializer
+    authentication_classes = [SessionAuthentication]
+    permission_classes = [IsAuthenticated]
+    pagination_class = PageNumberPagination
+
+    def get_queryset(self):
+        game_id = self.kwargs["game_id"]
+        game = get_object_or_404(Game, id=game_id)
+
+        primary_metric = game.metrics.first()
+        if not primary_metric:
+            return MetricScore.objects.none()
+
+        # get the highest score per user for the primary metric
+        return (
+            MetricScore.objects.filter(metric=primary_metric)
+            .values("user")
+            .annotate(max_score=models.Max("score"))
+            .order_by("-max_score")
+        )
+
+
 class GamePopupsAPIView(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
@@ -562,6 +594,55 @@ class GameReviewStatsAPIView(APIView):
         }
 
         return Response(GameReviewStatsSerializer(data).data)
+
+
+class LiveChatCreateView(generics.CreateAPIView):
+    queryset = LiveChat.objects.all()
+    serializer_class = LiveChatSerializer
+    permission_classes = []
+
+    def perform_create(self, serializer):
+        user = User.objects.first()
+        if not user:
+            raise ValueError("No user exists in the database to assign to the LiveChatUser")
+
+        chat = serializer.save()
+        LiveChatUser.objects.create(user=user, live_chat=chat)
+
+
+class LiveChatAddUserView(APIView):
+    permission_classes = []
+
+    def post(self, request, chat_id):
+        chat = LiveChat.objects.get(id=chat_id)
+        user_ids = request.data.get("user_ids", [])
+        for uid in user_ids:
+            user = User.objects.get(id=uid)
+            LiveChatUser.objects.get_or_create(user=user, live_chat=chat)
+        return Response({"id": chat.id, "name": chat.name, "users": user_ids})
+
+
+class LiveChatListView(generics.ListAPIView):
+    serializer_class = LiveChatSerializer
+    permission_classes = []
+
+    def get_queryset(self):
+        user = User.objects.first()
+        return LiveChat.objects.filter(users=user)
+
+
+class LiveChatDetailView(generics.RetrieveAPIView):
+    queryset = LiveChat.objects.all()
+    serializer_class = LiveChatSerializer
+    permission_classes = []
+
+
+class UserAchievementDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = UserAchievement.objects.all()
+    serializer_class = UserAchievementSerializer
+
+    def perform_update(self, serializer):
+        serializer.save()
 
 
 class UserAchievementListView(APIView):
