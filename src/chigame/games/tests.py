@@ -4,17 +4,16 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
-
-from .models import Category, Feedback, Game, Lobby, Match, Mechanic, Person, Player, Tournament
-from .views import get_recommended_games
-
+from factory import Sequence, SubFactory
+from factory.django import DjangoModelFactory
 from rest_framework import status
 from rest_framework.test import APITestCase
 
 from chigame.api.tests.factories import UserFactory
 from chigame.games.models import Checkers, CheckersBoard, CheckersTurn
-from factory.django import DjangoModelFactory
-from factory import SubFactory, Sequence
+
+from .models import Category, Feedback, Game, Lobby, Match, Mechanic, Person, Player, Tournament
+from .views import get_recommended_games
 
 
 class FeedbackTests(TestCase):
@@ -243,169 +242,170 @@ class RecommendationSystemTest(TestCase):
 
 # ================ CHECKERS TESTS =================
 
-class GameFactory(DjangoModelFactory):
-   class Meta:
-       model = Game
 
-   name = "Test Game"
-   description = "Test Description"
-   min_players = 2
-   max_players = 2
-   complexity = 2.5
+class GameFactory(DjangoModelFactory):
+    class Meta:
+        model = Game
+
+    name = "Test Game"
+    description = "Test Description"
+    min_players = 2
+    max_players = 2
+    complexity = 2.5
+
 
 class LobbyFactory(DjangoModelFactory):
-   class Meta:
-       model = Lobby
+    class Meta:
+        model = Lobby
 
-   name = "Test Lobby"
-   game = SubFactory(GameFactory)
-   created_by = SubFactory(UserFactory)
-   min_players = 2
-   max_players = 2
-   match_status = 1
+    name = "Test Lobby"
+    game = SubFactory(GameFactory)
+    created_by = SubFactory(UserFactory)
+    min_players = 2
+    max_players = 2
+    match_status = 1
+
 
 class MatchFactory(DjangoModelFactory):
-   class Meta:
-       model = Match
+    class Meta:
+        model = Match
 
-   game = SubFactory(GameFactory)
-   lobby = SubFactory(LobbyFactory)
-   date_played = timezone.now()
+    game = SubFactory(GameFactory)
+    lobby = SubFactory(LobbyFactory)
+    date_played = timezone.now()
+
 
 class PlayerFactory(DjangoModelFactory):
-   class Meta:
-       model = Player
+    class Meta:
+        model = Player
 
-   user = SubFactory(UserFactory)
-   match = SubFactory(MatchFactory)
-   outcome = None
+    user = SubFactory(UserFactory)
+    match = SubFactory(MatchFactory)
+    outcome = None
+
 
 class CheckersBoardFactory(DjangoModelFactory):
-   class Meta:
-       model = CheckersBoard
+    class Meta:
+        model = CheckersBoard
 
-   state = [
-       [0, 1, 0, 1, 0, 1, 0, 1],
-       [1, 0, 1, 0, 1, 0, 1, 0],
-       [0, 1, 0, 1, 0, 1, 0, 1],
-       [0, 0, 0, 0, 0, 0, 0, 0],
-       [0, 0, 0, 0, 0, 0, 0, 0],
-       [2, 0, 2, 0, 2, 0, 2, 0],
-       [0, 2, 0, 2, 0, 2, 0, 2],
-       [2, 0, 2, 0, 2, 0, 2, 0],
-   ]
+    state = [
+        [0, 1, 0, 1, 0, 1, 0, 1],
+        [1, 0, 1, 0, 1, 0, 1, 0],
+        [0, 1, 0, 1, 0, 1, 0, 1],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [2, 0, 2, 0, 2, 0, 2, 0],
+        [0, 2, 0, 2, 0, 2, 0, 2],
+        [2, 0, 2, 0, 2, 0, 2, 0],
+    ]
+
 
 class CheckersFactory(DjangoModelFactory):
-   class Meta:
-       model = Checkers
+    class Meta:
+        model = Checkers
 
-   player_1 = SubFactory(PlayerFactory)
-   player_2 = SubFactory(PlayerFactory)
-   start_time = timezone.now()
+    player_1 = SubFactory(PlayerFactory)
+    player_2 = SubFactory(PlayerFactory)
+    start_time = timezone.now()
+
 
 class CheckersTurnFactory(DjangoModelFactory):
-   class Meta:
-       model = CheckersTurn
+    class Meta:
+        model = CheckersTurn
 
-   game = SubFactory(CheckersFactory)
-   board = SubFactory(CheckersBoardFactory)
-   turn_number = Sequence(lambda n: n + 1)
-   player = SubFactory(PlayerFactory)
+    game = SubFactory(CheckersFactory)
+    board = SubFactory(CheckersBoardFactory)
+    turn_number = Sequence(lambda n: n + 1)
+    player = SubFactory(PlayerFactory)
 
 
 class CheckersGameViewTests(TestCase):
-   def setUp(self):
-       self.user1 = UserFactory()
-       self.user2 = UserFactory()
-       self.match = MatchFactory()
-       self.player1 = PlayerFactory(user=self.user1, match=self.match)
-       self.player2 = PlayerFactory(user=self.user2, match=self.match)
-       self.checkers_game = CheckersFactory(player_1=self.player1, player_2=self.player2)
+    def setUp(self):
+        self.user1 = UserFactory()
+        self.user2 = UserFactory()
+        self.match = MatchFactory()
+        self.player1 = PlayerFactory(user=self.user1, match=self.match)
+        self.player2 = PlayerFactory(user=self.user2, match=self.match)
+        self.checkers_game = CheckersFactory(player_1=self.player1, player_2=self.player2)
 
+    def test_checkers_game_view_authenticated_player(self):
+        self.client.force_login(self.user1)
+        response = self.client.get(reverse("checkers-game", args=[self.checkers_game.id]))
+        self.assertEqual(response.status_code, 200)
 
-   def test_checkers_game_view_authenticated_player(self):
-       self.client.force_login(self.user1)
-       response = self.client.get(reverse("checkers-game", args=[self.checkers_game.id]))
-       self.assertEqual(response.status_code, 200)
+    def test_checkers_game_view_unauthorized_user(self):
+        other_user = UserFactory()
+        self.client.force_login(other_user)
+        response = self.client.get(reverse("checkers-game", args=[self.checkers_game.id]))
+        self.assertEqual(response.status_code, 403)
 
+    def test_checkers_game_view_unauthenticated(self):
+        response = self.client.get(reverse("checkers-game", args=[self.checkers_game.id]))
+        self.assertEqual(response.status_code, 302)
 
-   def test_checkers_game_view_unauthorized_user(self):
-       other_user = UserFactory()
-       self.client.force_login(other_user)
-       response = self.client.get(reverse("checkers-game", args=[self.checkers_game.id]))
-       self.assertEqual(response.status_code, 403)
-
-
-   def test_checkers_game_view_unauthenticated(self):
-       response = self.client.get(reverse("checkers-game", args=[self.checkers_game.id]))
-       self.assertEqual(response.status_code, 302)
 
 class CheckersGameUpdateBoardStateTests(APITestCase):
-   def setUp(self):
-       self.user1 = UserFactory()
-       self.user2 = UserFactory()
-       self.match = MatchFactory()
-       self.player1 = PlayerFactory(user=self.user1, match=self.match)
-       self.player2 = PlayerFactory(user=self.user2, match=self.match)
-       self.checkers_game = CheckersFactory(player_1=self.player1, player_2=self.player2)
-       self.board = CheckersBoardFactory()
-       self.client.force_login(self.user1)
+    def setUp(self):
+        self.user1 = UserFactory()
+        self.user2 = UserFactory()
+        self.match = MatchFactory()
+        self.player1 = PlayerFactory(user=self.user1, match=self.match)
+        self.player2 = PlayerFactory(user=self.user2, match=self.match)
+        self.checkers_game = CheckersFactory(player_1=self.player1, player_2=self.player2)
+        self.board = CheckersBoardFactory()
+        self.client.force_login(self.user1)
 
+    def test_update_board_state_success(self):
+        new_state = [
+            [0, 1, 0, 1, 0, 1, 0, 1],
+            [1, 0, 1, 0, 1, 0, 1, 0],
+            [0, 1, 0, 1, 0, 1, 0, 1],
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0],
+            [2, 0, 2, 0, 2, 0, 2, 0],
+            [0, 2, 0, 2, 0, 2, 0, 2],
+            [2, 0, 2, 0, 2, 0, 2, 0],
+        ]
+        response = self.client.post(
+            reverse("update_board_state", args=[self.board.id]),
+            {"state": new_state},
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-   def test_update_board_state_success(self):
-       new_state = [
-           [0, 1, 0, 1, 0, 1, 0, 1],
-           [1, 0, 1, 0, 1, 0, 1, 0],
-           [0, 1, 0, 1, 0, 1, 0, 1],
-           [0, 0, 0, 0, 0, 0, 0, 0],
-           [0, 0, 0, 0, 0, 0, 0, 0],
-           [2, 0, 2, 0, 2, 0, 2, 0],
-           [0, 2, 0, 2, 0, 2, 0, 2],
-           [2, 0, 2, 0, 2, 0, 2, 0],
-       ]
-       response = self.client.post(
-           reverse("update_board_state", args=[self.board.id]),
-           {"state": new_state},
-           format="json",
-       )
-       self.assertEqual(response.status_code, status.HTTP_200_OK)
+    def test_update_board_state_missing_state(self):
+        response = self.client.post(
+            reverse("update_board_state", args=[self.board.id]),
+            {},
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+    def test_update_board_state_invalid_board(self):
+        response = self.client.post(
+            reverse("update_board_state", args=[99999]),
+            {"state": []},
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-   def test_update_board_state_missing_state(self):
-       response = self.client.post(
-           reverse("update_board_state", args=[self.board.id]),
-           {},
-           format="json",
-       )
-       self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-
-
-   def test_update_board_state_invalid_board(self):
-       response = self.client.post(
-           reverse("update_board_state", args=[99999]),
-           {"state": []},
-           format="json",
-       )
-       self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
 class CheckersGameGetBoardStateTests(APITestCase):
-   def setUp(self):
-       self.user1 = UserFactory()
-       self.user2 = UserFactory()
-       self.match = MatchFactory()
-       self.player1 = PlayerFactory(user=self.user1, match=self.match)
-       self.player2 = PlayerFactory(user=self.user2, match=self.match)
-       self.checkers_game = CheckersFactory(player_1=self.player1, player_2=self.player2)
-       self.board = CheckersBoardFactory()
-       self.client.force_login(self.user1)
+    def setUp(self):
+        self.user1 = UserFactory()
+        self.user2 = UserFactory()
+        self.match = MatchFactory()
+        self.player1 = PlayerFactory(user=self.user1, match=self.match)
+        self.player2 = PlayerFactory(user=self.user2, match=self.match)
+        self.checkers_game = CheckersFactory(player_1=self.player1, player_2=self.player2)
+        self.board = CheckersBoardFactory()
+        self.client.force_login(self.user1)
 
+    def test_get_board_state_success(self):
+        response = self.client.get(reverse("checkers-get-state", args=[self.board.id]))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("state", response.data)
 
-   def test_get_board_state_success(self):
-       response = self.client.get(reverse("checkers-get-state", args=[self.board.id]))
-       self.assertEqual(response.status_code, status.HTTP_200_OK)
-       self.assertIn("state", response.data)
-
-
-   def test_get_board_state_invalid_board(self):
-       response = self.client.get(reverse("checkers-get-state", args=[99999]))
-       self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+    def test_get_board_state_invalid_board(self):
+        response = self.client.get(reverse("checkers-get-state", args=[99999]))
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
