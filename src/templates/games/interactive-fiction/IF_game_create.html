@@ -48,6 +48,11 @@
       min-height: 6rem;
     }
 
+    #game_form textarea {
+      vertical-align: top;
+      white-space: pre-wrap;
+    }
+
     #game_form input[type="checkbox"] {
       margin-right: 0.5rem;
       vertical-align: middle;
@@ -75,7 +80,10 @@
       /* slightly darker to differentiate */
       text-decoration: none;
       margin-top: 50px;
+    }
 
+    .custom-label-section .btn-secondary {
+      margin-top: 0;
     }
 
     .upload-zone {
@@ -101,10 +109,39 @@
     .label-add-wrapper {
       margin-top: 0.75rem;
       display: flex;
+      gap: 10px;
     }
 
     .label-add-wrapper input {
       flex: 1;
+    }
+
+    /* custom-label section styling */
+    .custom-label-section {
+      margin-top: 1rem;
+      background-color: #f8f9fa;
+      padding: 12px 15px;
+      border-radius: 4px;
+      border: 1px solid #e9ecef;
+    }
+
+    .custom-label-prompt {
+      font-size: 0.95rem;
+      color: #495057;
+      margin-bottom: 10px;
+      margin-top: 0;
+    }
+
+    .custom-label-input {
+      padding: 8px 12px;
+      border: 1px solid #ced4da;
+      border-radius: 4px;
+      transition: border-color 0.2s;
+    }
+
+    .custom-label-input:focus {
+      border-color: #0d9b40;
+      outline: none;
     }
   </style>
   <script>
@@ -239,8 +276,7 @@
     </div>
     <div>
       <label for="id_description">Description:</label>
-      <textarea name="description" id="id_description" required>{{ form.description.value|default_if_none:"" }}</textarea>
-      </textarea>
+      <textarea name="description" id="id_description" required>{{ form.description.value }}</textarea>
     </div>
     <div>
       <label for="id_genre">Genre:</label>
@@ -303,17 +339,20 @@
         </optgroup>
       </select>
       <!-- custom label add -->
-      <p>Don't see your label above? Type in a custom label below.</p>
-      <div class="label-add-wrapper">
-        <input type="text" id="custom_label_input" placeholder="Type custom label" />
-        <button type="button" id="add_label_btn" class="btn-secondary">Add&nbsp;Label</button>
+      <div class="custom-label-section">
+        <p class="custom-label-prompt">Don't see your label above? Type in a custom label below.</p>
+        <div class="label-add-wrapper">
+          <input type="text"
+                 id="custom_label_input"
+                 placeholder="Type custom label"
+                 class="custom-label-input" />
+          <button type="button" id="add_label_btn" class="btn-secondary">Add&nbsp;Label</button>
+        </div>
       </div>
     </div>
     <div>
       <label for="id_rules">Rules:</label>
-      <textarea name="rules" id="id_rules" placeholder="Enter the rules" rows="4">
-        {{ form.rules.value }}
-      </textarea>
+      <textarea name="rules" id="id_rules" placeholder="Enter the rules" rows="4">{{ form.rules.value }}</textarea>
     </div>
     <div>
       <label for="id_year_published">Year Published:</label>
