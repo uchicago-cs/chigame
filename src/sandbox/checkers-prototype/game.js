@@ -35,14 +35,22 @@ const COLORS = {
 let pieces = [];
 let selectedPiece = null;
 let currentPlayer = COLORS.red; // red starts first
+let redCaptured = 0; // Number of pieces that red has captured
+let blackCaptured = 0; // Number of pieces that black has captured
 // change to adjust the piece size, any value less than 2 would make the pieces
 // bigger than the tiles
 const RADIUS_SCALE_FACTOR = 2.5;
 // selected piece highlight stroke width
 const HIGHLIGHT_SIZE = 3;
+
+// an array to keep track of the highlighted tiles (valid moves)
+let highlightedTiles = [];
 let gameOver = false;
 let drawOffered = false;
 let drawOfferedBy = null;
+
+//BOT SETTINGS
+let vsEasyBot = true;
 
 // ----------------------------------------------------------------------------
 
@@ -50,6 +58,9 @@ let drawOfferedBy = null;
 function preload() {
   this.load.image('crown', 'img/crown.svg');
   this.textures.get('crown').setFilter(Phaser.Textures.FilterMode.LINEAR);
+  // load in the soundeffects
+  this.load.audio('slide', 'sfx/slide.mp3');
+  this.load.audio('hint', 'sfx/bling.mp3');
 }
 
 function create() {
@@ -59,7 +70,17 @@ function create() {
   drawBoard(this);
   populatePieces(this);
 
+  // https://docs.phaser.io/api-documentation/namespace/input-keyboard-events#key_down
+  // Listen for the 'h' key, give hint if pressed
+  this.input.keyboard.on('keydown-H', () => {
+    // Play hint sound effect
+    this.sound.play('hint');
+
+    giveHint();
+  });
+
   // Set up forfeit and draw buttons
+  const gameOverPrompts = document.getElementById('gameOverPrompts');
   const forfeitBtn = document.getElementById('forfeitBtn');
   const drawBtn = document.getElementById('drawBtn');
   const declineDrawBtn = document.getElementById('declineDrawBtn');
@@ -67,6 +88,10 @@ function create() {
   const playAgainPrompt = document.getElementById('playAgainPrompt');
   const playAgainYes = document.getElementById('playAgainYes');
   const playAgainNo = document.getElementById('playAgainNo');
+  const easyBot = document.getElementById('toggle-bot');
+
+  // Score display
+  const score = document.getElementById('score');
 
   function resetGame() {
     // Clear all pieces
@@ -79,8 +104,11 @@ function create() {
     currentPlayer = COLORS.red;
     drawOffered = false;
     drawOfferedBy = null;
+    redCaptured = 0;
+    blackCaptured = 0;
 
     // Reset UI
+    gameOverPrompts.classList.remove('show');
     gameOverMessage.textContent = '';
     gameOverMessage.classList.remove('show');
     playAgainPrompt.style.display = 'none';
@@ -88,6 +116,7 @@ function create() {
     drawBtn.textContent = 'Offer Draw';
     forfeitBtn.style.display = 'block';
     declineDrawBtn.style.display = 'none';
+    score.innerHTML = "Red: 0<br>Black: 0";
 
     // Repopulate the board using the stored scene reference
     populatePieces(scene);
@@ -101,20 +130,27 @@ function create() {
   forfeitBtn.addEventListener('click', () => {
     if (!gameOver && currentPlayer === COLORS.red) {
       gameOver = true;
+      gameOverPrompts.classList.add('show');
       gameOverMessage.textContent = 'Red player has forfeited! Black wins!';
       gameOverMessage.classList.add('show');
-      document.getElementById('playAgainPrompt').style.display = 'block';
+      document.getElementById('playAgainPrompt').style.display = 'flex';
+      document.getElementById('forfeitBtn').style.display = 'none';
+      document.getElementById('drawBtn').style.display = 'none';
     } else if (!gameOver && currentPlayer === COLORS.black) {
       gameOver = true;
+      gameOverPrompts.classList.add('show');
       gameOverMessage.textContent = 'Black player has forfeited! Red wins!';
       gameOverMessage.classList.add('show');
-      document.getElementById('playAgainPrompt').style.display = 'block';
+      document.getElementById('playAgainPrompt').style.display = 'flex';
+      document.getElementById('forfeitBtn').style.display = 'none';
+      document.getElementById('drawBtn').style.display = 'none';
     }
   });
 
   function resetDrawOffer() {
     drawOffered = false;
     drawOfferedBy = null;
+    gameOverPrompts.classList.remove('show');
     gameOverMessage.textContent = '';
     gameOverMessage.classList.remove('show');
     drawBtn.textContent = 'Offer Draw';
@@ -134,18 +170,21 @@ function create() {
         gameOverMessage.textContent =
           'Black player has offered a draw. Red player, please accept or decline.';
       }
+      gameOverPrompts.classList.add('show');
       gameOverMessage.classList.add('show');
       drawBtn.textContent = 'Accept Draw';
-      declineDrawBtn.style.display = 'block';
+      declineDrawBtn.style.display = 'flex';
+
     } else {
       // Accept Draw (second click)
       gameOver = true;
+      gameOverPrompts.classList.add('show');
       gameOverMessage.textContent = 'Draw accepted! Game over!';
       gameOverMessage.classList.add('show');
       drawBtn.style.display = 'none';
       declineDrawBtn.style.display = 'none';
       forfeitBtn.style.display = 'none';
-      document.getElementById('playAgainPrompt').style.display = 'block';
+      document.getElementById('playAgainPrompt').style.display = 'flex';
     }
   });
 
@@ -153,6 +192,11 @@ function create() {
     if (drawOffered) {
       resetDrawOffer();
     }
+  });
+  easyBot.textContent = `Easy Bot: ${vsEasyBot ? 'ON' : 'OFF'}`;
+  easyBot.addEventListener('click', () => {
+    vsEasyBot = !vsEasyBot;
+    easyBot.textContent = `Easy Bot: ${vsEasyBot ? 'ON' : 'OFF'}`;
   });
 }
 
@@ -195,7 +239,7 @@ function drawBoard(scene) {
         // move the piece and end the player turn
         if (!targetPiece && isValidMove(selectedPiece, x, y)) {
           movePiece(selectedPiece, x, y);
-          endTurn();
+          endTurn(scene);
         }
       });
     }
@@ -229,6 +273,7 @@ function createPiece(x, y, color, scene) {
     if (selectedPiece === piece) {
       selectedPiece.sprite.setStrokeStyle();
       selectedPiece = null;
+      clearHighlightedTiles();
 
       // if player selects their own pieces (does nothing if they click on opponent pieces)
     } else if (piece.color === currentPlayer) {
@@ -237,8 +282,11 @@ function createPiece(x, y, color, scene) {
         selectedPiece.sprite.setStrokeStyle();
       }
       // highlight the current piece that is being selected and set them as 'selectedPiece'
+
+      // also highlight the tiles the piece can move to
       selectedPiece = piece;
       piece.sprite.setStrokeStyle(HIGHLIGHT_SIZE, COLORS.white);
+      highlightValidMoves(scene, piece);
     }
   });
 
@@ -302,6 +350,12 @@ function isValidMove(piece, moveX, moveY) {
   return false;
 }
 
+// Updates score on frontend
+function updateScore() {
+  const score = document.getElementById('score');
+  score.innerHTML = "Red: " + redCaptured + "<br>Black: " + blackCaptured;
+}
+
 function movePiece(piece, moveX, moveY) {
   const dx = moveX - piece.x;
   const dy = moveY - piece.y;
@@ -313,6 +367,12 @@ function movePiece(piece, moveX, moveY) {
       captured.sprite.destroy(); // delete the sprite (remove from display state)
       if (captured.kingIcon) captured.kingIcon.destroy(); // destroy the icon as well
       pieces = pieces.filter((p) => p !== captured); // remove it from the array (game state)
+      if (currentPlayer === COLORS.red) {
+        redCaptured++;
+      } else {
+        blackCaptured++;
+      }
+      updateScore();
 
       // Check for game over after capturing a piece
       checkGameOver();
@@ -322,28 +382,47 @@ function movePiece(piece, moveX, moveY) {
   // Move the piece
   piece.x = moveX;
   piece.y = moveY;
-  piece.sprite.x = MARGIN + piece.x * TILE_SIZE + TILE_SIZE / 2;
-  piece.sprite.y = MARGIN + piece.y * TILE_SIZE + TILE_SIZE / 2;
-  // If piece is a king and has a star icon, move the icon too
+
+  const newX = MARGIN + moveX * TILE_SIZE + TILE_SIZE / 2;
+  const newY = MARGIN + moveY * TILE_SIZE + TILE_SIZE / 2;
+
+  // Animate movement
+  checkers.scene.scenes[0].tweens.add({
+    targets: piece.sprite,
+    x: newX,
+    y: newY,
+    duration: 300,
+    ease: 'Power3',
+  });
+
+  // Move king icon if applicable
   if (piece.isKing && piece.kingIcon) {
-    piece.kingIcon.x = piece.sprite.x;
-    piece.kingIcon.y = piece.sprite.y;
+    checkers.scene.scenes[0].tweens.add({
+      targets: piece.kingIcon,
+      x: newX,
+      y: newY,
+      duration: 300,
+      ease: 'Power3',
+    });
   }
+
+  // Play move sound
+  piece.sprite.scene.sound.play('slide');
 
   // Check for king promotion
   if (
     (piece.color === COLORS.red && piece.y === 0) ||
     (piece.color === COLORS.black && piece.y === BOARD_SIZE - 1)
   ) {
-    piece.isKing = true;
-    const crown = piece.sprite.scene.add.image(piece.sprite.x, piece.sprite.y, 'crown');
-    // Resize the icon
-    crown.setDisplaySize(TILE_SIZE, TILE_SIZE);
-    piece.kingIcon = crown;
+    if (!piece.isKing) {
+      piece.isKing = true;
+      const crown = piece.sprite.scene.add.image(newX, newY, 'crown');
+      crown.setDisplaySize(TILE_SIZE, TILE_SIZE);
+      piece.kingIcon = crown;
+    }
   }
 
   console.log('Current board state:', getBoardState());
-}
 
 // Check if the game is over due to all pieces of one color being captured
 function checkGameOver() {
@@ -352,18 +431,22 @@ function checkGameOver() {
 
   if (redPieces.length === 0) {
     gameOver = true;
+    const gameOverPrompts = document.getElementById('gameOverPrompts')
     const gameOverMessage = document.getElementById('gameOverMessage');
+    gameOverPrompts.classList.add('show');
     gameOverMessage.textContent = 'All red pieces captured! Black wins!';
     gameOverMessage.classList.add('show');
-    document.getElementById('playAgainPrompt').style.display = 'block';
+    document.getElementById('playAgainPrompt').style.display = 'flex';
     document.getElementById('drawBtn').style.display = 'none';
     document.getElementById('forfeitBtn').style.display = 'none';
   } else if (blackPieces.length === 0) {
     gameOver = true;
+    const gameOverPrompts = document.getElementById('gameOverPrompts')
     const gameOverMessage = document.getElementById('gameOverMessage');
+    gameOverPrompts.classList.add('show');
     gameOverMessage.textContent = 'All black pieces captured! Red wins!';
     gameOverMessage.classList.add('show');
-    document.getElementById('playAgainPrompt').style.display = 'block';
+    document.getElementById('playAgainPrompt').style.display = 'flex';
     document.getElementById('drawBtn').style.display = 'none';
     document.getElementById('forfeitBtn').style.display = 'none';
   }
@@ -375,7 +458,7 @@ function getPiece(x, y) {
 }
 
 // end the turn
-function endTurn() {
+function endTurn(scene) {
   // remove the selected piece and its highlight
   if (selectedPiece) {
     selectedPiece.sprite.setStrokeStyle();
@@ -384,9 +467,168 @@ function endTurn() {
 
   // switch between red and black player turn
   currentPlayer = currentPlayer === COLORS.red ? COLORS.black : COLORS.red;
+  // remove the highlight after a move is made
+  clearHighlightedTiles();
+}
+
+// helper function to highlight the valid moves for the selected piece
+function highlightValidMoves(scene, piece) {
+  clearHighlightedTiles(); // remove any previous highlights
+
+  // iterate through the board
+  for (let y = 0; y < BOARD_SIZE; y++) {
+    for (let x = 0; x < BOARD_SIZE; x++) {
+      // check that the tile is not occupied and is a valid move
+      if (!getPiece(x, y) && isValidMove(piece, x, y)) {
+        // add a slighlty transparent white square on top of that tile to make
+        // the tile appear highlighted
+        const highlight = scene.add.rectangle(
+          MARGIN + x * TILE_SIZE + TILE_SIZE / 2,
+          MARGIN + y * TILE_SIZE + TILE_SIZE / 2,
+          TILE_SIZE,
+          TILE_SIZE,
+          0xffffff,
+          0.3
+        );
+        // add the game object to the array (so we can keep track and delete later)
+        highlightedTiles.push(highlight);
+      }
+    }
+  }
+}
+
+// helper function to clear all the highlighted tiles
+function clearHighlightedTiles() {
+  // remove each rect from the screen and then pop the reference from the array
+  while (highlightedTiles.length > 0) {
+    highlightedTiles.pop().destroy();
+  }
+}
+
+// generate a random valid move
+// after we finish implementing a bot, we could it make give an actual good suggestion
+function giveHint() {
+  // get all of the pieces of the current player
+  const playerPieces = pieces.filter((p) => p.color === currentPlayer);
+  let validMoves = [];
+
+  // get all of the valid moves for all of the pieces
+  for (const piece of playerPieces) {
+    for (let y = 0; y < BOARD_SIZE; y++) {
+      for (let x = 0; x < BOARD_SIZE; x++) {
+        if (!getPiece(x, y) && isValidMove(piece, x, y)) {
+          // add it to the array
+          // (this is a shorthand to initialize objects btw if you don't know)
+          validMoves.push({ piece, x, y });
+        }
+      }
+    }
+  }
+
+  // We have yet to implement a feature where it checks whether there are valid
+  // moves remaining for a player after each turn. In a real game of checkers
+  // if there are no moves left, the player loses the game.
+  if (validMoves.length > 0) {
+    // Math.random() only returns floating point from 0 to 1 and would require a
+    // separate helper function to return a random index from the array...
+    // https://docs.phaser.io/phaser/concepts/math
+    // phaser.math.rnd.pick() selects a random element from the array
+    const randomHint = Phaser.Math.RND.pick(validMoves);
+    // unlike chess, where there's rank and file, I don't think there's a proper
+    // way of calling a specific square on the board. For now, I just have it return
+    // the row and col on the matrix.
+    alert(
+      `Hint: Move ${currentPlayer === COLORS.red ? 'red' : 'black'} piece at (row ${randomHint.piece.y
+      }, column ${randomHint.piece.x}) to (row ${randomHint.y}, column ${randomHint.x})`
+    );
+  } else {
+    // in a normal checkers game, the player loses if there are no moves left
+    alert('No valid moves.');
+  }
+
+  // remove the highlight after a move is made
+  clearHighlightedTiles();
+}
+
+// helper function to highlight the valid moves for the selected piece
+function highlightValidMoves(scene, piece) {
+  clearHighlightedTiles(); // remove any previous highlights
+
+  // iterate through the board
+  for (let y = 0; y < BOARD_SIZE; y++) {
+    for (let x = 0; x < BOARD_SIZE; x++) {
+      // check that the tile is not occupied and is a valid move
+      if (!getPiece(x, y) && isValidMove(piece, x, y)) {
+        // add a slighlty transparent white square on top of that tile to make
+        // the tile appear highlighted
+        const highlight = scene.add.rectangle(
+          MARGIN + x * TILE_SIZE + TILE_SIZE / 2,
+          MARGIN + y * TILE_SIZE + TILE_SIZE / 2,
+          TILE_SIZE,
+          TILE_SIZE,
+          0xffffff,
+          0.3
+        );
+        // add the game object to the array (so we can keep track and delete later)
+        highlightedTiles.push(highlight);
+      }
+    }
+  }
+}
+
+// helper function to clear all the highlighted tiles
+function clearHighlightedTiles() {
+  // remove each rect from the screen and then pop the reference from the array
+  while (highlightedTiles.length > 0) {
+    highlightedTiles.pop().destroy();
+  }
+}
+
+// generate a random valid move
+// after we finish implementing a bot, we could it make give an actual good suggestion
+function giveHint() {
+  // get all of the pieces of the current player
+  const playerPieces = pieces.filter((p) => p.color === currentPlayer);
+  let validMoves = [];
+
+  // get all of the valid moves for all of the pieces
+  for (const piece of playerPieces) {
+    for (let y = 0; y < BOARD_SIZE; y++) {
+      for (let x = 0; x < BOARD_SIZE; x++) {
+        if (!getPiece(x, y) && isValidMove(piece, x, y)) {
+          // add it to the array
+          // (this is a shorthand to initialize objects btw if you don't know)
+          validMoves.push({ piece, x, y });
+        }
+      }
+    }
+  }
+
+  // We have yet to implement a feature where it checks whether there are valid
+  // moves remaining for a player after each turn. In a real game of checkers
+  // if there are no moves left, the player loses the game.
+  if (validMoves.length > 0) {
+    // Math.random() only returns floating point from 0 to 1 and would require a
+    // separate helper function to return a random index from the array...
+    // https://docs.phaser.io/phaser/concepts/math
+    // phaser.math.rnd.pick() selects a random element from the array
+    const randomHint = Phaser.Math.RND.pick(validMoves);
+    // unlike chess, where there's rank and file, I don't think there's a proper
+    // way of calling a specific square on the board. For now, I just have it return
+    // the row and col on the matrix.
+    alert(
+      `Hint: Move ${currentPlayer === COLORS.red ? 'red' : 'black'} piece at (row ${randomHint.piece.y
+      }, column ${randomHint.piece.x}) to (row ${randomHint.y}, column ${randomHint.x})`
+    );
+  } else {
+    // in a normal checkers game, the player loses if there are no moves left
+    alert('No valid moves.');
+  }
+
 
   // reset draw offer if it was made by the current player
   if (drawOffered && drawOfferedBy === currentPlayer) {
+    const gameOverPrompts = document.getElementById('gameOverPrompts');
     const gameOverMessage = document.getElementById('gameOverMessage');
     const drawBtn = document.getElementById('drawBtn');
     const declineDrawBtn = document.getElementById('declineDrawBtn');
@@ -394,8 +636,14 @@ function endTurn() {
     drawOfferedBy = null;
     gameOverMessage.textContent = '';
     gameOverMessage.classList.remove('show');
+    gameOverPrompts.classList.remove('show');
     drawBtn.textContent = 'Offer Draw';
     declineDrawBtn.style.display = 'none';
+  }
+  //if black and bot is on, schedule bot move
+  if (vsEasyBot && currentPlayer === COLORS.black) {
+    //delay so user has time to process bot movw after their own
+    scene.time.delayedCall(300, easyBot, [scene], scene);
   }
 }
 
@@ -440,12 +688,14 @@ function sendBoardToServer(boardState) {
 
 // Event Listener for Settings Menu
 document.addEventListener('DOMContentLoaded', () => {
-  const settingsButton = document.getElementById('settings-button');
-  const settingsMenu = document.getElementById('settings-menu');
+  const settingsContainer = document.getElementById('settings-container');
 
-  settingsButton.addEventListener('click', () => {
-    settingsMenu.classList.toggle('active');
-    settingsMenu.classList.toggle('hidden');
+  settingsContainer.addEventListener('mouseover', () => {
+    settingsContainer.classList.add('show');
+  });
+
+  settingsContainer.addEventListener('mouseout', () => {
+    settingsContainer.classList.remove('show');
   });
 });
 
@@ -471,10 +721,125 @@ document.addEventListener('DOMContentLoaded', () => {
     // if the first piece is a default color, change to colorblind colors
     if (firstPieceColor === COLORS.red || firstPieceColor === COLORS.black) {
       changePieceColor(COLORS.colorblind_blue, COLORS.colorblind_orange);
+      changeColorButton.classList.add('selected');
     }
     // if the first piece is a colorblind color, change to default colors
     else {
       changePieceColor(COLORS.black, COLORS.red);
+      changeColorButton.classList.remove('selected');
+
+    }
+  });
+});
+
+//return arr of legal moves for given player
+function getLegalMoves(color) {
+  //arr to store legal moves
+  const moves = [];
+  //moving up or down board?
+  const direction = color === COLORS.red ? -1 : 1;
+
+  //loop thru pieces
+  pieces.forEach(piece => {
+    if (piece.color !== color) return; //return for other p;layer peices
+    // simple moves
+    [-1, 1].forEach(diagonal => { //try L and R diagonals
+      const col = piece.x + diagonal; //new col
+      const row = piece.y + direction; //new row
+      if ( //check if mvoe is valid
+        col >= 0 && col < BOARD_SIZE && row >= 0 && row < BOARD_SIZE &&
+        !getPiece(col, row) && isValidMove(piece, col, row)) {
+        moves.push({ piece, x: col, y: row }); //add move to arr
+      }
+    });
+    // jump moves for captures
+    [-2, 2].forEach(jump => {
+      const jump_col = piece.x + jump;
+      const jump_row = piece.y + 2 * direction;
+      if (
+        jump_col >= 0 && jump_col < BOARD_SIZE && jump_row >= 0 && jump_row < BOARD_SIZE &&
+        !getPiece(jump_col, jump_row) && isValidMove(piece, jump_col, jump_row)) {
+        moves.push({ piece, x: jump_col, y: jump_row });
+      }
+    });
+  });
+
+  return moves;
+}
+
+
+// Easy bot: pick a random legal move and play it
+function easyBot(scene) {
+  //get legal moves
+  //check if game over
+  //it not do a random legal move
+  const legalMoves = getLegalMoves(COLORS.black);
+  //if No legal moves
+  if (legalMoves.length === 0) {
+    console.log('Cant move');
+    return;
+  }
+  //get random move
+  const move = Phaser.Utils.Array.GetRandom(legalMoves);
+  //execute move
+  movePiece(move.piece, move.x, move.y);
+  // end bot's turn
+  endTurn(scene);
+}
+
+// Coordinates overlay button
+document.addEventListener('DOMContentLoaded', () => {
+  const toggleCoordinatesBtn = document.getElementById('toggle-coordinates');
+  let coordsVisible = false;
+  const coordElements = [];
+
+  toggleCoordinatesBtn.addEventListener('click', () => {
+    coordsVisible = !coordsVisible;
+
+    if (coordsVisible) {
+      // get board position on screen
+      const gameDiv = document.getElementById('game');
+      const rect = gameDiv.getBoundingClientRect();
+
+      // for each index, create a top label and a left label
+      for (let i = 0; i < BOARD_SIZE; i++) {
+        // Column label
+        const colLabel = document.createElement('div');
+        colLabel.textContent = i + 1;
+        Object.assign(colLabel.style, {
+          position: 'absolute',
+          left: `${rect.left + MARGIN + i * TILE_SIZE + TILE_SIZE / 2}px`,
+          top: `${rect.top - 20}px`,
+          transform: 'translateX(-50%)',
+          fontFamily: '"Outfit", sans-serif',
+          color: '#3b2f2a',
+          userSelect: 'none',
+          pointerEvents: 'none',
+        });
+        document.body.appendChild(colLabel);
+        coordElements.push(colLabel);
+
+        // Row label
+        const rowLabel = document.createElement('div');
+        rowLabel.textContent = i + 1;
+        Object.assign(rowLabel.style, {
+          position: 'absolute',
+          left: `${rect.left - 20}px`,
+          top: `${rect.top + MARGIN + i * TILE_SIZE + TILE_SIZE / 2}px`,
+          transform: 'translateY(-50%)',
+          fontFamily: '"Outfit", sans-serif',
+          color: '#3b2f2a',
+          userSelect: 'none',
+          pointerEvents: 'none',
+        });
+        document.body.appendChild(rowLabel);
+        coordElements.push(rowLabel);
+      }
+
+    } else {
+      // remove coordinates
+      coordElements.forEach(el => document.body.removeChild(el));
+      coordElements.length = 0;
     }
   });
 });
