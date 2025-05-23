@@ -616,7 +616,7 @@ class UploadFileView(View):
         print("Name:", game_name)
         print("POST:", request.POST)
         print("FILES:", request.FILES)
-        
+
         if uploaded_file:
             # Save the file to twine_games/
             fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, "twine_games"))

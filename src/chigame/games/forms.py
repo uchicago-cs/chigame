@@ -1,7 +1,7 @@
 from django import forms
 from django.core.validators import MaxValueValidator, MinValueValidator
 
-from .models import Game, InteractiveFictionGame, Lobby, Review
+from .models import Game, Lobby, Review
 
 
 class GameForm(forms.ModelForm):
@@ -36,7 +36,6 @@ class IFGameForm(forms.ModelForm):
             instance.save()
             self.save_m2m()
         return instance
-
 
 
 class LobbyForm(forms.ModelForm):

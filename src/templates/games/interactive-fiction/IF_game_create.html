@@ -223,11 +223,18 @@
     });
   </script>
   <h1>Create Interactive Fiction Game</h1>
-  <form method="post" enctype="multipart/form-data" id="game_form" action="{% url 'upload-file' pk=game.pk %}">
+  <form method="post"
+        enctype="multipart/form-data"
+        id="game_form"
+        action="{% url 'upload-file' pk=game.pk %}">
     {% csrf_token %}
     <div>
       <label for="id_name">Game Name:</label>
-      <input type="text" id="id_name" name="name" value="{{ form.name.value }}" required />
+      <input type="text"
+             id="id_name"
+             name="name"
+             value="{{ form.name.value }}"
+             required />
     </div>
     <div>
       <label for="id_author">Author Name:</label>
@@ -240,7 +247,6 @@
     <div>
       <label for="id_description">Description:</label>
       <textarea name="description" id="id_description" required>{{ form.description.value|default_if_none:"" }}</textarea>
-      </textarea>
     </div>
     <div>
       <label for="id_genre">Genre:</label>
