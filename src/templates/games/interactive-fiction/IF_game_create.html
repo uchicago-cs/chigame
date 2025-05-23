@@ -201,6 +201,7 @@
     </div>
     <div>
       <label for="id_genre">Genre:</label>
+      <label for="id_genre">Genre:</label>
       <select name="genre" id="id_genre">
         {% for genre in form.genre.field.queryset %}
           <option value="{{ genre.pk }}" {% if genre.pk|stringformat:"s" in form.genre.value %}selected{% endif %}>{{ genre.name }}</option>
