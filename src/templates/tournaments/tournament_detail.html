@@ -135,6 +135,32 @@
     .inline-form {
       display: inline;
     }
+
+    /* Waitlist styling */
+    .waitlist-section {
+      margin-top: 20px;
+      padding: 15px;
+      border: 1px solid #ffcc80;
+      border-radius: 5px;
+      background-color: #fff8e1;
+    }
+
+    .waitlist-heading {
+      font-weight: bold;
+      color: #e65100;
+      margin-bottom: 10px;
+    }
+
+    .waitlist-position {
+      font-size: 0.9em;
+      color: #757575;
+      margin-left: 5px;
+    }
+
+    .waitlist-empty {
+      font-style: italic;
+      color: #757575;
+    }
   </style>
 {% endblock css %}
 {% block content %}
@@ -268,6 +294,33 @@
       </li>
     {% endfor %}
   </ul>
+  <!-- Waitlist section -->
+  <div class="waitlist-section">
+    <p class="waitlist-heading">
+      Waitlist:
+      {% if tournament.waitlist.count > 0 %}
+        ({{ tournament.waitlist.count }} user{{ tournament.waitlist.count|pluralize }})
+      {% endif %}
+    </p>
+    {% if tournament.waitlist.exists %}
+      <ul>
+        {% for user in tournament.waitlist.all %}
+          <li>
+            <p>
+              {% if user.name %}
+                <a href="{% url 'users:detail' user.id %}">{{ user.name }}</a>
+              {% else %}
+                <a href="{% url 'users:detail' user.id %}">{{ user.email }}</a>
+              {% endif %}
+              <span class="waitlist-position">Position: {{ forloop.counter }}</span>
+            </p>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="waitlist-empty">No users on waitlist</p>
+    {% endif %}
+  </div>
   <p>Winners:</p>
   {% if tournament.get_all_winners %}
     <p>Winners:</p>

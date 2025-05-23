@@ -678,13 +678,11 @@ class TournamentListView(ListView):
                 messages.error(request, "You have already joined this tournament")
                 return redirect(reverse_lazy("tournament-list"))
             elif success == 2:
-                messages.error(request, "This tournament is full")
+                messages.info(request, "This tournament is full. You have been added to the waitlist.")
                 return redirect(reverse_lazy("tournament-list"))
             elif success == 3:
                 messages.error(request, "The registration period for this tournament has ended")
                 return redirect(reverse_lazy("tournament-list"))
-            else:
-                raise Exception("Invalid return value")
 
         elif request.POST.get("action") == "withdraw":
             success = tournament.tournament_withdraw(request.user)
@@ -697,8 +695,6 @@ class TournamentListView(ListView):
             elif success == 3:
                 messages.error(request, "The registration period for this tournament has ended")
                 return redirect(reverse_lazy("tournament-list"))
-            else:
-                raise Exception("Invalid return value")
 
         elif request.POST.get("action") == "archive":
             tournament.set_archive(True)
@@ -1049,7 +1045,7 @@ class TournamentDetailView(DetailView):
                 messages.error(request, "You have already joined this tournament")
                 return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
             elif success == 2:
-                messages.error(request, "This tournament is full")
+                messages.info(request, "This tournament is full. You have been added to the waitlist.")
                 return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
             elif success == 3:
                 messages.error(request, "The registration period for this tournament has ended")

@@ -10,6 +10,34 @@
   <link rel="stylesheet"
         type="text/css"
         href="{% static 'css/tournament_styles.css' %}" />
+  <style>
+    /* Waitlist styling */
+    .waitlist-section {
+      margin-top: 15px;
+      margin-bottom: 15px;
+      padding: 12px;
+      border: 1px solid #ffcc80;
+      border-radius: 5px;
+      background-color: #fff8e1;
+    }
+
+    .waitlist-heading {
+      font-weight: bold;
+      color: #e65100;
+      margin-bottom: 8px;
+    }
+
+    .waitlist-position {
+      font-size: 0.9em;
+      color: #757575;
+      margin-left: 5px;
+    }
+
+    .waitlist-empty {
+      font-style: italic;
+      color: #757575;
+    }
+  </style>
 {% endblock css %}
 {% block content %}
   <h1>Archived Tournaments</h1>
@@ -106,6 +134,28 @@
           </ul>
         {% else %}
           <p>No player yet.</p>
+        {% endif %}
+        <!-- Waitlist section -->
+        {% if tournament.waitlist.exists %}
+          <div class="waitlist-section">
+            <p class="waitlist-heading">
+              Waitlist: ({{ tournament.waitlist.count }} user{{ tournament.waitlist.count|pluralize }})
+            </p>
+            <ul>
+              {% for user in tournament.waitlist.all %}
+                <li>
+                  <p>
+                    {% if user.name %}
+                      <a href="{% url 'users:detail' user.id %}">{{ user.name }}</a>
+                    {% else %}
+                      <a href="{% url 'users:detail' user.id %}">{{ user.email }}</a>
+                    {% endif %}
+                    <span class="waitlist-position">Position: {{ forloop.counter }}</span>
+                  </p>
+                </li>
+              {% endfor %}
+            </ul>
+          </div>
         {% endif %}
         {% if user.is_authenticated and tournament.status == "registration open" %}
           <form method="post">
