@@ -1363,6 +1363,12 @@ class MatchStatsView(DetailView):
 
     def get(self, request, *args, **kwargs):
         tournament = self.get_object()
+
+        # We should only redirect if tournament is still in progress
+        if tournament.status == "tournament in progress":
+            messages.warning(request, "Match statistics are only available after the tournament ends.")
+            return redirect("tournament-detail", pk=tournament.pk)
+
         completed_matches = tournament.matches.filter(end_time__isnull=False)
 
         if completed_matches:
