@@ -1,6 +1,7 @@
+from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.http import JsonResponse
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
@@ -144,3 +145,21 @@ def edit_message(request, message_id):
         return JsonResponse({"message": "Message edited successfully", "edited": message.edited}, status=200)
 
     return JsonResponse({"message": "Type of request not allowed"}, status=405)
+
+
+@login_required
+def toggle_profanity(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "Unauthorized"}, status=401)
+
+    if request.method != "POST":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+
+    profile = request.user.userprofile
+    profile.profanity_enabled = not profile.profanity_enabled
+    profile.save()
+
+    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        return JsonResponse({"success": True, "profanity_enabled": profile.profanity_enabled})
+
+    return redirect("live-chat-list")
