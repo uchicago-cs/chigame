@@ -81,6 +81,39 @@
     .inline-form {
       display: inline;
     }
+   
+    .profile-photo {
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin: 20px auto;
+      display: block;
+      border: 3px solid #800000;
+    }
+
+    .photo-upload-form {
+      margin: 20px auto;
+      text-align: center;
+    }
+
+    .photo-upload-form input[type="file"] {
+      display: none;
+    }
+
+    .photo-upload-form label {
+      display: inline-block;
+      padding: 8px 16px;
+      background-color: #800000;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .photo-upload-form label:hover {
+      background-color: #600000;
+    }
   </style>
   <div class="container mt-5">
     <div class="row">
@@ -98,6 +131,31 @@
           <div class="card-body">
             <div class="media">
               <div class="media-body">
+                {% if profile.profile_photo %}
+                  <img src="{{ profile.profile_photo.url }}"
+                       alt="Profile Photo"
+                       class="profile-photo" />
+                {% else %}
+                  <img src="{% static 'images/no_picture_available.png' %}"
+                       alt="Default Profile Photo"
+                       class="profile-photo" />
+                {% endif %}
+                {% if profile.user == request.user %}
+                  <form method="post"
+                        action="{% url 'users:upload-photo' %}"
+                        enctype="multipart/form-data"
+                        class="photo-upload-form">
+                    {% csrf_token %}
+                    <label for="photo-upload">
+                      Change Profile Photo
+                      <input type="file"
+                             name="photo"
+                             id="photo-upload"
+                             accept="image/*"
+                             onchange="this.form.submit()" />
+                    </label>
+                  </form>
+                {% endif %}
                 {% if profile.user == request.user %}
                   <a href="{% url 'users:detail' request.user.pk %}"
                      class="btn btn-primary">Account</a>
