@@ -265,17 +265,17 @@
                     {% endfor %}
                   </div>
                   {% if profile.user == request.user %}
-                    <div style="text-align: center; margin-top: 15px;">
+                    <div class="favorites-view-all-container">
                       <a href="{% url 'favorite-list' %}"
                          class="btn btn-sm"
-                         style="background-color: #6c757d">View All Favorites</a>
+                         class="favorites-view-all-btn">View All Favorites</a>
                     </div>
                   {% endif %}
                 {% else %}
                   <div class="no-favorites">
                     {% if profile.user == request.user %}
                       You haven't added any favorite games yet.
-                      <a href="{% url 'game-list' %}" style="color: #800000;">Browse games</a> to add some!
+                      <a href="{% url 'game-list' %}" class="favorites-browse-link">Browse games</a> to add some!
                     {% else %}
                       {{ profile.user.name }} hasn't added any favorite games yet.
                     {% endif %}
