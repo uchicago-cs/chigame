@@ -424,8 +424,20 @@ def notification_search_results(request):
 @login_required
 def user_inbox_view(request, pk, category="inbox"):
     """
-    Displays a user's inbox containing notifications. The user can only access
-    their own inbox.
+    Display the user's inbox with categorized notifications.
+
+    This view renders the inbox page for the logged-in user, showing notifications
+    filtered by the specified category. It ensures that users can only access their
+    own inbox and redirects otherwise.
+
+    Args:
+        request (HttpRequest): The incoming HTTP request.
+        pk (int): The primary key of the user whose inbox is being accessed.
+        category (str, optional): The category of notifications to display.
+            Defaults to "inbox". Special category "deleted" is also handled.
+
+    Returns:
+        HttpResponse: The rendered inbox page with the filtered notifications.
     """
     if pk != request.user.pk:
         messages.error(request, "Not your inbox")
@@ -688,6 +700,24 @@ def upload_profile_photo(request):
 @csrf_protect
 @require_POST
 def move_notification(request, pk):
+    """
+    Handle user actions to move a notification to a different category
+    or assign a label to it.
+
+    This view supports POST requests to:
+    - Change the category of a notification (e.g., move to "archived").
+    - Assign an existing label to the notification.
+    
+    It validates that the notification belongs to the requesting user
+    and provides appropriate feedback messages.
+
+    Args:
+        request (HttpRequest): The incoming POST request containing category or label_id.
+        pk (int): The primary key of the notification to be modified.
+
+    Returns:
+        HttpResponseRedirect: Redirects to the user's inbox view under the target category.
+    """
     notification = get_object_or_404(Notification, pk=pk, receiver=request.user)
     new_category = request.POST.get("category")
     next_category = request.POST.get("next") or "inbox"  # fallback to inbox if not provided
@@ -714,6 +744,19 @@ def move_notification(request, pk):
 
 @login_required
 def create_notification_label(request):
+    """
+    Create a custom notification label for the logged-in user.
+
+    This view handles POST requests to add user-defined (custom) labels,
+    which can be used to organize and filter notifications. If a label with
+    the given name already exists for the user, a message is shown instead.
+
+    Args:
+        request (HttpRequest): The POST request containing 'label_name' in the form data.
+
+    Returns:
+        HttpResponseRedirect: Redirects to the label management page after processing.
+    """
     if request.method == "POST":
         label_name = request.POST.get("label_name")
         if label_name:
@@ -729,6 +772,18 @@ def create_notification_label(request):
 
 @login_required
 def manage_labels_page_view(request):
+    """
+    Render the label management page for custom notification labels.
+
+    Displays all user-defined labels associated with the logged-in user,
+    allowing them to review and manage their custom organization of notifications.
+
+    Args:
+        request (HttpRequest): The incoming GET request from the logged-in user.
+
+    Returns:
+        HttpResponse: Renders the 'manage_labels.html' template with the user's labels.
+    """
     user_labels = NotificationLabel.objects.filter(user=request.user).order_by("name")
     context = {
         "labels": user_labels,
@@ -739,6 +794,21 @@ def manage_labels_page_view(request):
 @login_required
 @require_POST
 def delete_notification_label(request, label_id):
+    """
+    Delete a custom notification label belonging to the logged-in user.
+
+    This view handles POST requests to remove a user-defined label by ID.
+    It ensures the label belongs to the requesting user before deletion.
+    After deletion, the user is redirected to the label management page
+    with a success message.
+
+    Args:
+        request (HttpRequest): The incoming POST request from the user.
+        label_id (int): The primary key of the custom label to delete.
+
+    Returns:
+        HttpResponseRedirect: Redirects to the label management page with a status message.
+    """
     label = get_object_or_404(NotificationLabel, pk=label_id, user=request.user)
     label_name = label.name
 
@@ -778,8 +848,18 @@ def assign_label_to_notification(request, notification_id):
 @login_required
 def notifications_by_label(request, label_id):
     """
-    Retrieves and displays all notifications associated with a specific label
-    belonging to the logged-in user, excluding deleted ones.
+    Display all non-deleted notifications associated with a specific custom label.
+
+    This view retrieves notifications tagged with a user-defined label, belonging
+    to the logged-in user. Deleted notifications are excluded from the result.
+    It also passes all of the user's labels to the template for sidebar display.
+
+    Args:
+        request (HttpRequest): The incoming GET request from the logged-in user.
+        label_id (int): The primary key of the custom label used to filter notifications.
+
+    Returns:
+        HttpResponse: Renders the 'notifications_by_label.html' template with filtered notifications.
     """
     label = get_object_or_404(NotificationLabel, pk=label_id, user=request.user)
     # Fetch only visible (non-deleted) notifications for the current user that have this label
@@ -804,6 +884,21 @@ def notifications_by_label(request, label_id):
 @require_POST
 @csrf_protect
 def unassign_label_from_notification(request, notification_id, label_id):
+    """
+    Remove a custom label from a specific notification for the logged-in user.
+
+    This view handles POST requests to unassign a user-defined label from a 
+    notification, ensuring both belong to the current user. It provides 
+    success, info, or error messages based on the state of the label assignment.
+
+    Args:
+        request (HttpRequest): The POST request to unassign a label.
+        notification_id (int): The ID of the notification to modify.
+        label_id (int): The ID of the label to remove from the notification.
+
+    Returns:
+        HttpResponseRedirect: Redirects to the 'notifications-by-label' view for the same label.
+    """
     notification = get_object_or_404(Notification, pk=notification_id, receiver=request.user)
 
     try:
