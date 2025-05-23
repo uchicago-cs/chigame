@@ -12,7 +12,9 @@
     {% for entry in entries %}
       <tr>
         <td>{{ entry.rank }}</td>
-        <td>{{ entry.user.display_name }}</td>
+        <td>
+          <a href="{% url 'user_profile_view' user_id=entry.user.id %}">{{ entry.user.username }}</a>
+        </td>
         <td>{{ entry.user.region }}</td>
       </tr>
     {% endfor %}

@@ -65,10 +65,6 @@ def landing_page_view(request):
     )
 
 
-def user_profile_view(request, leaderboard_entry_id):
-    pass
-
-
 def select_default_view_metric(request):
     pass
 
