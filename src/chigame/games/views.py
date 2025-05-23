@@ -1504,7 +1504,6 @@ def remove_from_gamelist(request, pk, list_pk):
     return redirect("game-detail", pk=pk)
 
 
-
 # a
 class MatchStatsView(DetailView):
     model = Tournament
@@ -1538,7 +1537,8 @@ class MatchStatsView(DetailView):
         }
 
         return render(request, "tournaments/tournament_match_stats.html", context)
-=======
+
+
 # Tournament Feedback Views
 @login_required
 def tournament_feedback_list(request, tournament_id):
@@ -1656,7 +1656,6 @@ def delete_feedback_view(request, feedback_id):
         return redirect("user-feedback-list")
 
     return render(request, "tournaments/tournament_delete_feedback.html", {"feedback": feedback})
-
 
 
 # =============== Word Game Views ===============
