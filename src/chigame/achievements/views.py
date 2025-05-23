@@ -1,5 +1,7 @@
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, render
+from django.utils import timezone
 
 from chigame.games.models import Game
 from chigame.users.models import User
@@ -23,6 +25,50 @@ def demo_game(request):
 
 
 @login_required
+def toggle_pin_achievement(request, achievement_id):
+    """
+    AJAX view to toggle whether an achievement is pinned for the current user
+    """
+    if request.method == "POST":
+        achievement = get_object_or_404(Achievement, id=achievement_id)
+
+        # Use get_or_create with defaults to avoid duplicates
+        user_achievement, created = UserAchievement.objects.get_or_create(
+            user=request.user, achievement=achievement, defaults={"date_earned": timezone.now(), "pinned": True}
+        )
+
+        # If not newly created, just toggle the pinned status
+        if not created:
+            user_achievement.pinned = not user_achievement.pinned
+            user_achievement.save(update_fields=["pinned"])  # Only update the pinned field
+
+        return JsonResponse({"status": "success", "pinned": user_achievement.pinned})
+
+    return JsonResponse({"status": "error"}, status=400)
+
+
+def get_pinned_achievements(request):
+    # Change from request.user.profile to request.user
+    pinned_achievements = UserAchievement.objects.filter(user=request.user, pinned=True).select_related(
+        "achievement", "achievement__game"
+    )
+
+    data = {
+        "pinned_achievements": [
+            {
+                "id": ua.achievement.id,
+                "name": ua.achievement.name,
+                "description": ua.achievement.description,
+                "game_name": ua.achievement.game.name,
+                "rarity": ua.achievement.rarity,
+                "date_earned": ua.date_earned.strftime("%B %d, %Y") if ua.date_earned else "Not unlocked",
+            }
+            for ua in pinned_achievements
+        ]
+    }
+    return JsonResponse(data)
+
+
 def user_achievements(request, user_id=None):
     """
     Display a user's achievements page.
@@ -35,13 +81,14 @@ def user_achievements(request, user_id=None):
     else:
         target_user = request.user
         viewing_own_profile = True
-    # Get all games
-    games = Game.objects.all()
+
+    # Get user-specific game lists
+    games = Game.objects.filter(users=target_user)
 
     # Get user's join date for display
     join_date = target_user.date_joined.strftime("%B %Y")
 
-    # Get all user achievements for the target user (do this once, outside the game loop)
+    # Get all user achievements for the target user
     user_achievements_map = {}
     user_achievements = UserAchievement.objects.filter(user=target_user).select_related("achievement")
 
@@ -67,14 +114,13 @@ def user_achievements(request, user_id=None):
     for game in games:
         count = Achievement.objects.filter(game=game).count()
         game_achievement_counts[game.id] = count
-        # Add the total_achievements attribute to each game
         game.total_achievements = count
 
     # Process games
     games_with_achievements_data = []
 
     for game_instance in games:
-        # Get all achievements for this game - clean, without complex annotations
+        # Get all achievements for this game
         achievements_for_game = Achievement.objects.filter(game=game_instance).order_by("rarity")
 
         # Skip games with no achievements
@@ -164,10 +210,12 @@ def user_achievements(request, user_id=None):
     )
 
     # Calculate overall stats
-    total_system_achievements = Achievement.objects.count()
+    total_user_accessible_achievements = Achievement.objects.filter(game__in=games).count()
     overall_unlocked_achievements = actually_unlocked_count
     overall_progress = (
-        (overall_unlocked_achievements / total_system_achievements * 100) if total_system_achievements > 0 else 0
+        (overall_unlocked_achievements / total_user_accessible_achievements * 100)
+        if total_user_accessible_achievements > 0
+        else 0
     )
 
     context = {
@@ -176,7 +224,7 @@ def user_achievements(request, user_id=None):
         "join_date": join_date,
         "games_with_achievements": games_with_achievements_data,
         "overall_stats": {
-            "total": total_system_achievements,
+            "total": total_user_accessible_achievements,
             "unlocked": overall_unlocked_achievements,
             "progress": overall_progress,
         },
