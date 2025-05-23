@@ -24,10 +24,14 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
       const leaderboardData = {
-        labels: [{% for data in leaderboard_data %} '{{ data.player }}', {% endfor %}],
+        labels: [{% for data in leaderboard_data %}
+            '{{ data.tier_badge }} #{{ forloop.counter }}. {{ data.player }}',
+            {% endfor %}],
         datasets: [{
           label: '{{ score_metric_name }}',
-          data: [{% for data in leaderboard_data %} {{ data.score }}, {% endfor %}],
+          data: [{% for data in leaderboard_data %}
+            {{ data.score }},
+            {% endfor %}],
           backgroundColor: (context) => {
             const chart = context.chart;
             const { ctx, chartArea } = chart;
@@ -92,8 +96,8 @@
             }
           },
           animation: {
-            duration: 1000,
-            easing: 'easeInOutBounce',
+            duration: 1500,
+            easing: 'easeOutBounce',
           }
         }
       };
