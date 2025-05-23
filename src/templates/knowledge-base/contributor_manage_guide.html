@@ -59,7 +59,7 @@
             <td>Last Upload: {{ guide.recent_upload }}</td>
             <td>
               {% if guide.status == 0 %}
-              <span class="status-pending"><b>Pending...</b></span>
+                <span class="status-pending"><b>Pending...</b></span>
               {% elif guide.status == 1 %}
                 <a class="btn btn-success text-light"
                    href="{% url 'feedback-detail' guide.latest_feedback.pk %}"><b>{{ guide.get_status_display }}</b></a>
