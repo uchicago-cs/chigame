@@ -70,6 +70,7 @@ def award_achievement(request):
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
+
 @api_view(["POST"])
 def award_threshold_achievement(request):
     # Awards a threshold achievement
@@ -85,7 +86,9 @@ def award_threshold_achievement(request):
                 max_players=1,
                 complexity=1,
             )[0]
-            threshold_achievement = Achievement.objects.get_or_create(name="Clicked a Button 5 Times", rarity=1, game=game, threshold=5)[0]
+            threshold_achievement = Achievement.objects.get_or_create(
+                name="Clicked a Button 5 Times", rarity=1, game=game, threshold=5
+            )[0]
             user = request.user
             user_achievement = UserAchievement.objects.get_or_create(
                 user=user, achievement=threshold_achievement, date_earned="2025-04-24T21:45:37.084000Z"

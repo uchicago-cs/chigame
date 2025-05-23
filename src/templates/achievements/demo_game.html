@@ -117,10 +117,8 @@
           data[key] = value;
         });
 
-
-
-          if (count == 5) {
-            fetch('api/award-threshold-achievement/', {
+        if (count == 5) {
+          fetch('api/award-threshold-achievement/', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -148,7 +146,7 @@
             .catch(error => {
               console.error('Error:', error);
             });
-          } else {
+        } else {
           fetch('api/award-achievement/', {
               method: 'POST',
               headers: {
@@ -177,7 +175,7 @@
             .catch(error => {
               console.error('Error:', error);
             });
-          }
+        }
       });
     </script>
   </body>
