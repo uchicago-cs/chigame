@@ -196,7 +196,7 @@ def user_achievements(request, user_id=None):
         # Add game data to the list
         games_with_achievements_data.append(
             {
-                "game": game_instance,  # game_instance already has total_achievements attribute set
+                "game": game_instance,
                 "achievements": processed_achievements_for_game,
                 "progress": game_progress_percentage,
                 "truly_unlocked_for_game": game_truly_unlocked_count,
