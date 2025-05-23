@@ -70,19 +70,19 @@
       padding: 1rem;
       border: solid;
       border-radius: 1rem;
-      pointer-events: none; /* ignore mouse events when hidden */
+      pointer-events: none;
       /* Keep popup in the layout but invisible */
     }
 
     .popup.show {
       opacity: 1;
       transform: translate(-50%, -50%) translateY(0);
-      pointer-events: auto; /* enable mouse events when visible */
+      pointer-events: auto;
     }
 
     .popup.hide {
       opacity: 0;
-      transform: translate(-50%, -50%) translateY(20px); /* slide back down */
+      transform: translate(-50%, -50%) translateY(20px);
     }
   </style>
 {% endblock css %}
