@@ -3,6 +3,7 @@ from django.shortcuts import get_object_or_404, redirect
 from django.views import View
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, status
+from rest_framework.authentication import SessionAuthentication
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import SAFE_METHODS, BasePermission, IsAuthenticated, IsAuthenticatedOrReadOnly
@@ -19,18 +20,23 @@ from chigame.api.serializers import (
     GameReviewStatsSerializer,
     GameSerializer,
     GroupSerializer,
+    LiveChatSerializer,
     LobbySerializer,
     MechanicSerializer,
     MessageFeedSerializer,
     MessageSerializer,
+    MetricScoreSerializer,
+    PopUpInfoSerializer,
     ReviewSerializer,
     UserAchievementSerializer,
     UserSerializer,
 )
 from chigame.api.spam_utils import is_spam
+from chigame.chat.models import LiveChat, LiveChatUser
 from chigame.games.models import Feedback, Game, GameData, Lobby, Message, Review, Tournament
 from chigame.games.simulation_utils import run_complete_tournament_simulation
-from chigame.users.models import Group, User
+from chigame.leaderboards.models import LeaderboardEntry, Match, Metric, MetricScore
+from chigame.users.models import Group, User, UserProfile
 
 
 # Helper function to get user from slug
@@ -375,6 +381,66 @@ class AchievementCreateView(generics.CreateAPIView):
         )
 
 
+class MetricScoreView(generics.ListCreateAPIView):
+    """
+    View to handle MetricScore creation and retrieval.
+    """
+
+    serializer_class = MetricScoreSerializer
+    authentication_classes = [SessionAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        game_id = self.kwargs["game_id"]
+        return MetricScore.objects.filter(metric__game=game_id)
+
+    def perform_create(self, serializer):
+        game_id = self.kwargs["game_id"]
+
+        user = self.request.user
+        user_profile, created = UserProfile.objects.get_or_create(user=user, defaults={})
+        game = get_object_or_404(Game, id=game_id)
+
+        metric_id = self.request.data.get("metric_id")
+        match_id = self.request.data.get("match_id")
+
+        metric = get_object_or_404(Metric, id=metric_id, game=game)
+        match = get_object_or_404(Match, id=match_id, game=game)
+
+        leaderboard = metric.game.leaderboards.first()
+        if not leaderboard:
+            raise ValidationError("No leaderboard found for this game.")
+
+        leaderboard_entry, _ = LeaderboardEntry.objects.get_or_create(
+            leaderboard=leaderboard,
+            user=user_profile,
+            defaults={"rank": 0},
+        )
+
+        serializer.save(
+            user=user_profile,
+            metric=metric,
+            match=match,
+            leaderboard_entry=leaderboard_entry,
+        )
+
+
+class GamePopupsAPIView(APIView):
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def get(self, request, pk):
+        game = get_object_or_404(Game, pk=pk)
+        data = {
+            "min_players": game.min_players,
+            "max_players": game.max_players,
+            "complexity": float(game.complexity or 0),
+            "min_playtime": game.min_playtime or 0,
+            "max_playtime": game.max_playtime or 0,
+            "description": game.description or "",
+        }
+        return Response(PopUpInfoSerializer(data).data)
+
+
 class GameDataListView(generics.ListCreateAPIView):
     """
     API endpoint to list and create game data for the authenticated user.
@@ -498,3 +564,73 @@ class GameReviewStatsAPIView(APIView):
         }
 
         return Response(GameReviewStatsSerializer(data).data)
+
+
+class LiveChatCreateView(generics.CreateAPIView):
+    queryset = LiveChat.objects.all()
+    serializer_class = LiveChatSerializer
+    permission_classes = []
+
+    def perform_create(self, serializer):
+        user = User.objects.first()
+        if not user:
+            raise ValueError("No user exists in the database to assign to the LiveChatUser")
+
+        chat = serializer.save()
+        LiveChatUser.objects.create(user=user, live_chat=chat)
+
+
+class LiveChatAddUserView(APIView):
+    permission_classes = []
+
+    def post(self, request, chat_id):
+        chat = LiveChat.objects.get(id=chat_id)
+        user_ids = request.data.get("user_ids", [])
+        for uid in user_ids:
+            user = User.objects.get(id=uid)
+            LiveChatUser.objects.get_or_create(user=user, live_chat=chat)
+        return Response({"id": chat.id, "name": chat.name, "users": user_ids})
+
+
+class LiveChatListView(generics.ListAPIView):
+    serializer_class = LiveChatSerializer
+    permission_classes = []
+
+    def get_queryset(self):
+        user = User.objects.first()
+        return LiveChat.objects.filter(users=user)
+
+
+class LiveChatDetailView(generics.RetrieveAPIView):
+    queryset = LiveChat.objects.all()
+    serializer_class = LiveChatSerializer
+    permission_classes = []
+
+
+class UserAchievementDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = UserAchievement.objects.all()
+    serializer_class = UserAchievementSerializer
+
+    def perform_update(self, serializer):
+        serializer.save()
+
+
+class UserAchievementListView(APIView):
+    def get(self, request, pk):
+        user_id = self.kwargs["pk"]
+        user_achievements = UserAchievement.objects.filter(user__id=user_id)
+
+        data = [
+            {
+                "id": achievement.id,
+                "achievement": achievement.achievement.name,
+                "game": achievement.achievement.game.name,
+                "pinned": achievement.pinned,
+                "date_earned": achievement.date_earned,
+                "last_updated": achievement.last_updated,
+                "progress": achievement.progress,
+            }
+            for achievement in user_achievements
+        ]
+
+        return Response(data)
