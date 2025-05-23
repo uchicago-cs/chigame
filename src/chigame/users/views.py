@@ -598,9 +598,7 @@ def act_on_inbox_notification(request, pk, action):
         notification = Notification.objects.get(pk=pk)
         if notification.receiver.pk != request.user.pk:
             messages.error(request, "You can not perform actions on this notification")
-            return redirect(
-                reverse("users:user-inbox-category", kwargs={"pk": request.user.pk, "category": next_category})
-            )
+            return redirect(reverse("users:user-inbox-category", kwargs={"pk": request.user.pk, "category": next_category}))
 
         if action == "mark_read":
             notification.mark_as_read()
@@ -695,7 +693,7 @@ def move_notification(request, pk):
     if new_category and new_category in dict(Notification.CATEGORY_CHOICES):
         notification.category = new_category
         notification.save()
-        messages.success(request, f"Notification moved to {new_category}.")
+        # messages.success(request, f"Notification moved to {new_category}.")
         return redirect("users:user-inbox-category", pk=request.user.pk, category=next_category)
 
     label_id = request.POST.get("label_id")
@@ -724,12 +722,11 @@ def create_notification_label(request):
                 messages.info(request, f"Label '{label_name}' already exists.")
         else:
             messages.error(request, "Label name cannot be empty.")
-    return redirect(reverse("users:manage-labels-page"))
-
+    return redirect(reverse("users:manage-labels-page")) 
 
 @login_required
 def manage_labels_page_view(request):
-    user_labels = NotificationLabel.objects.filter(user=request.user).order_by("name")
+    user_labels = NotificationLabel.objects.filter(user=request.user).order_by('name')
     context = {
         "labels": user_labels,
     }
@@ -770,24 +767,47 @@ def notifications_by_label(request, label_id):
     belonging to the logged-in user, excluding deleted ones.
     """
     label = get_object_or_404(NotificationLabel, pk=label_id, user=request.user)
-    # Fetch only visible (non-deleted) notifications for the current user that have this label
     notifications = label.notifications.filter(
-        receiver=request.user, visible=True  # <-- This is the crucial addition
-    ).order_by("-first_sent")
+        receiver=request.user,
+        visible=True 
+    ).order_by('-first_sent')
 
-    all_user_labels = NotificationLabel.objects.filter(user=request.user).order_by("name")
+    all_user_labels = NotificationLabel.objects.filter(user=request.user).order_by('name')
 
     context = {
         "label": label,
         "notifications": notifications,
-        "active_category": f"label-{label.id}",
+        "active_category": f"label-{label.id}", 
         "category_choices": Notification.CATEGORY_CHOICES,
         "labels": all_user_labels,
         "pk": request.user.pk,
     }
     return render(request, "users/notifications_by_label.html", context)
 
+@login_required
+@require_POST
+@csrf_protect 
+def unassign_label_from_notification(request, notification_id, label_id):
+    notification = get_object_or_404(Notification, pk=notification_id, receiver=request.user)
 
+    try:
+        # Use the label_id from the URL parameter directly
+        label_to_unassign = NotificationLabel.objects.get(pk=label_id, user=request.user)
+
+        # Check if the label is actually assigned to this notification
+        if label_to_unassign in notification.labels.all():
+            notification.labels.remove(label_to_unassign)
+            messages.success(request, f"Label '{label_to_unassign.name}' removed from notification.")
+        else:
+            messages.info(request, f"Label '{label_to_unassign.name}' was not assigned to this notification.")
+
+    except NotificationLabel.DoesNotExist:
+        messages.error(request, "Label not found or does not belong to you.")
+    except Exception as e: # Catch any other potential errors
+        messages.error(request, f"An error occurred: {str(e)}")
+
+    return redirect(reverse("users:notifications-by-label", kwargs={"label_id": label_id}))
+    
 @login_required
 @require_POST
 def delete_notification_label(request, label_id):
