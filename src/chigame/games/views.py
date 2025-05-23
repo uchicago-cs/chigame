@@ -16,6 +16,7 @@ from django.core.files.storage import FileSystemStorage
 from django.core.paginator import Paginator
 from django.db.models import Avg, Case, Count, ExpressionWrapper, F, FloatField, Q, Value, When
 from django.db.models.functions import Lower
+from django.forms import ValidationError
 from django.http import HttpResponseForbidden, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
@@ -1215,6 +1216,13 @@ class TournamentCreateView(CreateView):
         "players",  # This field should be removed in the production version. For testing only.
     ]
 
+    def form_invalid(self, form):
+        # this is wo so we handle invalid form submission
+        for field, errors in form.errors.items():
+            for error in errors:
+                messages.error(self.request, f"{field}: {error}")
+        return super().form_invalid(form)
+
     def form_valid(self, form):
         user = self.request.user
 
@@ -1223,32 +1231,40 @@ class TournamentCreateView(CreateView):
             return redirect(reverse_lazy("tournament-create"))
 
         # Check if the user is not a staff member and has less than one token
+
         if not user.is_staff and user.tokens < 1:
             messages.error(self.request, "You do not have enough tokens to create a tournament.")
             return redirect("tournament-list")
 
-        # If the user is not staff, deduct a token
-        if not user.is_staff:
-            user.tokens -= 1
-            user.save()
+        try:
+            # Save the form instance but don't commit to the database yet
 
-        # Save the form instance but don't commit to the database yet
-        tournament = form.save(commit=False)
-        tournament.created_by = user
-        tournament.save()
+            tournament = form.save(commit=False)
+            tournament.created_by = user
+            tournament.full_clean()  # trigger the model's clean() method
+            tournament.save()
 
-        players = form.cleaned_data["players"]
-        tournament.players.add(*players)
+            players = form.cleaned_data["players"]
+            tournament.players.add(*players)
 
-        # Auto-create a chat for this respective tournament
-        chat = Chat(tournament=tournament)
-        chat.save()
+            # Auto-create a chat for this respective tournament
+            chat = Chat(tournament=tournament)
+            chat.save()
 
-        # (Optional) Insert bracket-related logic here if needed
+            # If the user is not staff, deduct a token after successful creation
+            if not user.is_staff:
+                user.tokens -= 1
+                user.save()
 
-        # Redirect to the tournament's detail page or another appropriate response
-        self.object = tournament
-        return HttpResponseRedirect(self.get_success_url())
+            # Redirect to the tournament's detail page
+            self.object = tournament
+            return HttpResponseRedirect(self.get_success_url())
+        except ValidationError as e:
+            # this w should handle validation errors from the model's clean() method?
+            for field, errors in e.message_dict.items():
+                for error in errors:
+                    messages.error(self.request, f"{field}: {error}")
+            return self.form_invalid(form)
 
     def get_success_url(self):
         return reverse("tournament-detail", kwargs={"pk": self.object.pk})
@@ -1610,6 +1626,25 @@ class ReviewListView(ListView):
         game_pk = self.kwargs["pk"]
         context["game"] = get_object_or_404(Game, pk=game_pk)
         return context
+
+
+# Views for a review page
+@login_required
+def add_review(request, pk):
+    game = get_object_or_404(Game, pk=pk)
+
+    if request.method == "POST":
+        form = ReviewForm(request.POST)
+        if form.is_valid():
+            review = form.save(commit=False)
+            review.user = request.user
+            review.game = game
+            review.save()
+            return redirect("game-detail", pk=game.pk)
+    else:
+        form = ReviewForm()
+
+    return render(request, "games/game_add_review.html", {"form": form, "game": game})
 
 
 @login_required
