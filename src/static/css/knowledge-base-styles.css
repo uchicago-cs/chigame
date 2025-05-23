@@ -77,6 +77,10 @@
     margin-bottom:1rem !important;
 }
 
+.status-pending{
+    margin-left:0.75rem;
+}
+
 
 a.upload-button {
   display: inline-block;
