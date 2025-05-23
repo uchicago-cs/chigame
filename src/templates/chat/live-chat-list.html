@@ -38,6 +38,25 @@
       <!-- Private Chats -->
       <div class="tab-pane fade" id="private" role="tabpanel">
         {% include "chat/components/_chat_list.html" with chats=private_chats %}
+        <div class="list-group">
+          {% for chat in chats %}
+            <a href="{% url 'chat-page' chat.id %}"
+               class="list-group-item list-group-item-action d-flex justify-content-between align-items-start">
+              <div class="flex-grow-1">
+                <div class="d-flex align-items-center gap-2 mb-1">
+                  <h5 class="mb-1">{{ chat.name }}</h5>
+                  <span class="badge bg-primary rounded-pill extra-small-text">
+                    {{ chat.user_count }} user{{ chat.user_count|pluralize }}
+                  </span>
+                </div>
+                <div class="text-muted small">{{ chat.last_message|default:"No messages yet." }}</div>
+              </div>
+              {% if chat.last_message_time %}
+                <div class="text-muted small">{{ chat.last_message_time|date:"g:i A" }}</div>
+              {% endif %}
+            </a>
+          {% endfor %}
+        </div>
       </div>
     </div>
   </div>
@@ -76,6 +95,7 @@
           }
         });
       });
+      searchInput.addEventListener('input', handleSearchInput);
     });
   </script>
 {% endblock content %}
