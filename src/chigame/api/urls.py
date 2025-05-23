@@ -19,6 +19,7 @@ game_patterns = [
     ),
     path("<int:pk>/achievements/create/", views.AchievementCreateView.as_view(), name="api-game-achievement-create"),
     path("<int:game_id>/scores/", views.MetricScoreView.as_view(), name="api-game-submit-score"),
+    path("<int:game_id>/leaderboard/", views.GameLeaderboardView.as_view(), name="game-leaderboard"),
     path("<int:pk>/popups/", views.GamePopupsAPIView.as_view(), name="api-game-popups"),
     path("data/", views.GameDataListView.as_view(), name="api-game-data-list"),
     path("<int:game_id>/data/<str:key>/", views.GameDataDetailView.as_view(), name="api-game-data-detail"),
