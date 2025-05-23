@@ -401,7 +401,6 @@ function movePiece(piece, moveX, moveY) {
       ) {
         if (!piece.isKing) {
           piece.isKing = true;
-
           const crown = piece.sprite.scene.add.image(newX, newY, 'crown');
           crown.setDisplaySize(TILE_SIZE, TILE_SIZE);
           piece.kingIcon = crown;
