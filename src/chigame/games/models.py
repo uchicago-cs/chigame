@@ -1225,3 +1225,6 @@ class GameQueueEntry(models.Model):
 
     def __str__(self):
         return f"{self.game.name} (pos {self.position})"
+
+
+# Game Stat Model Implementation
