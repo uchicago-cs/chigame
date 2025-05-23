@@ -59,15 +59,15 @@
             <td>Last Upload: {{ guide.recent_upload }}</td>
             <td>
               {% if guide.status == 0 %}
-                <span class="badge bg-warning text-dark">{{ guide.get_status_display }}&nbsp;</span>
+              <span class="status-pending"><b>Pending...</b></span>
               {% elif guide.status == 1 %}
-                <a class="btn btn-success text-dark"
+                <a class="btn btn-success text-light"
                    href="{% url 'feedback-detail' guide.latest_feedback.pk %}"><b>{{ guide.get_status_display }}</b></a>
               {% elif guide.status == 2 %}
-                <a class="btn btn-danger text-dark"
+                <a class="btn btn-danger text-light"
                    href="{% url 'feedback-detail' guide.latest_feedback.pk %}"><b>{{ guide.get_status_display }}</b></a>
               {% elif guide.status == 3 %}
-                <a class="btn btn-warning text-dark"
+                <a class="btn btn-warning text-light"
                    href="{% url 'feedback-detail' guide.latest_feedback.pk %}"><b>{{ guide.get_status_display }}</b></a>
               {% endif %}
             </td>
