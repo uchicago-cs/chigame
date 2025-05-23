@@ -1485,7 +1485,6 @@ def remove_from_gamelist(request, pk, list_pk):
     return redirect("game-detail", pk=pk)
 
 
-
 class MatchStatsView(DetailView):
     model = Tournament
     template_name = "tournaments/tournament_match_stats.html"
@@ -1524,6 +1523,7 @@ class MatchStatsView(DetailView):
         }
 
         return render(request, "tournaments/tournament_match_stats.html", context)
+
 
 # Tournament Feedback Views
 @login_required
