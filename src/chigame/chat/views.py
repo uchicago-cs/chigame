@@ -1,4 +1,7 @@
+from collections import defaultdict
+
 from django.core.exceptions import ValidationError
+from django.db.models import Count
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.views.decorators.csrf import csrf_exempt
@@ -14,6 +17,22 @@ def chat(request, chat_id):
     # if the chat is public, add the request user to the chat
     if request.user.is_authenticated and chat.public and not chat.users.filter(id=request.user.id).exists():
         chat.users.add(request.user)
+
+    # get reactions
+    reaction_data = (
+        LiveChatMessageReaction.objects.filter(live_chat=chat)
+        .values("message_id", "content")
+        .annotate(count=Count("id"))
+    )
+
+    # Map reactions to each message_id
+    reaction_map = defaultdict(list)
+    for r in reaction_data:
+        reaction_map[r["message_id"]].append({"content": r["content"], "count": r["count"]})
+
+    # Attach .reaction_summary to each message object
+    for message in messages:
+        message.reaction_summary = reaction_map.get(message.id, [])
 
     return render(request, "chat/index.html", {"chat": chat, "messages": messages})
 
