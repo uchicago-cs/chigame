@@ -98,6 +98,10 @@ main {
     justify-content: center;
 }
 
+#change-length-btn {
+    font-size: 0.8rem;
+}
+
 .nav-btn:hover {
     background-color: var(--primary-hover);
     transform: translateY(-2px);
@@ -586,7 +590,7 @@ h1 {
     box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.4);
 }
 
-/* Settings */
+
 .settings-screen {
     background-color: var(--card-bg);
     color: var(--text);
@@ -670,6 +674,7 @@ h1 {
 .settings-screen input[type="checkbox"]:checked::after {
     visibility: visible;
 }
+
 
 body.dark-mode {
     --card-bg: #c4c4c4;
