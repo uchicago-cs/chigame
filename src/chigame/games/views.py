@@ -1,3 +1,4 @@
+import json
 import os
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta
@@ -54,7 +55,8 @@ from .simulation_utils import (
     MultiStageSimulator,
     RoundRobinSimulator,
     TournamentSimulator,
-    run_complete_tournament_simulation,
+    compute_seeds,
+    get_ordered_players_by_seeds,
 )
 from .tables import LobbyTable
 
@@ -737,6 +739,19 @@ class TournamentDetailView(DetailView):
         else:
             return "single"
 
+    def get_seeded_players_from_fixture(self, tournament):
+        fixture_path = "src/chigame/games/fixtures/seeding_tournaments_fixtures.json"
+        with open(fixture_path) as f:
+            fixture_data = json.load(f)
+
+        seed_data = compute_seeds(fixture_data)
+
+        tournament_players = list(tournament.players.all())
+        id_to_user = {u.id: u for u in tournament_players}
+        seeded_players = get_ordered_players_by_seeds(seed_data, id_to_user)
+
+        return seeded_players
+
     def get(self, request, *args, **kwargs):
         super().get(request, *args, **kwargs)
         tournament = Tournament.objects.get(id=self.kwargs["pk"])
@@ -762,12 +777,24 @@ class TournamentDetailView(DetailView):
                 if simulation_type == "single":
                     simulator = TournamentSimulator(tournament)
                     simulator.set_tournament_type(False)
+
+                    # Include seeded players if enabled
+                    if request.session.get("seeding_mode", False):
+                        seeded_players = self.get_seeded_players_from_fixture(tournament)
+                        simulator.set_seeded_players(seeded_players)
+
                     simulator.initialize_simulation()
                     simulator_data = simulator.get_bracket_data()
 
                 elif simulation_type == "double":
                     simulator = TournamentSimulator(tournament)
                     simulator.set_tournament_type(True)
+
+                    # Include seeded players if enabled
+                    if request.session.get("seeding_mode", False):
+                        seeded_players = self.get_seeded_players_from_fixture(tournament)
+                        simulator.set_seeded_players(seeded_players)
+
                     simulator.initialize_simulation()
                     simulator_data = simulator.get_bracket_data()
 
@@ -786,16 +813,6 @@ class TournamentDetailView(DetailView):
             context["simulation_data"] = simulator_data
 
         return self.render_to_response(context)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        tournament = self.get_object()
-
-        # Fetch the user's feedback for this tournament
-        user_feedback = Feedback.objects.filter(tournament=tournament, user=self.request.user).first()
-        context["user_feedback"] = user_feedback
-
-        return context
 
     def post(self, request, *args, **kwargs):
         tournament = Tournament.objects.get(id=request.POST.get("tournament_id"))
@@ -894,8 +911,17 @@ class TournamentDetailView(DetailView):
 
         # single and double elimination simulation
         elif simulation_type == "single" or simulation_type == "double":
-            if request.POST.get("action") == "simulate_match":
-                # Simulate a specific match
+            if request.POST.get("action") == "set_seeding_mode":
+                use_seeding = request.POST.get("use_seeding")
+                if use_seeding == "true":
+                    request.session["seeding_mode"] = True
+                elif use_seeding == "false":
+                    request.session["seeding_mode"] = False
+                else:
+                    request.session["seeding_mode"] = None
+                request.session.modified = True
+                return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
+            elif request.POST.get("action") == "simulate_match":
                 match_id = request.POST.get("match_id")
 
                 # Get the simulator data from the session
@@ -904,19 +930,16 @@ class TournamentDetailView(DetailView):
                     messages.error(request, "Simulation data not found. Please restart the simulation.")
                     return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
 
-                # Create a simulator instance and load the data
                 simulator = TournamentSimulator(tournament)
                 simulator.set_tournament_type(
                     request.session.get(f"tournament_{tournament.id}_double_elimination", False)
                 )
-                simulator.initialize_simulation()
 
-                # Update the simulator with the current state
+                # Do not initialize again – just restore
                 simulator.simulated_matches = {}
                 for round_num, brackets in simulator_data["rounds"].items():
                     for bracket_type, matches in brackets.items():
                         for match in matches:
-                            # Ensure match ID is a string
                             match_id_in_data = str(match["id"])
                             match_data = {
                                 "match": None,
@@ -938,14 +961,12 @@ class TournamentDetailView(DetailView):
 
                 simulator.current_round = simulator_data["current_round"]
 
-                # Simulate the match
                 if match_id not in simulator.simulated_matches:
                     messages.error(request, f"Match ID {match_id} not found in simulation data")
                     return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
 
                 winner, loser = simulator.simulate_match_outcome(match_id)
 
-                # Save the updated simulator data
                 updated_data = simulator.get_bracket_data()
                 request.session[f"tournament_{tournament.id}_simulator_data"] = updated_data
                 request.session.modified = True
@@ -1043,12 +1064,49 @@ class TournamentDetailView(DetailView):
                 return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
 
             elif request.POST.get("action") == "run_full_simulation":
-                # Run a complete simulation
                 is_double_elimination = request.session.get(f"tournament_{tournament.id}_double_elimination", False)
-                simulation_data = run_complete_tournament_simulation(tournament, is_double_elimination)
-                request.session[f"tournament_{tournament.id}_simulator_data"] = simulation_data
 
-                messages.success(request, "Full tournament simulation completed")
+                # Pull seeding preference from session if not passed in POST
+                use_seeding = request.POST.get("use_seeding")
+                if use_seeding is None:
+                    use_seeding = request.session.get("seeding_mode", False)
+                use_seeding = str(use_seeding).lower() == "true"
+
+                simulator = TournamentSimulator(tournament)
+                simulator.set_tournament_type(is_double_elimination)
+
+                if use_seeding:
+                    seeded_players = self.get_seeded_players_from_fixture(tournament)
+                    simulator.set_seeded_players(seeded_players)
+
+                simulator.initialize_simulation()
+
+                # Simulate all matches in the first round
+                for match_id in simulator.simulated_matches:
+                    simulator.simulate_match_outcome(match_id)
+
+                # Create and simulate all remaining rounds
+                while True:
+                    next_round_matches = simulator.create_next_round_matches()
+                    if not next_round_matches:
+                        break
+                    for match_id in next_round_matches:
+                        simulator.simulate_match_outcome(match_id)
+
+                # For double elimination, simulate final match if needed
+                if is_double_elimination:
+                    final_match = simulator.create_final_match()
+                    if final_match:
+                        simulator.simulate_match_outcome(f"sim_final_{simulator.current_round + 1}")
+
+                # Save the full bracket to session
+                simulation_data = simulator.get_bracket_data()
+                request.session[f"tournament_{tournament.id}_simulator_data"] = simulation_data
+                request.session.modified = True
+
+                messages.success(
+                    request, "Full tournament simulation completed" + (" with seeding" if use_seeding else "")
+                )
                 return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
 
         elif request.POST.get("action") == "join":
@@ -1369,6 +1427,125 @@ class TournamentArchivedListView(ListView):
         return self.request.user.is_staff
 
 
+# Tournament Feedback Views
+@login_required
+def tournament_feedback_list(request, tournament_id):
+    """
+    View to display all feedback for a specific tournament.
+    Only the owner of the tournament can access this view.
+    """
+    tournament = get_object_or_404(Tournament, id=tournament_id)
+
+    # Check if the requesting user is the owner of the tournament
+    if tournament.created_by != request.user:
+        # Redirect or show an error message if the user is not the owner
+        messages.error(request, "You are not authorized to view feedback for this tournament.")
+        return redirect("tournament-list")  # Redirect to the tournament list or another appropriate page
+
+    # Retrieve feedback for the tournament
+    feedback_list = Feedback.objects.filter(tournament=tournament).order_by("-created_at")
+    return render(
+        request,
+        "tournaments/tournament_feedback_list.html",
+        {"tournament": tournament, "feedback_list": feedback_list},
+    )
+
+
+@login_required
+def user_feedback_list(request):
+    """
+    View to display all feedback submitted by the logged-in user.
+    """
+    user_feedback = Feedback.objects.filter(user=request.user).order_by("-created_at")
+
+    # Get the first tournament associated with the user's feedback (if any)
+    tournament = user_feedback.first().tournament if user_feedback.exists() else None
+
+    return render(
+        request,
+        "tournaments/tournament_user_feedback.html",
+        {"user_feedback": user_feedback, "tournament": tournament},
+    )
+
+
+@login_required
+def submit_feedback(request, tournament_id):
+    tournament = get_object_or_404(Tournament, id=tournament_id)
+
+    if request.method == "POST":
+        comment = request.POST.get("content")  # Match the field name in the model
+        rating = request.POST.get("rating")
+
+        if not comment or not rating:
+            messages.error(request, "All fields are required.")
+            return redirect("tournament-detail", pk=tournament.id)
+
+        Feedback.objects.create(
+            tournament=tournament,
+            user=request.user,
+            comment=comment,  # Use 'comment' if that's the field name in the model
+            rating=rating,
+        )
+        print("Submitting feedback by user:", request.user)
+
+        messages.success(request, "Feedback submitted successfully!")
+        return redirect("tournament-detail", pk=tournament.id)
+
+    return render(request, "tournaments/tournament_submit_feedback.html", {"tournament": tournament})
+
+
+@login_required
+def update_feedback_view(request, feedback_id):
+    """
+    View to handle updating feedback.
+    Only the original author or an admin can update feedback.
+    """
+    feedback = get_object_or_404(Feedback, id=feedback_id)
+
+    # Check if the user is authorized to update the feedback
+    if feedback.user != request.user and not request.user.is_staff:
+        return HttpResponseForbidden("You are not authorized to update this feedback.")
+
+    if request.method == "POST":
+        new_comment = request.POST.get("content")
+        new_rating = request.POST.get("rating")
+
+        if not new_comment or not new_rating:
+            messages.error(request, "All fields are required.")
+            return redirect("update-feedback", feedback_id=feedback.id)
+
+        # Update feedback fields
+        feedback.comment = new_comment
+        feedback.rating = new_rating
+        feedback.save()
+
+        messages.success(request, "Feedback updated successfully!")
+        return redirect("user-feedback-list")
+
+    return render(request, "tournaments/tournament_update_feedback.html", {"feedback": feedback})
+
+
+@login_required
+def delete_feedback_view(request, feedback_id):
+    """
+    View to handle deleting feedback.
+    Only the original author or an admin can delete feedback.
+    """
+    feedback = get_object_or_404(Feedback, id=feedback_id)
+
+    # Check if the user is authorized to delete the feedback
+    if feedback.user != request.user and not request.user.is_staff:
+        return HttpResponseForbidden("You are not authorized to delete this feedback.")
+
+    if request.method == "POST":
+        # Delete the feedback
+        feedback.delete()
+        messages.success(request, "Feedback deleted successfully!")
+        return redirect("user-feedback-list")
+
+    return render(request, "tournaments/tournament_delete_feedback.html", {"feedback": feedback})
+
+
 # Placeholder Game
 @login_required
 def coin_flip_game(request, pk):
@@ -1517,125 +1694,6 @@ def remove_from_gamelist(request, pk, list_pk):
     game_list = get_object_or_404(GameList, pk=list_pk, created_by=request.user)
     game_list.games.remove(game)
     return redirect("game-detail", pk=pk)
-
-
-# Tournament Feedback Views
-@login_required
-def tournament_feedback_list(request, tournament_id):
-    """
-    View to display all feedback for a specific tournament.
-    Only the owner of the tournament can access this view.
-    """
-    tournament = get_object_or_404(Tournament, id=tournament_id)
-
-    # Check if the requesting user is the owner of the tournament
-    if tournament.created_by != request.user:
-        # Redirect or show an error message if the user is not the owner
-        messages.error(request, "You are not authorized to view feedback for this tournament.")
-        return redirect("tournament-list")  # Redirect to the tournament list or another appropriate page
-
-    # Retrieve feedback for the tournament
-    feedback_list = Feedback.objects.filter(tournament=tournament).order_by("-created_at")
-    return render(
-        request,
-        "tournaments/tournament_feedback_list.html",
-        {"tournament": tournament, "feedback_list": feedback_list},
-    )
-
-
-@login_required
-def user_feedback_list(request):
-    """
-    View to display all feedback submitted by the logged-in user.
-    """
-    user_feedback = Feedback.objects.filter(user=request.user).order_by("-created_at")
-
-    # Get the first tournament associated with the user's feedback (if any)
-    tournament = user_feedback.first().tournament if user_feedback.exists() else None
-
-    return render(
-        request,
-        "tournaments/tournament_user_feedback.html",
-        {"user_feedback": user_feedback, "tournament": tournament},
-    )
-
-
-@login_required
-def submit_feedback(request, tournament_id):
-    tournament = get_object_or_404(Tournament, id=tournament_id)
-
-    if request.method == "POST":
-        comment = request.POST.get("content")  # Match the field name in the model
-        rating = request.POST.get("rating")
-
-        if not comment or not rating:
-            messages.error(request, "All fields are required.")
-            return redirect("tournament-detail", pk=tournament.id)
-
-        Feedback.objects.create(
-            tournament=tournament,
-            user=request.user,
-            comment=comment,  # Use 'comment' if that's the field name in the model
-            rating=rating,
-        )
-        print("Submitting feedback by user:", request.user)
-
-        messages.success(request, "Feedback submitted successfully!")
-        return redirect("tournament-detail", pk=tournament.id)
-
-    return render(request, "tournaments/tournament_submit_feedback.html", {"tournament": tournament})
-
-
-@login_required
-def update_feedback_view(request, feedback_id):
-    """
-    View to handle updating feedback.
-    Only the original author or an admin can update feedback.
-    """
-    feedback = get_object_or_404(Feedback, id=feedback_id)
-
-    # Check if the user is authorized to update the feedback
-    if feedback.user != request.user and not request.user.is_staff:
-        return HttpResponseForbidden("You are not authorized to update this feedback.")
-
-    if request.method == "POST":
-        new_comment = request.POST.get("content")
-        new_rating = request.POST.get("rating")
-
-        if not new_comment or not new_rating:
-            messages.error(request, "All fields are required.")
-            return redirect("update-feedback", feedback_id=feedback.id)
-
-        # Update feedback fields
-        feedback.comment = new_comment
-        feedback.rating = new_rating
-        feedback.save()
-
-        messages.success(request, "Feedback updated successfully!")
-        return redirect("user-feedback-list")
-
-    return render(request, "tournaments/tournament_update_feedback.html", {"feedback": feedback})
-
-
-@login_required
-def delete_feedback_view(request, feedback_id):
-    """
-    View to handle deleting feedback.
-    Only the original author or an admin can delete feedback.
-    """
-    feedback = get_object_or_404(Feedback, id=feedback_id)
-
-    # Check if the user is authorized to delete the feedback
-    if feedback.user != request.user and not request.user.is_staff:
-        return HttpResponseForbidden("You are not authorized to delete this feedback.")
-
-    if request.method == "POST":
-        # Delete the feedback
-        feedback.delete()
-        messages.success(request, "Feedback deleted successfully!")
-        return redirect("user-feedback-list")
-
-    return render(request, "tournaments/tournament_delete_feedback.html", {"feedback": feedback})
 
 
 # =============== Word Game Views ===============
