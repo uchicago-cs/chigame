@@ -47,7 +47,7 @@
       </div>
       <div class="col-md-5">
         <h4>Create New Label</h4>
-        <form method="POST" action="{% url 'users:create-notification-label' %}">
+        <form method="post" action="{% url 'users:create-notification-label' %}">
           {% csrf_token %}
           <div class="input-group mb-3">
             <input type="text"
@@ -85,7 +85,7 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          <form id="confirmDeleteLabelForm" method="POST" action="">
+          <form id="confirmDeleteLabelForm" method="post" action="">
             {% csrf_token %}
             <button type="submit" class="btn btn-danger">Delete Label</button>
           </form>
