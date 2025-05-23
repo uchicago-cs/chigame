@@ -109,11 +109,13 @@ function create() {
   forfeitBtn.addEventListener('click', () => {
     if (!gameOver && currentPlayer === COLORS.red) {
       gameOver = true;
+      stopPlayerTimer();
       gameOverMessage.textContent = 'Red player has forfeited! Black wins!';
       gameOverMessage.classList.add('show');
       document.getElementById('playAgainPrompt').style.display = 'block';
     } else if (!gameOver && currentPlayer === COLORS.black) {
       gameOver = true;
+      stopPlayerTimer();
       gameOverMessage.textContent = 'Black player has forfeited! Red wins!';
       gameOverMessage.classList.add('show');
       document.getElementById('playAgainPrompt').style.display = 'block';
@@ -148,6 +150,7 @@ function create() {
     } else {
       // Accept Draw (second click)
       gameOver = true;
+      stopPlayerTimer();
       gameOverMessage.textContent = 'Draw accepted! Game over!';
       gameOverMessage.classList.add('show');
       drawBtn.style.display = 'none';
@@ -338,6 +341,7 @@ function checkGameOver() {
 
   if (redPieces.length === 0) {
     gameOver = true;
+    stopPlayerTimer();
     const gameOverMessage = document.getElementById('gameOverMessage');
     gameOverMessage.textContent = 'All red pieces captured! Black wins!';
     gameOverMessage.classList.add('show');
@@ -346,6 +350,7 @@ function checkGameOver() {
     document.getElementById('forfeitBtn').style.display = 'none';
   } else if (blackPieces.length === 0) {
     gameOver = true;
+    stopPlayerTimer();
     const gameOverMessage = document.getElementById('gameOverMessage');
     gameOverMessage.textContent = 'All black pieces captured! Red wins!';
     gameOverMessage.classList.add('show');
