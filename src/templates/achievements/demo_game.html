@@ -97,7 +97,7 @@
       function showPopup(popup) {
         popup.style.display = 'block';
         // Hide the popup after 3 seconds
-        setTimeout(hidePopup, 3000);
+        setTimeout(() => hidePopup(popup), 3000);
       }
 
       function hidePopup(popup) {
