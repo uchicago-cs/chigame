@@ -81,7 +81,7 @@
                     <small class="ms-3 text-muted flex-shrink-0 align-self-center">{{ notification.first_sent|timesince }} ago</small>
                   </li>
                   <div class="list-group-item d-flex justify-content-end align-items-center py-1 px-3 border-top-0 shadow-sm">
-                    <form method="POST"
+                    <form method="post"
                           action="{% url 'users:unassign-label-from-notification' notification_id=notification.pk label_id=label.id %}"
                           class="m-0">
                       {% csrf_token %}
