@@ -46,18 +46,22 @@
         <div class="col-12 col-md-8">
           <div class="card h-100 shadow-sm border-0">
             <div class="card-body d-flex align-items-center">
-              {% if friend.userprofile.profile_photo %}
-                <img src="{{ friend.userprofile.profile_photo.url }}"
-                     alt="{{ friend.username|default:'No username' }}'s profile picture"
-                     class="profile-photo rounded-circle me-3" />
-              {% else %}
-                <img src="{% static 'images/no_picture_available.png' %}"
-                     alt="Default Profile Photo"
-                     class="profile-photo rounded-circle me-3" />
-              {% endif %}
-              <div>
-                {% if friend.username %}<h5 class="card-title mb-0">@{{ friend.username }}</h5>{% endif %}
-                {% if friend.name %}<small class="text-muted">{{ friend.name }}</small>{% endif %}
+              <div class="d-flex align-items-center">
+                {% if friend.userprofile.profile_photo %}
+                  <img src="{{ friend.userprofile.profile_photo.url }}"
+                       alt="{{ friend.username|default:'No username' }}'s profile picture"
+                       class="profile-photo rounded-circle me-3" />
+                {% else %}
+                  <img src="{% static 'images/no_picture_available.png' %}"
+                       alt="Default Profile Photo"
+                       class="profile-photo rounded-circle me-3" />
+                {% endif %}
+                <div>
+                  {% if friend.username %}<h5 class="card-title mb-0">@{{ friend.username }}</h5>{% endif %}
+                  {% if friend.name %}<small class="text-muted">{{ friend.name }}</small>{% endif %}
+                </div>
+              </div>
+              <div class="ms-auto">
                 <a href="{% url 'users:user-profile' friend.id %}"
                    class="btn btn-primary">View Profile</a>
               </div>
