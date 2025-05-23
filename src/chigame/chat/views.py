@@ -20,7 +20,7 @@ def chat(request, chat_id):
 
     # get reactions
     reaction_data = (
-        LiveChatMessageReaction.objects.filter(live_chat=chat)
+        LiveChatMessageReaction.objects.filter(message__live_chat=chat)
         .values("message_id", "content")
         .annotate(count=Count("id"))
     )

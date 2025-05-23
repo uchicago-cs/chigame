@@ -144,7 +144,21 @@
             <div class="fw-bold small text-danger">{{ message.user.username }}</div>
             <div class="mt-1">{{ message.content }}</div>
             <div class="text-end text-muted small mt-1">{{ message.sent_at|date:"g:i A" }}</div>
-            <div class="message-reactions mt-1" id="reactions-{{ message.id }}"></div>
+            <div class="message-reactions mt-1" id="reactions-{{ message.id }}">
+              {% for reaction in message.reaction_summary %}
+                <span class="reaction-pill me-1">
+                  data-reaction="{{ reaction.content }}"
+                  data-message-id="{{ message.id }}"
+                  onclick="reactToMessage('{{ reaction.content }}', '{{ message.id }}')"
+                  style="cursor: pointer;
+                  padding: 2px 6px;
+                  background-color: #f1f1f1;
+                  border-radius: 12px;
+                  display: inline-block">
+                  {{ reaction.content }} <span class="reaction-count">{{ reaction.count }}</span>
+                </span>
+              {% endfor %}
+            </div>
           </div>
           {% if message.edited %}<div class="text-end text-muted small mt-1 fst-italic">(edited)</div>{% endif %}
         </div>
