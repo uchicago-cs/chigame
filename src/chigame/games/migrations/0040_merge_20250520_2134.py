@@ -5,7 +5,6 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("games", "0039_checkersboard_current_turn_player"),
         ("games", "0039_merge_20250519_0030"),
     ]
 
