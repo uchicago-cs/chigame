@@ -33,7 +33,7 @@ from rest_framework.response import Response
 from chigame.users.models import User
 
 from .filters import LobbyFilter
-from .forms import GameForm, IFGameForm, LobbyForm, ReviewForm
+from .forms import GameForm, LobbyForm, ReviewForm
 from .models import (
     Chat,
     Checkers,
@@ -42,7 +42,6 @@ from .models import (
     Feedback,
     Game,
     GameList,
-    InteractiveFictionGame,
     Lobby,
     Match,
     Player,
@@ -107,7 +106,7 @@ class GameDetailView(LoginRequiredMixin, FormMixin, DetailView):
         self.object = self.get_object()
         # Redirect to IF detail if this is a Twine file game
         if self.object.twine_file and self.object.twine_file.name.endswith(".html"):
-            return redirect('interactive-fiction-detail', pk=self.object.pk)
+            return redirect("interactive-fiction-detail", pk=self.object.pk)
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
@@ -570,18 +569,7 @@ class InteractiveFictionView(TemplateView):
         try:
             game = Game.objects.get(pk=pk)
         except Game.DoesNotExist:
-            # Optionally, handle if no such game exists:
             game = None
-
-        if not game:
-            # fallback dummy game to prevent pk=None
-            latest_game = Game.objects.create(
-                name="Untitled IF Game",
-                description="Temporary IF placeholder",
-                min_players=1,
-                max_players=1,
-                complexity=1.0,
-            )
 
         context["game"] = game
 

@@ -29,7 +29,9 @@
         <a href="#"><span class="badge rounded-pill text-bg-secondary">{{ mechanic }}</span></a>
       {% endfor %}
       <div class="btn-group btn-group-lg mt-3">
-        <a href="{{ game.twine_file.url }}" target="_blank" class="btn btn-outline-primary">Play Game in New Tab</a>
+        <a href="{{ game.twine_file.url }}"
+           target="_blank"
+           class="btn btn-outline-primary">Play Game in New Tab</a>
         {% if user.is_authenticated %}
           {% if game in favorites_list.games.all %}
             <a href="{% url 'remove-from-favorites' pk=game.pk %}"

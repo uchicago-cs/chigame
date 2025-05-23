@@ -7,7 +7,7 @@
   <h1>List of Games</h1>
   <ul>
     {% for game in object_list %}
-    <li>
+      <li>
         {% if game.twine_file %}
           <a href="{% url 'interactive-fiction-detail' game.id %}">{{ game.name }}</a>
         {% else %}
