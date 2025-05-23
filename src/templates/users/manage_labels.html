@@ -23,13 +23,13 @@
                     {% for label_item in labels %}
                         <li class="list-group-item d-flex justify-content-between align-items-center">
                             <a href="{% url 'users:notifications-by-label' label_item.id %}" class="text-decoration-none">{{ label_item.name }}</a>
-                            <span>
-                                <button type="button" class="btn btn-sm btn-outline-danger delete-label-btn"
+                            <span> 
+                                <button type="button" class="btn btn-link text-danger p-0 delete-label-btn"
                                         data-bs-toggle="modal" data-bs-target="#deleteLabelModal"
                                         data-label-name="{{ label_item.name|escapejs }}"
                                         data-delete-url="{% url 'users:delete-notification-label' label_item.id %}"
                                         title="Delete label '{{ label_item.name }}'">
-                                    <i class="bi bi-trash"></i> 
+                                    <i class="bi bi-trash icon-lg"></i> 
                                 </button>
                             </span>
                         </li>
@@ -86,14 +86,9 @@ document.addEventListener('DOMContentLoaded', function () {
     var deleteLabelModalElement = document.getElementById('deleteLabelModal');
     if (deleteLabelModalElement) {
         deleteLabelModalElement.addEventListener('show.bs.modal', function (event) {
-            // Button that triggered the modal
             var button = event.relatedTarget;
-
-            // Extract info from data-* attributes on the button
             var labelName = button.getAttribute('data-label-name');
             var deleteUrl = button.getAttribute('data-delete-url');
-
-            // Update the modal's content
             var modalBodyLabelNameSpan = deleteLabelModalElement.querySelector('#labelNameToDeleteModal');
             var confirmDeleteForm = deleteLabelModalElement.querySelector('#confirmDeleteLabelForm');
 

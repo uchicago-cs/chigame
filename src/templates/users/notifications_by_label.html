@@ -22,18 +22,24 @@
             <div class="mt-4">
               <h5>Labels</h5>
               <a href="{% url 'users:manage-labels-page' %}" class="btn btn-sm btn-outline-primary mb-2 d-block">Manage All Labels</a>
-              {% if labels %}
-                <ul class="list-group list-group-flush">
-                  {% for sidebar_label_obj in labels %}
-                    <li class="list-group-item py-1 px-0 border-0 {% if sidebar_label_obj.id == label.id %}active{% endif %}">
-                       <a href="{% url 'users:notifications-by-label' sidebar_label_obj.id %}" class="text-decoration-none d-block ps-2 {% if sidebar_label_obj.id != label.id %}text-body{% endif %}">{{ sidebar_label_obj.name }}</a>
-                    </li>
+              
+              <div class="list-group">
+                {% if labels %} 
+                  {% for sidebar_label_obj in labels %} 
+                    <a href="{% url 'users:notifications-by-label' sidebar_label_obj.id %}"
+                       class="list-group-item list-group-item-action py-2 {% if active_category == 'label-'|add:sidebar_label_obj.id|stringformat:'s' %}active{% endif %}">
+                      <i class="bi bi-tag me-2"></i>
+                      {{ sidebar_label_obj.name }}
+                    </a>
                   {% endfor %}
-                </ul>
-              {% else %}
-                <p class="ms-2"><small>No labels created yet.</small></p>
-              {% endif %}
+                {% else %}
+                  <div class="list-group-item py-2"> 
+                    <small class="text-muted">No labels created yet.</small>
+                  </div>
+                {% endif %}
+              </div>
             </div>
+
         </div>
 
         <div class="col-md-9">
@@ -61,7 +67,7 @@
                                         </div>
                                         <div class="mt-1">
                                             <span class="badge bg-light text-dark border me-1">{{ notification.get_category_display }}</span>
-                                            {% for other_label_item in notification.labels.all %} {# Renamed loop var for clarity #}
+                                            {% for other_label_item in notification.labels.all %}
                                                 {% if other_label_item.id != label.id %} 
                                                     <span class="badge bg-secondary me-1">{{ other_label_item.name }}</span>
                                                 {% endif %}
@@ -93,26 +99,14 @@
 
 <style>
 /* Styles for read/unread and hover. You can expand this or use a shared CSS file. */
-.read {
-    background-color: #f8f9fa; /* Lighter background for read items */
-}
+
 .unread .message-title span { /* Example: If you want unread titles to be bolder within the span */
     /* font-weight: 600; /* This is an alternative to adding fw-bold directly in the class */
 }
 .notification-container:hover, .notification-hover:hover { /* MODIFICATION: Added .notification-hover here */
     background-color: #e9ecef; /* Hover effect */
 }
-/* Ensure text-muted looks as expected */
-.text-muted {
-    color: #6c757d !important; /* Bootstrap's muted color */
-}
 
-/* If you have a general .icon-lg class, ensure it's defined, e.g.: */
-/*
-.icon-lg {
-    font-size: 1.25rem; /* Adjust size as needed */
-/* }
-*/
 </style>
 
 {% endblock content %}

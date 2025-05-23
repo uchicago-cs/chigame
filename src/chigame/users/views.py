@@ -742,6 +742,17 @@ def manage_labels_page_view(request):
     return render(request, "users/manage_labels.html", context)
 
 @login_required
+@require_POST
+def delete_notification_label(request, label_id):
+    label = get_object_or_404(NotificationLabel, pk=label_id, user=request.user)
+    label_name = label.name
+
+    label.delete()
+
+    messages.success(request, f"Label '{label_name}' deleted successfully.")
+    return redirect(reverse("users:manage-labels-page"))
+
+@login_required
 def assign_label_to_notification(request, notification_id):
     """
     Assigns a selected notification label to a specific notification.

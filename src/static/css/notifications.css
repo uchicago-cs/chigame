@@ -13,11 +13,11 @@
   border: none;         /* remove left border */
 }
 
-.notification-hover:hover {
+/* .notification-hover:hover {
   background-color: #f8f9fa;
   cursor: pointer;
   transition: background-color 0.2s ease;
-}
+} */
 
 .button-container {
   padding-left: 1rem;
@@ -261,10 +261,27 @@ a {
   margin-bottom: 10px;
 }
 
+/*!---Custom Notification Label*/
+
 .dismiss-label {
   background-color: transparent;
 }
 
 .dismiss-label.btn:hover {
+  background-color: transparent;
+}
+
+.notification-container:hover, .notification-hover:hover {
+  background-color: #e9ecef; /* Hover effect */
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.delete-label-btn {
+  background-color: transparent;
+}
+
+.delete-label-btn:hover{
+  color: #800000;
   background-color: transparent;
 }
