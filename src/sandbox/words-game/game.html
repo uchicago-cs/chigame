@@ -32,9 +32,11 @@
       <div id="header">
         <div class="nav-buttons">
           <a href="{% url 'index' %}" class="nav-btn">Home</a>
-          <button id="how-to-play-btn" class="nav-btn">How to Play</button>
+          <button id="how-to-play-btn" class="nav-btn">How to Play ▼</button>
+          <button id="change-length-btn" class="nav-btn">Change Length</button>
+          <button id="settings-btn" class="nav-btn">⚙</button>
         </div>
-        <div id="title">
+        <div class="logo-title">
           <h1 class="name">WORDS</h1>
         </div>
       </div>
@@ -101,6 +103,13 @@
         <li>Gray: The letter is not in the word at all.</li>
       </ul>
       <br />
+      <h4>Hard Mode</h4>
+      <p>
+        Hints that you get (green and yellow positionings) must be used in your subsequent guesses.
+        Note that grey letters can still be used, and that you are free to put yellow letters in the
+        same spot again.
+      </p>
+      <br />
       <h4>Additional Rules</h4>
       <p>
         Letters can be repeated. A letter will only be marked once per position.
@@ -114,6 +123,33 @@
         <p id="end-message"></p>
         <div id="end-guesses"></div>
         <button id="restart-btn">Play Again</button>
+      </div>
+    </div>
+    <div id="settings" class="settings-screen hidden">
+      <div class="settings-content">
+        <h2>Settings</h2>
+        <h4>Sound Settings</h4>
+        <label for="volume">Volume:</label>
+        <input type="range" id="volume" min="0" max="100" value="50" />
+        <label>
+          <input type="checkbox" id="mute-toggle" />
+          Mute
+        </label>
+        <h4>Light/Dark mode</h4>
+        <label>
+          <input type="checkbox" id="dark-mode-toggle" />
+          Enable Light Mode
+        </label>
+        <h4>Colorblind mode</h4>
+        <label>
+          <input type="checkbox" id="colorblind-toggle" />
+          Enable Colorblind Mode
+        </label>
+        <h4>Hard Mode</h4>
+        <label>
+          <input type="checkbox" id="hard-mode-toggle" />
+          Enable Hard Mode
+        </label>
       </div>
     </div>
     <script>

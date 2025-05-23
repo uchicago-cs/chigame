@@ -66,13 +66,11 @@ let vsEasyBot = true;
 // ----------------------------------------------------------------------------
 
 // ---INIT FUNCTIONS-----------------------------------------------------------
-
 function preload() {
   // load in the soundeffects
   this.load.audio('slide', 'sfx/slide.mp3');
   this.load.audio('hint', 'sfx/bling.mp3');
 }
-
 
 function create() {
   // Store reference to the scene
@@ -203,14 +201,14 @@ function create() {
       resetDrawOffer();
     }
   });
-  easyBot.textContent =  `Easy Bot: ${vsEasyBot ? 'ON' : 'OFF'}`;
+  easyBot.textContent = `Easy Bot: ${vsEasyBot ? 'ON' : 'OFF'}`;
   easyBot.addEventListener('click', () => {
     vsEasyBot = !vsEasyBot;
     easyBot.textContent = `Easy Bot: ${vsEasyBot ? 'ON' : 'OFF'}`;
   });
 }
 
-function update() {}
+function update() { }
 // ----------------------------------------------------------------------------
 
 // Draw the game board
@@ -388,6 +386,20 @@ function movePiece(piece, moveX, moveY) {
   piece.sprite.x = margin + piece.x * tile_size + tile_size / 2;
   piece.sprite.y = margin + piece.y * tile_size + tile_size / 2;
 
+  const newX = MARGIN + moveX * TILE_SIZE + TILE_SIZE / 2;
+  const newY = MARGIN + moveY * TILE_SIZE + TILE_SIZE / 2;
+
+  // Animate the piece movement
+  checkers.scene.scenes[0].tweens.add({
+    targets: piece.sprite,
+    x: newX,
+    y: newY,
+    duration: 300, // having done some testing and playing, I think 300 ms is the best
+    // https://docs.phaser.io/phaser/concepts/tweens
+    // https://rexrainbow.github.io/phaser3-rex-notes/docs/site/ease-function/
+    ease: 'Power3',
+  });
+
   // Play move sound effect
   piece.sprite.scene.sound.play('slide');
   console.log("Current board state:", getBoardState());
@@ -473,8 +485,7 @@ function giveHint() {
     // way of calling a specific square on the board. For now, I just have it return
     // the row and col on the matrix.
     alert(
-      `Hint: Move ${currentPlayer === COLORS.red ? 'red' : 'black'} piece at (row ${
-        randomHint.piece.y
+      `Hint: Move ${currentPlayer === COLORS.red ? 'red' : 'black'} piece at (row ${randomHint.piece.y
       }, column ${randomHint.piece.x}) to (row ${randomHint.y}, column ${randomHint.x})`
     );
   } else {
@@ -517,6 +528,69 @@ function clearHighlightedTiles() {
   // remove each rect from the screen and then pop the reference from the array
   while (highlightedTiles.length > 0) {
     highlightedTiles.pop().destroy();
+  }
+}
+
+// generate a random valid move
+// after we finish implementing a bot, we could it make give an actual good suggestion
+function giveHint() {
+  // get all of the pieces of the current player
+  const playerPieces = pieces.filter((p) => p.color === currentPlayer);
+  let validMoves = [];
+
+  // get all of the valid moves for all of the pieces
+  for (const piece of playerPieces) {
+    for (let y = 0; y < BOARD_SIZE; y++) {
+      for (let x = 0; x < BOARD_SIZE; x++) {
+        if (!getPiece(x, y) && isValidMove(piece, x, y)) {
+          // add it to the array
+          // (this is a shorthand to initialize objects btw if you don't know)
+          validMoves.push({ piece, x, y });
+        }
+      }
+    }
+  }
+
+  // We have yet to implement a feature where it checks whether there are valid
+  // moves remaining for a player after each turn. In a real game of checkers
+  // if there are no moves left, the player loses the game.
+  if (validMoves.length > 0) {
+    // Math.random() only returns floating point from 0 to 1 and would require a
+    // separate helper function to return a random index from the array...
+    // https://docs.phaser.io/phaser/concepts/math
+    // phaser.math.rnd.pick() selects a random element from the array
+    const randomHint = Phaser.Math.RND.pick(validMoves);
+    // unlike chess, where there's rank and file, I don't think there's a proper
+    // way of calling a specific square on the board. For now, I just have it return
+    // the row and col on the matrix.
+    alert(
+      `Hint: Move ${currentPlayer === COLORS.red ? 'red' : 'black'} piece at (row ${randomHint.piece.y
+      }, column ${randomHint.piece.x}) to (row ${randomHint.y}, column ${randomHint.x})`
+    );
+  } else {
+    // in a normal checkers game, the player loses if there are no moves left
+    alert('No valid moves.');
+  }
+
+
+  // reset draw offer if it was made by the current player
+  if (drawOffered && drawOfferedBy === currentPlayer) {
+    const gameOverPrompts = document.getElementById('gameOverPrompts');
+    const gameOverMessage = document.getElementById('gameOverMessage');
+    const drawBtn = document.getElementById('drawBtn');
+    const declineDrawBtn = document.getElementById('declineDrawBtn');
+    drawOffered = false;
+    drawOfferedBy = null;
+    gameOverMessage.textContent = '';
+    gameOverMessage.classList.remove('show');
+    gameOverPrompts.classList.remove('show');
+    drawBtn.textContent = 'Offer Draw';
+    declineDrawBtn.style.display = 'none';
+  }
+  //if black and bot is on, schedule bot move
+  if (vsEasyBot && currentPlayer === COLORS.black) {
+    //delay so user has time to process bot movw after their own
+    scene.time.delayedCall(300, easyBot, [scene], scene);
   }
 }
 
@@ -607,37 +681,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
 //return arr of legal moves for given player
 function getLegalMoves(color) {
-    //arr to store legal moves
-    const moves = [];
-    //moving up or down board?
-    const direction = color === COLORS.red ? -1 : 1;
+  //arr to store legal moves
+  const moves = [];
+  //moving up or down board?
+  const direction = color === COLORS.red ? -1 : 1;
 
-    //loop thru pieces
-    pieces.forEach(piece => {
-      if (piece.color !== color) return; //return for other p;layer peices
-      // simple moves
-      [-1, 1].forEach(diagonal => { //try L and R diagonals
-        const col = piece.x + diagonal; //new col
-        const row = piece.y + direction; //new row
-        if ( //check if mvoe is valid
-          col >= 0 && col < BOARD_SIZE && row >= 0 && row < BOARD_SIZE &&
-          !getPiece(col, row) && isValidMove(piece, col, row)) {
-          moves.push({ piece, x: col, y: row }); //add move to arr
-        }
-      });
-      // jump moves for captures
-      [-2, 2].forEach(jump => {
-        const jump_col = piece.x + jump;
-        const jump_row = piece.y + 2 * direction;
-        if (
-          jump_col >= 0 && jump_col < BOARD_SIZE && jump_row >= 0 && jump_row < BOARD_SIZE &&
-          !getPiece(jump_col, jump_row) && isValidMove(piece, jump_col, jump_row)) {
-          moves.push({ piece, x: jump_col, y: jump_row });
-        }
-      });
+  //loop thru pieces
+  pieces.forEach(piece => {
+    if (piece.color !== color) return; //return for other p;layer peices
+    // simple moves
+    [-1, 1].forEach(diagonal => { //try L and R diagonals
+      const col = piece.x + diagonal; //new col
+      const row = piece.y + direction; //new row
+      if ( //check if mvoe is valid
+        col >= 0 && col < BOARD_SIZE && row >= 0 && row < BOARD_SIZE &&
+        !getPiece(col, row) && isValidMove(piece, col, row)) {
+        moves.push({ piece, x: col, y: row }); //add move to arr
+      }
     });
-
-    return moves;
+    // jump moves for captures
+    [-2, 2].forEach(jump => {
+      const jump_col = piece.x + jump;
+      const jump_row = piece.y + 2 * direction;
+      if (
+        jump_col >= 0 && jump_col < BOARD_SIZE && jump_row >= 0 && jump_row < BOARD_SIZE &&
+        !getPiece(jump_col, jump_row) && isValidMove(piece, jump_col, jump_row)) {
+        moves.push({ piece, x: jump_col, y: jump_row });
+      }
+    });
+  });
+  
+  return moves;
 }
 
 // Easy bot: pick a random legal move and play it
