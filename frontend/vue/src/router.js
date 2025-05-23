@@ -6,6 +6,7 @@ import ForumsPage from "./pages/ForumsPage.vue";
 import SignupPage from "./pages/SignupPage.vue";
 import ProfilePage from "./pages/ProfilePage.vue";
 import GameLibrary from "./pages/GameLibrary.vue";
+import LobbiesPage from "./pages/LobbiesPage.vue";
 
 const routes = [
   { path: '/', component: HomePage },
@@ -18,6 +19,8 @@ const routes = [
   { path: '/signup', component: SignupPage },
   { path: '/profile', component: ProfilePage },
   { path: '/games', component: GameLibrary },
+  { path: '/lobbies', component: LobbiesPage },
+
 ];
 
 const router = createRouter({
