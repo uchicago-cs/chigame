@@ -4,25 +4,25 @@
 1. Overview
 
     - The Vue frontend is a modern application that provides a dynamic, interactive user experience for Chigame, including features like lobbies, tournaments, forums, and user profiles.
-    - All Vue code is located in the frontend/vue directory of Chigame
+    - All Vue code is located in the frontend/vue directory of Chigame.
 
 
-2. Prereqs
+2. Requirements
 
-    Required software:
+    Required Software:
     - Node.js
     - npm
 
 
 3. Installation
 
-    Make sure when working on vue code, and to be able to run what it looks like, first...
+    Make sure when working on vue code to first:
     - cd frontend/vue
 
     To install Node
     Download: https://nodejs.org/
 
-    To install npm (should come with node by default but just in case)...
+    To install npm (should come with node by default but just in case):
     - sudo apt install npm (npm install might work)
     - (may need to run "npm i" to finish configuring)
 
@@ -30,8 +30,9 @@
 
     To start the Vue frontend:
     - npm run dev
-    - Default URL (http://localhost:5173)
-    - Will auto-reload as you update
+
+    Default URL (http://localhost:5173)
+    Will auto-reload as you update
 
 5. Usage
 
@@ -45,12 +46,12 @@
     - Profile (/profile)
     - Login/Signup (/login, /signup)
 
-    Navbar and footer has links for all
+    Navbar and footer has links to all pages
 
     Routing
-    - Must define routes(link paths) in frontend/vue/src/router.js, and if including in navbar or footer, link to them as well in frontend/vue/src/components
+    - Must define routes(link paths) in frontend/vue/src/router.js, and if including in navbar or footer, link to them as well in frontend/vue/src/components.
 
-    Images: frontend/vue/src/components/pages/images/ and frontend/vue/src/components/images/
+    Images: frontend/vue/src/pages/images/ and frontend/vue/src/components/images/
 
 
 6. Future Tips
@@ -63,9 +64,9 @@
     - Use <style scoped> in your Vue files for local styles.
 
     Resources:
-    - Vue 3 Docs
-    - Vue Router Docs
-    - Vue Style Guide
+    - Vue 3 Docs https://vuejs.org/guide/introduction#introduction
+    - Vue Router Docs https://router.vuejs.org/guide/
+    - Vue Style Guide https://v2.vuejs.org/v2/style-guide/?redirect=true
 
 7. Troubleshooting
 
