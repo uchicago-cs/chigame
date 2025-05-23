@@ -822,6 +822,7 @@ document.addEventListener('DOMContentLoaded', () => {
     checkers.sound.mute = !checkers.sound.mute;
     // then update the label
     toggleMuteBtn.textContent = checkers.sound.mute ? 'Mute' : 'Unmute';
+    toggleMuteBtn.classList.toggle('selected');
   });
 
   // listen for “m” or “M” anywhere
@@ -830,6 +831,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // do exactly the same toggle logic:
       checkers.sound.mute = !checkers.sound.mute;
       toggleMuteBtn.textContent = checkers.sound.mute ? 'Mute' : 'Unmute';
+      toggleMuteBtn.classList.toggle('selected');
     }
   });
 });

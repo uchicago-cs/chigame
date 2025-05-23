@@ -232,11 +232,15 @@ canvas {
     box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-#toggle-colorblind.selected {
+.selected {
     background-color: transparent;
     color: rgb(29, 210, 114);
     outline: 3px solid rgb(29, 210, 114);
     outline-offset: -3px;
+}
+
+#toggle-mute {
+    min-width: 7rem;
 }
 
 #captured-pieces {
