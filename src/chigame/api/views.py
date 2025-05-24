@@ -1,4 +1,5 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db import models
 from django.shortcuts import get_object_or_404, redirect
 from django.views import View
 from django_filters.rest_framework import DjangoFilterBackend
@@ -17,6 +18,7 @@ from chigame.api.serializers import (
     CategorySerializer,
     FeedbackSerializer,
     GameDataSerializer,
+    GameLeaderboardSerializer,
     GameReviewStatsSerializer,
     GameSerializer,
     GroupSerializer,
@@ -336,7 +338,7 @@ class UserAchievementCreateView(generics.CreateAPIView):
     def create(self, request, *args, **kwargs):
         user_id = self.request.data.get("user")
         user = get_object_or_404(User, pk=user_id)
-        achievement = Achievement.objects.get(id=self.kwargs["pk"])
+        achievement = get_object_or_404(Achievement, id=self.kwargs["pk"])
 
         if UserAchievement.objects.filter(achievement=achievement, user=user).exists():
             return Response(
@@ -422,6 +424,34 @@ class MetricScoreView(generics.ListCreateAPIView):
             metric=metric,
             match=match,
             leaderboard_entry=leaderboard_entry,
+        )
+
+
+class GameLeaderboardView(generics.ListAPIView):
+    """
+    Retieves the all-time leaderboard for a specified game, ranked by
+    each player's highest single-game score.
+    """
+
+    serializer_class = GameLeaderboardSerializer
+    authentication_classes = [SessionAuthentication]
+    permission_classes = [IsAuthenticated]
+    pagination_class = PageNumberPagination
+
+    def get_queryset(self):
+        game_id = self.kwargs["game_id"]
+        game = get_object_or_404(Game, id=game_id)
+
+        primary_metric = game.metrics.first()
+        if not primary_metric:
+            return MetricScore.objects.none()
+
+        # get the highest score per user for the primary metric
+        return (
+            MetricScore.objects.filter(metric=primary_metric)
+            .values("user")
+            .annotate(max_score=models.Max("score"))
+            .order_by("-max_score")
         )
 
 
