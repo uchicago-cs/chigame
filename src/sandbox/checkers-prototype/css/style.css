@@ -261,3 +261,7 @@ canvas {
     color: white;
     font-size: 20px;
 }
+
+.info {
+    font-weight: 200;
+}
