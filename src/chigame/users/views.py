@@ -158,6 +158,10 @@ def user_profile_detail_view(request, pk):
     pending friend requests between the current user and the user
     being viewed.
 
+    IMPORTANT NOTE TO DEVELOPERS: Profile url takes user pk, not profile pk.
+    It might not necessarily be the case that providing profile pk will get you
+    the profile of the user you want.
+
     Args:
         request (HttpRequest)
         pk (int): The primary key of the user whose profile is being viewed
@@ -391,7 +395,7 @@ def user_search_results(request):
     context = {"found": False, "query_type": "Users"}
     if query_input:
         profiles_list = UserProfile.objects.filter(
-            Q(user__email__icontains=query_input) | Q(user__name__icontains=query_input)
+            Q(user__username__icontains=query_input) | Q(user__name__icontains=query_input)
         )
         if profiles_list.count() > 0:
             context["found"] = True
