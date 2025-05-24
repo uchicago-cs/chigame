@@ -23,8 +23,9 @@
     Download: https://nodejs.org/
 
     To install npm (should come with node by default but just in case):
-    - sudo apt install npm (npm install might work)
-    - (may need to run "npm i" to finish configuring)
+    - in linux run...
+    sudo apt install npm
+    (npm install or npm i should work too)
 
 4. Running the Development Server
 
