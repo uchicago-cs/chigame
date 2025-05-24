@@ -3,7 +3,7 @@ from django.conf.urls.static import static
 from django.urls import path
 
 from . import views
-from .views import InteractiveFictionView, LobbyCreateView, UploadFileView
+from .views import InteractiveFictionView, LobbyCreateView
 
 urlpatterns = [
     # lobbies
