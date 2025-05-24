@@ -1,8 +1,13 @@
 // ---GAME CONSTANTS----------------------------------------------------------------
+const START_WIDTH = 650;
+const START_HEIGHT = 650;
+const START_MARGIN = 10;
+const START_HIGHLIHGHT_SIZE = 3;
+
 const config = {
   type: Phaser.AUTO,
-  width: 650,
-  height: 650,
+  width: START_WIDTH,
+  height: START_HEIGHT,
   parent: 'game',
   scene: {
     preload,
@@ -14,13 +19,16 @@ const config = {
 const checkers = new Phaser.Game(config);
 
 // 8x8 board
-const MARGIN = 10;
 const BOARD_SIZE = 8;
+let margin = START_MARGIN;
+
 /*
 I made the canvas background color black. Therefore, by making the game board
 smaller to account for the margin, it'll appear as if there's a black border.
 */
-const TILE_SIZE = (config.width - 2 * MARGIN) / BOARD_SIZE;
+let tiles = [];
+let tile_size = (config.width - 2 * START_MARGIN) / BOARD_SIZE;
+
 // colors we will use in this game
 const COLORS = {
   light_brown: 0xefbb74,
@@ -42,7 +50,7 @@ let blackCaptured = 0; // Number of pieces that black has captured
 // bigger than the tiles
 const RADIUS_SCALE_FACTOR = 2.5;
 // selected piece highlight stroke width
-const HIGHLIGHT_SIZE = 3;
+let highlight_size = START_HIGHLIHGHT_SIZE;
 
 // an array to keep track of the highlighted tiles (valid moves)
 let highlightedTiles = [];
@@ -227,15 +235,15 @@ function drawBoard(scene) {
       let tile_color = (x + y) % 2 === 0 ? COLORS.light_brown : COLORS.dark_brown;
 
       // draw tiles
-      const tile = scene.add
+      let tile = scene.add
         .rectangle(
           // phaser actually positions shape based on the center, not top-left
           // margin + x returns the top-left location of each tile
           // tile size / 2 returns the center of the tile
-          MARGIN + x * TILE_SIZE + TILE_SIZE / 2, // x position
-          MARGIN + y * TILE_SIZE + TILE_SIZE / 2, // y position
-          TILE_SIZE, // width
-          TILE_SIZE, // height
+          margin + x * tile_size + tile_size / 2, // x position
+          margin + y * tile_size + tile_size / 2, // y position
+          tile_size, // width
+          tile_size, // height
           tile_color
         )
         // make the tiles selectable so players can click on them to move pieces
@@ -257,22 +265,23 @@ function drawBoard(scene) {
           endTurn(scene);
         }
       });
+      tiles.push(tile);
     }
   }
 }
 
 function createPiece(x, y, color, scene) {
   // create a piece
-  const piece = {
+  let piece = {
     x,
     y,
     color,
     sprite: scene.add.circle(
       // same center position as when we create the board tiles/squares
-      MARGIN + x * TILE_SIZE + TILE_SIZE / 2,
-      MARGIN + y * TILE_SIZE + TILE_SIZE / 2,
+      margin + x * tile_size + tile_size / 2,
+      margin + y * tile_size + tile_size / 2,
       // circle radius
-      TILE_SIZE / RADIUS_SCALE_FACTOR,
+      tile_size / RADIUS_SCALE_FACTOR,
       color
     ),
   };
@@ -299,7 +308,7 @@ function createPiece(x, y, color, scene) {
 
       // also highlight the tiles the piece can move to
       selectedPiece = piece;
-      piece.sprite.setStrokeStyle(HIGHLIGHT_SIZE, COLORS.white);
+      piece.sprite.setStrokeStyle(highlight_size, COLORS.white);
       highlightValidMoves(scene, piece);
     }
   });
@@ -389,8 +398,8 @@ function movePiece(piece, moveX, moveY) {
   // Move the piece
   piece.x = moveX;
   piece.y = moveY;
-  const newX = MARGIN + moveX * TILE_SIZE + TILE_SIZE / 2;
-  const newY = MARGIN + moveY * TILE_SIZE + TILE_SIZE / 2;
+  const newX = margin + moveX * tile_size + tile_size / 2;
+  const newY = margin + moveY * tile_size + tile_size / 2;
 
   // Animate the piece movement
   checkers.scene.scenes[0].tweens.add({
@@ -839,6 +848,83 @@ document.addEventListener('DOMContentLoaded', () => {
       coordElements.forEach(el => document.body.removeChild(el));
       coordElements.length = 0;
     }
+  });
+});
+
+function resizegame(percentage) {
+  // Calculate new dimensions
+  const newWidth = Math.floor(START_WIDTH * percentage);
+  const newHeight = Math.floor(START_HEIGHT * percentage);
+
+  // Update game configuration
+  checkers.scale.resize(newWidth, newHeight);
+
+  // Update margin and tile size and highlight size
+  margin = START_MARGIN * percentage;
+  tile_size = (newWidth - 2 * margin) / BOARD_SIZE;
+  highlight_size = START_HIGHLIHGHT_SIZE * percentage;
+
+  // Update the positions of the tiles and pieces
+  tiles.forEach((tile, index) => {
+    const x = index % BOARD_SIZE;
+    const y = Math.floor(index / BOARD_SIZE);
+    tile.setPosition(
+      margin + x * tile_size + tile_size / 2,
+      margin + y * tile_size + tile_size / 2
+    );
+    tile.setSize(tile_size, tile_size);
+  });
+
+  pieces.forEach((piece) => {
+    // destroy the old sprite
+    piece.sprite.destroy();
+    // create a new sprite with the updated position and size
+    piece.sprite = checkers.scene.scenes[0].add.circle(
+      margin + piece.x * tile_size + tile_size / 2,
+      margin + piece.y * tile_size + tile_size / 2,
+      tile_size / RADIUS_SCALE_FACTOR,
+      piece.color
+    ).setInteractive();
+
+    // If this piece was selected, update the selectedPiece reference to the new sprite
+    if (selectedPiece === piece) {
+      selectedPiece.sprite = piece.sprite;
+      piece.sprite.setStrokeStyle(highlight_size, COLORS.white);
+    }
+
+    // make the new sprite do stuff when clicked
+    piece.sprite.on('pointerdown', () => {
+      // don't allow piece selection if game is over
+      if (gameOver) return;
+
+      // deselect and remove highlight if click a selected piece
+      if (selectedPiece === piece) {
+        selectedPiece.sprite.setStrokeStyle();
+        selectedPiece = null;
+
+        // if player selects their own pieces (does nothing if they click on opponent pieces)
+      } else if (piece.color === currentPlayer) {
+        // clear previous selected piece
+        if (selectedPiece) {
+          selectedPiece.sprite.setStrokeStyle();
+        }
+        // highlight the current piece that is being selected and set them as 'selectedPiece'
+        selectedPiece = piece;
+        piece.sprite.setStrokeStyle(highlight_size, COLORS.white);
+      }
+    });
+  });
+}
+
+// Event listener for the resize slider
+document.addEventListener('DOMContentLoaded', () => {
+  const resizeSlider = document.getElementById('resize-slider');
+  const resizeValue = document.getElementById('resize-value');
+
+  resizeSlider.addEventListener('input', () => {
+    const percent = parseInt(resizeSlider.value, 10);
+    resizeValue.textContent = percent + '%';
+    resizegame(percent / 100);
   });
 });
 
