@@ -341,7 +341,7 @@ class UserAchievementCreateView(generics.CreateAPIView):
     def create(self, request, *args, **kwargs):
         user_id = self.request.data.get("user")
         user = get_object_or_404(User, pk=user_id)
-        achievement = Achievement.objects.get(id=self.kwargs["pk"])
+        achievement = get_object_or_404(Achievement, id=self.kwargs["pk"])
 
         if UserAchievement.objects.filter(achievement=achievement, user=user).exists():
             return Response(
