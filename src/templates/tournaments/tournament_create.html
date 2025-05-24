@@ -155,7 +155,7 @@
                       <div class="form-check">
                         <input class="form-check-input" type="checkbox" id="player-${player.id}" value="${player.id}" onchange="updatePlayerSelection(this, ${player.id})" />
                         <label class="form-check-label" for="player-${player.id}">
-                          <strong>${player.name}</strong> (${player.email}) -
+                          <strong>${player.name || ''}</strong> (${player.email}) -
                           <span class="text-muted">Recommended because: ${reasonText}</span>
                         </label>
                       </div>
