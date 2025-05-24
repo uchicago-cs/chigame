@@ -1819,8 +1819,7 @@ def checkers_game_view(request, pk):
             [0, 1, 0, 1, 0, 1, 0, 1],
             [1, 0, 1, 0, 1, 0, 1, 0],
         ]
-        # Save first turn
-        board = CheckersBoard.objects.create(state=default_state)
+        board = CheckersBoard.objects.create(state=default_state, current_turn_player=game.player_1)
         CheckersTurn.objects.create(game=game, board=board, turn_number=1, player=game.player_1)
 
     # Determine player ID for frontend
@@ -1835,6 +1834,7 @@ def checkers_game_view(request, pk):
             "board_id": board.id,
             "player_id": player.id,
             "turn_number": turn_number,
+            "current_turn_player_id": board.current_turn_player.id if board.current_turn_player else None,
         },
     )
 
@@ -1844,25 +1844,33 @@ def checkers_game_update_board_state(request, board_id):
     try:
         board = CheckersBoard.objects.get(pk=board_id)
         new_state = request.data.get("state")
+        next_player_id = request.data.get("next_player_id")
 
-        if new_state is None:
-            return Response({"error": "Missing 'state'"}, status=status.HTTP_400_BAD_REQUEST)
+        if new_state is None or next_player_id is None:
+            return Response({"error": "Missing 'state' or 'next_player_id'"}, status=status.HTTP_400_BAD_REQUEST)
 
         board.state = new_state
+        board.current_turn_player_id = next_player_id
         board.save()
+
         return Response({"success": True})
 
     except CheckersBoard.DoesNotExist:
-        return Response({"error": "Board not found"}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"error": "Board not found"}, status=404)
     except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({"error": str(e)}, status=500)
 
 
 @api_view(["GET"])
 def checkers_game_get_board_state(request, board_id):
     try:
         board = CheckersBoard.objects.get(pk=board_id)
-        return Response({"state": board.state})
+        return Response(
+            {
+                "state": board.state,
+                "current_turn_player_id": board.current_turn_player.id if board.current_turn_player else None,
+            }
+        )
     except CheckersBoard.DoesNotExist:
         return Response({"error": "Board not found"}, status=404)
 
