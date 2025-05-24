@@ -3,7 +3,7 @@ import random
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
-from django.db import models
+from django.db import models, transaction
 from django.utils import timezone
 
 from chigame.users.models import Group, Notification, User
@@ -241,9 +241,6 @@ class Player(models.Model):
     victory_type = models.TextField(blank=True, null=True)
 
 
-# ==================================
-
-
 class MatchProposal(models.Model):
     """
     A proposal for a group of friends to have a match at a specific
@@ -348,15 +345,16 @@ class Tournament(models.Model):
         # when the tournament is created and would not be checked when the tournament is updated (
         # the date cannot be changed after the tournament is created)
         if self.pk is None:  # the tournament is being created
-            if self.registration_start_date < timezone.now():
-                raise ValidationError("The registration start date should be in the future.")
-            if self.registration_end_date < timezone.now():
-                raise ValidationError("The registration end date should be in the future.")
-            if self.tournament_start_date < timezone.now():
-                raise ValidationError("The tournament start date should be in the future.")
-            if self.tournament_end_date < timezone.now():
-                raise ValidationError("The tournament end date should be in the future.")
-
+            # addedum
+            min_time_delta = timezone.timedelta(minutes=5)  # minimum 5 minutes in advance
+            if self.registration_start_date < timezone.now() + min_time_delta:
+                raise ValidationError("The registration start date should be at least 5 minutes in the future.")
+            if self.registration_end_date < timezone.now() + min_time_delta:
+                raise ValidationError("The registration end date should be at least 5 minutes in the future.")
+            if self.tournament_start_date < timezone.now() + min_time_delta:
+                raise ValidationError("The tournament start date should be at least 5 minutes in the future.")
+            if self.tournament_end_date < timezone.now() + min_time_delta:
+                raise ValidationError("The tournament end date should be at least 5 minutes in the future.")
         # the registration start date should be earlier than the registration end date
         if self.registration_start_date >= self.registration_end_date:
             raise ValidationError("The registration start date should be earlier than the registration end date.")
@@ -743,7 +741,7 @@ class GameList(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.name} ({self.created_by})"
+        return self.name
 
 
 class GameData(models.Model):
@@ -766,7 +764,7 @@ class GameData(models.Model):
         return f"{self.user.username} - {self.game.name}: {self.key}"
 
 
-# ================ CHECKERS ================
+# ================ CHECKERS =================
 
 
 class Checkers(models.Model):
@@ -822,3 +820,99 @@ class CheckersTurn(models.Model):
 
     def __str__(self):
         return f"Turn {self.turn_number} of Checkers Game {self.game.id}"
+
+
+class GameQueue(models.Model):
+    """
+    A queue of games to be played by the user.
+    """
+
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="game_queue")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username}'s Queue"
+
+    def add_game(self, game):
+        """
+        Add a game to the end of this user's queue.
+        """
+        max_pos = self.entries.aggregate(models.Max("position"))["position__max"] or 0
+        return GameQueueEntry.objects.create(queue=self, game=game, position=max_pos + 1)
+
+    def remove_game(self, game):
+        """
+        Remove a game from the queue and re-order the remaining entries.
+        """
+        entry = self.entries.filter(game=game).first()
+        if entry:
+            entry.delete()
+            for i, e in enumerate(self.entries.order_by("position"), start=1):
+                e.position = i
+                e.save()
+
+    def get_next_game(self):
+        """
+        Return the next game in queue (or None if the queue is empty).
+        """
+        entry = self.entries.order_by("position").first()
+        return entry.game if entry else None
+
+    def _reindex_range(self, start, end, delta):
+        """
+        Helper function to shift all entries within [start, end] by delta.
+        """
+        self.entries.filter(position__gte=start, position__lte=end).update(position=models.F("position") + delta)
+
+    def move_game(self, game, new_position):
+        """
+        Move the given game to new_position
+        """
+        entry = self.entries.get(game=game)
+        old_position = entry.position
+        max_pos = self.entries.aggregate(max=models.Max("position"))["max"] or 0
+
+        new_position = max(1, min(new_position, max_pos))
+
+        if new_position == old_position:
+            return entry
+
+        with transaction.atomic():
+            if new_position < old_position:
+                self._reindex_range(new_position, old_position - 1, +1)
+            else:
+                self._reindex_range(old_position + 1, new_position, -1)
+
+            entry.position = new_position
+            entry.save()
+
+        return entry
+
+    def duplicate_game(self, game):
+        """
+        Insert a duplicate of `game` immediately after the original.
+        """
+        entry = self.entries.get(game=game)
+        insert_at = entry.position + 1
+
+        with transaction.atomic():
+            self._reindex_range(insert_at, self.entries.aggregate(max=models.Max("position"))["max"], +1)
+            dup = GameQueueEntry.objects.create(queue=self, game=game, position=insert_at)
+
+        return dup
+
+
+class GameQueueEntry(models.Model):
+    """
+    Represents a single entry in a GameQueue, keeping track of order.
+    """
+
+    queue = models.ForeignKey(GameQueue, on_delete=models.CASCADE, related_name="entries")
+    game = models.ForeignKey(Game, on_delete=models.CASCADE)
+    position = models.PositiveIntegerField()
+
+    class Meta:
+        ordering = ["position"]
+
+    def __str__(self):
+        return f"{self.game.name} (pos {self.position})"
