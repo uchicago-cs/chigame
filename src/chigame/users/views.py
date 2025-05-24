@@ -24,7 +24,7 @@ from .models import (
     NotificationLabel,
     UserProfile,
 )
-from .tables import FriendsTable, UserTable
+from .tables import UserTable
 
 User = get_user_model()
 
@@ -195,14 +195,7 @@ def user_profile_detail_view(request, pk):
         is_friend = target_user.friends.filter(pk=request.user.pk).exists()
         if not is_friend:
             curr_user = request.user
-            friendship_request = (
-                FriendInvitation.objects.filter(
-                    Q(sender=target_user, receiver=curr_user, is_deleted=False)
-                    | Q(sender=curr_user, receiver=target_user, is_deleted=False)
-                )
-                .order_by("-timestamp")
-                .first()
-            )
+            friendship_request = FriendInvitation.objects.get_by_users(curr_user, target_user)
 
     # provide frontend profile + friendship status
     context = {"profile": profile, "is_friend": is_friend, "friendship_request": friendship_request}
@@ -530,12 +523,9 @@ def friend_list_view(request, pk):
     target_user = get_object_or_404(User, pk=pk)
     # fetch the target user's friends
     friends = target_user.friends.all()
-    # render the friends table
-    table = FriendsTable(friends)
-    context = {"table": table}
     # if the target user is the current user, render the friends list
     if pk == user.id:
-        return render(request, "users/user_friend_list.html", context)
+        return render(request, "users/user_friend_list.html", {"friends": friends})
     else:
         messages.error(request, "Not your friend list!")
         return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
