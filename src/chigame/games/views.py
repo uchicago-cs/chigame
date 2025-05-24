@@ -358,10 +358,12 @@ def update_match_status(request, pk):
     # A bit weird: sends Ajax request to change match status when timer runs out.
     lobby = get_object_or_404(Lobby, id=pk)
 
+    # old_status = lobby.match_status
+
     if lobby.members.all().count() >= lobby.min_players:
-        lobby.match_status = 2
+        lobby.match_status = Lobby.Viewable
     else:
-        lobby.match_status = 3
+        lobby.match_status = Lobby.Finished
     lobby.save()
 
     return JsonResponse({"message": "Match status updated successfully"})
@@ -655,8 +657,12 @@ class TournamentListView(ListView):
         if self.request.user.is_staff:
             return Tournament.objects.prefetch_related("matches").all()
 
-        # For non-staff users, show only tournaments they are part of
-        return Tournament.objects.prefetch_related("matches").filter(players=self.request.user)
+        # If the user is authenticated but not staff, show only tournaments they are part of
+        if self.request.user.is_authenticated:
+            return Tournament.objects.prefetch_related("matches").filter(players=self.request.user)
+
+        # For unauthenticated users, show all non-archived tournaments
+        return Tournament.objects.prefetch_related("matches").filter(archived=False)
 
     def get(self, request, *args, **kwargs):
         super().get(request, *args, **kwargs)
@@ -700,27 +706,21 @@ class TournamentListView(ListView):
             elif success == 1:
                 messages.error(request, "You have not joined this tournament")
                 return redirect(reverse_lazy("tournament-list"))
-            elif success == 3:
-                messages.error(request, "The registration period for this tournament has ended")
+            elif request.POST.get("action") == "archive":
+                tournament.set_archive(True)
+                messages.success(request, "You have successfully archived this tournament")
                 return redirect(reverse_lazy("tournament-list"))
+
+            elif request.POST.get("action") == "unarchive":
+                tournament.set_archive(False)
+                messages.success(request, "You have successfully unarchived this tournament")
+                return redirect(reverse_lazy("tournament-list"))
+
+            elif request.POST.get("action") == "switch_archive":
+                return redirect(reverse_lazy("tournament-archived"))
+
             else:
-                raise Exception("Invalid return value")
-
-        elif request.POST.get("action") == "archive":
-            tournament.set_archive(True)
-            messages.success(request, "You have successfully archived this tournament")
-            return redirect(reverse_lazy("tournament-list"))
-
-        elif request.POST.get("action") == "unarchive":
-            tournament.set_archive(False)
-            messages.success(request, "You have successfully unarchived this tournament")
-            return redirect(reverse_lazy("tournament-list"))
-
-        elif request.POST.get("action") == "switch_archive":
-            return redirect(reverse_lazy("tournament-archived"))
-
-        else:
-            raise ValueError("Invalid action")
+                raise ValueError("Invalid action")
 
     # check if user is staff member
     def test_func(self):
@@ -1462,12 +1462,7 @@ def check_guess(request, pk):
         match = get_object_or_404(Match, lobby__id=pk)
     else:
         # Create Match instance linked to the fetched Lobby
-        match = Match.objects.create(
-            game_id=lobby.game.id,
-            lobby=lobby,
-            date_played=timezone.now()
-            # Add other fields as needed
-        )
+        match = Match.objects.create(game_id=lobby.game.id, lobby=lobby, date_played=timezone.now())
 
     player = Player.objects.create(
         user=request.user,
@@ -1479,11 +1474,13 @@ def check_guess(request, pk):
         player.outcome = Player.LOSE
     player.save()
 
-    # Checks if everyone has played
+    # a should checks if everyone has plyed
     if match.players.all().count() == lobby.members.all().count():
-        lobby.match_status = 3
-    match.save()
-    lobby.save()
+        lobby.match_status = Lobby.Finished
+        lobby.save()
+        # The signal will handle updating match timing
+    # a
+
     return render(
         request,
         "games/game_coinresult.html",
@@ -1708,6 +1705,40 @@ def delete_feedback_view(request, feedback_id):
         return redirect("user-feedback-list")
 
     return render(request, "tournaments/tournament_delete_feedback.html", {"feedback": feedback})
+
+
+class MatchStatsView(DetailView):
+    model = Tournament
+    template_name = "tournaments/tournament_match_stats.html"
+    context_object_name = "tournament"
+
+    def get(self, request, *args, **kwargs):
+        tournament = self.get_object()
+        completed_matches = tournament.matches.filter(end_time__isnull=False)
+
+        if completed_matches:
+            total_duration = sum((match.end_time - match.start_time).total_seconds() for match in completed_matches)
+            average_duration = total_duration / completed_matches.count()
+            average_duration = timedelta(seconds=average_duration)
+        else:
+            average_duration = None
+
+        fastest_match = completed_matches.order_by("duration").first()
+        slowest_match = completed_matches.order_by("-duration").first()
+
+        context = {
+            "tournament": tournament,
+            "tournament_stats": {
+                "total_matches": tournament.matches.count(),
+                "completed_matches": completed_matches.count(),
+                "average_duration": average_duration,
+            },
+            "all_matches": completed_matches.order_by("-date_played"),
+            "fastest_match": fastest_match,
+            "slowest_match": slowest_match,
+        }
+
+        return render(request, "tournaments/tournament_match_stats.html", context)
 
 
 # =============== Word Game Views ===============
