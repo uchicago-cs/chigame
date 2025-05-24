@@ -4,9 +4,9 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
-from django.db.models import CharField, F, Q, Value
+from django.db.models import CharField, Count, F, Q, Value
 from django.db.models.functions import Concat
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.safestring import mark_safe
 from django.views.decorators.http import require_POST
@@ -172,6 +172,32 @@ class ContributorManageGuide(LoginRequiredMixin, ListView):
     def get_queryset(self):
         guides = self.request.user.authored_guides.all()
 
+        # for sorting
+        sort = self.request.GET.get("sort")
+        if sort == "old":
+            guides = guides.order_by("recent_upload")
+        elif sort == "newest":
+            guides = guides.order_by("-recent_upload")
+        elif sort == "game":
+            guides = guides.order_by("game_id")
+        elif sort == "likes":
+            guides = guides.annotate(num_likes=Count("likes")).order_by("-num_likes")
+        elif sort == "status":
+            guides = guides.order_by("status")
+        else:  # default: unseen feedback
+            unseen_feedback = []
+            for guide in guides:
+                all_feedback = guide.feedbacks.all()
+                if all_feedback:
+                    # find the latest feedback for each guide
+                    latest_feedback = all_feedback.order_by("-timestamp").first()
+                    # check if it's been seen
+                    if not latest_feedback.seen:
+                        # if not, add that guide's pk to the unseen feedback list
+                        unseen_feedback.append(latest_feedback.guide_id.pk)
+            qs1 = guides.filter(pk__in=unseen_feedback)
+            guides = qs1 | guides
+
         for guide in guides:
             guide.latest_feedback = None
             if guide.status != 0:
@@ -179,6 +205,27 @@ class ContributorManageGuide(LoginRequiredMixin, ListView):
                 guide.latest_feedback = latest_feedback
 
         return guides
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        if self.request.user.is_authenticated:
+            unseen_feedback = []
+            submittedguides = Guide.objects.filter(author=self.request.user)
+            for guide in submittedguides:
+                all_feedback = guide.feedbacks.all()
+                if all_feedback:
+                    # find the latest feedback for each guide
+                    latest_feedback = all_feedback.order_by("-timestamp").first()
+                    # check if it's been seen
+                    if not latest_feedback.seen:
+                        # if not, add that guide's pk to the unseen feedback list
+                        unseen_feedback.append(latest_feedback.guide_id.pk)
+
+            context["unseen_feedback"] = unseen_feedback
+        else:
+            context["unseen_feedback"] = []
+        return context
 
 
 @login_required
@@ -385,3 +432,37 @@ def ModeratorSetPublishedGuide(request, game_pk, guide_pk):
 
     game.save()
     return redirect("moderator-single-game", game_pk)  # or wherever you want to redirect
+
+
+@require_POST
+def LikeUnlikeGuide(request, pk):
+    guide = get_object_or_404(Guide, pk=pk)
+    liked = guide.likes.filter(pk=request.user.pk).exists()
+    # if originally like, then unlike it
+    if liked:
+        guide.likes.remove(request.user)
+    # if originally unlike, then like it
+    else:
+        guide.likes.add(request.user)
+    liked = not liked
+    like_count = guide.likes.count()
+
+    return JsonResponse({"liked": liked, "like_count": like_count})
+
+
+@require_POST
+@login_required
+def FavUnfavGuide(request, pk):
+    guide = get_object_or_404(Guide, pk=pk)
+    favorited = guide.favorites.filter(pk=request.user.pk).exists()
+    # if originally favorite, then unfavorite it
+    if favorited:
+        guide.favorites.remove(request.user)
+    # if originally unfavorite, then favorite it
+    else:
+        guide.favorites.add(request.user)
+
+    favorited = not favorited
+    fav_count = guide.favorites.count()
+
+    return JsonResponse({"favorited": favorited, "fav_count": fav_count})

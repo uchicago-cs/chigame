@@ -5,7 +5,9 @@ from django.utils import timezone
 from factory import Faker, Iterator, LazyAttribute, LazyFunction, Sequence, SubFactory, post_generation
 from factory.django import DjangoModelFactory
 
-from chigame.games.models import Category, Chat, Feedback, Game, Lobby, Match, Mechanic, Tournament
+from chigame.achievements.models import Achievement, UserAchievement
+from chigame.chat.models import LiveChat, LiveChatUser
+from chigame.games.models import Category, Chat, Feedback, Game, Lobby, Match, Mechanic, Review, Tournament
 from chigame.users.models import User
 
 
@@ -170,3 +172,54 @@ class FeedbackFactory(factory.django.DjangoModelFactory):
     user = factory.SubFactory(UserFactory)
     rating = 4
     comment = "This is a test comment"
+
+
+class ReviewFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Review
+
+    title = factory.Faker("sentence", nb_words=4)
+    review = factory.Faker("text", max_nb_chars=200)
+    rating = factory.Faker("pydecimal", left_digits=1, right_digits=1, min_value=1, max_value=5)
+    is_public = True
+    user = factory.SubFactory(UserFactory)
+    game = factory.SubFactory(GameFactory)
+
+
+class AchievementFactory(DjangoModelFactory):
+    class Meta:
+        model = Achievement
+
+    name = Sequence(lambda n: f"Achievement {n}")
+    spoiler = Faker("boolean")
+    description = Faker("text", max_nb_chars=200)
+    rarity = Faker("pyint", min_value=1, max_value=4)
+    threshold = Faker("pydecimal", left_digits=1, right_digits=1, min_value=1)
+    game = SubFactory(GameFactory)
+
+
+class UserAchievementFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = UserAchievement
+
+    user = SubFactory(UserFactory)
+    achievement = SubFactory(AchievementFactory)
+    pinned = Faker("boolean")
+    progress = Faker("pydecimal", left_digits=1, right_digits=1, min_value=1)
+    date_earned = Faker("date_time_this_year")
+    last_updated = Faker("date_time_this_year")
+
+
+class LiveChatFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = LiveChat
+
+    name = factory.Sequence(lambda n: f"LiveChat {n}")
+
+    @factory.post_generation
+    def users(self, create, extracted, **kwargs):
+        if not create:
+            return
+        if extracted:
+            for user in extracted:
+                LiveChatUser.objects.create(user=user, live_chat=self)
