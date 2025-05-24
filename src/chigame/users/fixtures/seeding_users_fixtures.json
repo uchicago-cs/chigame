@@ -1,0 +1,112 @@
+[
+  {
+    "model": "users.user",
+    "pk": 1000,
+    "fields": {
+      "email": "user1@example.com",
+      "username": "user1",
+      "name": "User 1",
+      "password": "pbkdf2_sha256$...",
+      "tokens": 1
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 1001,
+    "fields": {
+      "email": "user2@example.com",
+      "username": "user2",
+      "name": "User 2",
+      "password": "pbkdf2_sha256$...",
+      "tokens": 1
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 1002,
+    "fields": {
+      "email": "user3@example.com",
+      "username": "user3",
+      "name": "User 3",
+      "password": "pbkdf2_sha256$...",
+      "tokens": 1
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 1003,
+    "fields": {
+      "email": "user4@example.com",
+      "username": "user4",
+      "name": "User 4",
+      "password": "pbkdf2_sha256$...",
+      "tokens": 1
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 1004,
+    "fields": {
+      "email": "user5@example.com",
+      "username": "user5",
+      "name": "User 5",
+      "password": "pbkdf2_sha256$...",
+      "tokens": 1
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 1005,
+    "fields": {
+      "email": "user6@example.com",
+      "username": "user6",
+      "name": "User 6",
+      "password": "pbkdf2_sha256$...",
+      "tokens": 1
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 1006,
+    "fields": {
+      "email": "user7@example.com",
+      "username": "user7",
+      "name": "User 7",
+      "password": "pbkdf2_sha256$...",
+      "tokens": 1
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 1007,
+    "fields": {
+      "email": "user8@example.com",
+      "username": "user8",
+      "name": "User 8",
+      "password": "pbkdf2_sha256$...",
+      "tokens": 1
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 1008,
+    "fields": {
+      "email": "user9@example.com",
+      "username": "user9",
+      "name": "User 9",
+      "password": "pbkdf2_sha256$...",
+      "tokens": 1
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 1009,
+    "fields": {
+      "email": "user10@example.com",
+      "username": "user10",
+      "name": "User 10",
+      "password": "pbkdf2_sha256$...",
+      "tokens": 1
+    }
+  }
+]
