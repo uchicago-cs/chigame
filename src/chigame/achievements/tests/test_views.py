@@ -1,7 +1,9 @@
 from datetime import timedelta
 
 import pytest
+from django.urls import reverse
 from django.utils import timezone
+from django.utils.timesince import timesince
 
 from chigame.achievements.models import UserAchievement
 from chigame.achievements.views import get_recent_achievements
@@ -74,3 +76,39 @@ def test_get_recent_achievements_3():
     assert all(isinstance(ua, UserAchievement) for ua in recent)
     # Check they are ordered by most recent
     assert recent[0].date_earned > recent[len(recent) - 1].date_earned
+
+
+@pytest.mark.django_db
+def test_get_recent_achievements_frontend(client):
+    user = UserFactory()
+    client.force_login(user)
+
+    for i in range(6):
+        UserAchievementFactory(
+            user=user, achievement=AchievementFactory.create(), date_earned=timezone.now() - timedelta(days=i)
+        )
+
+    response = client.get(reverse("user_achievements"))
+    assert response.status_code == 200
+
+    assert len(response.context["recent_achievements"]) == 5
+    assert all(isinstance(ua, UserAchievement) for ua in response.context["recent_achievements"])
+
+    html = response.content.decode()
+    for ua in response.context["recent_achievements"]:
+        assert ua.achievement.name in html
+        assert ua.achievement.game.name in html
+        expected_timesince = timesince(ua.date_earned)
+        assert expected_timesince.split(",")[0] in html
+
+
+@pytest.mark.django_db
+def test_get_recent_achievements_frontend_no_achievements(client):
+    user = UserFactory()
+    client.force_login(user)
+    # No achievements created for this user
+    response = client.get(reverse("user_achievements"))
+    assert response.status_code == 200
+
+    assert len(response.context["recent_achievements"]) == 0
+    assert "No recent achievements" in response.content.decode()
