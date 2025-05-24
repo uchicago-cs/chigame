@@ -4,7 +4,6 @@ import json
 from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
 from django.core.cache import cache
-from django.utils import timezone
 
 from chigame.users.models import User
 
@@ -48,10 +47,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
     def check_user_in_chat(self, user, chat):
         return chat.users.filter(id=user.id).exists()
 
-    @database_sync_to_async
-    def update_user_last_seen(self, user_id):
-        User.objects.filter(pk=user_id).update(last_seen=timezone.now())
-
     async def connect(self):
         """
         Connects to the chat room and adds the user who is connecting to the chat room to the group.
@@ -91,8 +86,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         # Only add to group if all checks pass
         await self.channel_layer.group_add(self.room_group_name, self.channel_name)
-
-        await self.update_user_last_seen(self.user.id)
 
     async def disconnect(self, close_code):
         # Safely handle disconnect even if connection was never fully established
@@ -169,8 +162,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
             message = text_data_json["message"]
             user_id = text_data_json["user_id"]
             reply_to_id = text_data_json.get("reply_to")
-
-            await self.update_user_last_seen(user_id)
 
         # Apply profanity filter to message
         filtered_message = self.profanity_filter.censor_message(message)
