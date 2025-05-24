@@ -1,6 +1,9 @@
 from django.db import models
+from rest_framework.permissions import IsAuthenticated
+from rest_framework import generics
 
 from chigame.games.models import Game, Match
+from chigame.leaderboards.serializers import LeaderboardEntrySerializer
 from chigame.users.models import UserProfile
 
 
@@ -113,3 +116,21 @@ class LeaderboardPrivacySetting(models.Model):
             return setting
 
         return None
+
+
+class LeaderboardEntryListView(generics.ListAPIView):
+    serializer_class = LeaderboardEntrySerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        game_id = self.kwargs["game_id"]
+        region_filter = self.request.query_params.get("region")
+
+        leaderboard = Game.objects.get(id=game_id).leaderboards.first()
+        qs = LeaderboardEntry.objects.filter(leaderboard=leaderboard).select_related("user", "region")
+
+        if region_filter:
+            qs = qs.filter(region__region=region_filter)
+        
+        return qs.order_by("rank")
+
