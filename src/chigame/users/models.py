@@ -314,6 +314,21 @@ class Notification(models.Model):
         ACHIEVEMENT: "You have an achievement",
     }
 
+    # Auto-categorization mapping for notification types
+    CATEGORY_MAPPING = {
+        FRIEND_REQUEST: "social",
+        GROUP_INVITATION: "social",
+        REMINDER: "updates",
+        UPCOMING_MATCH: "updates",
+        MATCH_INVITATION: "updates",
+        ACHIEVEMENT: "promotions",
+        TOURNAMENT_INVITATION: "social",
+        TOURNAMENT_INVITATION_ACCEPTED: "social",
+        TOURNAMENT_STARTING: "updates",
+        TOURNAMENT_ROUND_COMPLETED: "updates",
+        TOURNAMENT_COMPLETED: "updates",
+    }
+
     category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default="inbox")
     receiver = models.ForeignKey(User, on_delete=models.CASCADE)
     first_sent = models.DateTimeField(auto_now_add=True)
@@ -331,6 +346,12 @@ class Notification(models.Model):
 
     class Meta:
         unique_together = ["receiver", "actor_content_type", "actor_object_id", "type"]
+
+    def save(self, *args, **kwargs):
+        # Auto-categorize notification if category is still default "inbox"
+        if self.category == "inbox" and self.type in self.CATEGORY_MAPPING:
+            self.category = self.CATEGORY_MAPPING[self.type]
+        super().save(*args, **kwargs)
 
     def mark_as_read(self):
         if not self.read:

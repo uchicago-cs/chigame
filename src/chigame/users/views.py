@@ -245,6 +245,7 @@ def send_friend_invitation(request, pk):
             receiver=other_user,
             type=Notification.FRIEND_REQUEST,
             message=Notification.DEFAULT_MESSAGES[Notification.FRIEND_REQUEST],
+            category="social",
         )
     # if the other user has already sent a friend request, return an error
     elif invitation.sender.pk == other_user.pk:
@@ -257,7 +258,10 @@ def send_friend_invitation(request, pk):
             notification.renew_notification()
         except Notification.DoesNotExist:
             notification = Notification.objects.create(
-                actor=invitation, receiver=other_user, type=Notification.FRIEND_REQUEST
+                actor=invitation,
+                receiver=other_user,
+                type=Notification.FRIEND_REQUEST,
+                category="social",
             )
     return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
 
