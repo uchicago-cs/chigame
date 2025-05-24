@@ -305,7 +305,14 @@ class Notification(models.Model):
         (TOURNAMENT_COMPLETED, "TOURNAMENT_COMPLETED"),
     )
 
-    DEFAULT_MESSAGES = {FRIEND_REQUEST: "You have a friend invitation"}
+    DEFAULT_MESSAGES = {
+        FRIEND_REQUEST: "You have a friend invitation",
+        REMINDER: "You have a reminder",
+        UPCOMING_MATCH: "You have an upcoming match",
+        MATCH_INVITATION: "You have a match invite",
+        GROUP_INVITATION: "You have a group invitation",
+        ACHIEVEMENT: "You have an achievement",
+    }
 
     # Auto-categorization mapping for notification types
     CATEGORY_MAPPING = {
@@ -383,45 +390,43 @@ class Notification(models.Model):
         return type_map.get(self.type, "default")
 
     def get_rich_message(self):
+        """
+        Returns a concise message that assumes the sender will be shown separately.
+        e.g., Instead of 'rain1 sent you a friend request', just 'sent you a friend request'.
+        """
         actor = self.actor
 
-        # Default message: Use pre-set message, then type-specific default, then generic default
+        # Safe fallback if actor is missing
         default_message_for_type = self.DEFAULT_MESSAGES.get(self.type, "You have a new notification.")
-        final_fallback_message = self.message or default_message_for_type
-
-        if not actor:
-            return final_fallback_message
+        fallback = self.message or default_message_for_type
 
         try:
             if self.type == self.FRIEND_REQUEST:
-                if hasattr(actor, "sender") and actor.sender:
-                    # Try to get username, fallback to name, then to "Someone"
-                    sender_name = (
-                        getattr(actor.sender, "username", None) or getattr(actor.sender, "name", None) or "Someone"
-                    )
-                    return f"{sender_name} sent you a friend request."
-                return default_message_for_type
+                return "sent you a friend request"
 
             elif self.type == self.GROUP_INVITATION:
-                if (
-                    hasattr(actor, "sender")
-                    and actor.sender
-                    and hasattr(actor, "friend_group")
-                    and actor.friend_group
-                    and hasattr(actor.friend_group, "name")
-                ):
-                    sender_name = (
-                        getattr(actor.sender, "username", None) or getattr(actor.sender, "name", None) or "Someone"
-                    )
-                    group_name = actor.friend_group.name
-                    return f"{sender_name} invited you to join the group '{group_name}'."
-                return self.message or "You have a group invitation."
+                if hasattr(actor, "friend_group") and actor.friend_group and hasattr(actor.friend_group, "name"):
+                    return f"invited you to join the group '{actor.friend_group.name}'"
+                return "invited you to a group"
 
-            # For all other notification types, use the existing message or the type-specific default
-            return final_fallback_message
+            elif self.type == self.UPCOMING_MATCH:
+                return "Your match is starting soon"
 
-        except AttributeError:
-            return final_fallback_message  # Safe fallback in case of unexpected errors
+            elif self.type == self.TOURNAMENT_INVITATION:
+                return "You’ve been invited to a tournament"
+
+            elif self.type == self.TOURNAMENT_STARTING:
+                return "A tournament is starting"
+
+            elif self.type == self.ACHIEVEMENT:
+                return "You unlocked an achievement"
+
+            elif self.type == self.REMINDER:
+                return "Reminder: check your notifications"
+
+            return fallback
+        except Exception:
+            return fallback
 
     def get_icon_class(self):
         if self.type == self.FRIEND_REQUEST:
@@ -438,6 +443,15 @@ class Notification(models.Model):
             return "bi-info-circle-fill"
         else:
             return "bi-bell-fill"
+
+    def get_sender_display(self):
+        """
+        Returns a string representing the sender (if the actor has one),
+        otherwise falls back to 'System'.
+        """
+        if hasattr(self.actor, "sender") and self.actor.sender:
+            return getattr(self.actor.sender, "username", None) or getattr(self.actor.sender, "name", None) or "User"
+        return "System"
 
 
 class BaseNotificationHandler:
