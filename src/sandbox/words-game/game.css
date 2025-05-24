@@ -391,7 +391,7 @@ body.dark-mode #how-to-play-text::-webkit-scrollbar-thumb {
     display: flex;
     justify-content: center;
     pointer-events: none;
-    z-index: 1000;
+    z-index: 10000;
 }
 
 #notification {
@@ -409,6 +409,7 @@ body.dark-mode #how-to-play-text::-webkit-scrollbar-thumb {
     max-width: 90%;
     text-align: center;
     border: 2px solid var(--primary);
+    z-index: 10000;
 }
 
 #notification.show {

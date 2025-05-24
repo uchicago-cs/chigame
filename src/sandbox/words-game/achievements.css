@@ -202,7 +202,7 @@ body.dark-mode #achievements-panel {
     display: flex;
     justify-content: center;
     pointer-events: none;
-    z-index: 9999;
+    z-index: 10000;
 }
 
 #notification {
@@ -211,6 +211,7 @@ body.dark-mode #achievements-panel {
     transition: transform 0.5s ease, opacity 0.5s ease;
     max-width: 90%;
     width: 400px;
+    z-index: 10000;
 }
 
 #notification.show {

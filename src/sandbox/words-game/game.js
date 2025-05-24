@@ -137,6 +137,11 @@ window.addEventListener("load", async () => {
 
     // Attach the single physical keyboard handler once after DOM is loaded
     document.addEventListener('keydown', gameKeyDownHandler);
+
+    // Start timing for freeze achievement
+    gameStartTime = new Date().getTime();
+    grayOnlyGame = true;
+    noGreenUntilEnd = true;
 });
 
 //Buttons (How To Play and Settings)!
@@ -715,6 +720,239 @@ async function isValidWord(word) {
     }
 }
 
+// Game state tracking for achievements
+let gameStartTime = null;
+let firstGuessOfTheDay = null;
+let lastSixGuesses = [];
+let grayOnlyGame = true;
+let noGreenUntilEnd = true;
+
+// Check for achievements after game completion
+function checkAchievements() {
+    if (!window.Achievements) return;
+
+    // Create gameState object for achievements
+    const gameState = {
+        won: gameWon,
+        guessCount: guessedWordCount,
+        maxGuesses: 6,
+        firstGuess: guessedWords[0]?.join('') || '',
+        guessHistory: guessedWords.map((word, rowIndex) => {
+            const colors = calculateTileColors(word, word === word.length ? word : '');
+            return word.map((letter, index) => ({
+                letter,
+                state: colors[index] === COLOR_CORRECT ? 'correct' :
+                       colors[index] === COLOR_OFF ? 'present' : 'absent'
+            }));
+        }),
+        mode: mode,
+        wordLength: wordLength,
+        streak: mode === 'solo' ? soloStreak : dailyStreak
+    };
+
+    // First Win
+    if (gameWon) {
+        window.Achievements.unlockAchievement('first_win');
+    }
+
+    // First Try
+    if (gameWon && guessedWordCount === 1) {
+        window.Achievements.unlockAchievement('first_guess');
+    }
+
+    // Clutch Guess
+    if (gameWon && guessedWordCount === 6) {
+        window.Achievements.unlockAchievement('clutch_guess');
+    }
+
+    // Streak Achievements
+    const streakValue = mode === 'solo' ? soloStreak : dailyStreak;
+    if (streakValue >= 7) {
+        window.Achievements.unlockAchievement('one_week_streak');
+    }
+    if (streakValue >= 30) {
+        window.Achievements.unlockAchievement('one_month_streak');
+    }
+    if (streakValue >= 365) {
+        window.Achievements.unlockAchievement('one_year_streak');
+    }
+
+    // Comeback
+    if (gameWon && guessedWords.length >= 4) {
+        const firstThreeGuesses = guessedWords.slice(0, 3);
+        let allZeroCorrect = true;
+
+        for (let i = 0; i < 3; i++) {
+            if (i < firstThreeGuesses.length) {
+                const colors = calculateTileColors(firstThreeGuesses[i], word);
+                if (colors.some(color => color === COLOR_CORRECT || color === COLOR_OFF)) {
+                    allZeroCorrect = false;
+                    break;
+                }
+            }
+        }
+
+        if (allZeroCorrect) {
+            window.Achievements.unlockAchievement('comeback');
+        }
+    }
+
+    // Gambler (requires checking localStorage for historical first guesses)
+    checkGamblerAchievement();
+
+    // Freeze (check if game took over an hour)
+    if (gameStartTime && (new Date().getTime() - gameStartTime > 60 * 60 * 1000)) {
+        window.Achievements.unlockAchievement('freeze');
+    }
+
+    // Zero Green (no green tiles until final guess)
+    if (gameWon && noGreenUntilEnd) {
+        window.Achievements.unlockAchievement('zero_green');
+    }
+
+    // Sixth Sense (6 guesses, 6 days in a row)
+    checkSixthSenseAchievement();
+
+    // One and Done
+    checkOneAndDoneAchievement();
+
+    // Blacked Out
+    if (!gameWon && grayOnlyGame) {
+        window.Achievements.unlockAchievement('blacked_out');
+    }
+
+    // Call the achievement system's check function too
+    window.Achievements.checkForAchievements(gameState);
+}
+
+// Check for the Gambler achievement
+function checkGamblerAchievement() {
+    const today = new Date().toISOString().split('T')[0];
+
+    // Get stored first guesses
+    const firstGuessesData = localStorage.getItem("firstGuesses");
+    let firstGuesses = {};
+
+    if (firstGuessesData) {
+        firstGuesses = JSON.parse(firstGuessesData);
+    }
+
+    // Set today's first guess
+    if (guessedWords[0]?.join('') && !firstGuesses[today]) {
+        firstGuesses[today] = guessedWords[0].join('');
+
+        // Only keep recent days (last 30 days)
+        const oldestAllowedDate = new Date();
+        oldestAllowedDate.setDate(oldestAllowedDate.getDate() - 30);
+
+        // Remove old entries
+        for (const date in firstGuesses) {
+            if (new Date(date) < oldestAllowedDate) {
+                delete firstGuesses[date];
+            }
+        }
+
+        localStorage.setItem("firstGuesses", JSON.stringify(firstGuesses));
+    }
+
+    // Check for 7 consecutive days with same first guess
+    const dates = Object.keys(firstGuesses).sort();
+    if (dates.length >= 7) {
+        let streak = 1;
+        const lastGuess = firstGuesses[dates[dates.length - 1]];
+
+        for (let i = dates.length - 2; i >= 0; i--) {
+            const currentDate = new Date(dates[i]);
+            const nextDate = new Date(dates[i + 1]);
+
+            // Check if consecutive days and same guess
+            const diffDays = Math.floor((nextDate - currentDate) / (1000 * 60 * 60 * 24));
+
+            if (diffDays === 1 && firstGuesses[dates[i]] === lastGuess) {
+                streak++;
+                if (streak >= 7) {
+                    window.Achievements.unlockAchievement('gambler');
+                    break;
+                }
+            } else {
+                break;
+            }
+        }
+    }
+}
+
+// Check for the Sixth Sense achievement
+function checkSixthSenseAchievement() {
+    if (gameWon && guessedWordCount === 6) {
+        // Update the last 6 guesses
+        const today = new Date().toISOString().split('T')[0];
+
+        // Get stored last guesses
+        const sixthSenseData = localStorage.getItem("sixthSenseData");
+        let sixthSenseState = {
+            dates: [],
+            streak: 0
+        };
+
+        if (sixthSenseData) {
+            sixthSenseState = JSON.parse(sixthSenseData);
+        }
+
+        const lastDate = sixthSenseState.dates[sixthSenseState.dates.length - 1];
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+        // Check if this is a consecutive day
+        if (lastDate === yesterdayStr) {
+            sixthSenseState.streak++;
+            sixthSenseState.dates.push(today);
+
+            // Keep only the last 10 dates
+            if (sixthSenseState.dates.length > 10) {
+                sixthSenseState.dates.shift();
+            }
+
+            // Check if we've reached 6 days
+            if (sixthSenseState.streak >= 6) {
+                window.Achievements.unlockAchievement('sixth_sense');
+            }
+        } else {
+            // Reset streak but record today
+            sixthSenseState.streak = 1;
+            sixthSenseState.dates = [today];
+        }
+
+        localStorage.setItem("sixthSenseData", JSON.stringify(sixthSenseState));
+    }
+}
+
+// Check for the One and Done achievement
+function checkOneAndDoneAchievement() {
+    const today = new Date().toISOString().split('T')[0];
+
+    // Get stored one and done info
+    const oneAndDoneData = localStorage.getItem("oneAndDoneData");
+    let oneAndDoneInfo = {};
+
+    if (oneAndDoneData) {
+        oneAndDoneInfo = JSON.parse(oneAndDoneData);
+    }
+
+    // If we haven't recorded anything for today yet
+    if (!oneAndDoneInfo[today]) {
+        // If the player only made one guess
+        if (guessedWordCount === 1) {
+            // Award the achievement
+            window.Achievements.unlockAchievement('one_and_done');
+        }
+
+        // Record that the player has played today
+        oneAndDoneInfo[today] = true;
+        localStorage.setItem("oneAndDoneData", JSON.stringify(oneAndDoneInfo));
+    }
+}
+
 async function handleSubmitWord() {
     if (gameOver) {
         return;
@@ -760,7 +998,17 @@ async function handleSubmitWord() {
 
     // Calculate the colors using the Wordle algorithm
     const tileColors = calculateTileColors(currentWordArr, word);
-    tileColors.forEach((color, index) => {//add letters to colors array for hard mode
+
+    // Check for gray only and no green achievements
+    if (tileColors.some(color => color !== COLOR_WRONG)) {
+        grayOnlyGame = false;
+    }
+
+    if (tileColors.some(color => color === COLOR_CORRECT) && guessedWordCount < 5) {
+        noGreenUntilEnd = false;
+    }
+
+    tileColors.forEach((color, index) => {
         if (color === COLOR_CORRECT) {
             greenLetters[index] = currentWordArr[index];
         }
@@ -806,6 +1054,10 @@ async function handleSubmitWord() {
         saveGameState();
         setTimeout(() => {
             showEndScreen(true);
+            // Check achievements after the end screen is shown
+            setTimeout(() => {
+                checkAchievements();
+            }, 500);
         }, 1500);
         return;
     }
@@ -819,6 +1071,10 @@ async function handleSubmitWord() {
         saveGameState();
         setTimeout(() => {
             showEndScreen(false);
+            // Check achievements after the end screen is shown
+            setTimeout(() => {
+                checkAchievements();
+            }, 500);
         }, 1500);
         return;
     }

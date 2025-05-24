@@ -93,6 +93,10 @@ const achievements = [
   }
 ];
 
+// Achievement notification queue
+const achievementQueue = [];
+let isShowingAchievement = false;
+
 // Load user achievements from localStorage
 function loadUserAchievements() {
   try {
@@ -126,18 +130,36 @@ function unlockAchievement(achievementId) {
 
       saveUserAchievements(userAchievements);
 
-      // Show notification
+      // Add achievement to notification queue
       const achievement = achievements.find(a => a.id === achievementId);
       if (achievement) {
-          showAchievementNotification(achievement);
+          queueAchievementNotification(achievement);
       }
   }
+}
+
+// Queue an achievement notification
+function queueAchievementNotification(achievement) {
+  achievementQueue.push(achievement);
+  processAchievementQueue();
+}
+
+// Process the achievement notification queue
+function processAchievementQueue() {
+  if (isShowingAchievement || achievementQueue.length === 0) {
+      return;
+  }
+
+  isShowingAchievement = true;
+  const achievement = achievementQueue.shift();
+  showAchievementNotification(achievement);
 }
 
 // Show achievement notification
 function showAchievementNotification(achievement) {
   const notification = document.getElementById('notification');
   if (notification) {
+      // Clear any existing content and classes
       notification.innerHTML = `
           <div class="achievement-notification">
               <div class="achievement-icon">${achievement.icon}</div>
@@ -147,11 +169,26 @@ function showAchievementNotification(achievement) {
               </div>
           </div>
       `;
+
+      // Force a reflow to ensure animations work correctly if notifications are in quick succession
+      notification.offsetHeight;
+
       notification.classList.add('show');
 
       setTimeout(() => {
           notification.classList.remove('show');
+
+          // After notification is removed, wait a short time before showing the next one
+          setTimeout(() => {
+              isShowingAchievement = false;
+              processAchievementQueue();
+          }, 500); // Small gap between notifications
       }, 5000);
+  } else {
+      // If notification element doesn't exist, move to the next achievement
+      console.error('Notification element not found');
+      isShowingAchievement = false;
+      setTimeout(processAchievementQueue, 100);
   }
 }
 
@@ -327,6 +364,7 @@ window.Achievements = {
   loadUserAchievements: loadUserAchievements,
   saveUserAchievements: saveUserAchievements,
   showAchievementNotification: showAchievementNotification,
+  queueAchievementNotification: queueAchievementNotification,
   renderAchievements: renderAchievements,
   checkForAchievements: checkForAchievements,
   toggleAchievementsPanel: toggleAchievementsPanel,
