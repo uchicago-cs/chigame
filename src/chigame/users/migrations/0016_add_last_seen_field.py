@@ -5,7 +5,7 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("users", "0015_merge_20250523_1606"),
+        ("users", "0014_alter_friendinvitation_unique_together"),
     ]
 
     operations = []
