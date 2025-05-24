@@ -8,6 +8,7 @@ tournament data in the DB.
 """
 
 import random
+from collections import defaultdict
 
 from django.contrib.auth import get_user_model
 
@@ -36,6 +37,10 @@ class TournamentSimulator:
         self.simulated_final_match = None
         self.current_round = 0
         self.is_double_elimination = False  # single elimination by default
+        self.seeded_players = None
+
+    def set_seeded_players(self, players: list[User]) -> None:
+        self.seeded_players = players
 
     def set_tournament_type(self, is_double_elimination: bool) -> None:
         """
@@ -58,20 +63,48 @@ class TournamentSimulator:
         self.simulated_final_match = None
 
         # get all matches from the tournament
-        matches = self.tournament.matches.all()
 
         # store initial matches
-        for match in matches:
-            # Convert match ID to string for consistent key handling
-            match_id_str = str(match.id)
-            self.simulated_matches[match_id_str] = {
-                "match": match,
-                "players": list(match.players.all()),
-                "winner": None,
-                "loser": None,
-                "round": 1,
-                "bracket": "winners",  # all initial matches are in winners bracket
-            }
+        if self.seeded_players:
+            # Use seeded_players to create initial matches (1 vs N, 2 vs N-1, etc.)
+            players = self.seeded_players
+            num_players = len(players)
+            for i in range(num_players // 2):
+                match_id = f"seeded_1_{i}"
+                p1 = players[i]
+                p2 = players[num_players - 1 - i]
+                self.simulated_matches[match_id] = {
+                    "match": None,
+                    "players": [p1, p2],
+                    "winner": None,
+                    "loser": None,
+                    "round": 1,
+                    "bracket": "winners",
+                }
+            if num_players % 2 == 1:
+                # If odd number, give middle player a bye
+                middle_player = players[num_players // 2]
+                self.simulated_matches["bye_1"] = {
+                    "match": None,
+                    "players": [middle_player],
+                    "winner": middle_player,
+                    "loser": None,
+                    "round": 1,
+                    "bracket": "winners",
+                }
+        else:
+            matches = self.tournament.matches.all()
+            for match in matches:
+                # Convert match ID to string for consistent key handling
+                match_id_str = str(match.id)
+                self.simulated_matches[match_id_str] = {
+                    "match": match,
+                    "players": list(match.players.all()),
+                    "winner": None,
+                    "loser": None,
+                    "round": 1,
+                    "bracket": "winners",  # all initial matches are in winners bracket
+                }
 
     def simulate_match_outcome(self, match_id: int) -> tuple[User | None, User | None]:
         """
@@ -243,6 +276,8 @@ class TournamentSimulator:
         Returns:
             The User object of the tournament winner, or None if the tournament is not complete
         """
+        if not self.simulated_matches:
+            return None
         if self.is_double_elimination and self.simulated_final_match:
             return self.simulated_final_match["winner"]
 
@@ -579,3 +614,52 @@ class MultiStageSimulator(RoundRobinSimulator):
             "knockout_rounds": self.get_knockout_rounds(),
             "tournament_winner": (self.get_tournament_winner().id if self.get_tournament_winner() else None),
         }
+
+
+def compute_seeds(tournaments):
+    """
+    Compute player seedings based on win/loss ratio across multiple tournaments.
+
+    Args:
+        tournaments (list[dict]): List of tournament dicts like the ones in your JSON.
+
+    Returns:
+        list[tuple]: Sorted list of (player_id, win_count, loss_count, win_ratio)
+    """
+    wins = defaultdict(int)
+    losses = defaultdict(int)
+    players_set = set()
+
+    for tournament in tournaments:
+        fields = tournament["fields"]
+        players = fields["players"]
+        winners = set(fields["winners"])  # Can be multiple in case of ties
+
+        for player in players:
+            players_set.add(player)
+            if player in winners:
+                wins[player] += 1
+            else:
+                losses[player] += 1
+
+    player_stats = []
+    for player in players_set:
+        win = wins[player]
+        loss = losses[player]
+        total = win + loss
+        win_ratio = win / total if total > 0 else 0
+        player_stats.append((player, win, loss, win_ratio))
+
+    # Sort by win_ratio descending, then wins descending, then player ID ascending
+    player_stats.sort(key=lambda x: (-x[3], -x[1], x[0]))
+
+    return player_stats
+
+
+def get_ordered_players_by_seeds(seed_tuples: list[tuple], user_id_to_instance: dict[int, User]) -> list[User]:
+    """
+    Convert (player_id, wins, losses, ratio) tuples into a list of User objects
+    ordered by seed (highest first).
+    """
+    ordered_ids = [player_id for player_id, _, _, _ in seed_tuples]
+    return [user_id_to_instance[pid] for pid in ordered_ids if pid in user_id_to_instance]
