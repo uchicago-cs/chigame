@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}
+  Play {{ game.name }}
+{% endblock title %}
+{% block content %}
+  <style>
+    .twine-game-iframe {
+      width: 100%;
+      height: 800px;
+      border: none;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .game-header {
+      margin-bottom: 20px;
+      padding: 20px;
+      background-color: #f8f9fa;
+      border-radius: 8px;
+    }
+
+    .game-info {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+
+    .game-thumbnail {
+      width: 60px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+  </style>
+  <div class="game-header">
+    <div class="game-info">
+      <img src="{{ game.image }}" alt="{{ game.name }}" class="game-thumbnail" />
+      <div>
+        <h2>{{ game.name }}</h2>
+        <p class="text-muted mb-0">{{ game.description|truncatewords:20 }}</p>
+        <small class="text-success">📖 Interactive Fiction</small>
+      </div>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{% url 'game-detail' game.pk %}"
+         class="btn btn-outline-primary">
+        <i class="bi bi-arrow-left"></i> Back to Game Details
+      </a>
+      <button class="btn btn-outline-secondary" onclick="toggleFullscreen()">
+        <i class="bi bi-fullscreen"></i> Fullscreen
+      </button>
+      <a href="{{ game.twine_file.url }}"
+         target="_blank"
+         class="btn btn-outline-info">
+        <i class="bi bi-box-arrow-up-right"></i> Open in New Tab
+      </a>
+    </div>
+  </div>
+  <div class="twine-game-container">
+    <iframe id="twineIframe"
+            src="{{ game.twine_file.url }}"
+            class="twine-game-iframe"
+            allowfullscreen
+            title="Play {{ game.name }}">
+      <p>
+        Your browser does not support iframes. <a href="{{ game.twine_file.url }}" target="_blank">Click here to play {{ game.name }} in a new window</a>.
+      </p>
+    </iframe>
+  </div>
+  <script>
+    function toggleFullscreen() {
+      const iframe = document.getElementById('twineIframe');
+      if (iframe.requestFullscreen) {
+        iframe.requestFullscreen();
+      } else if (iframe.webkitRequestFullscreen) {
+        /* Safari */
+        iframe.webkitRequestFullscreen();
+      } else if (iframe.msRequestFullscreen) {
+        /* IE11 */
+        iframe.msRequestFullscreen();
+      }
+    }
+
+    // Listen for messages from Twine games (for future progress tracking)
+    window.addEventListener('message', function(event) {
+      // Future: Handle Twine game events like story completion
+      console.log('Received message from Twine game:', event.data);
+    });
+
+    // Add some styling for better Twine game presentation
+    document.addEventListener('DOMContentLoaded', function() {
+      const iframe = document.getElementById('twineIframe');
+
+      // Add loading indicator
+      iframe.addEventListener('load', function() {
+        console.log('Twine game loaded successfully');
+      });
+    });
+  </script>
+{% endblock content %}

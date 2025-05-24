@@ -50,6 +50,7 @@ urlpatterns = [
     # placeholder game
     path("lobby/<int:pk>/coinflip", views.coin_flip_game, name="placeholder-game"),
     path("<int:pk>/", views.GameDetailView.as_view(), name="game-detail"),
+    path("<int:pk>/play-twine/", views.play_twine_game, name="play-twine-game"),
     # tournament feedback
     path("tournaments/<int:tournament_id>/feedback/", views.tournament_feedback_list, name="tournament-feedback-list"),
     path("tournaments/<int:tournament_id>/feedback/submit/", views.submit_feedback, name="submit-feedback"),

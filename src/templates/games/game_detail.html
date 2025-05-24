@@ -41,6 +41,11 @@
       <div class="btn-group btn-group-lg mt-3">
         <a href="#" class="btn btn-outline-primary">Join a Match</a>
         <a href="#" class="btn btn-outline-primary">Create a Match</a>
+        {% if game.twine_file %}
+          <a href="{% url 'play-twine-game' pk=game.pk %}" class="btn btn-success">
+            <i class="bi bi-book"></i> Play Story
+          </a>
+        {% endif %}
         {% if user.is_authenticated %}
           {% if game in favorites_list.games.all %}
             <a href="{% url 'remove-from-favorites' pk=game.pk %}"

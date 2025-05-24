@@ -1911,3 +1911,28 @@ class GameListDetailView(LoginRequiredMixin, DetailView):
     def get_queryset(self):
         # Ensure users can only view their own game lists
         return GameList.objects.filter(created_by=self.request.user)
+
+
+@login_required
+def play_twine_game(request, pk):
+    """
+    View for playing Twine games in an iframe.
+    Similar to embedded games but specifically for uploaded Twine files.
+    """
+    game = get_object_or_404(Game, pk=pk)
+
+    # Check if this game has a Twine file
+    if not game.twine_file:
+        messages.error(request, f"{game.name} is not a Twine game.")
+        return redirect("game-detail", pk=pk)
+
+    # Debug info (for testing)
+    if settings.DEBUG:
+        messages.info(request, f"🎮 Loading Twine game: {game.name}")
+        messages.info(request, f"📁 Twine file: {game.twine_file.url}")
+
+    context = {
+        "game": game,
+    }
+
+    return render(request, "games/twine_game.html", context)
