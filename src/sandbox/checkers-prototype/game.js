@@ -198,7 +198,7 @@ function create() {
     const labels = { none: 'OFF', easy: 'Easy', medium: 'Medium', hard: 'Hard' };
     botToggle.textContent = `Bot: ${labels[botMode]}`;
     if (currentPlayer === COLORS.black && botMode !== 'none'){
-        const func = botMode === 'easy' ? easyBot 
+        const func = botMode === 'easy' ? easyBot
         : botMode === 'medium' ? mediumBot
         : hardBot;
         scene.time.delayedCall(300, func, [scene], scene)
@@ -725,7 +725,7 @@ function simMove(board, {piece, x, y}){
     const copy = board.map(r => r.slice());
     //get val in pieces spot
     const val = board[piece.y][piece.x];
-    //clear out 
+    //clear out
     copy[piece.y][piece.x] = 0;
 
     //if it a capture, remove captured piece
@@ -765,8 +765,8 @@ function scoreBoard(board){
     return score;
 
 }
-//in order for the hard bot to "be smart", we are going to  have it "think ahead" 
-//In order to do this effeciently, we need to iterate over all possible moves 
+//in order for the hard bot to "be smart", we are going to  have it "think ahead"
+//In order to do this effeciently, we need to iterate over all possible moves
 //that can be made by either player, and the responses to those moves
 //Then once it has done that it finds the best board for black
 //Then it assumes black will max the scoreBoard and red will min it
@@ -809,7 +809,7 @@ function minimax(board, depth, alpha, beta, maximizing) {
       return value;
     }
   }
-  
+
 
 
 //return arr of legal moves for given player
@@ -906,10 +906,10 @@ function hardBot(scene) {
     let best = legal[0]; //best is the best move
     let bestScore = -Infinity; //best score is the max minimix for black
     for (const move of legal) { //loop over black moves
-      const child = simMove(board, move); //sim 
+      const child = simMove(board, move); //sim
         //call minimax to search pos child w depth 4, next move is red
         //returns score of the play
-      const score = minimax(child, 4, -Infinity, +Infinity, false); 
+      const score = minimax(child, 4, -Infinity, +Infinity, false);
       if (score > bestScore) {
         bestScore = score;
         best = move;
