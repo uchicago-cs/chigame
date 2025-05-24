@@ -546,9 +546,7 @@ def friend_list_view(request, pk):
     target_user = get_object_or_404(User, pk=pk)
     # fetch the target user's friends
     friends = target_user.friends.all()
-    # render the friends table (keeping for backward compatibility)
-    table = FriendsTable(friends)
-    context = {"table": table, "friends": friends}
+    context = {"friends": friends}
 
     # if the target user is the current user, render the friends list
     if pk == user.id:
