@@ -1,51 +1,3 @@
-<script setup>
-import { ref } from 'vue'
-import { Swiper, SwiperSlide } from 'swiper/vue'
-import 'swiper/css'
-import 'swiper/css/pagination'
-import 'swiper/css/effect-coverflow'
-import 'swiper/css/autoplay'
-
-import { Autoplay, Pagination, EffectCoverflow } from 'swiper/modules'
-
-import managementImg from './images/management.png'
-import checkersImg from './images/checkers.png'
-import wordgameImg from './images/wordgame.png'
-import reversiImg from './images/reversi.png'
-
-const tournaments = ref([
-  {
-    id: 1,
-    name: 'Checkers Showdown',
-    description: 'A classic checkers tournament for all skill levels.',
-    image: checkersImg,
-    status: 'Upcoming'
-  },
-  {
-    id: 2,
-    name: 'Word Masters',
-    description: 'Compete in Not Wordle for the top spot!',
-    image: wordgameImg,
-    status: 'Ongoing'
-  },
-  {
-    id: 3,
-    name: 'Reversi Blitz',
-    description: 'Fast-paced reversi action. Join now!',
-    image: reversiImg,
-    status: 'Completed'
-  }
-])
-
-const trendingGames = ref([
-  { src: managementImg, alt: 'Management' },
-  { src: checkersImg, alt: 'Checkers' },
-  { src: wordgameImg, alt: 'Word Game' },
-  { src: reversiImg, alt: 'Reversi' }
-])
-</script>
-
-
 <template>
 <div class="hero-section">
   <div class="hero-content">
@@ -285,6 +237,52 @@ const trendingGames = ref([
 </div>
 </template>
 
+<script setup>
+import { ref } from 'vue'
+import { Swiper, SwiperSlide } from 'swiper/vue'
+import 'swiper/css'
+import 'swiper/css/pagination'
+import 'swiper/css/effect-coverflow'
+import 'swiper/css/autoplay'
+
+import { Autoplay, Pagination, EffectCoverflow } from 'swiper/modules'
+
+import managementImg from './images/management.png'
+import checkersImg from './images/checkers.png'
+import wordgameImg from './images/wordgame.png'
+import reversiImg from './images/reversi.png'
+
+const tournaments = ref([
+  {
+    id: 1,
+    name: 'Checkers Showdown',
+    description: 'A classic checkers tournament for all skill levels.',
+    image: checkersImg,
+    status: 'Upcoming'
+  },
+  {
+    id: 2,
+    name: 'Word Masters',
+    description: 'Compete in Not Wordle for the top spot!',
+    image: wordgameImg,
+    status: 'Ongoing'
+  },
+  {
+    id: 3,
+    name: 'Reversi Blitz',
+    description: 'Fast-paced reversi action. Join now!',
+    image: reversiImg,
+    status: 'Completed'
+  }
+])
+
+const trendingGames = ref([
+  { src: managementImg, alt: 'Management' },
+  { src: checkersImg, alt: 'Checkers' },
+  { src: wordgameImg, alt: 'Word Game' },
+  { src: reversiImg, alt: 'Reversi' }
+])
+</script>
 
 <style lang="css" scoped>
 
