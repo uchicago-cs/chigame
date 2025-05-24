@@ -124,6 +124,9 @@ class FriendInvitation(models.Model):
     receiver = models.ForeignKey(User, related_name="received_friend_invitations", on_delete=models.CASCADE)
     accepted = models.BooleanField(default=False)
     timestamp = models.DateTimeField(auto_now_add=True)
+    message = models.TextField(
+        max_length=500, blank=True, help_text="Optional personal message with the friend request"
+    )
     objects = FriendInvitationManager()
     is_deleted = models.BooleanField(default=False)
 

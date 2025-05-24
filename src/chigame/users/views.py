@@ -2,6 +2,7 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.contenttypes.models import ContentType
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models import Q
 from django.http import Http404, HttpResponseNotFound
@@ -15,6 +16,7 @@ from django.views.generic import DetailView, RedirectView, UpdateView
 
 from chigame.games.models import Lobby, Player, Tournament
 
+from .forms import FriendInvitationForm
 from .models import (
     FriendInvitation,
     FriendRequestNotification,
@@ -189,6 +191,7 @@ def user_profile_detail_view(request, pk):
     # for checking friendship and pending friend request status
     is_friend = None
     friendship_request = None
+    friend_request_message = None
     target_user = get_object_or_404(User, pk=pk)
     if request.user.is_authenticated:
         # check friendship or pending invitation with the target user
@@ -196,9 +199,17 @@ def user_profile_detail_view(request, pk):
         if not is_friend:
             curr_user = request.user
             friendship_request = FriendInvitation.objects.get_by_users(curr_user, target_user)
+            # If there's a pending personalized friend request from the profile owner to current user, get the message
+            if friendship_request and friendship_request.sender == target_user and friendship_request.message:
+                friend_request_message = friendship_request.message
 
     # provide frontend profile + friendship status
-    context = {"profile": profile, "is_friend": is_friend, "friendship_request": friendship_request}
+    context = {
+        "profile": profile,
+        "is_friend": is_friend,
+        "friendship_request": friendship_request,
+        "friend_request_message": friend_request_message,
+    }
     return render(request, "users/userprofile_detail.html", context=context)
 
 
@@ -230,31 +241,69 @@ def send_friend_invitation(request, pk):
         messages.error(request, "You can't send friendship invitation to yourself")
         return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
     # check if the friendship invitation already exists
-    invitation, new = FriendInvitation.objects.filter(
+    invitation = FriendInvitation.objects.filter(
         Q(sender=curr_user, receiver=other_user, is_deleted=False)
         | Q(sender=other_user, receiver=curr_user, is_deleted=False)
-    ).get_or_create(defaults={"sender": curr_user, "receiver": other_user, "is_deleted": False})
-    if new:
-        messages.success(request, "Friendship invitation sent successfully.")
-        notification = Notification.objects.create(
-            actor=invitation,
-            receiver=other_user,
-            type=Notification.FRIEND_REQUEST,
-            message=Notification.DEFAULT_MESSAGES[Notification.FRIEND_REQUEST],
-        )
-    # if the other user has already sent a friend request, return an error
-    elif invitation.sender.pk == other_user.pk:
-        messages.info(request, "You already have a pending friend invitation from this profile.")
-    # if the friendship invitation already exists, return an error
+    ).first()
+
+    if invitation:
+        # if the other user has already sent a friend request it throws an error
+        if invitation.sender.pk == other_user.pk:
+            messages.info(request, "You already have a pending friend invitation from this profile.")
+        else:
+            messages.info(request, "Friendship invitation already sent before.")
+            try:
+                notification = Notification.objects.get_by_actor(invitation, receiver=other_user)
+                notification.renew_notification()
+            except Notification.DoesNotExist:
+                notification = Notification.objects.create(
+                    actor=invitation, receiver=other_user, type=Notification.FRIEND_REQUEST
+                )
+        return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
+
+    # Check if user wants to add the optional message
+    show_form = request.GET.get("with_message") == "true" or (
+        request.method == "GET" and "with_message" in request.GET
+    )
+
+    if request.method == "GET" and show_form:
+        form = FriendInvitationForm()
+        context = {
+            "form": form,
+            "target_user": other_user,
+        }
+        return render(request, "users/send_friend_invitation.html", context)
+
+    elif request.method == "POST":
+        form = FriendInvitationForm(request.POST)
+        if form.is_valid():
+            message = form.cleaned_data.get("message", "")
+        else:
+            context = {
+                "form": form,
+                "target_user": other_user,
+            }
+            return render(request, "users/send_friend_invitation.html", context)
     else:
-        messages.info(request, "Friendship invitation already sent before.")
-        try:
-            notification = Notification.objects.get_by_actor(invitation, receiver=other_user)
-            notification.renew_notification()
-        except Notification.DoesNotExist:
-            notification = Notification.objects.create(
-                actor=invitation, receiver=other_user, type=Notification.FRIEND_REQUEST
-            )
+        message = ""
+
+    new_invitation = FriendInvitation.objects.create(
+        sender=curr_user, receiver=other_user, message=message, is_deleted=False
+    )
+
+    messages.success(request, "Friendship invitation sent successfully.")
+
+    # Create notification using default friend request message
+    content_type = ContentType.objects.get_for_model(FriendInvitation)
+
+    notification, new = Notification.objects.get_or_create(
+        actor_content_type=content_type,
+        actor_object_id=new_invitation.id,
+        receiver=other_user,
+        type=Notification.FRIEND_REQUEST,
+        defaults={"message": Notification.DEFAULT_MESSAGES[Notification.FRIEND_REQUEST]},
+    )
+
     return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
 
 

@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block title %}
+  Send Friend Request
+{% endblock title %}
+{% block content %}
+  <style>
+    .friend-request-form {
+      max-width: 600px;
+      margin: 50px auto;
+      padding: 30px;
+      background-color: #f8f9fa;
+      border-radius: 12px;
+      border: 1px solid #ddd;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-primary {
+      background-color: #800000;
+      border-color: #800000;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background-color: #600000;
+      border-color: #600000;
+    }
+
+    .btn-secondary {
+      background-color: #6c757d;
+      border-color: #6c757d;
+    }
+
+    .btn-outline-primary {
+      color: #800000;
+      border-color: #800000;
+      background-color: transparent;
+    }
+
+    .btn-outline-primary:hover {
+      background-color: #800000;
+      border-color: #800000;
+      color: white;
+    }
+
+    .user-info {
+      text-align: center;
+      margin-bottom: 30px;
+      padding: 20px;
+      background-color: white;
+      border-radius: 8px;
+      border: 1px solid #e9ecef;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-control {
+      border-radius: 6px;
+      border: 1px solid #ced4da;
+      padding: 10px;
+    }
+
+    .form-control:focus {
+      border-color: #800000;
+      box-shadow: 0 0 0 0.2rem rgba(128, 0, 0, 0.25);
+    }
+
+    .help-text {
+      font-size: 0.875em;
+      color: #6c757d;
+      margin-top: 5px;
+    }
+  </style>
+  <div class="container">
+    <div class="friend-request-form">
+      <div class="user-info">
+        <h4>Sending friend request to:</h4>
+        <h3 class="text-primary">{{ target_user.name }}</h3>
+        <p class="text-muted">@{{ target_user.username }}</p>
+      </div>
+      <form method="post">
+        {% csrf_token %}
+        <div class="form-group mb-4">
+          <label for="{{ form.message.id_for_label }}" class="form-label">
+            <strong>Personal Message (Optional)</strong>
+          </label>
+          {{ form.message }}
+          {% if form.message.help_text %}<small class="form-text text-muted">{{ form.message.help_text }}</small>{% endif %}
+          {% if form.message.errors %}
+            <div class="text-danger">
+              {% for error in form.message.errors %}<small>{{ error }}</small>{% endfor %}
+            </div>
+          {% endif %}
+        </div>
+        <div class="d-flex justify-content-between">
+          <a href="{% url 'users:user-profile' target_user.pk %}"
+             class="btn btn-secondary">Cancel</a>
+          <div>
+            <a href="{% url 'users:add-friend' target_user.pk %}"
+               class="btn btn-outline-primary me-2">Send Without Message</a>
+            <button type="submit" class="btn btn-primary">Send with Message</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock content %}

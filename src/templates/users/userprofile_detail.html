@@ -90,6 +90,24 @@
     .photo-upload-form label:hover {
       background-color: #600000;
     }
+
+    .btn-secondary {
+      background-color: #6c757d;
+      border-color: #6c757d;
+    }
+
+    .friend-buttons {
+      margin-top: 10px;
+    }
+
+    .friend-buttons .btn {
+      margin: 5px;
+      min-width: 120px;
+    }
+
+    .friend-request-message {
+      text-align: left;
+    }
   </style>
   <div class="container mt-5">
     <div class="row">
@@ -158,11 +176,18 @@
                        class="btn btn-primary">Accept Friendship Request</a>
                     <a href="{% url 'users:decline-friend-invitation' friendship_request.id %}"
                        class="btn btn-primary">Decline Friendship Request</a>
+                    {% if friend_request_message %}
+                      <div class="alert alert-info mt-3 friend-request-message">
+                        <strong>{{ profile.user.name }} sent you a friend request:</strong>
+                        <br />
+                        "{{ friend_request_message }}"
+                      </div>
+                    {% endif %}
                   {% endif %}
                   <a href="{% url 'users:user-history' profile.user.pk %}"
                      class="btn btn-primary">Stats</a>
                 {% else %}
-                  <a href="{% url 'users:add-friend' profile.user.pk %}"
+                  <a href="{% url 'users:add-friend' profile.user.pk %}?with_message=true"
                      class="btn btn-primary">Add Friend</a>
                 {% endif %}
               </div>
