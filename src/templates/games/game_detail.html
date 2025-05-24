@@ -103,12 +103,6 @@
           </p>
         {% endif %}
         <p>{{ game.description|linebreaksbr }}</p>
-        {% if is_twine_game %}
-          <h3>Play Twine Game</h3>
-          <a href="{{ game.twine_file.url }}"
-             target="_blank"
-             class="btn btn-success">Open Game in New Tab</a>
-        {% endif %}
         <h3 id="player-description">Players</h3>
         <p>
           {% if game.min_players == game.max_players %}
