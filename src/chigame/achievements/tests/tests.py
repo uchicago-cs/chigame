@@ -24,6 +24,24 @@ def test_get_achievement():
     game = achievement.game
     assert Achievement.get_achievement(name=achievement.name, game=game) == achievement
 
+@pytest.mark.django_db
+def test_achievement_advance():
+    """Test that advancing an achievement works correctly"""
+    for _ in range(5):
+        achievement = AchievementFactory.create()
+        user = UserFactory.create()
+
+        # Advance the achievement for the user
+        achievement.advance(user)
+
+        # Check if the user's achievement progress is updated
+        user_achievement = UserAchievement.objects.get(user=user, achievement=achievement)
+        assert user_achievement.progress == 1
+        if 1e-8 > abs(achievement.threshold - 1):
+            assert user_achievement.date_earned is None
+        else:
+            assert user_achievement.date_earned is None
+
 
 @pytest.mark.django_db
 def test_get_recent_achievements():
