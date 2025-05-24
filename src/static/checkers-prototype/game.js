@@ -319,6 +319,7 @@ function movePiece(piece, moveX, moveY) {
     if (captured) {
       captured.sprite.destroy(); // delete the sprite (remove from display state)
       pieces = pieces.filter((p) => p !== captured); // remove it from the array (game state)
+      checkGameOver();
     }
   }
 
@@ -362,6 +363,34 @@ function movePiece(piece, moveX, moveY) {
       moveInProgress = false;
     });
 }
+
+// check individual games for their game over
+function showGameOverPrompt(message) {
+  const gameOverPrompts = document.getElementById('gameOverPrompts');
+  const gameOverMessage = document.getElementById('gameOverMessage');
+
+  gameOverMessage.textContent = message;
+  gameOverMessage.classList.add('show');
+  gameOverPrompts.classList.add('show');
+  document.getElementById('playAgainPrompt').style.display = 'flex';
+  document.getElementById('drawBtn').style.display = 'none';
+  document.getElementById('forfeitBtn').style.display = 'none';
+}
+
+// Check if the game is over due to all pieces of one color being captured
+function checkGameOver() {
+  const redPieces = pieces.filter((p) => p.owner === PLAYER_RED);
+  const blackPieces = pieces.filter((p) => p.owner === PLAYER_BLACK);
+
+  if (redPieces.length === 0) {
+    gameOver = true;
+    showGameOverPrompt('All red pieces captured! Black wins!');
+  } else if (blackPieces.length === 0) {
+    gameOver = true;
+    showGameOverPrompt('All black pieces captured! Red wins!');
+  }
+}
+
 
 // helper function to get the piece
 function getPiece(x, y) {
@@ -449,6 +478,8 @@ function update() {
         if (newState !== lastKnownState) {
           lastKnownState = newState;
           reloadBoardFromState(data.state);
+
+          checkGameOver();
         }
       })
       .catch(err => console.error("Polling error:", err));
@@ -554,4 +585,20 @@ document.addEventListener('DOMContentLoaded', () => {
       coordElements.length = 0;
     }
   });
+});
+
+// Play again buttons
+document.addEventListener('DOMContentLoaded', () => {
+  const playAgainYes = document.getElementById('playAgainYes');
+  const playAgainNo = document.getElementById('playAgainNo');
+
+  if (playAgainYes && playAgainNo) {
+    playAgainYes.addEventListener('click', () => {
+      location.reload(); // simple reset by reloading the page
+    });
+
+    playAgainNo.addEventListener('click', () => {
+      document.getElementById('playAgainPrompt').style.display = 'none';
+    });
+  }
 });
