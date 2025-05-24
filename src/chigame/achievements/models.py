@@ -1,6 +1,6 @@
 from django.db import models
 
-from chigame.games.models import Game
+import chigame.games.models as games
 from chigame.users.models import User
 
 
@@ -19,12 +19,22 @@ class Achievement(models.Model):
     description = models.TextField(null=True, blank=True)
     spoiler = models.BooleanField(default=False)
     rarity = models.IntegerField(choices=Rarity.choices)
-    game = models.ForeignKey(Game, on_delete=models.CASCADE)
+    game = models.ForeignKey(games.Game, on_delete=models.CASCADE)
     threshold = models.FloatField(null=True, blank=True, default=1)
     # threshold is amount needed to earn achievement (e.g. 5.0 wins)
 
     def __str__(self):
         return f"{self.name} ({self.game})"
+
+    @staticmethod
+    def get_achievement(game, name):
+        """
+        Get an achievement by name and game
+        """
+        try:
+            return Achievement.objects.get(name=name, game=game)
+        except Achievement.DoesNotExist:
+            return None
 
     class Meta:
         unique_together = ("name", "game")

@@ -1,10 +1,13 @@
+from allauth.account.forms import SignupForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import models
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.views import View
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, status
 from rest_framework.authentication import SessionAuthentication
+from rest_framework.decorators import api_view
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import SAFE_METHODS, BasePermission, IsAuthenticated, IsAuthenticatedOrReadOnly
@@ -338,7 +341,7 @@ class UserAchievementCreateView(generics.CreateAPIView):
     def create(self, request, *args, **kwargs):
         user_id = self.request.data.get("user")
         user = get_object_or_404(User, pk=user_id)
-        achievement = Achievement.objects.get(id=self.kwargs["pk"])
+        achievement = get_object_or_404(Achievement, id=self.kwargs["pk"])
 
         if UserAchievement.objects.filter(achievement=achievement, user=user).exists():
             return Response(
@@ -664,3 +667,23 @@ class UserAchievementListView(APIView):
         ]
 
         return Response(data)
+
+
+@api_view(["POST"])
+def Signup(request):
+    data = request.data
+    form = SignupForm(
+        {
+            "email": data.get("email"),
+            "password1": data.get("password1"),
+            "password2": data.get("password2"),
+        }
+    )
+
+    if form.is_valid():
+        user = form.save(request)
+        user.name = data.get("name")
+        user.save()
+        return JsonResponse({"status": "success"})
+    else:
+        return JsonResponse({"status": "error", "errors": form.errors}, status=400)
