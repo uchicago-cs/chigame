@@ -8,6 +8,7 @@ from chigame.users.views import (
     bulk_inbox,
     cancel_friend_invitation,
     decline_friend_invitation,
+    edit_profile,
     friend_list_view,
     name_update_view,
     notification_detail,
@@ -62,4 +63,5 @@ urlpatterns = [
     path("labels/create/", views.create_notification_label, name="create-notification-label"),
     path("labels/<int:label_id>/notifications/", views.notifications_by_label, name="notifications-by-label"),
     path("inbox/<int:pk>/<str:category>/", views.user_inbox_view, name="user-inbox-category"),
+    path("profile/<int:pk>/edit/", edit_profile, name="edit-profile"),
 ]
