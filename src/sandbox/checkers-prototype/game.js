@@ -49,7 +49,7 @@ let drawOffered = false;
 let drawOfferedBy = null;
 
 //BOT SETTINGS
-let botMode = 'none';
+let botMode = 'none'; //OFF -> EASY -> MEDIUM ->HARD
 
 // ----------------------------------------------------------------------------
 
@@ -193,11 +193,14 @@ function create() {
   botToggle.addEventListener('click', () => {
     if (botMode === 'none'){botMode = 'easy';}
     else if (botMode === 'easy'){botMode = 'medium';}
+    else if(botMode === 'medium'){botMode = 'hard';}
     else {botMode = 'none';}
-    const labels = { none: 'OFF', easy: 'Easy', medium: 'Medium' };
+    const labels = { none: 'OFF', easy: 'Easy', medium: 'Medium', hard: 'Hard' };
     botToggle.textContent = `Bot: ${labels[botMode]}`;
     if (currentPlayer === COLORS.black && botMode !== 'none'){
-        const func = botMode === 'easy' ? easyBot : mediumBot;
+        const func = botMode === 'easy' ? easyBot 
+        : botMode === 'medium' ? mediumBot
+        : hardBot;
         scene.time.delayedCall(300, func, [scene], scene)
     }
   });
@@ -442,10 +445,9 @@ function endTurn(scene) {
   currentPlayer = currentPlayer === COLORS.red ? COLORS.black : COLORS.red;
   //if black and bot is on, schedule bot move
   if (currentPlayer === COLORS.black) {
-    if(botMode === 'easy'){
-    //delay so user has time to process bot movw after their own
-    scene.time.delayedCall(300, easyBot, [scene], scene);}
-    if(botMode === 'medium'){scene.time.delayedCall(300, mediumBot, [scene], scene);}
+    if (botMode === 'easy')   scene.time.delayedCall(300, easyBot,   [scene], scene);
+    if (botMode === 'medium') scene.time.delayedCall(300, mediumBot, [scene], scene);
+    if (botMode === 'hard')   scene.time.delayedCall(300, hardBot,   [scene], scene);
   }
   // remove the highlight after a move is made
   clearHighlightedTiles();
@@ -717,6 +719,98 @@ function get_dist_from_center(x, y) {
     const center = (BOARD_SIZE - 1) / 2;
     return Math.hypot(x - center, y - center);
   }
+//function to simulate a move on a copy of the board, returns board
+function simMove(board, {piece, x, y}){
+    //get board copy
+    const copy = board.map(r => r.slice());
+    //get val in pieces spot
+    const val = board[piece.y][piece.x];
+    //clear out 
+    copy[piece.y][piece.x] = 0;
+
+    //if it a capture, remove captured piece
+    if (Math.abs(x - piece.x) === 2) {
+    const capture_col = (x + piece.x) / 2 | 0; //col of captured p
+    const capture_row = (y + piece.y) / 2 | 0; //row of captured peice
+    copy[capture_row][capture_col] = 0; //remove
+    }
+
+    copy[y][x] = val;
+    return copy
+
+}
+//function to compute optimality of pos for black for comparison in hard bot
+//inputs board and returns score of how good it is for black
+function scoreBoard(board){
+    let score = 0; //init score
+    const center = (BOARD_SIZE -1)/2; //get center of board
+    //loop through board
+    for (let y = 0; y<BOARD_SIZE; y++){
+        for (let x = 0; x<BOARD_SIZE; x++){
+            const sq_val = board[y][x];
+            if (sq_val === 2){ //if there is a black piece
+            score += 100;
+            score -= Math.hypot(x-center, y-center);//Black far from center = bad
+            }
+            else if (sq_val === 1){
+                //if there is a red piece
+                score -= 100;
+                score += Math.hypot(x-center, y-center);
+            }
+        }
+    }
+    //add 5 points to score for black legal moves and -5 for red legal moves
+    score += getLegalMoves(COLORS.black).length *5;
+    score -= getLegalMoves(COLORS.red).length *5;
+    return score;
+
+}
+//in order for the hard bot to "be smart", we are going to  have it "think ahead" 
+//In order to do this effeciently, we need to iterate over all possible moves 
+//that can be made by either player, and the responses to those moves
+//Then once it has done that it finds the best board for black
+//Then it assumes black will max the scoreBoard and red will min it
+//So basically we are looking for the move where if red and black play optimally
+//This is the best move for black
+//Similar to the road trip game problem from HW#8 CMSC 27200, where each player
+//is trying to pick the bet move, and assume the opponent is also picking the best move for themselves
+//i.e Bot wants to max the score and player wants to min the score
+function minimax(board, depth, alpha, beta, maximizing) {
+    //check for leaf
+    if (depth === 0) return scoreBoard(board);
+    //pick legal moves for black when maxxing, red when minning
+    const player = maximizing ? COLORS.black : COLORS.red;
+    const moves = getLegalMoves(player).map(([m]) => m);//get and unpack legal moves
+    if (moves.length === 0) {
+      // if no moves, you're donezo
+      return maximizing ? -Infinity : +Infinity;
+      //- inf = worst for black, pos inf = worst for red
+    }
+    if (maximizing) { //we are working with black here
+      let value = -Infinity; //set initial val at lowest possible val
+      for (const mv of moves) { //loop over black moves
+        const child = simMove(board, mv); //sim the move to get new pos
+        //recusrivly call func with depth-1, and set maximizing false bc red's turn
+        //take max of val and score of recursive call to choose maxed score
+        value = Math.max(value, minimax(child, depth-1, alpha, beta, false));
+        alpha = Math.max(alpha, value); //Best score black can guarentee
+        if (alpha >= beta) break;  //Red can force the score to at most beta, so red will never allow aplha>=beta,
+        //so we do not need to look at further moves here, because they won't be able to beat that
+      }
+      return value;//return best score black can get
+    } else {  //now do the same thing for red
+      let value = +Infinity;
+      for (const mv of moves) {
+        const child = simMove(board, mv);
+        value = Math.min(value, minimax(child, depth-1, alpha, beta, true));
+        beta = Math.min(beta, value);
+        if (alpha >= beta) break;
+      }
+      return value;
+    }
+  }
+  
+
 
 //return arr of legal moves for given player
 function getLegalMoves(color) {
@@ -803,6 +897,27 @@ function mediumBot(scene){
     endTurn(scene);
 }
 
+//Hard bot: thinks ahead and calculates best move
+function hardBot(scene) {
+    const board = getBoardState(); //get 2D board rep
+    const legal = getLegalMoves(COLORS.black).map(([m]) => m); //get and unpack legals
+    if (legal.length === 0) {
+        return console.log('Cant move');}//no moves
+    let best = legal[0]; //best is the best move
+    let bestScore = -Infinity; //best score is the max minimix for black
+    for (const move of legal) { //loop over black moves
+      const child = simMove(board, move); //sim 
+        //call minimax to search pos child w depth 4, next move is red
+        //returns score of the play
+      const score = minimax(child, 4, -Infinity, +Infinity, false); 
+      if (score > bestScore) {
+        bestScore = score;
+        best = move;
+      }
+    }//end loop
+    movePiece(best.piece, best.x, best.y);
+    endTurn(scene);
+  }
 
 
 // Coordinates overlay button
