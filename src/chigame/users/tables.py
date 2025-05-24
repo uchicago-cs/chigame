@@ -10,13 +10,13 @@ class FriendsTable(tables.Table):
         accessor="email",  # Access display_name through the User relationship
         linkify=("users:user-profile", {"pk": tables.A("pk")}),
     )
-    
+
     online_status = tables.Column(
         verbose_name="Status",
         accessor="get_online_status",
         orderable=False,
     )
-    
+
     last_seen = tables.Column(
         verbose_name="Last Seen",
         accessor="get_last_seen_display",
@@ -24,9 +24,9 @@ class FriendsTable(tables.Table):
     )
 
     def render_online_status(self, value):
-        if value == 'online':
+        if value == "online":
             return format_html('<span class="badge bg-success">Online</span>')
-        elif value == 'recently_active':
+        elif value == "recently_active":
             return format_html('<span class="badge bg-warning">Recently Active</span>')
         else:
             return format_html('<span class="badge bg-secondary">Offline</span>')
@@ -34,7 +34,11 @@ class FriendsTable(tables.Table):
     class Meta:
         model = User  # Referencing the UserProfile model
         template_name = "django_tables2/bootstrap.html"
-        fields = ["email", "online_status", "last_seen"]  # Adjust fields to show relevant information from the UserProfile model
+        fields = [
+            "email",
+            "online_status",
+            "last_seen",
+        ]  # Adjust fields to show relevant information from the UserProfile model
 
 
 class UserTable(tables.Table):

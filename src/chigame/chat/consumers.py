@@ -91,7 +91,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         # Only add to group if all checks pass
         await self.channel_layer.group_add(self.room_group_name, self.channel_name)
-        
+
         await self.update_user_last_seen(self.user.id)
 
     async def disconnect(self, close_code):
@@ -169,7 +169,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             message = text_data_json["message"]
             user_id = text_data_json["user_id"]
             reply_to_id = text_data_json.get("reply_to")
-            
+
             await self.update_user_last_seen(user_id)
 
         # Apply profanity filter to message
