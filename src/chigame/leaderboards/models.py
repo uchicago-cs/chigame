@@ -27,6 +27,8 @@ class LeaderboardEntry(models.Model):
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name="leaderboard_entries")
     rank = models.IntegerField()
 
+    region = models.ForeignKey(Region, null=True, blank=True, on_delete=models.SET_NULL)
+
     def __str__(self):
         return f"{self.user.user.name} - Rank {self.rank}"
 

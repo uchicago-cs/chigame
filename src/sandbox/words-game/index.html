@@ -12,11 +12,23 @@
   </head>
   <body>
     <div id="container">
-      <div id="title">
-        <div class="logo-container">
+      <div id="header">
+        <div class="nav-buttons">
+          <a href="{% url 'index' %}" class="nav-btn">Home</a>
+          <button id="how-to-play-btn" class="nav-btn">How to Play ▼</button>
+          <button id="settings-btn" class="nav-btn">⚙</button>
+        </div>
+        <div class="logo-title">
           <h1 class="name">WORDS</h1>
         </div>
+      </div>
+      <div id="title">
         <h2 class="select">Select Game Mode</h2>
+      </div>
+      <div class="profile-section">
+        <h3>
+          USERNAME: <span id="username">GUEST</span>
+        </h3>
       </div>
       <div class="game-modes">
         <div class="mode">
@@ -70,5 +82,6 @@
         <p>© 2025 WORDS - UNIVERSITY OF CHICAGO</p>
       </footer>
     </div>
+    <script src="index.js" defer></script>
   </body>
 </html>
