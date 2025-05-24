@@ -108,7 +108,7 @@
         {% endif %}
         <div class="mb-4">
           <h3 id="new-review">Write a Review</h3>
-          <form method="post" action="{% url 'game-detail' pk=game.pk %}">
+          <form method="post" action="">
             {% csrf_token %}
             {{ form.as_p }}
             <button type="submit" class="btn btn-primary">Submit Review</button>
