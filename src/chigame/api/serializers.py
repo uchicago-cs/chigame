@@ -17,6 +17,7 @@ from chigame.games.models import (
 )
 from chigame.leaderboards.models import MetricScore
 from chigame.users.models import Group, UserProfile
+from chigame.knowledge_base.models import Guide, GeneralFeedback, ReviewFeedback
 
 
 class GameSerializer(serializers.ModelSerializer):
@@ -197,3 +198,42 @@ class LiveChatSerializer(serializers.ModelSerializer):
     class Meta:
         model = LiveChat
         fields = ["id", "name", "users"]
+
+
+class GuideSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Guide
+        fields = [
+            "id",
+            "author",
+            "game_id",
+            "content",
+            "recent_upload",
+            "status",
+            "likes",
+            "favorites",
+        ]
+
+
+class ReviewFeedbackSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ReviewFeedback
+        fields = [
+            "id",
+            "reviewer",
+            "comment",
+            "guide_id",
+            "status",
+            "timestamp",
+            "seen",
+        ]
+
+
+class GeneralFeedbackSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GeneralFeedback
+        fields = [
+            "id",
+            "feedback",
+            "created_at",
+        ]
