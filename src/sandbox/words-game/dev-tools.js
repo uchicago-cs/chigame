@@ -33,6 +33,27 @@
                 <button id="view-storage">View LocalStorage</button>
                 <div class="achievement-status" id="achievement-status" style="display: none;"></div>
             </div>
+
+            <h3>Game Testing</h3>
+            <button id="show-target-word">Show Target Word</button>
+
+            <h3>Streak Management</h3>
+            <div class="streak-info">
+                <p>Solo Streak: <span id="dev-solo-streak">0</span></p>
+                <p>Daily Streak: <span id="dev-daily-streak">0</span></p>
+            </div>
+            <div class="streak-controls">
+                <button id="increase-solo-streak">Increase Solo Streak</button>
+                <button id="reset-solo-streak">Reset Solo Streak</button>
+                <button id="increase-daily-streak">Increase Daily Streak</button>
+                <button id="reset-daily-streak">Reset Daily Streak</button>
+                <button id="set-custom-streaks">Set Custom Streaks</button>
+                <div id="custom-streak-inputs" style="display: none; margin-top: 10px;">
+                    <input type="number" id="custom-solo-streak" placeholder="Solo Streak" min="0">
+                    <input type="number" id="custom-daily-streak" placeholder="Daily Streak" min="0">
+                    <button id="apply-custom-streaks">Apply</button>
+                </div>
+            </div>
         `;
         document.body.appendChild(panel);
 
@@ -85,7 +106,8 @@
             }
 
             #dev-panel select,
-            #dev-panel button {
+            #dev-panel button,
+            #dev-panel input {
                 margin: 5px 0;
                 padding: 5px;
                 width: 100%;
@@ -115,6 +137,22 @@
                 overflow-y: auto;
                 white-space: pre;
             }
+
+            #dev-panel .streak-info {
+                background-color: var(--card-bg);
+                padding: 5px;
+                margin-bottom: 10px;
+            }
+
+            #dev-panel .streak-info p {
+                margin: 5px 0;
+            }
+
+            #custom-streak-inputs {
+                display: flex;
+                flex-direction: column;
+                gap: 5px;
+            }
         `;
         document.head.appendChild(style);
     }
@@ -137,6 +175,9 @@
 
         devPanelToggle.addEventListener('click', function() {
             devPanel.classList.toggle('visible');
+            if (devPanel.classList.contains('visible')) {
+                updateStreakDisplay();
+            }
         });
 
         // Populate achievement selector
@@ -236,6 +277,117 @@
                 button.textContent = 'Hide LocalStorage';
             }
         });
+
+        // Show Target Word
+        document.getElementById('show-target-word').addEventListener('click', function() {
+            if (typeof word !== 'undefined') {
+                alert(`Current Target Word: "${word}"`);
+            } else {
+                alert('Word not available. Game may not be initialized yet.');
+            }
+        });
+
+        // Update streak display in dev panel
+        function updateStreakDisplay() {
+            // Get streaks from localStorage
+            const streaksData = localStorage.getItem("gameStreaks");
+            if (streaksData) {
+                const streaks = JSON.parse(streaksData);
+                document.getElementById('dev-solo-streak').textContent = streaks.soloStreak || 0;
+                document.getElementById('dev-daily-streak').textContent = streaks.dailyStreak || 0;
+            } else {
+                document.getElementById('dev-solo-streak').textContent = 0;
+                document.getElementById('dev-daily-streak').textContent = 0;
+            }
+        }
+
+        // Streak Management Functions
+        function getStreaks() {
+            const streaksData = localStorage.getItem("gameStreaks");
+            if (streaksData) {
+                return JSON.parse(streaksData);
+            }
+            return {
+                soloStreak: 0,
+                dailyStreak: 0,
+                lastDailyWins: {}
+            };
+        }
+
+        function saveStreaks(streaks) {
+            localStorage.setItem("gameStreaks", JSON.stringify(streaks));
+            updateStreakDisplay();
+            if (typeof updateStreakDisplay === 'function') {
+                window.updateStreakDisplay();
+            }
+        }
+
+        // Increase Solo Streak
+        document.getElementById('increase-solo-streak').addEventListener('click', function() {
+            const streaks = getStreaks();
+            streaks.soloStreak = (streaks.soloStreak || 0) + 1;
+            saveStreaks(streaks);
+            alert(`Solo streak increased to ${streaks.soloStreak}`);
+        });
+
+        // Reset Solo Streak
+        document.getElementById('reset-solo-streak').addEventListener('click', function() {
+            const streaks = getStreaks();
+            streaks.soloStreak = 0;
+            saveStreaks(streaks);
+            alert('Solo streak reset to 0');
+        });
+
+        // Increase Daily Streak
+        document.getElementById('increase-daily-streak').addEventListener('click', function() {
+            const streaks = getStreaks();
+            streaks.dailyStreak = (streaks.dailyStreak || 0) + 1;
+            saveStreaks(streaks);
+            alert(`Daily streak increased to ${streaks.dailyStreak}`);
+        });
+
+        // Reset Daily Streak
+        document.getElementById('reset-daily-streak').addEventListener('click', function() {
+            const streaks = getStreaks();
+            streaks.dailyStreak = 0;
+            saveStreaks(streaks);
+            alert('Daily streak reset to 0');
+        });
+
+        // Set Custom Streaks Toggle
+        document.getElementById('set-custom-streaks').addEventListener('click', function() {
+            const customInputs = document.getElementById('custom-streak-inputs');
+            if (customInputs.style.display === 'none') {
+                customInputs.style.display = 'block';
+                const streaks = getStreaks();
+                document.getElementById('custom-solo-streak').value = streaks.soloStreak || 0;
+                document.getElementById('custom-daily-streak').value = streaks.dailyStreak || 0;
+            } else {
+                customInputs.style.display = 'none';
+            }
+        });
+
+        // Apply Custom Streaks
+        document.getElementById('apply-custom-streaks').addEventListener('click', function() {
+            const soloStreakValue = parseInt(document.getElementById('custom-solo-streak').value);
+            const dailyStreakValue = parseInt(document.getElementById('custom-daily-streak').value);
+
+            if (isNaN(soloStreakValue) || isNaN(dailyStreakValue) || soloStreakValue < 0 || dailyStreakValue < 0) {
+                alert('Please enter valid positive numbers for streaks');
+                return;
+            }
+
+            const streaks = getStreaks();
+            streaks.soloStreak = soloStreakValue;
+            streaks.dailyStreak = dailyStreakValue;
+            saveStreaks(streaks);
+
+            alert(`Streaks updated - Solo: ${soloStreakValue}, Daily: ${dailyStreakValue}`);
+            document.getElementById('custom-streak-inputs').style.display = 'none';
+        });
+
+        // Initial streak display update
+        updateStreakDisplay();
     }
 
     // Initialize when DOM is loaded

@@ -17,6 +17,9 @@ window.addEventListener("load", async () => {
     // Restore settings first
     restoreSettings();
 
+    // Load streaks after settings are restored
+    loadStreaks();
+
     // Check if there's a game in progress before showing the modal
     if (await restoreGameState()) {
         // If there's a saved game, don't show the modal
@@ -493,6 +496,84 @@ const COLOR_CORRECT = "rgb(83, 141, 78)";
 const COLOR_OFF = "rgb(181, 159, 59)";
 const COLOR_WRONG = "rgb(40, 58, 60)";
 
+// Global streak variables
+let soloStreak = 0;
+let dailyStreak = 0;
+let lastDailyWins = {}; // Track daily wins by date and word length
+
+// Load streaks from localStorage
+function loadStreaks() {
+    const streaksData = localStorage.getItem("gameStreaks");
+    if (streaksData) {
+        const streaks = JSON.parse(streaksData);
+        soloStreak = streaks.soloStreak || 0;
+        dailyStreak = streaks.dailyStreak || 0;
+        lastDailyWins = streaks.lastDailyWins || {};
+    }
+    updateStreakDisplay();
+}
+
+// Save streaks to localStorage
+function saveStreaks() {
+    const streaks = {
+        soloStreak,
+        dailyStreak,
+        lastDailyWins
+    };
+    localStorage.setItem("gameStreaks", JSON.stringify(streaks));
+    updateStreakDisplay();
+}
+
+// Reset streaks
+function resetStreak(type) {
+    if (type === 'solo') {
+        soloStreak = 0;
+    } else if (type === 'daily') {
+        dailyStreak = 0;
+    }
+    saveStreaks();
+}
+
+// Update streak display
+function updateStreakDisplay() {
+    const streakElement = document.getElementById("streak");
+    if (mode === 'solo') {
+        streakElement.innerHTML = `<h3>Solo Streak: ${soloStreak}</h3>`;
+    } else {
+        streakElement.innerHTML = `<h3>Daily Streak: ${dailyStreak}</h3>`;
+    }
+}
+
+// Expose the streak update function to the window for dev tools
+window.updateStreakDisplay = updateStreakDisplay;
+
+// Update streak on win
+function updateStreak(won) {
+    if (!won) {
+        // Reset the streak for the current game mode on loss
+        resetStreak(mode);
+        return;
+    }
+
+    if (mode === 'solo') {
+        soloStreak += 1;
+    } else {
+        // For daily mode, check if this word length has been won today
+        const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+        if (!lastDailyWins[today]) {
+            lastDailyWins[today] = [];
+        }
+
+        // Only increment streak if this word length hasn't been solved today
+        if (!lastDailyWins[today].includes(wordLength)) {
+            lastDailyWins[today].push(wordLength);
+            dailyStreak += 1;
+        }
+    }
+
+    saveStreaks();
+}
+
 function loadWords() {
     return fetch(`${wordLength}WORDS.txt`)
         .then(response => response.text())
@@ -721,6 +802,7 @@ async function handleSubmitWord() {
         playSound(yaySound);
         gameOver = true;
         gameWon = true;
+        updateStreak(true);
         saveGameState();
         setTimeout(() => {
             showEndScreen(true);
@@ -733,6 +815,7 @@ async function handleSubmitWord() {
         playSound(loseSound);
         gameOver = true;
         gameWon = false;
+        updateStreak(false);
         saveGameState();
         setTimeout(() => {
             showEndScreen(false);
