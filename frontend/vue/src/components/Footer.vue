@@ -24,7 +24,7 @@
     <router-link to="/lobbies" class="nav-link">Lobbies</router-link>
   </li>
   <li class="nav-item">
-    <router-link to="/" class="nav-link">Tournaments</router-link>
+    <router-link to="/tournaments" class="nav-link">Tournaments</router-link>
   </li>
   <li class="nav-item">
     <router-link to="/forums" class="nav-link">Forums</router-link>
