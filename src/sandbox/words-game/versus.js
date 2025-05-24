@@ -123,6 +123,7 @@ socket.on('wordResult', ({ valid, reason, word, colorMap }) => {
         showNotification("Game Over.");
         gameOver = true;
         socket.emit('lose', word);
+
     }
 });
 

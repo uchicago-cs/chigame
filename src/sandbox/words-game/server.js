@@ -88,6 +88,7 @@ io.on('connection', socket => {
                     win: result[1],
                 });
             }
+
             players.clear();
             gameTimeout = null;
         }, GAME_DURATION_MS);
@@ -102,6 +103,7 @@ io.on('connection', socket => {
         const isValid = await isValidWord(submittedWord);
         if (!isValid) {
             socket.emit('wordResult', {valid: false});
+
             return;
         }
 
@@ -120,6 +122,7 @@ io.on('connection', socket => {
                     reason: "no more words",
                     win: true,
                 });
+
                 return;
             }
 
