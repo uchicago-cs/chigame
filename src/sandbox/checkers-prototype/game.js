@@ -127,6 +127,7 @@ function create() {
     declineDrawBtn.style.display = 'none';
     score.innerHTML = 'Red: 0<br>Black: 0';
     turn.textContent = 'Red';
+    dot.style.backgroundColor = COLORS.strRed;
 
     // Repopulate the board using the stored scene reference
     populatePieces(scene);
