@@ -185,6 +185,7 @@ class ReviewFactory(factory.django.DjangoModelFactory):
     user = factory.SubFactory(UserFactory)
     game = factory.SubFactory(GameFactory)
 
+
 class AchievementFactory(DjangoModelFactory):
     class Meta:
         model = Achievement
@@ -207,6 +208,7 @@ class UserAchievementFactory(factory.django.DjangoModelFactory):
     progress = Faker("pydecimal", left_digits=1, right_digits=1, min_value=1)
     date_earned = Faker("date_time_this_year")
     last_updated = Faker("date_time_this_year")
+
 
 class LiveChatFactory(factory.django.DjangoModelFactory):
     class Meta:
