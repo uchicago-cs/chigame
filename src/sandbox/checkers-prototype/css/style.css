@@ -7,8 +7,17 @@ body {
 }
 
 canvas {
-    display: inline-block;
+    display: block;
     background: #d2b48c;
+    margin: auto;
+}
+
+#game {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    width: 100vw;
 }
 
 .main-content {
@@ -17,6 +26,7 @@ canvas {
     align-items: center;
     margin-top: 5vh;
     height: 95vh;
+    width: 100vw;
 }
 
 .navbar {
@@ -255,4 +265,15 @@ canvas {
     border-radius: 1rem 0 0 1rem;
     color: white;
     font-size: 20px;
+}
+
+.slider-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+#resize-slider {
+    width: 150px;
+    max-width: 100%;
 }

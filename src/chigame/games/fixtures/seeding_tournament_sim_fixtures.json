@@ -1,0 +1,223 @@
+[
+    {
+      "model": "games.tournament",
+      "pk": 1026,
+      "fields": {
+        "name": "Ikusa Cup 26",
+        "game": 1,
+        "registration_start_date": "2025-05-01T00:00:00Z",
+        "registration_end_date": "2025-05-20T23:59:59Z",
+        "tournament_start_date": "2025-05-22T10:00:00Z",
+        "tournament_end_date": "2025-06-30T23:59:59Z",
+        "max_players": 8,
+        "description": "Auto-generated simulation tournament with seeded users.",
+        "rules": "Standard Ikusa rules apply.",
+        "draw_rules": "Higher seed advances in the event of a draw.",
+        "num_winner": 1,
+        "archived": false,
+        "created_by": 1000,
+        "players": [1000, 1001, 1002, 1003, 1004, 1005, 1006, 1007],
+        "winners": [],
+        "matches": [2021, 2022, 2023, 2024]
+      }
+    },
+    {
+      "model": "games.chat",
+      "pk": 1026,
+      "fields": {
+        "tournament": 1026
+      }
+    },
+    {
+      "model": "games.lobby",
+      "pk": 2021,
+      "fields": {
+        "name": "Match 1 - Quarter Finals",
+        "game": 1,
+        "match_status": 1,
+        "game_mod_status": 1,
+        "created_by": 1000,
+        "min_players": 2,
+        "max_players": 2,
+        "time_constraint": 300,
+        "lobby_created": "2025-05-22T10:30:00Z"
+      }
+    },
+    {
+      "model": "games.lobby",
+      "pk": 2022,
+      "fields": {
+        "name": "Match 2 - Quarter Finals",
+        "game": 1,
+        "match_status": 1,
+        "game_mod_status": 1,
+        "created_by": 1000,
+        "min_players": 2,
+        "max_players": 2,
+        "time_constraint": 300,
+        "lobby_created": "2025-05-22T11:30:00Z"
+      }
+    },
+    {
+      "model": "games.lobby",
+      "pk": 2023,
+      "fields": {
+        "name": "Match 3 - Quarter Finals",
+        "game": 1,
+        "match_status": 1,
+        "game_mod_status": 1,
+        "created_by": 1000,
+        "min_players": 2,
+        "max_players": 2,
+        "time_constraint": 300,
+        "lobby_created": "2025-05-22T13:30:00Z"
+      }
+    },
+    {
+      "model": "games.lobby",
+      "pk": 2024,
+      "fields": {
+        "name": "Match 4 - Quarter Finals",
+        "game": 1,
+        "match_status": 1,
+        "game_mod_status": 1,
+        "created_by": 1000,
+        "min_players": 2,
+        "max_players": 2,
+        "time_constraint": 300,
+        "lobby_created": "2025-05-22T14:30:00Z"
+      }
+    },
+    {
+      "model": "games.match",
+      "pk": 2021,
+      "fields": {
+        "game": 1,
+        "lobby": 2021,
+        "date_played": "2025-05-22T10:30:00Z"
+      }
+    },
+    {
+      "model": "games.match",
+      "pk": 2022,
+      "fields": {
+        "game": 1,
+        "lobby": 2022,
+        "date_played": "2025-05-22T11:30:00Z"
+      }
+    },
+    {
+      "model": "games.match",
+      "pk": 2023,
+      "fields": {
+        "game": 1,
+        "lobby": 2023,
+        "date_played": "2025-05-22T13:30:00Z"
+      }
+    },
+    {
+      "model": "games.match",
+      "pk": 2024,
+      "fields": {
+        "game": 1,
+        "lobby": 2024,
+        "date_played": "2025-05-22T14:30:00Z"
+      }
+    },
+    {
+      "model": "games.player",
+      "pk": 2021,
+      "fields": {
+        "user": 1000,
+        "match": 2021,
+        "team": "Team A",
+        "role": "Player 1",
+        "outcome": null,
+        "victory_type": null
+      }
+    },
+    {
+      "model": "games.player",
+      "pk": 2022,
+      "fields": {
+        "user": 1001,
+        "match": 2021,
+        "team": "Team B",
+        "role": "Player 2",
+        "outcome": null,
+        "victory_type": null
+      }
+    },
+    {
+      "model": "games.player",
+      "pk": 2023,
+      "fields": {
+        "user": 1002,
+        "match": 2022,
+        "team": "Team A",
+        "role": "Player 1",
+        "outcome": null,
+        "victory_type": null
+      }
+    },
+    {
+      "model": "games.player",
+      "pk": 2024,
+      "fields": {
+        "user": 1003,
+        "match": 2022,
+        "team": "Team B",
+        "role": "Player 2",
+        "outcome": null,
+        "victory_type": null
+      }
+    },
+    {
+      "model": "games.player",
+      "pk": 2025,
+      "fields": {
+        "user": 1004,
+        "match": 2023,
+        "team": "Team A",
+        "role": "Player 1",
+        "outcome": null,
+        "victory_type": null
+      }
+    },
+    {
+      "model": "games.player",
+      "pk": 2026,
+      "fields": {
+        "user": 1005,
+        "match": 2023,
+        "team": "Team B",
+        "role": "Player 2",
+        "outcome": null,
+        "victory_type": null
+      }
+    },
+    {
+      "model": "games.player",
+      "pk": 2027,
+      "fields": {
+        "user": 1006,
+        "match": 2024,
+        "team": "Team A",
+        "role": "Player 1",
+        "outcome": null,
+        "victory_type": null
+      }
+    },
+    {
+      "model": "games.player",
+      "pk": 2028,
+      "fields": {
+        "user": 1007,
+        "match": 2024,
+        "team": "Team B",
+        "role": "Player 2",
+        "outcome": null,
+        "victory_type": null
+      }
+    }
+  ]
