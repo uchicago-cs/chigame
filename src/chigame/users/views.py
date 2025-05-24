@@ -792,3 +792,53 @@ def notifications_by_label(request, label_id):
         "notifications": notifications,
     }
     return render(request, "users/notifications_by_label.html", context)
+
+
+@login_required
+def blocked_users_list(request):
+    """
+    Display a list of users that the current user has blocked.
+
+    Args:
+        request (HttpRequest)
+
+    Returns:
+        HttpResponse: Rendered template with blocked users list
+    """
+    current_user = request.user
+    blocked_users = current_user.blocked_users.all()
+
+    context = {
+        "blocked_users": blocked_users,
+        "user": current_user,
+    }
+
+    return render(request, "users/blocked_users_list.html", context)
+
+
+@login_required
+def unblock_user(request, pk):
+    """
+    Unblock a previously blocked user.
+
+    Args:
+        request (HttpRequest)
+        pk (int): The primary key of the user to unblock
+
+    Returns:
+        HttpResponse: Redirects to the user's profile
+    """
+    try:
+        user_to_unblock = User.objects.get(pk=pk)
+        current_user = request.user
+
+        if current_user.blocked_users.filter(pk=user_to_unblock.pk).exists():
+            current_user.blocked_users.remove(user_to_unblock)
+            messages.success(request, f"You have unblocked {user_to_unblock.name or user_to_unblock.email}.")
+        else:
+            messages.info(request, "This user is not blocked.")
+
+    except User.DoesNotExist:
+        messages.error(request, "User not found.")
+
+    return redirect(reverse("users:user-profile", kwargs={"pk": pk}))

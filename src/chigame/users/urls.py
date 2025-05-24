@@ -4,6 +4,7 @@ from chigame.api.views import UserGroupsView
 from chigame.users.views import (
     accept_friend_invitation,
     act_on_inbox_notification,
+    blocked_users_list,
     bookmark_notification,
     bulk_inbox,
     cancel_friend_invitation,
@@ -14,6 +15,7 @@ from chigame.users.views import (
     notification_search_results,
     remove_friend,
     send_friend_invitation,
+    unblock_user,
     upload_profile_photo,
     user_detail_view,
     user_inbox_view,
@@ -62,4 +64,6 @@ urlpatterns = [
     path("labels/create/", views.create_notification_label, name="create-notification-label"),
     path("labels/<int:label_id>/notifications/", views.notifications_by_label, name="notifications-by-label"),
     path("inbox/<int:pk>/<str:category>/", views.user_inbox_view, name="user-inbox-category"),
+    path("blocked-users/", view=blocked_users_list, name="blocked-users-list"),
+    path("unblock/<int:pk>/", view=unblock_user, name="unblock-user"),
 ]
