@@ -218,7 +218,7 @@ function create() {
   updateTimerDisplay(); // initial display
   startPlayerTimer(); // red starts first
 
-  
+
   easyBot.textContent = `Easy Bot: ${vsEasyBot ? 'ON' : 'OFF'}`;
   easyBot.addEventListener('click', () => {
     vsEasyBot = !vsEasyBot;
