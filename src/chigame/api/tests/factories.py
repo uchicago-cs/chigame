@@ -6,6 +6,7 @@ from factory import Faker, Iterator, LazyAttribute, LazyFunction, Sequence, SubF
 from factory.django import DjangoModelFactory
 
 from chigame.achievements.models import Achievement, UserAchievement
+from chigame.achievements.models import Achievement
 from chigame.chat.models import LiveChat, LiveChatUser
 from chigame.games.models import Category, Chat, Feedback, Game, Lobby, Match, Mechanic, Review, Tournament
 from chigame.users.models import User
@@ -197,7 +198,6 @@ class AchievementFactory(DjangoModelFactory):
     threshold = Faker("pydecimal", left_digits=1, right_digits=1, min_value=1)
     game = SubFactory(GameFactory)
 
-
 class UserAchievementFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = UserAchievement
@@ -208,7 +208,6 @@ class UserAchievementFactory(factory.django.DjangoModelFactory):
     progress = Faker("pydecimal", left_digits=1, right_digits=1, min_value=1)
     date_earned = Faker("date_time_this_year")
     last_updated = Faker("date_time_this_year")
-
 
 class LiveChatFactory(factory.django.DjangoModelFactory):
     class Meta:
