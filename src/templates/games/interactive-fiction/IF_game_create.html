@@ -222,6 +222,8 @@
         const input = document.getElementById(inputId);
         if (!input) return;
 
+        const zoneType = inputId.includes('cover_image') ? 'image' : 'html';
+
         function showFileName(file) {
           zone.innerHTML = `
             <div>
@@ -230,20 +232,50 @@
             </div>`;
         }
 
+        function isImageFile(file) {
+          return file && file.type.startsWith('image/');
+        }
+
         function isHtmlFile(file) {
           return file && file.name.toLowerCase().endsWith('.html');
         }
 
-        function handleFile(file) {
-          if (!isHtmlFile(file)) {
-            alert('Only .html files are allowed!');
+        function handleFile(file, zoneType) {
+          const isValid = zoneType === 'image' ?
+            isImageFile(file) :
+            isHtmlFile(file);
+
+          if (!isValid) {
+            alert(zoneType === 'image' ?
+              'Only image files are allowed!' :
+              'Only .html files are allowed!');
             input.value = '';
             zone.innerHTML = 'Drag & drop a file here<br />or click to browse';
             return false;
           }
-          showFileName(file);
+
+          if (zoneType === 'image') {
+            const reader = new FileReader();
+            reader.onload = () => {
+              zone.innerHTML = `
+                <div>
+                  <strong>Selected Image</strong><br />
+                  ${file.name}<br />
+                  <img src="${reader.result}" alt="Image Preview" style="max-width: 100%; max-height: 150px;" />
+                </div>`;
+            };
+            reader.readAsDataURL(file);
+          } else {
+            zone.innerHTML = `
+              <div>
+                <strong>Selected file:</strong><br />
+                ${file.name}<br />
+              </div>`;
+          }
+
           return true;
         }
+
 
         zone.addEventListener('click', () => input.click());
 
@@ -260,7 +292,7 @@
           e.preventDefault();
           zone.classList.remove('hover');
           const file = e.dataTransfer.files[0];
-          if (file && handleFile(file)) {
+          if (file && handleFile(file, zoneType)) {
             input.files = e.dataTransfer.files;
           }
         });
@@ -269,21 +301,55 @@
           const file = input.files[0];
           if (file) {
             showFileName(file);
-            handleFile(file);
+            handleFile(file, zoneType);
           }
 
         });
       });
+
+      const previewBtn = document.getElementById("preview_game");
+
+      if (previewBtn) {
+        previewBtn.addEventListener("click", function() {
+          const fileInput = document.getElementById("myFile");
+          const file = fileInput.files[0];
+
+          if (!file || !file.name.toLowerCase().endsWith(".html")) {
+            alert("Please select a valid .html game file first.");
+            return;
+          }
+
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            const htmlContent = e.target.result;
+
+            const previewWindow = window.open("", "_blank");
+            if (!previewWindow) {
+              alert("Popup blocked. Please allow popups for this site.");
+              return;
+            }
+
+            // Ensure the content gets fully rendered
+            previewWindow.document.open();
+            previewWindow.document.write(htmlContent);
+            previewWindow.document.close();
+          };
+          reader.readAsText(file);
+        });
+      }
     });
   </script>
   <h1>Create Interactive Fiction Game</h1>
-  <form method="post" enctype="multipart/form-data" id="game_form">
+  <form method="post"
+        enctype="multipart/form-data"
+        id="game_form"
+        action="{% url 'upload-file' pk=game.pk %}">
     {% csrf_token %}
     <div>
       <label for="id_name">Game Name:</label>
       <input type="text"
-             name="name"
              id="id_name"
+             name="name"
              value="{{ form.name.value }}"
              required />
     </div>
@@ -401,7 +467,8 @@
       <input type="file"
              id="id_cover_image"
              name="uploaded_file"
-             class="if-file-input" />
+             class="if-file-input"
+             accept="image/*" />
     </div>
     <div>
       <label for="id_allow_comments">
@@ -423,11 +490,6 @@
     </div>
     <hr />
     <h3>Upload Game Files</h3>
-  </form>
-  <form method="post"
-        action="{% url 'upload-file' pk=game.pk %}"
-        enctype="multipart/form-data">
-    {% csrf_token %}
     <div class="upload-zone" data-input-id="myFile">
       Drag &amp; drop a file here
       <br />
@@ -439,7 +501,6 @@
            class="if-file-input"
            accept=".html" />
     <button type="submit" class="btn-success">Upload Game</button>
+    <button type="button" id="preview_game" class="btn-secondary">Preview Game</button>
   </form>
-  <h3>Publish Story</h3>
-  <a href="{{ uploaded_file_url }}" target="_blank" class="btn-success">Play Uploaded Game</a>
 {% endblock content %}

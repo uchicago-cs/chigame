@@ -1,0 +1,292 @@
+[
+  {
+    "model": "games.tournament",
+    "pk": 3000,
+    "fields": {
+      "name": "Space Beans Cup 1",
+      "game": 2,
+      "registration_start_date": "2025-01-01T00:00:00Z",
+      "registration_end_date": "2025-01-03T00:00:00Z",
+      "tournament_start_date": "2025-01-04T00:00:00Z",
+      "tournament_end_date": "2025-01-07T00:00:00Z",
+      "max_players": 4,
+      "description": "Auto-generated Space Beans tournament #1",
+      "rules": "Standard Space Beans rules apply.",
+      "draw_rules": "Higher seed advances in the event of a tie.",
+      "num_winner": 1,
+      "archived": false,
+      "matches": [],
+      "winners": [
+        102
+      ],
+      "players": [
+        101,
+        102,
+        103,
+        104
+      ],
+      "created_by": 101
+    }
+  },
+  {
+    "model": "games.tournament",
+    "pk": 3001,
+    "fields": {
+      "name": "Space Beans Cup 2",
+      "game": 2,
+      "registration_start_date": "2025-01-08T00:00:00Z",
+      "registration_end_date": "2025-01-10T00:00:00Z",
+      "tournament_start_date": "2025-01-11T00:00:00Z",
+      "tournament_end_date": "2025-01-14T00:00:00Z",
+      "max_players": 4,
+      "description": "Auto-generated Space Beans tournament #2",
+      "rules": "Standard Space Beans rules apply.",
+      "draw_rules": "Higher seed advances in the event of a tie.",
+      "num_winner": 1,
+      "archived": false,
+      "matches": [],
+      "winners": [
+        102
+      ],
+      "players": [
+        101,
+        102,
+        103,
+        104
+      ],
+      "created_by": 102
+    }
+  },
+  {
+    "model": "games.tournament",
+    "pk": 3002,
+    "fields": {
+      "name": "Space Beans Cup 3",
+      "game": 2,
+      "registration_start_date": "2025-01-15T00:00:00Z",
+      "registration_end_date": "2025-01-17T00:00:00Z",
+      "tournament_start_date": "2025-01-18T00:00:00Z",
+      "tournament_end_date": "2025-01-21T00:00:00Z",
+      "max_players": 4,
+      "description": "Auto-generated Space Beans tournament #3",
+      "rules": "Standard Space Beans rules apply.",
+      "draw_rules": "Higher seed advances in the event of a tie.",
+      "num_winner": 1,
+      "archived": false,
+      "matches": [],
+      "winners": [
+        102
+      ],
+      "players": [
+        101,
+        102,
+        103,
+        104
+      ],
+      "created_by": 103
+    }
+  },
+  {
+    "model": "games.tournament",
+    "pk": 3003,
+    "fields": {
+      "name": "Space Beans Cup 4",
+      "game": 2,
+      "registration_start_date": "2025-01-22T00:00:00Z",
+      "registration_end_date": "2025-01-24T00:00:00Z",
+      "tournament_start_date": "2025-01-25T00:00:00Z",
+      "tournament_end_date": "2025-01-28T00:00:00Z",
+      "max_players": 4,
+      "description": "Auto-generated Space Beans tournament #4",
+      "rules": "Standard Space Beans rules apply.",
+      "draw_rules": "Higher seed advances in the event of a tie.",
+      "num_winner": 1,
+      "archived": false,
+      "matches": [],
+      "winners": [
+        101
+      ],
+      "players": [
+        101,
+        102,
+        103,
+        104
+      ],
+      "created_by": 104
+    }
+  },
+  {
+    "model": "games.tournament",
+    "pk": 3004,
+    "fields": {
+      "name": "Space Beans Cup 5",
+      "game": 2,
+      "registration_start_date": "2025-01-29T00:00:00Z",
+      "registration_end_date": "2025-01-31T00:00:00Z",
+      "tournament_start_date": "2025-02-01T00:00:00Z",
+      "tournament_end_date": "2025-02-04T00:00:00Z",
+      "max_players": 4,
+      "description": "Auto-generated Space Beans tournament #5",
+      "rules": "Standard Space Beans rules apply.",
+      "draw_rules": "Higher seed advances in the event of a tie.",
+      "num_winner": 1,
+      "archived": false,
+      "matches": [],
+      "winners": [
+        102
+      ],
+      "players": [
+        101,
+        102,
+        103,
+        104
+      ],
+      "created_by": 101
+    }
+  },
+  {
+    "model": "games.tournament",
+    "pk": 3005,
+    "fields": {
+      "name": "Space Beans Cup 6",
+      "game": 2,
+      "registration_start_date": "2025-02-05T00:00:00Z",
+      "registration_end_date": "2025-02-07T00:00:00Z",
+      "tournament_start_date": "2025-02-08T00:00:00Z",
+      "tournament_end_date": "2025-02-11T00:00:00Z",
+      "max_players": 4,
+      "description": "Auto-generated Space Beans tournament #6",
+      "rules": "Standard Space Beans rules apply.",
+      "draw_rules": "Higher seed advances in the event of a tie.",
+      "num_winner": 1,
+      "archived": false,
+      "matches": [],
+      "winners": [
+        101
+      ],
+      "players": [
+        101,
+        102,
+        103,
+        104
+      ],
+      "created_by": 102
+    }
+  },
+  {
+    "model": "games.tournament",
+    "pk": 3006,
+    "fields": {
+      "name": "Space Beans Cup 7",
+      "game": 2,
+      "registration_start_date": "2025-02-12T00:00:00Z",
+      "registration_end_date": "2025-02-14T00:00:00Z",
+      "tournament_start_date": "2025-02-15T00:00:00Z",
+      "tournament_end_date": "2025-02-18T00:00:00Z",
+      "max_players": 4,
+      "description": "Auto-generated Space Beans tournament #7",
+      "rules": "Standard Space Beans rules apply.",
+      "draw_rules": "Higher seed advances in the event of a tie.",
+      "num_winner": 1,
+      "archived": false,
+      "matches": [],
+      "winners": [
+        103
+      ],
+      "players": [
+        101,
+        102,
+        103,
+        104
+      ],
+      "created_by": 103
+    }
+  },
+  {
+    "model": "games.tournament",
+    "pk": 3007,
+    "fields": {
+      "name": "Space Beans Cup 8",
+      "game": 2,
+      "registration_start_date": "2025-02-19T00:00:00Z",
+      "registration_end_date": "2025-02-21T00:00:00Z",
+      "tournament_start_date": "2025-02-22T00:00:00Z",
+      "tournament_end_date": "2025-02-25T00:00:00Z",
+      "max_players": 4,
+      "description": "Auto-generated Space Beans tournament #8",
+      "rules": "Standard Space Beans rules apply.",
+      "draw_rules": "Higher seed advances in the event of a tie.",
+      "num_winner": 1,
+      "archived": false,
+      "matches": [],
+      "winners": [
+        104
+      ],
+      "players": [
+        101,
+        102,
+        103,
+        104
+      ],
+      "created_by": 104
+    }
+  },
+  {
+    "model": "games.tournament",
+    "pk": 3008,
+    "fields": {
+      "name": "Space Beans Cup 9",
+      "game": 2,
+      "registration_start_date": "2025-02-26T00:00:00Z",
+      "registration_end_date": "2025-02-28T00:00:00Z",
+      "tournament_start_date": "2025-03-01T00:00:00Z",
+      "tournament_end_date": "2025-03-04T00:00:00Z",
+      "max_players": 4,
+      "description": "Auto-generated Space Beans tournament #9",
+      "rules": "Standard Space Beans rules apply.",
+      "draw_rules": "Higher seed advances in the event of a tie.",
+      "num_winner": 1,
+      "archived": false,
+      "matches": [],
+      "winners": [
+        101
+      ],
+      "players": [
+        101,
+        102,
+        103,
+        104
+      ],
+      "created_by": 101
+    }
+  },
+  {
+    "model": "games.tournament",
+    "pk": 3009,
+    "fields": {
+      "name": "Space Beans Cup 10",
+      "game": 2,
+      "registration_start_date": "2025-03-05T00:00:00Z",
+      "registration_end_date": "2025-03-07T00:00:00Z",
+      "tournament_start_date": "2025-03-08T00:00:00Z",
+      "tournament_end_date": "2025-03-11T00:00:00Z",
+      "max_players": 4,
+      "description": "Auto-generated Space Beans tournament #10",
+      "rules": "Standard Space Beans rules apply.",
+      "draw_rules": "Higher seed advances in the event of a tie.",
+      "num_winner": 1,
+      "archived": false,
+      "matches": [],
+      "winners": [
+        104
+      ],
+      "players": [
+        101,
+        102,
+        103,
+        104
+      ],
+      "created_by": 102
+    }
+  }
+]
