@@ -48,7 +48,7 @@ let gameOver = false;
 let drawOffered = false;
 let drawOfferedBy = null;
 // Initial time for each player
-let redTime = 5;
+let redTime = 300;
 let blackTime = 300;
 // this will determine whose timer to decrement
 let activeTimer = null;
