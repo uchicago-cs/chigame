@@ -13,7 +13,7 @@ from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_POST
 from django.views.generic import DetailView, RedirectView, UpdateView
 
-from chigame.games.models import Game, Lobby, Player, Tournament
+from chigame.games.models import Game, GameList, Lobby, Player, Tournament
 
 from .models import (
     FriendInvitation,
@@ -175,9 +175,14 @@ def user_profile_detail_view(request, pk):
     if request.user.is_authenticated and request.user.pk == pk:
         # if user is accessing their own profile, create a profile if it doesn't exist
         profile = UserProfile.get_or_create_profile(request.user)
-        available_games = Game.objects.exclude(id__in=profile.favorite_games.values_list("id", flat=True))
+        # Get favorite games from GameList system
+        favorites_list, _ = GameList.objects.get_or_create(name="Favorites", created_by=request.user)
+        favorite_games = favorites_list.games.all()
+        available_games = Game.objects.exclude(id__in=favorite_games.values_list("id", flat=True))
         return render(
-            request, "users/userprofile_detail.html", {"profile": profile, "available_games": available_games}
+            request,
+            "users/userprofile_detail.html",
+            {"profile": profile, "available_games": available_games, "favorite_games": favorite_games},
         )
     else:
         # fetch another user's profile
@@ -188,6 +193,13 @@ def user_profile_detail_view(request, pk):
                 raise Http404("The user you are trying to access does not have their profile set up.")
             else:
                 raise Http404("The user you are trying to access does not exist.")
+
+    # Get favorite games for the profile user (for viewing other users' profiles)
+    try:
+        favorites_list = GameList.objects.get(name="Favorites", created_by=profile.user)
+        favorite_games = favorites_list.games.all()
+    except GameList.DoesNotExist:
+        favorite_games = []
 
     # for checking friendship and pending friend request status
     is_friend = None
@@ -201,7 +213,12 @@ def user_profile_detail_view(request, pk):
             friendship_request = FriendInvitation.objects.get_by_users(curr_user, target_user)
 
     # provide frontend profile + friendship status
-    context = {"profile": profile, "is_friend": is_friend, "friendship_request": friendship_request}
+    context = {
+        "profile": profile,
+        "is_friend": is_friend,
+        "friendship_request": friendship_request,
+        "favorite_games": favorite_games,
+    }
     return render(request, "users/userprofile_detail.html", context=context)
 
 
@@ -816,8 +833,8 @@ def add_favorite_game(request):
 
     try:
         game = Game.objects.get(id=game_id)
-        profile = UserProfile.get_or_create_profile(request.user)
-        profile.favorite_games.add(game)
+        favorites_list, _ = GameList.objects.get_or_create(name="Favorites", created_by=request.user)
+        favorites_list.games.add(game)
         messages.success(request, f"{game.name} added to your favorite games.")
     except Exception as e:
         messages.error(request, f"Error adding game to favorites: {str(e)}")
@@ -840,8 +857,8 @@ def remove_favorite_game(request, game_id):
     """
     try:
         game = Game.objects.get(id=game_id)
-        profile = UserProfile.get_or_create_profile(request.user)
-        profile.favorite_games.remove(game)
+        favorites_list, _ = GameList.objects.get_or_create(name="Favorites", created_by=request.user)
+        favorites_list.games.remove(game)
         messages.success(request, f"{game.name} removed from your favorite games.")
     except Exception as e:
         messages.error(request, f"Error removing game from favorites: {str(e)}")
