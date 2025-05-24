@@ -8,6 +8,7 @@ class GameForm(forms.ModelForm):
     class Meta:
         model = Game
         fields = "__all__"
+        exclude = ["twine_file"]  #remove the twine upload field
         labels = {
             "complexity": "Complexity (1-5 scale)",
             "expected_playtime": "Expected playtime (minutes)",
