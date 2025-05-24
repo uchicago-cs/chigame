@@ -3,7 +3,7 @@ from datetime import timedelta
 import pytest
 from django.utils import timezone
 
-from chigame.achievements.models import UserAchievement
+from chigame.achievements.models import Achievement, UserAchievement
 from chigame.achievements.views import get_recent_achievements
 
 from .factories import AchievementFactory, MatchFactory, UserAchievementFactory, UserFactory
@@ -16,6 +16,13 @@ def test_game_users():
     assert len(match.game.users.all()) == len(match.players.all())
     for player in match.players.all():
         assert player in match.game.users.all()
+
+
+@pytest.mark.django_db
+def test_get_achievement():
+    achievement = AchievementFactory.create()
+    game = achievement.game
+    assert Achievement.get_achievement(name=achievement.name, game=game) == achievement
 
 
 @pytest.mark.django_db
