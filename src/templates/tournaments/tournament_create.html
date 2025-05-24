@@ -22,7 +22,7 @@
         <!-- Registration dates with calendar dropdowns -->
         <div class="col-md-6 mb-3">
           <label for="id_registration_start_date" class="form-label">Registration start date</label>
-          <input type="date"
+          <input type="datetime-local"
                  name="{{ form.registration_start_date.html_name }}"
                  id="id_registration_start_date"
                  class="form-control"
@@ -33,7 +33,7 @@
         </div>
         <div class="col-md-6 mb-3">
           <label for="id_registration_end_date" class="form-label">Registration end date</label>
-          <input type="date"
+          <input type="datetime-local"
                  name="{{ form.registration_end_date.html_name }}"
                  id="id_registration_end_date"
                  class="form-control"
@@ -45,7 +45,7 @@
         <!-- Tournament dates with calendar dropdowns -->
         <div class="col-md-6 mb-3">
           <label for="id_tournament_start_date" class="form-label">Tournament start date</label>
-          <input type="date"
+          <input type="datetime-local"
                  name="{{ form.tournament_start_date.html_name }}"
                  id="id_tournament_start_date"
                  class="form-control"
@@ -56,7 +56,7 @@
         </div>
         <div class="col-md-6 mb-3">
           <label for="id_tournament_end_date" class="form-label">Tournament end date</label>
-          <input type="date"
+          <input type="datetime-local"
                  name="{{ form.tournament_end_date.html_name }}"
                  id="id_tournament_end_date"
                  class="form-control"
