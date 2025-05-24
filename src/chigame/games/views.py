@@ -613,21 +613,6 @@ class IFGameCreateView(CreateView):
         return context
 
 
-
-class IFGameCreateView(UserPassesTestMixin, CreateView):
-    model = InteractiveFictionGame
-    form_class = IFGameForm
-    template_name = "games/interactive-fiction/IF_game_create.html"
-    success_url = reverse_lazy("game-list")
-
-    def test_func(self):
-        return self.request.user.is_staff
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        return context
-
-
 class GameDeleteView(DeleteView):
     model = Game
     template_name = "games/game_confirm_delete.html"
@@ -639,6 +624,7 @@ class GameDeleteView(DeleteView):
         if not request.user.is_staff:
             return HttpResponseForbidden("You don't have permission to delete this game.")
         return super().dispatch(request, *args, **kwargs)
+
 
 class UploadFileView(View):
     def post(self, request, pk=None):
