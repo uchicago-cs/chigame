@@ -103,6 +103,18 @@
                 {{ profile.user.name }}'s Profile
               {% endif %}
             </h3>
+            {% if profile.user != request.user %}
+              <div class="online-status">
+                {% if profile.user.get_online_status == 'online' %}
+                  <span class="badge bg-success">Online</span>
+                {% elif profile.user.get_online_status == 'recently_active' %}
+                  <span class="badge bg-warning">Recently Active</span>
+                {% else %}
+                  <span class="badge bg-secondary">Offline</span>
+                {% endif %}
+                <small class="text-muted ms-2">Last seen: {{ profile.user.get_last_seen_display }}</small>
+              </div>
+            {% endif %}
           </div>
           <div class="card-body">
             <div class="media">

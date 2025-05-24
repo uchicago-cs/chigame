@@ -52,6 +52,8 @@ class User(AbstractUser):
 
     # a toggle to determine if the user wants profanity filter on
     profanity_filter = models.BooleanField(default=True)
+    
+    last_seen = models.DateTimeField(default=timezone.now)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
@@ -72,6 +74,53 @@ class User(AbstractUser):
             self.tokens = 3
 
         super().save(*args, **kwargs)
+
+    def update_last_seen(self):
+        self.last_seen = timezone.now()
+        self.save(update_fields=['last_seen'])
+
+    def is_online(self, threshold_minutes=5):
+        if not self.last_seen:
+            return False
+        threshold = timezone.now() - timezone.timedelta(minutes=threshold_minutes)
+        return self.last_seen >= threshold
+
+    def get_online_status(self):
+        if not self.last_seen:
+            return 'offline'
+        
+        now = timezone.now()
+        time_diff = now - self.last_seen
+        
+        if time_diff <= timezone.timedelta(minutes=5):
+            return 'online'
+        elif time_diff <= timezone.timedelta(hours=1):
+            return 'recently_active'
+        else:
+            return 'offline'
+
+    def get_last_seen_display(self):
+        if not self.last_seen:
+            return 'Never'
+        
+        now = timezone.now()
+        time_diff = now - self.last_seen
+        
+        if time_diff <= timezone.timedelta(minutes=1):
+            return 'Just now'
+        elif time_diff <= timezone.timedelta(minutes=5):
+            return 'A few minutes ago'
+        elif time_diff <= timezone.timedelta(hours=1):
+            minutes = int(time_diff.total_seconds() / 60)
+            return f'{minutes} minutes ago'
+        elif time_diff <= timezone.timedelta(days=1):
+            hours = int(time_diff.total_seconds() / 3600)
+            return f'{hours} hour{"s" if hours != 1 else ""} ago'
+        elif time_diff <= timezone.timedelta(days=7):
+            days = time_diff.days
+            return f'{days} day{"s" if days != 1 else ""} ago'
+        else:
+            return self.last_seen.strftime('%B %d, %Y')
 
 
 class UserProfile(models.Model):

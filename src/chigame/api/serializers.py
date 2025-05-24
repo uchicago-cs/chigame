@@ -44,11 +44,17 @@ class LobbySerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
+    online_status = serializers.CharField(source='get_online_status', read_only=True)
+    last_seen_display = serializers.CharField(source='get_last_seen_display', read_only=True)
+    is_online = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ("id", "name", "username", "email", "password")
-        read_only_fields = ("user",)
+        fields = ("id", "name", "username", "email", "password", "online_status", "last_seen_display", "is_online", "last_seen")
+        read_only_fields = ("user", "online_status", "last_seen_display", "is_online", "last_seen")
+
+    def get_is_online(self, obj):
+        return obj.is_online()
 
     def create(self, validated_data):
         user = User.objects.create_user(
