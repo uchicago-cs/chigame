@@ -35,7 +35,7 @@ from rest_framework.response import Response
 from chigame.users.models import User
 
 from .filters import LobbyFilter
-from .forms import GameForm, IFGameForm, LobbyForm, ReviewForm
+from .forms import GameForm, LobbyForm, ReviewForm
 from .models import (
     Chat,
     Checkers,
@@ -44,7 +44,6 @@ from .models import (
     Feedback,
     Game,
     GameList,
-    InteractiveFictionGame,
     Lobby,
     Match,
     Player,
@@ -108,6 +107,9 @@ class GameDetailView(LoginRequiredMixin, FormMixin, DetailView):
     # for twine files, redirect to different IF view
     def dispatch(self, request, *args, **kwargs):
         self.object = self.get_object()
+        # Redirect to IF detail if this is a Twine file game
+        if self.object.twine_file and self.object.twine_file.name.endswith(".html"):
+            return redirect("interactive-fiction-detail", pk=self.object.pk)
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
@@ -562,7 +564,31 @@ def search_results(request):
 
 # =============== Interactive Fiction Views ===============
 class InteractiveFictionView(TemplateView):
+    template_name = "games/interactive-fiction/IF_game_detail.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        pk = self.kwargs.get("pk")
+
+        try:
+            game = Game.objects.get(pk=pk)
+        except Game.DoesNotExist:
+            game = None
+
+        context["game"] = game
+
+        if game.twine_file:
+            context["uploaded_file_url"] = game.twine_file.url
+
+        return context
+
+
+class IFGameCreateView(CreateView):
+    model = Game
+    form_class = GameForm
     template_name = "games/interactive-fiction/IF_game_create.html"
+    raise_exception = True  # if user is not staff member, raise exception
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -587,23 +613,27 @@ class InteractiveFictionView(TemplateView):
         return context
 
 
-class IFGameCreateView(UserPassesTestMixin, CreateView):
-    model = InteractiveFictionGame
-    form_class = IFGameForm
-    template_name = "games/interactive-fiction/IF_game_create.html"
+class GameDeleteView(DeleteView):
+    model = Game
+    template_name = "games/game_confirm_delete.html"
     success_url = reverse_lazy("game-list")
 
-    def test_func(self):
-        return self.request.user.is_staff
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        return context
+    def dispatch(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        # Only staff members can delete games
+        if not request.user.is_staff:
+            return HttpResponseForbidden("You don't have permission to delete this game.")
+        return super().dispatch(request, *args, **kwargs)
 
 
 class UploadFileView(View):
     def post(self, request, pk=None):
         uploaded_file = request.FILES.get("uploaded_file")
+        game_name = request.POST.get("name", "").strip() or "DEFAULT"
+
+        print("Name:", game_name)
+        print("POST:", request.POST)
+        print("FILES:", request.FILES)
 
         if uploaded_file:
             # Save the file to twine_games/
@@ -613,7 +643,7 @@ class UploadFileView(View):
 
             # Create a basic Game instance
             game = Game.objects.create(
-                name=uploaded_file.name.replace(".html", ""),
+                name=game_name,
                 description="Uploaded Twine game",
                 min_players=1,
                 max_players=1,
@@ -622,7 +652,7 @@ class UploadFileView(View):
             )
 
             messages.success(request, f"Game '{game.name}' uploaded successfully!")
-            return redirect("game-detail", pk=game.pk)
+            return redirect("game-list")
 
         messages.error(request, "No file selected.")
         return redirect("interactive-fiction")

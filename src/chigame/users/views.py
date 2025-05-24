@@ -24,7 +24,7 @@ from .models import (
     NotificationLabel,
     UserProfile,
 )
-from .tables import FriendsTable, UserTable
+from .tables import UserTable
 
 User = get_user_model()
 
@@ -545,6 +545,7 @@ def friend_list_view(request, pk):
     # render the friends table (keeping for backward compatibility)
     table = FriendsTable(friends)
     context = {"table": table, "friends": friends}
+
     # if the target user is the current user, render the friends list
     if pk == user.id:
         return render(request, "users/user_friend_list.html", context)
