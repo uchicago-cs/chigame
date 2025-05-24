@@ -232,16 +232,6 @@ class PublisherSerializer(serializers.ModelSerializer):
         fields = ["id", "name", "games", "website", "year_established"]
 
 
-class MatchSerializer(serializers.ModelSerializer):
-    players = PlayerSerializer(many=True, source="player_set", read_only=True)
-    game = serializers.PrimaryKeyRelatedField(read_only=True)
-    lobby = serializers.PrimaryKeyRelatedField(read_only=True)
-
-    class Meta:
-        model = Match
-        fields = ["id", "game", "lobby", "date_played", "players"]
-
-
 class PlayerSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
 
@@ -256,6 +246,16 @@ class PlayerSerializer(serializers.ModelSerializer):
             "outcome",
             "victory_type",
         ]
+
+
+class MatchSerializer(serializers.ModelSerializer):
+    players = PlayerSerializer(many=True, source="player_set", read_only=True)
+    game = serializers.PrimaryKeyRelatedField(read_only=True)
+    lobby = serializers.PrimaryKeyRelatedField(read_only=True)
+
+    class Meta:
+        model = Match
+        fields = ["id", "game", "lobby", "date_played", "players"]
 
 
 class MatchProposalSerializer(serializers.ModelSerializer):
@@ -339,4 +339,3 @@ class CheckersTurnSerializer(serializers.ModelSerializer):
     class Meta:
         model = CheckersTurn
         fields = ["id", "game", "board", "turn_number", "player"]
-
