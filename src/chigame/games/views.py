@@ -601,31 +601,109 @@ class IFGameCreateView(UserPassesTestMixin, CreateView):
         return context
 
 
-class UploadFileView(View):
-    def post(self, request, pk=None):
-        uploaded_file = request.FILES.get("uploaded_file")
+class UploadFileView(LoginRequiredMixin, View):
+    def get(self, request, pk=None):
+        """Show the upload form"""
+        return render(request, "games/user_game_upload.html")
 
-        if uploaded_file:
+    def post(self, request, pk=None):
+        game_type = request.POST.get("game_type")
+
+        if game_type == "embedded":
+            return self._handle_embedded_game(request)
+        elif game_type == "twine":
+            return self._handle_twine_game(request)
+        else:
+            messages.error(request, "Please select a game type.")
+            return render(request, "games/user_game_upload.html")
+
+    def _handle_embedded_game(self, request):
+        """Handle embedded game upload"""
+        name = request.POST.get("name", "").strip()
+        description = request.POST.get("description", "").strip()
+        game_url = request.POST.get("game_url", "").strip()
+        min_players = request.POST.get("min_players", 1)
+        max_players = request.POST.get("max_players", 1)
+        complexity = request.POST.get("complexity", 2.0)
+        expected_playtime = request.POST.get("expected_playtime", 10)
+
+        # Validation
+        if not name or not game_url:
+            messages.error(request, "Name and Game URL are required for embedded games.")
+            return render(request, "games/user_game_upload.html")
+
+        try:
+            game = Game.objects.create(
+                name=name,
+                description=description or "User-uploaded embedded game",
+                game_url=game_url,
+                min_players=int(min_players),
+                max_players=int(max_players),
+                complexity=float(complexity),
+                expected_playtime=int(expected_playtime) if expected_playtime else None,
+                year_published=timezone.now().year,
+                image="/static/images/no_picture_available.png",
+            )
+
+            # Add user to game
+            game.users.add(request.user)
+
+            messages.success(request, f"Embedded game '{game.name}' uploaded successfully!")
+            return redirect("game-detail", pk=game.pk)
+
+        except ValueError as e:
+            messages.error(request, f"Please check your input values. ({str(e)})")
+            return render(request, "games/user_game_upload.html")
+
+    def _handle_twine_game(self, request):
+        """Handle Twine file upload"""
+        uploaded_file = request.FILES.get("twine_file")
+        name = request.POST.get("name", "").strip()
+        description = request.POST.get("description", "").strip()
+        min_players = request.POST.get("min_players", 1)
+        max_players = request.POST.get("max_players", 1)
+        complexity = request.POST.get("complexity", 2.0)
+        expected_playtime = request.POST.get("expected_playtime", 10)
+
+        if not uploaded_file:
+            messages.error(request, "Please select a Twine file to upload.")
+            return render(request, "games/user_game_upload.html")
+
+        if not uploaded_file.name.endswith(".html"):
+            messages.error(request, "Twine files must be .html files.")
+            return render(request, "games/user_game_upload.html")
+
+        if not name:
+            name = uploaded_file.name.replace(".html", "")
+
+        try:
             # Save the file to twine_games/
             fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, "twine_games"))
             safe_filename = uploaded_file.name.replace(" ", "_")
             filename = fs.save(safe_filename, uploaded_file)
 
-            # Create a basic Game instance
+            # Create Game instance
             game = Game.objects.create(
-                name=uploaded_file.name.replace(".html", ""),
-                description="Uploaded Twine game",
-                min_players=1,
-                max_players=1,
-                complexity=1,
+                name=name,
+                description=description or "User-uploaded Twine game",
+                min_players=int(min_players),
+                max_players=int(max_players),
+                complexity=float(complexity),
+                expected_playtime=int(expected_playtime) if expected_playtime else None,
+                year_published=timezone.now().year,
+                image="/static/images/no_picture_available.png",
                 twine_file=f"twine_games/{filename}",
             )
 
-            messages.success(request, f"Game '{game.name}' uploaded successfully!")
+            # Add user to game
+            game.users.add(request.user)
+
+            messages.success(request, f"Twine game '{game.name}' uploaded successfully!")
             return redirect("game-detail", pk=game.pk)
 
-        messages.error(request, "No file selected.")
-        return redirect("interactive-fiction")
+        except ValueError as e:
+            messages.error(request, f"Please check your input values. ({str(e)})")
+            return render(request, "games/user_game_upload.html")
 
 
 # =============== Tournaments Views ===============
