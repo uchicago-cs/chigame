@@ -707,7 +707,7 @@ def move_notification(request, pk):
     This view supports POST requests to:
     - Change the category of a notification (e.g., move to "archived").
     - Assign an existing label to the notification.
-    
+
     It validates that the notification belongs to the requesting user
     and provides appropriate feedback messages.
 
@@ -887,8 +887,8 @@ def unassign_label_from_notification(request, notification_id, label_id):
     """
     Remove a custom label from a specific notification for the logged-in user.
 
-    This view handles POST requests to unassign a user-defined label from a 
-    notification, ensuring both belong to the current user. It provides 
+    This view handles POST requests to unassign a user-defined label from a
+    notification, ensuring both belong to the current user. It provides
     success, info, or error messages based on the state of the label assignment.
 
     Args:
