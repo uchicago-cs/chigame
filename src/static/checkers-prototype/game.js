@@ -50,6 +50,8 @@ const RADIUS_SCALE_FACTOR = 2.5;
 // selected piece highlight stroke width
 const HIGHLIGHT_SIZE = 3;
 let highlightedTiles = [];
+// prevent player from moving pieces too quickly
+let moveInProgress = false;
 
 // ------------------- Get Board State ----------------------------------------
 // From Database
@@ -140,7 +142,7 @@ function drawBoard(scene) {
         // move the piece and end the player turn
         if (!targetPiece && isValidMove(selectedPiece, this.logicalX, this.logicalY)) {
           movePiece(selectedPiece, this.logicalX, this.logicalY);
-          endTurn();
+          // endTurn();
         }
       });
     }
@@ -299,6 +301,9 @@ function clearHighlights() {
 
 
 function movePiece(piece, moveX, moveY) {
+  if (moveInProgress) return;
+  moveInProgress = true;
+
   updateScore();
 
   if (PLAYER_ID !== CURRENT_TURN_PLAYER_ID) {
@@ -347,9 +352,15 @@ function movePiece(piece, moveX, moveY) {
         console.error("Failed to update board:", data.error);
       } else {
         console.log("Board updated successfully.");
+        endTurn();
       }
     })
-    .catch((error) => console.error("Fetch error:", error));
+    .catch((err) => {
+      console.error("Network error:", err);
+    })
+    .finally(() => {
+      moveInProgress = false;
+    });
 }
 
 // helper function to get the piece
