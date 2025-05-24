@@ -449,33 +449,24 @@ def user_inbox_view(request, pk, category="inbox"):
     """
     Displays a user's inbox containing notifications. The user can only access
     their own inbox.
-
-    Args:
-        request (HttpRequest)
-        pk (int): The primary key of the user
-
-    Returns:
-        HttpResponse: Rendered template with user inbox context including
-            - pk: The primary key of the user
-            - user: The user
-            - notifications: The notifications in the user's inbox
-            - default_notification_messages: The default notification messages
-            for each notification type
     """
-
     if pk != request.user.pk:
         messages.error(request, "Not your inbox")
         return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
 
     user = request.user
 
-    if category and category in dict(Notification.CATEGORY_CHOICES):
+    # Handle deleted notifications
+    if category == "deleted":
+        notifications = Notification.objects.filter_by_receiver(user, deleted=True)
+    elif category and category in dict(Notification.CATEGORY_CHOICES):
         notifications = Notification.objects.filter_by_receiver(user).filter_by_category(category)
     else:
         notifications = Notification.objects.filter_by_receiver(user)
 
     default_notification_messages = Notification.DEFAULT_MESSAGES
     user_labels = NotificationLabel.objects.filter(user=user)
+
     context = {
         "pk": pk,
         "user": user,
@@ -486,11 +477,7 @@ def user_inbox_view(request, pk, category="inbox"):
         "category_choices": Notification.CATEGORY_CHOICES,
     }
 
-    if pk == user.id:
-        return render(request, "users/user_inbox.html", context)
-    else:
-        messages.error(request, "Not your inbox")
-        return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
+    return render(request, "users/user_inbox.html", context)
 
 
 @login_required
@@ -625,22 +612,18 @@ def notification_detail(request, pk):
 def act_on_inbox_notification(request, pk, action):
     """
     Allow a user to perform actions (mark as read/unread, delete) on a notification in their inbox.
-
-    Args:
-        request (HttpRequest)
-        pk (int): The primary key of the notification
-        action (str): The action to perform on the notification
-
-    Returns:
-        HttpResponse: Redirects to the user's inbox
-        Error messages: When trying to perform actions on a non-existent notification or
-        when trying to perform actions on someone else's notifications
     """
+    # Get the category to return to, defaulting to 'inbox'
+    next_category = request.GET.get("next", "inbox")
+
     try:
         notification = Notification.objects.get(pk=pk)
         if notification.receiver.pk != request.user.pk:
             messages.error(request, "You can not perform actions on this notification")
-            return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
+            return redirect(
+                reverse("users:user-inbox-category", kwargs={"pk": request.user.pk, "category": next_category})
+            )
+
         if action == "mark_read":
             notification.mark_as_read()
         elif action == "mark_unread":
@@ -651,7 +634,8 @@ def act_on_inbox_notification(request, pk, action):
             notification.mark_as_unread()
     except Notification.DoesNotExist:
         messages.error(request, "Something went wrong. This notification does not exist")
-    return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
+
+    return redirect(reverse("users:user-inbox-category", kwargs={"pk": request.user.pk, "category": next_category}))
 
 
 @login_required
@@ -728,11 +712,13 @@ def upload_profile_photo(request):
 def move_notification(request, pk):
     notification = get_object_or_404(Notification, pk=pk, receiver=request.user)
     new_category = request.POST.get("category")
+    next_category = request.POST.get("next") or "inbox"  # fallback to inbox if not provided
+
     if new_category and new_category in dict(Notification.CATEGORY_CHOICES):
         notification.category = new_category
         notification.save()
         messages.success(request, f"Notification moved to {new_category}.")
-        return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
+        return redirect("users:user-inbox-category", pk=request.user.pk, category=next_category)
 
     label_id = request.POST.get("label_id")
     if label_id:
@@ -742,10 +728,10 @@ def move_notification(request, pk):
             messages.success(request, "Label assigned to notification.")
         except NotificationLabel.DoesNotExist:
             messages.error(request, "Label not found or does not belong to you.")
-        return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
+        return redirect("users:user-inbox-category", pk=request.user.pk, category=next_category)
 
     messages.error(request, "Invalid category or label.")
-    return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
+    return redirect("users:user-inbox-category", pk=request.user.pk, category=next_category)
 
 
 @login_required
