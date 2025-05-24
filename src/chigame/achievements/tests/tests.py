@@ -24,6 +24,7 @@ def test_get_achievement():
     game = achievement.game
     assert Achievement.get_achievement(name=achievement.name, game=game) == achievement
 
+
 @pytest.mark.django_db
 def test_achievement_advance():
     """Test that advancing an achievement works correctly"""
