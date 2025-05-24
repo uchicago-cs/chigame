@@ -2,10 +2,13 @@ import random
 
 from allauth.account.forms import SignupForm
 from allauth.socialaccount.forms import SignupForm as SocialSignupForm
+from django import forms
 from django.contrib.auth import forms as admin_forms
 from django.contrib.auth import get_user_model
 from django.forms import EmailField
 from django.utils.translation import gettext_lazy as _
+
+from .models import UserProfile
 
 POKEMON_NAMES = [
     "pikachu",
@@ -84,3 +87,16 @@ def generate_unique_username():
         username = f"{name}{number}"
         if not User.objects.filter(username=username).exists():
             return username
+
+
+class PrivacySettingsForm(forms.ModelForm):
+    """Form for managing user privacy settings."""
+
+    class Meta:
+        model = UserProfile
+        fields = ["profile_visibility", "friend_request_permission", "searchable_by_strangers"]
+        widgets = {
+            "profile_visibility": forms.Select(attrs={"class": "form-control"}),
+            "friend_request_permission": forms.Select(attrs={"class": "form-control"}),
+            "searchable_by_strangers": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+        }

@@ -15,6 +15,7 @@ from django.views.generic import DetailView, RedirectView, UpdateView
 
 from chigame.games.models import Lobby, Player, Tournament
 
+from .forms import PrivacySettingsForm
 from .models import (
     FriendInvitation,
     FriendRequestNotification,
@@ -186,10 +187,12 @@ def user_profile_detail_view(request, pk):
             else:
                 raise Http404("The user you are trying to access does not exist.")
 
-    # for checking friendship and pending friend request status
-    is_friend = None
-    friendship_request = None
+    # Check privacy settings before allowing access
     target_user = get_object_or_404(User, pk=pk)
+    is_friend = False
+    friendship_request = None
+    can_send_friend_request = False
+
     if request.user.is_authenticated:
         # check friendship or pending invitation with the target user
         is_friend = target_user.friends.filter(pk=request.user.pk).exists()
@@ -197,8 +200,28 @@ def user_profile_detail_view(request, pk):
             curr_user = request.user
             friendship_request = FriendInvitation.objects.get_by_users(curr_user, target_user)
 
+            # Check if current user can send friend request via privacy settings
+            if profile.friend_request_permission == "everyone":
+                can_send_friend_request = True
+            elif profile.friend_request_permission == "friends_of_friends":
+                mutual_friends = curr_user.friends.filter(id__in=target_user.friends.all())
+                can_send_friend_request = mutual_friends.exists()
+
+    # Check if profile is accessible via privacy settings
+    if profile.profile_visibility == "private":
+        raise Http404("This profile is private.")
+    elif profile.profile_visibility == "friends" and not is_friend and request.user.is_authenticated:
+        raise Http404("This profile is only visible to friends.")
+    elif profile.profile_visibility == "friends" and not request.user.is_authenticated:
+        raise Http404("This profile is only visible to friends.")
+
     # provide frontend profile + friendship status
-    context = {"profile": profile, "is_friend": is_friend, "friendship_request": friendship_request}
+    context = {
+        "profile": profile,
+        "is_friend": is_friend,
+        "friendship_request": friendship_request,
+        "can_send_friend_request": can_send_friend_request,
+    }
     return render(request, "users/userprofile_detail.html", context=context)
 
 
@@ -229,6 +252,7 @@ def send_friend_invitation(request, pk):
     if curr_user.id == other_user.id:
         messages.error(request, "You can't send friendship invitation to yourself")
         return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
+
     # check if the friendship invitation already exists
     invitation, new = FriendInvitation.objects.filter(
         Q(sender=curr_user, receiver=other_user, is_deleted=False)
@@ -393,7 +417,30 @@ def user_search_results(request):
         profiles_list = UserProfile.objects.filter(
             Q(user__email__icontains=query_input) | Q(user__name__icontains=query_input)
         )
-        if profiles_list.count() > 0:
+
+        if request.user.is_authenticated:
+            filtered_profiles = []
+            for profile in profiles_list:
+                if profile.user == request.user:
+                    continue
+
+                if not profile.searchable_by_strangers:
+                    mutual_friends = request.user.friends.filter(id__in=profile.user.friends.all())
+                    if not mutual_friends.exists():
+                        continue
+
+                is_friend = profile.user.friends.filter(pk=request.user.pk).exists()
+                if profile.profile_visibility == "private":
+                    continue
+                elif profile.profile_visibility == "friends" and not is_friend:
+                    continue
+
+                filtered_profiles.append(profile)
+            profiles_list = filtered_profiles
+        else:
+            profiles_list = profiles_list.filter(profile_visibility="public", searchable_by_strangers=True)
+
+        if len(profiles_list) > 0:
             context["found"] = True
             context["object_list"] = profiles_list
     return render(request, "pages/search_results.html", context)
@@ -792,3 +839,30 @@ def notifications_by_label(request, label_id):
         "notifications": notifications,
     }
     return render(request, "users/notifications_by_label.html", context)
+
+
+@login_required
+def privacy_settings_view(request):
+    """
+    Displays a user's privacy settings and allows them to manage them.
+
+    Args:
+        request (HttpRequest)
+
+    Returns:
+        HttpResponse: Rendered template with privacy settings context
+    """
+    user = request.user
+    profile = UserProfile.get_or_create_profile(user)
+
+    if request.method == "POST":
+        form = PrivacySettingsForm(request.POST, instance=profile)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Privacy settings updated successfully.")
+            return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
+    else:
+        form = PrivacySettingsForm(instance=profile)
+
+    context = {"form": form}
+    return render(request, "users/privacy_settings.html", context)

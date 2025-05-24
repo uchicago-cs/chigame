@@ -139,6 +139,7 @@
                      class="btn btn-primary">Friend List</a>
                   <a href="{% url 'users:user-history' profile.user.pk %}"
                      class="btn btn-primary">Stats</a>
+                  <a href="{% url 'users:privacy-settings' %}" class="btn btn-primary">Privacy Settings</a>
                 {% elif is_friend %}
                   <a href="{% url 'users:remove-friend' profile.user.pk %}"
                      class="btn btn-primary">Remove Friend</a>
@@ -161,7 +162,7 @@
                   {% endif %}
                   <a href="{% url 'users:user-history' profile.user.pk %}"
                      class="btn btn-primary">Stats</a>
-                {% else %}
+                {% elif can_send_friend_request %}
                   <a href="{% url 'users:add-friend' profile.user.pk %}"
                      class="btn btn-primary">Add Friend</a>
                 {% endif %}
