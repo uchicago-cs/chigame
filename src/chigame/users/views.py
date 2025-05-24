@@ -189,16 +189,24 @@ def user_profile_detail_view(request, pk):
     # for checking friendship and pending friend request status
     is_friend = None
     friendship_request = None
+    is_blocked = False
     target_user = get_object_or_404(User, pk=pk)
     if request.user.is_authenticated:
         # check friendship or pending invitation with the target user
         is_friend = target_user.friends.filter(pk=request.user.pk).exists()
+        # check if current user has blocked the target user
+        is_blocked = request.user.blocked_users.filter(pk=target_user.pk).exists()
         if not is_friend:
             curr_user = request.user
             friendship_request = FriendInvitation.objects.get_by_users(curr_user, target_user)
 
     # provide frontend profile + friendship status
-    context = {"profile": profile, "is_friend": is_friend, "friendship_request": friendship_request}
+    context = {
+        "profile": profile,
+        "is_friend": is_friend,
+        "friendship_request": friendship_request,
+        "is_blocked": is_blocked,
+    }
     return render(request, "users/userprofile_detail.html", context=context)
 
 
@@ -220,6 +228,14 @@ def send_friend_invitation(request, pk):
     # fetch the current user and the target user
     curr_user = User.objects.get(pk=request.user.id)
     other_user = User.objects.get(pk=pk)
+
+    # Check if either user has blocked the other
+    if curr_user.blocked_users.filter(pk=other_user.pk).exists():
+        messages.error(request, "You have blocked this user.")
+        return redirect(reverse("users:user-profile", kwargs={"pk": pk}))
+    if other_user.blocked_users.filter(pk=curr_user.pk).exists():
+        messages.error(request, "User not found.")
+        return redirect(reverse("users:user-profile", kwargs={"pk": pk}))
 
     # if the current user and the target user are already friends, return an error
     if curr_user.friends.filter(pk=other_user.pk).exists():
@@ -792,3 +808,43 @@ def notifications_by_label(request, label_id):
         "notifications": notifications,
     }
     return render(request, "users/notifications_by_label.html", context)
+
+
+@login_required
+def block_user(request, pk):
+    """
+    Block a user to prevent them from sending friend invitations.
+
+    Args:
+        request (HttpRequest)
+        pk (int): The primary key of the user to block
+
+    Returns:
+        HttpResponse: Redirects to the user's profile
+    """
+    try:
+        user_to_block = User.objects.get(pk=pk)
+        current_user = request.user
+
+        if user_to_block == current_user:
+            messages.error(request, "You cannot block yourself.")
+            return redirect(reverse("users:user-profile", kwargs={"pk": current_user.pk}))
+
+        # Remove friendship if they are friends
+        if current_user.friends.filter(pk=user_to_block.pk).exists():
+            current_user.friends.remove(user_to_block)
+
+        # Cancel any pending friend invitations between them
+        FriendInvitation.objects.filter(
+            Q(sender=current_user, receiver=user_to_block, is_deleted=False)
+            | Q(sender=user_to_block, receiver=current_user, is_deleted=False)
+        ).update(is_deleted=True)
+
+        # Block the user
+        current_user.blocked_users.add(user_to_block)
+        messages.success(request, f"You have blocked {user_to_block.name or user_to_block.email}.")
+
+    except User.DoesNotExist:
+        messages.error(request, "User not found.")
+
+    return redirect(reverse("users:user-profile", kwargs={"pk": pk}))

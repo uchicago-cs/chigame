@@ -161,9 +161,13 @@
                   {% endif %}
                   <a href="{% url 'users:user-history' profile.user.pk %}"
                      class="btn btn-primary">Stats</a>
+                {% elif is_blocked %}
+                  <p>User not available.</p>
                 {% else %}
                   <a href="{% url 'users:add-friend' profile.user.pk %}"
                      class="btn btn-primary">Add Friend</a>
+                  <a href="{% url 'users:block-user' profile.user.pk %}"
+                     class="btn btn-primary">Block User</a>
                 {% endif %}
               </div>
               <div class="profile-bio">
