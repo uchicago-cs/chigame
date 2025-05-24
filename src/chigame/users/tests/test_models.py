@@ -1,6 +1,8 @@
 import pytest
 from django.core.exceptions import ValidationError
 
+from chigame.api.tests.factories import GameFactory
+from chigame.games.models import GameList
 from chigame.users.models import FriendInvitation, Notification, User, UserProfile
 
 from .factories import (
@@ -228,3 +230,40 @@ def test_notificationqueryset_is_x_methods():
     notifications.restore_all_deleted()
     assert len(Notification.objects.is_deleted()) == 0
     assert len(Notification.objects.is_not_deleted()) == 5
+
+
+@pytest.mark.django_db
+def test_user_favorites_list_creation():
+    # Test that a favorites GameList is automatically created for a user
+    user = UserFactory()
+    # The signal should have already created the Favorites list
+    favorites_list = GameList.objects.get(created_by=user, name="Favorites")
+    assert favorites_list.created_by == user
+    assert favorites_list.name == "Favorites"
+
+
+@pytest.mark.django_db
+def test_add_game_to_favorites():
+    # Test adding a game to user's favorites list
+    user = UserFactory()
+    game = GameFactory(name="Chess")
+    # Get the automatically created favorites list
+    favorites_list = GameList.objects.get(created_by=user, name="Favorites")
+    favorites_list.games.add(game)
+
+    assert game in favorites_list.games.all()
+    assert favorites_list.games.count() == 1
+
+
+@pytest.mark.django_db
+def test_remove_game_from_favorites():
+    # Test removing a game from user's favorites list
+    user = UserFactory()
+    game = GameFactory(name="Monopoly")
+    favorites_list = GameList.objects.get(created_by=user, name="Favorites")
+    favorites_list.games.add(game)
+    assert favorites_list.games.count() == 1
+
+    favorites_list.games.remove(game)
+    assert game not in favorites_list.games.all()
+    assert favorites_list.games.count() == 0
