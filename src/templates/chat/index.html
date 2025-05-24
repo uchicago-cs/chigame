@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-
 {% load static %}
 
 {% block content %}
@@ -14,7 +13,6 @@
       min-height: 0;
     }
 
-    /* Triple-click menu styling */
     .message-menu {
       position: absolute;
       background: #fff;
@@ -39,6 +37,7 @@
       background: #f0f0f0;
     }
   </style>
+
   <div id="chat-container"
        class="chat-container h-100 d-flex flex-column position-relative"
        {% if chat.background_image %} style="background-image: url('{{ chat.background_image.url }}'); background-size: cover; background-position: center;" {% else %} style="background-size: cover; background-position: center;" {% endif %}>
@@ -46,14 +45,16 @@
     {% include "chat/components/_messages.html" %}
     {% include "chat/components/_input.html" %}
     {% include "chat/components/_script.html" %}
+
     {# Blank triple-click menu #}
     <div id="message-menu" class="message-menu" style="display: none;">
       <ul>
-        <li data-action="delete">Delete</li>
-        <li data-action="pin">Pin</li>
-        <li data-action="copy">Copy</li>
+        <li data-action="copy">Copy Message</li>
+        <li data-action="delete">Delete Message</li>
+        <li data-action="pin">Pin Message</li>
       </ul>
     </div>
   </div>
+
   <script src="{% static 'js/chat-menu.js' %}"></script>
 {% endblock content %}
