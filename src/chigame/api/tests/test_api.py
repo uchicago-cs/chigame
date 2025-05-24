@@ -18,6 +18,7 @@ from chigame.api.tests.factories import (
     ChatFactory,
     FeedbackFactory,
     GameFactory,
+    LiveChatFactory,
     LobbyFactory,
     MatchFactory,
     TournamentFactory,
@@ -1276,3 +1277,54 @@ class GameDataTests(APITestCase):
 
         response = self.client.get(detail_url)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+
+class TestLiveChatAPI(APITestCase):
+    def setUp(self):
+        self.user1 = UserFactory()
+        self.user2 = UserFactory()
+        self.user3 = UserFactory()
+
+        self.client.force_authenticate(user=self.user1)
+
+    def test_create_livechat(self):
+        url = reverse("api-livechat-create")
+        response = self.client.post(url, {"name": "Test Chat"})
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data["name"], "Test Chat")
+        self.assertEqual(response.data["users"], [self.user1.id])
+
+    def test_add_users_to_chat(self):
+        chat = LiveChatFactory(users=[self.user1])
+        url = reverse("api-livechat-add-user", args=[chat.id])
+
+        response = self.client.post(url, {"user_ids": [self.user2.id, self.user3.id]}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Reloads LiveChat from the database to get the latest state
+        chat.refresh_from_db()
+        user_ids = set(chat.users.values_list("id", flat=True))
+        self.assertSetEqual(user_ids, {self.user1.id, self.user2.id, self.user3.id})
+
+    def test_list_chats_user_is_in(self):
+        # user1 is only in this one
+        chat = LiveChatFactory(name="Test Chat", users=[self.user1])
+        LiveChatFactory(users=[self.user1])
+        LiveChatFactory(users=[self.user2])
+
+        url = reverse("api-livechat-list")
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["count"], 2)
+        self.assertEqual(response.data["results"][0]["id"], chat.id)
+
+    def test_livechat_detail(self):
+        chat = LiveChatFactory(users=[self.user1, self.user2])
+        url = reverse("api-livechat-detail", args=[chat.id])
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["id"], chat.id)
+        self.assertEqual(set(response.data["users"]), {self.user1.id, self.user2.id})
