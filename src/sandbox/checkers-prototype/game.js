@@ -47,6 +47,11 @@ let highlightedTiles = [];
 let gameOver = false;
 let drawOffered = false;
 let drawOfferedBy = null;
+// Initial time for each player
+let redTime = 300;
+let blackTime = 300;
+// this will determine whose timer to decrement
+let activeTimer = null;
 
 //BOT SETTINGS
 let vsEasyBot = true;
@@ -117,6 +122,13 @@ function create() {
 
     // Repopulate the board using the stored scene reference
     populatePieces(scene);
+
+    // reset the timers
+    stopPlayerTimer();
+    redTime = 300;
+    blackTime = 300;
+    updateTimerDisplay();
+    startPlayerTimer();
   }
 
   playAgainYes.addEventListener('click', resetGame);
@@ -127,6 +139,7 @@ function create() {
   forfeitBtn.addEventListener('click', () => {
     if (!gameOver && currentPlayer === COLORS.red) {
       gameOver = true;
+      stopPlayerTimer();
       gameOverPrompts.classList.add('show');
       gameOverMessage.textContent = 'Red player has forfeited! Black wins!';
       gameOverMessage.classList.add('show');
@@ -135,6 +148,7 @@ function create() {
       document.getElementById('drawBtn').style.display = 'none';
     } else if (!gameOver && currentPlayer === COLORS.black) {
       gameOver = true;
+      stopPlayerTimer();
       gameOverPrompts.classList.add('show');
       gameOverMessage.textContent = 'Black player has forfeited! Red wins!';
       gameOverMessage.classList.add('show');
@@ -174,6 +188,7 @@ function create() {
     } else {
       // Accept Draw (second click)
       gameOver = true;
+      stopPlayerTimer();
       gameOverPrompts.classList.add('show');
       gameOverMessage.textContent = 'Draw accepted! Game over!';
       gameOverMessage.classList.add('show');
@@ -189,6 +204,8 @@ function create() {
       resetDrawOffer();
     }
   });
+  updateTimerDisplay(); // initial display
+  startPlayerTimer(); // red starts first
   easyBot.textContent = `Easy Bot: ${vsEasyBot ? 'ON' : 'OFF'}`;
   easyBot.addEventListener('click', () => {
     vsEasyBot = !vsEasyBot;
@@ -196,7 +213,7 @@ function create() {
   });
 }
 
-function update() { }
+function update() {}
 // ----------------------------------------------------------------------------
 
 // Draw the game board
@@ -383,9 +400,6 @@ function movePiece(piece, moveX, moveY) {
     // https://rexrainbow.github.io/phaser3-rex-notes/docs/site/ease-function/
     ease: 'Power3',
   });
-
-
-  // Play move sound effect
   piece.sprite.scene.sound.play('slide');
   console.log("Current board state:", getBoardState());
 }
@@ -397,6 +411,7 @@ function checkGameOver() {
 
   if (redPieces.length === 0) {
     gameOver = true;
+    stopPlayerTimer();
     const gameOverPrompts = document.getElementById('gameOverPrompts')
     const gameOverMessage = document.getElementById('gameOverMessage');
     gameOverPrompts.classList.add('show');
@@ -407,6 +422,7 @@ function checkGameOver() {
     document.getElementById('forfeitBtn').style.display = 'none';
   } else if (blackPieces.length === 0) {
     gameOver = true;
+    stopPlayerTimer();
     const gameOverPrompts = document.getElementById('gameOverPrompts')
     const gameOverMessage = document.getElementById('gameOverMessage');
     gameOverPrompts.classList.add('show');
@@ -424,7 +440,8 @@ function getPiece(x, y) {
 }
 
 // end the turn
-function endTurn(scene) {
+function endTurn() {
+  stopPlayerTimer(); // stop current timer
   // remove the selected piece and its highlight
   if (selectedPiece) {
     selectedPiece.sprite.setStrokeStyle();
@@ -433,6 +450,7 @@ function endTurn(scene) {
 
   // switch between red and black player turn
   currentPlayer = currentPlayer === COLORS.red ? COLORS.black : COLORS.red;
+  startPlayerTimer(); // start next player’s timer
   // remove the highlight after a move is made
   clearHighlightedTiles();
 }
@@ -809,3 +827,73 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
+
+// functions for the timers
+function startPlayerTimer() {
+  // stop the current running timer
+  stopPlayerTimer();
+
+  // https://stackoverflow.com/questions/5978519/how-can-i-use-setinterval-and-clearinterval
+  activeTimer = setInterval(() => {
+    if (currentPlayer === COLORS.red) {
+      redTime--; // subtract 1 second from red's timer
+      // Black wins if red runs out of time
+      if (redTime <= 0) {
+        endGameOnTimeout(COLORS.black);
+      }
+    } else {
+      blackTime--; // subtract 1 second from black's timer
+      // Red wins if black runs out of time
+      if (blackTime <= 0) {
+        endGameOnTimeout(COLORS.red);
+      }
+    }
+    // update the time
+    updateTimerDisplay();
+  }, 1000); // function runs every 1000ms, aka 1 second
+}
+
+function stopPlayerTimer() {
+  if (activeTimer) {
+    // stop the currently running timer
+    clearInterval(activeTimer);
+    // reset timer ref to null
+    activeTimer = null;
+  }
+}
+
+function updateTimerDisplay() {
+  // get the HTML elements
+  const redDisplay = document.getElementById('red-timer');
+  const blackDisplay = document.getElementById('black-timer');
+
+  // change format to mm:ss
+  // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/padStart
+  const redMin = Math.floor(redTime / 60);
+  const redSec = String(redTime % 60).padStart(2, '0');
+  const blackMin = Math.floor(blackTime / 60);
+  const blackSec = String(blackTime % 60).padStart(2, '0');
+
+  // update the innerHTML
+  redDisplay.textContent = `Red: ${redMin}:${redSec}`;
+  blackDisplay.textContent = `Black: ${blackMin}:${blackSec}`;
+}
+
+function endGameOnTimeout(winnerColor) {
+  stopPlayerTimer(); // stop the timer so that it doesn't go into the negatives
+  gameOver = true;
+
+  const message = document.getElementById('gameOverMessage');
+  const gameOverPrompts = document.getElementById('gameOverPrompts');
+  const winner = winnerColor === COLORS.red ? 'Red' : 'Black';
+
+  // Show message
+  message.textContent = `${winner === 'Red' ? 'Black' : 'Red'} ran out of time! ${winner} wins!`;
+  message.classList.add('show');
+  gameOverPrompts.classList.add('show');
+
+  // Show "play again" option
+  document.getElementById('playAgainPrompt').style.display = 'block';
+  document.getElementById('drawBtn').style.display = 'none';
+  document.getElementById('forfeitBtn').style.display = 'none';
+}
