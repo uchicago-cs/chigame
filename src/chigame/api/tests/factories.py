@@ -198,3 +198,46 @@ class LiveChatFactory(factory.django.DjangoModelFactory):
         if extracted:
             for user in extracted:
                 LiveChatUser.objects.create(user=user, live_chat=self)
+
+
+class GuideFactory(DjangoModelFactory):
+    class Meta:
+        model = Guide
+
+    author = factory.SubFactory(UserFactory)
+    game_id = factory.SubFactory(GameFactory)
+    content = factory.Faker("paragraph")
+    recent_upload = factory.LazyFunction(timezone.now)
+    status = Guide.GuideStatus.PENDING
+
+    @factory.post_generation
+    def likes(self, create, extracted, **kwargs):
+        if not create or not extracted:
+            return
+        for user in extracted:
+            self.likes.add(user)
+
+    @factory.post_generation
+    def favorites(self, create, extracted, **kwargs):
+        if not create or not extracted:
+            return
+        for user in extracted:
+            self.favorites.add(user)
+
+class ReviewFeedbackFactory(DjangoModelFactory):
+    class Meta:
+        model = ReviewFeedback
+
+    reviewer = factory.SubFactory(UserFactory)
+    comment = factory.Faker("sentence")
+    guide_id = factory.SubFactory(GuideFactory)
+    status = Guide.GuideStatus.ACCEPTED
+    timestamp = factory.LazyFunction(timezone.now)
+    seen = False
+
+class GeneralFeedbackFactory(DjangoModelFactory):
+    class Meta:
+        model = GeneralFeedback
+
+    feedback = factory.Faker("sentence")
+    created_at = factory.LazyFunction(timezone.now)
