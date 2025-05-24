@@ -14,6 +14,13 @@
   };
 
   document.querySelector("#id_message_send_input").focus();
+  document.getElementById("cancel-reply").addEventListener("click", () => {
+    replyToMessageId = null;
+    replyToUsername = null;
+    replyToContent = null;
+    document.getElementById('replying-to-preview').classList.add('d-none');
+  });
+
   document.querySelector("#id_message_send_input").onkeyup = function(e) {
     if (e.key === "Enter") {
       document.querySelector("#id_message_send_button").click();
@@ -28,9 +35,25 @@
       JSON.stringify({
         message: messageInput,
         user_id: "{{ request.user.id }}",
+        reply_to: replyToMessageId,
       })
     );
+
+    replyToMessageId = null;
+    replyToUsername = null;
+    replyToContent = null;
+
+    messageInput = "";
+    document.getElementById("replying-to-preview").classList.add("d-none");
   };
+
+  function escapeHTML(str) {
+    return str
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
 
   /**
    * This function is called when a message is received from the server.
@@ -47,12 +70,60 @@
 
     // Create message container
     const messageContainer = document.createElement("div");
-    messageContainer.className = "mb-3 align-self-end";
+    messageContainer.className = `mb-3 ${
+      data.user_id === "{{ request.user.id }}"
+        ? "align-self-end"
+        : "align-self-start"
+    }`;
+    messageContainer.setAttribute("data-message-id", data.message_id);
+    const escapedUsername = escapeHTML(data.username);
+    const escapedMessage = escapeHTML(data.message);
+    messageContainer.setAttribute("oncontextmenu", `showContextMenu(event, ${data.message_id}, '${escapedUsername}', '${escapedMessage}'); return false;`);
+    const escapeHtml = (str) =>
+      str.replace(
+        /[&<>'"]/g,
+        (char) =>
+        ({
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          "'": "&#39;",
+          '"': "&quot;",
+        } [char])
+      );
 
+    const escapedUsername = escapeHtml(data.username);
+    const escapedMessage = escapeHtml(data.message);
+    messageContainer.setAttribute(
+      "oncontextmenu",
+      `showContextMenu(event, ${data.message_id}, '${escapedUsername}', '${escapedMessage}'); return false;`
+    );
     // Create message bubble
     const messageBubble = document.createElement("div");
-    messageBubble.className = "bg-success-subtle rounded p-2 shadow-sm";
+    messageBubble.className = `${
+      data.user_id === "{{ request.user.id }}"
+        ? "bg-success-subtle"
+        : "bg-white"
+    } rounded p-2 shadow-sm`;
     messageBubble.style.maxWidth = "80%";
+
+    // Add reply preview if this is a reply
+    if (data.reply_to) {
+      const replyPreview = document.createElement("div");
+      replyPreview.className = "message-reply";
+
+      const replySender = document.createElement("div");
+      replySender.className = "message-reply__sender";
+      replySender.textContent = data.reply_to_username;
+
+      const replyContent = document.createElement("div");
+      replyContent.className = "message-reply__content";
+      replyContent.textContent = data.reply_to_content;
+
+      replyPreview.appendChild(replySender);
+      replyPreview.appendChild(replyContent);
+      messageBubble.appendChild(replyPreview);
+    }
 
     // Create message sender
     const sender = document.createElement("div");
@@ -68,8 +139,8 @@
     const timestamp = document.createElement("div");
     timestamp.className = "text-end text-muted small mt-1";
     timestamp.textContent = new Date().toLocaleTimeString([], {
-      hour: '2-digit',
-      minute: '2-digit'
+      hour: "2-digit",
+      minute: "2-digit",
     });
 
     // Assemble message
@@ -112,15 +183,21 @@
 
       // Show collapse button only in floating mode
       if (chatContainer.classList.contains("floating-chat")) {
+        collapseButton.classList.remove("d-none");
+        collapseButton.classList.remove("d-none");
+      } else {
+        collapseButton.classList.add("d-none");
+
         if (collapseButton) {
           collapseButton.classList.remove("d-none");
         }
-      } else {
-        if (collapseButton) {
-          collapseButton.classList.add("d-none");
-        }
-        chatContainer.classList.remove("collapsed-chat");
       }
+      if (collapseButton) {
+        collapseButton.classList.add("d-none");
+      }
+
+      chatContainer.classList.remove("collapsed-chat");
+
     });
   }
 </script>
