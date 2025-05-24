@@ -599,31 +599,6 @@ class IFGameCreateView(UserPassesTestMixin, CreateView):
         return context
 
 
-class UploadFileView(View):
-    def post(self, request, pk=None):
-        uploaded_file = request.FILES.get("uploaded_file")
-
-        if uploaded_file:
-            # Save the file to twine_games/
-            fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, "twine_games"))
-            safe_filename = uploaded_file.name.replace(" ", "_")
-            filename = fs.save(safe_filename, uploaded_file)
-
-            # Create a basic Game instance
-            game = Game.objects.create(
-                name=uploaded_file.name.replace(".html", ""),
-                description="Uploaded Twine game",
-                min_players=1,
-                max_players=1,
-                complexity=1,
-                twine_file=f"twine_games/{filename}",
-            )
-
-            messages.success(request, f"Game '{game.name}' uploaded successfully!")
-            return redirect("game-detail", pk=game.pk)
-
-        messages.error(request, "No file selected.")
-        return redirect("interactive-fiction")
 
 
 # =============== Tournaments Views ===============
