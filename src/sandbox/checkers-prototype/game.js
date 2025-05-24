@@ -879,16 +879,18 @@ function updateTimerDisplay() {
   blackDisplay.textContent = `Black: ${blackMin}:${blackSec}`;
 }
 
-// end the gamer if either player runs out of time
 function endGameOnTimeout(winnerColor) {
   stopPlayerTimer(); // stop the timer so that it doesn't go into the negatives
   gameOver = true;
 
-  // winner message
   const message = document.getElementById('gameOverMessage');
+  const gameOverPrompts = document.getElementById('gameOverPrompts');
   const winner = winnerColor === COLORS.red ? 'Red' : 'Black';
+
+  // Show message
   message.textContent = `${winner === 'Red' ? 'Black' : 'Red'} ran out of time! ${winner} wins!`;
   message.classList.add('show');
+  gameOverPrompts.classList.add('show');
 
   // Show "play again" option
   document.getElementById('playAgainPrompt').style.display = 'block';
