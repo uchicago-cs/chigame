@@ -5,6 +5,7 @@ from django.utils import timezone
 from factory import Faker, Iterator, LazyAttribute, LazyFunction, Sequence, SubFactory, post_generation
 from factory.django import DjangoModelFactory
 
+from chigame.achievements.models import Achievement
 from chigame.chat.models import LiveChat, LiveChatUser
 from chigame.games.models import Category, Chat, Feedback, Game, Lobby, Match, Mechanic, Review, Tournament
 from chigame.users.models import User
@@ -183,6 +184,18 @@ class ReviewFactory(factory.django.DjangoModelFactory):
     is_public = True
     user = factory.SubFactory(UserFactory)
     game = factory.SubFactory(GameFactory)
+
+
+class AchievementFactory(DjangoModelFactory):
+    class Meta:
+        model = Achievement
+
+    name = Sequence(lambda n: f"Achievement {n}")
+    spoiler = Faker("boolean")
+    description = Faker("text", max_nb_chars=200)
+    rarity = Faker("pyint", min_value=1, max_value=4)
+    threshold = Faker("pydecimal", left_digits=1, right_digits=1, min_value=1)
+    game = SubFactory(GameFactory)
 
 
 class LiveChatFactory(factory.django.DjangoModelFactory):
