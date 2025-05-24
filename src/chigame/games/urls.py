@@ -67,6 +67,12 @@ urlpatterns = [
     path("checkers/<int:pk>/", views.checkers_game_view, name="checkers-game"),
     path("checkers/<int:board_id>/update/", views.checkers_game_update_board_state, name="update_board_state"),
     path("checkers/<int:board_id>/state/", views.checkers_game_get_board_state, name="checkers-get-state"),
+    # tournament recommendations
+    path(
+        "tournaments/<int:tournament_id>/recommendations/",
+        views.get_tournament_player_recommendations,
+        name="tournament-recommendations",
+    ),
 ]
 # for an uploaded twine file this makes the files accessible at a url
 if settings.DEBUG:
