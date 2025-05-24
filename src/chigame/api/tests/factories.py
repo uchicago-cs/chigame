@@ -6,6 +6,7 @@ from factory import Faker, Iterator, LazyAttribute, LazyFunction, Sequence, SubF
 from factory.django import DjangoModelFactory
 
 from chigame.achievements.models import Achievement, UserAchievement
+from chigame.chat.models import LiveChat, LiveChatUser
 from chigame.games.models import Category, Chat, Feedback, Game, Lobby, Match, Mechanic, Review, Tournament
 from chigame.users.models import User
 
@@ -184,7 +185,6 @@ class ReviewFactory(factory.django.DjangoModelFactory):
     user = factory.SubFactory(UserFactory)
     game = factory.SubFactory(GameFactory)
 
-
 class AchievementFactory(DjangoModelFactory):
     class Meta:
         model = Achievement
@@ -207,3 +207,17 @@ class UserAchievementFactory(factory.django.DjangoModelFactory):
     progress = Faker("pydecimal", left_digits=1, right_digits=1, min_value=1)
     date_earned = Faker("date_time_this_year")
     last_updated = Faker("date_time_this_year")
+
+class LiveChatFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = LiveChat
+
+    name = factory.Sequence(lambda n: f"LiveChat {n}")
+
+    @factory.post_generation
+    def users(self, create, extracted, **kwargs):
+        if not create:
+            return
+        if extracted:
+            for user in extracted:
+                LiveChatUser.objects.create(user=user, live_chat=self)
