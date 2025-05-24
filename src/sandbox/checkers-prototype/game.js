@@ -48,7 +48,7 @@ let gameOver = false;
 let drawOffered = false;
 let drawOfferedBy = null;
 // Initial time for each player
-let redTime = 300;
+let redTime = 5;
 let blackTime = 300;
 // this will determine whose timer to decrement
 let activeTimer = null;
@@ -889,8 +889,10 @@ function endGameOnTimeout(winnerColor) {
   gameOver = true;
 
   // winner message
+  const gameOverPrompts = document.getElementById('gameOverPrompts')
   const message = document.getElementById('gameOverMessage');
   const winner = winnerColor === COLORS.red ? 'Red' : 'Black';
+  gameOverPrompts.classList.add('show');
   message.textContent = `${winner === 'Red' ? 'Black' : 'Red'} ran out of time! ${winner} wins!`;
   message.classList.add('show');
 
