@@ -79,3 +79,8 @@ def select_game_view_metric(request):
 
 # def select_region(request):
 #     pass -- from django.urls import path
+
+
+def bar_chart(request, game_id):
+    return render(request, "leaderboards/bar_chart.html")
+

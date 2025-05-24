@@ -1,8 +1,9 @@
 from django.urls import path
 
-from .views import landing_page_view, leaderboard_view
+from . import views
 
 urlpatterns = [
-    path("", landing_page_view, name="leaderboards_landing"),
-    path("<int:game_id>/", leaderboard_view, name="leaderboard_view"),
+    path("", views.landing_page_view, name="leaderboards_landing"),
+    path("<int:game_id>/", views.leaderboard_view, name="leaderboard_view"),
+    path("bar-chart/<int:game_id>/", views.bar_chart, name="bar_chart"),
 ]
