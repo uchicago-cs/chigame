@@ -24,7 +24,7 @@ from .models import (
     NotificationLabel,
     UserProfile,
 )
-from .tables import FriendsTable, UserTable
+from .tables import UserTable
 
 User = get_user_model()
 
@@ -175,6 +175,10 @@ def user_profile_detail_view(request, pk):
     viewing another profile, will check friendship status and display
     pending friend requests between the current user and the user
     being viewed.
+
+    IMPORTANT NOTE TO DEVELOPERS: Profile url takes user pk, not profile pk.
+    It might not necessarily be the case that providing profile pk will get you
+    the profile of the user you want.
 
     Args:
         request (HttpRequest)
@@ -410,7 +414,7 @@ def user_search_results(request):
     context = {"found": False, "query_type": "Users"}
     if query_input:
         profiles_list = UserProfile.objects.filter(
-            Q(user__email__icontains=query_input) | Q(user__name__icontains=query_input)
+            Q(user__username__icontains=query_input) | Q(user__name__icontains=query_input)
         )
         if profiles_list.count() > 0:
             context["found"] = True
@@ -545,6 +549,7 @@ def friend_list_view(request, pk):
     # render the friends table (keeping for backward compatibility)
     table = FriendsTable(friends)
     context = {"table": table, "friends": friends}
+
     # if the target user is the current user, render the friends list
     if pk == user.id:
         return render(request, "users/user_friend_list.html", context)
