@@ -239,16 +239,16 @@ canvas {
     outline-offset: -3px;
 }
 
-#captured-pieces {
+#game-information {
     position: fixed;
     right: 0px;
     top: 50%;
     transform: translate(0, -50%);
-    min-width: 100px;
-    max-width: 150px;
+    width: 10rem;
     display: flex;
+    flex-direction: column;
     justify-content: flex-start;
-    align-items: center;
+    align-items: left;
     padding: 1rem;
     background-color: #a67c52;
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
