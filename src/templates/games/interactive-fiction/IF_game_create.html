@@ -289,6 +289,37 @@
 
         });
       });
+
+      const previewBtn = document.getElementById("preview_game");
+
+      if (previewBtn) {
+        previewBtn.addEventListener("click", function() {
+          const fileInput = document.getElementById("myFile");
+          const file = fileInput.files[0];
+
+          if (!file || !file.name.toLowerCase().endsWith(".html")) {
+            alert("Please select a valid .html game file first.");
+            return;
+          }
+
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            const htmlContent = e.target.result;
+
+            const previewWindow = window.open("", "_blank");
+            if (!previewWindow) {
+              alert("Popup blocked. Please allow popups for this site.");
+              return;
+            }
+
+            // Ensure the content gets fully rendered
+            previewWindow.document.open();
+            previewWindow.document.write(htmlContent);
+            previewWindow.document.close();
+          };
+          reader.readAsText(file);
+        });
+      }
     });
   </script>
   <h1>Create Interactive Fiction Game</h1>
@@ -449,7 +480,6 @@
            class="if-file-input"
            accept=".html" />
     <button type="submit" class="btn-success">Upload Game</button>
+    <button type="button" id="preview_game" class="btn-secondary">Preview Game</button>
   </form>
-  <h3>Publish Story</h3>
-  <a href="{{ uploaded_file_url }}" target="_blank" class="btn-success">Play Uploaded Game</a>
 {% endblock content %}
