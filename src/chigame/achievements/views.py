@@ -38,6 +38,7 @@ def user_achievements(request, pk=None):
     else:
         target_user = request.user
         viewing_own_profile = True
+        recent_achievements = get_recent_achievements(target_user.pk, limit=5)
     # Get all games
     games = Game.objects.all()
 
