@@ -16,7 +16,7 @@ from django.core.files.storage import FileSystemStorage
 from django.core.paginator import Paginator
 from django.db.models import Avg, Case, Count, ExpressionWrapper, F, FloatField, Q, Value, When
 from django.db.models.functions import Lower
-from django.forms import ValidationError
+from django.forms import ValidationError, ReviewForm
 from django.http import HttpResponseForbidden, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
@@ -561,25 +561,35 @@ def search_results(request):
 
 
 # =============== Interactive Fiction Views ===============
-class InteractiveFictionView(TemplateView):
+
+
+class InteractiveFictionDetailView(LoginRequiredMixin, FormMixin, DetailView):
+    model = Game
     template_name = "games/interactive-fiction/IF_game_detail.html"
+    context_object_name = "game"
+    form_class = ReviewForm
+
+    def get_success_url(self):
+        return reverse("interactive-fiction-detail", kwargs={"pk": self.object.pk})
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
-        pk = self.kwargs.get("pk")
-
-        try:
-            game = Game.objects.get(pk=pk)
-        except Game.DoesNotExist:
-            game = None
-
-        context["game"] = game
-
-        if game.twine_file:
-            context["uploaded_file_url"] = game.twine_file.url
-
+        context["form"] = self.get_form()
+        context["reviews"] = Review.objects.filter(game=self.object)
+        if self.object.twine_file:
+            context["uploaded_file_url"] = self.object.twine_file.url
         return context
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        form = self.get_form()
+        if form.is_valid():
+            review = form.save(commit=False)
+            review.user = request.user
+            review.game = self.object
+            review.save()
+            return HttpResponseRedirect(self.get_success_url())
+        return self.form_invalid(form)
 
 
 class IFGameCreateView(CreateView):
