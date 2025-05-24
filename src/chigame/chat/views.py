@@ -106,7 +106,7 @@ def react_to_message(request, message_id):
 
 
 def live_chat_preview_api(request):
-    chats = LiveChat.objects.all()  # or filter(is_public=True) if appropriate
+    chats = LiveChat.objects.filter(public=True)
     return JsonResponse(
         {
             "chats": [
