@@ -657,12 +657,12 @@ class TournamentListView(ListView):
         if self.request.user.is_staff:
             return Tournament.objects.prefetch_related("matches").all()
 
-        # If the user is authenticated but not staff, show only tournaments they are part of
-        if self.request.user.is_authenticated:
-            return Tournament.objects.prefetch_related("matches").filter(players=self.request.user)
-
-        # For unauthenticated users, show all non-archived tournaments
-        return Tournament.objects.prefetch_related("matches").filter(archived=False)
+        # For non-staff users, show only tournaments they are part of
+        return (
+            Tournament.objects.prefetch_related("matches")
+            .filter(Q(players=self.request.user) | Q(created_by=self.request.user))
+            .distinct()
+        )
 
     def get(self, request, *args, **kwargs):
         super().get(request, *args, **kwargs)
