@@ -10,6 +10,7 @@ class LiveChat(models.Model):
 
     name = models.TextField(null=False)
     users: models.ManyToManyField = models.ManyToManyField(User, through="LiveChatUser", related_name="live_chats")
+    background_image = models.ImageField(upload_to="chat_backrounds/", null=True, blank=True)
 
     def __str__(self):
         return f"LiveChat with name:'{self.name}'"

@@ -85,4 +85,14 @@
       container.scrollTop = container.scrollHeight;
     });
   };
+
+  // Handle background upload
+  const bgBtn = document.getElementById("bg-button");
+  const bgInput = document.getElementById("bg-input");
+  const bgForm = document.getElementById("bg-form");
+
+  bgBtn.addEventListener("click", () => bgInput.click());
+  bgInput.addEventListener("change", () => {
+    if (bgInput.files.length) bgForm.submit();
+  });
 </script>

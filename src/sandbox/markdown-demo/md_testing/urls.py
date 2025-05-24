@@ -18,7 +18,4 @@ from django.contrib import admin
 from django.urls import path
 from md_app.views import markdown_content_view
 
-urlpatterns = [
-    path("", markdown_content_view, name="markdown"),
-    path("admin/", admin.site.urls),
-]
+urlpatterns = [path("", markdown_content_view, name="markdown"), path("admin/", admin.site.urls)]
