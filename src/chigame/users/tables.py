@@ -8,16 +8,16 @@ class FriendsTable(tables.Table):
     Table to display a user's friends in user_friend_list.html
     """
 
-    display_name = tables.Column(
+    username = tables.Column(
         verbose_name="",  # Empty string to hide the column header because it's not needed
-        accessor="userprofile.display_name",
+        accessor="username",
         linkify=("users:user-profile", {"pk": tables.A("pk")}),
     )
 
     class Meta:
         model = User
         template_name = "django_tables2/bootstrap.html"
-        fields = ["display_name"]
+        fields = ["username"]
         attrs = {
             "class": "table",
             "thead": {

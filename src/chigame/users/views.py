@@ -66,7 +66,6 @@ class BaseUserUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         response = super().form_valid(form)
         try:
             profile = self.request.user.userprofile
-            profile.display_name = self.request.POST.get("display_name", profile.display_name)
             profile.bio = self.request.POST.get("bio", profile.bio)
             profile.save()
         except UserProfile.DoesNotExist:
