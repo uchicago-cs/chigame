@@ -1847,101 +1847,74 @@ def get_tournament_player_recommendations(request, tournament_id):
     Returns a list of recommended players with their scores and reasons
     """
     try:
-        # Get the game_id from query params
         game_id = request.GET.get("game_id")
 
-        # For testing purposes, use hardcoded data from the recommendation test
-        # This ensures we always have data to display
-        response_data = [
-            {
-                "id": 201,  # rec_user1
-                "name": "rec_user1",
-                "email": "rec_user1@example.com",
-                "score": 10,
-                "reasons": ["Friend of tournament creator"],
-            },
-            {
-                "id": 206,  # rec_user6
-                "name": "rec_user6",
-                "email": "rec_user6@example.com",
-                "score": 10,
-                "reasons": [
-                    "Has experience with Ikusa",
-                    "Participated in tournaments by the same creator",
-                    "Has experience with similar tournament formats",
-                ],
-            },
-            {
-                "id": 102,  # player2
-                "name": "player2",
-                "email": "player2@example.com",
-                "score": 5,
-                "reasons": [
-                    "Participated in tournaments by the same creator",
-                    "Has experience with similar tournament formats",
-                ],
-            },
-            {
-                "id": 103,  # player3
-                "name": "player3",
-                "email": "player3@example.com",
-                "score": 5,
-                "reasons": [
-                    "Participated in tournaments by the same creator",
-                    "Has experience with similar tournament formats",
-                ],
-            },
-            {
-                "id": 104,  # player4
-                "name": "player4",
-                "email": "player4@example.com",
-                "score": 5,
-                "reasons": [
-                    "Participated in tournaments by the same creator",
-                    "Has experience with similar tournament formats",
-                ],
-            },
-        ]
+        response_data = []
 
-        # Try to use the actual recommendation service if possible
+        if not game_id:
+            return Response(response_data)
+
+        from datetime import timedelta
+
+        from django.contrib.auth import get_user_model
+        from django.utils import timezone
+
+        from chigame.games.models import Game, Tournament
+
+        User = get_user_model()
+
         try:
-            if game_id:
-                # Get the game
-                game = Game.objects.get(pk=game_id)
+            game = Game.objects.get(pk=game_id)
 
-                # Get a user to use as creator (player1 from fixtures)
-                creator = User.objects.get(pk=101)  # player1 from test fixtures
+            if request.user.is_authenticated:
+                creator = request.user
+            else:
+                # Use the first available user if not authenticated (for testing)
+                creator = User.objects.first()
 
-                # Create a temporary tournament
-                tournament = Tournament(
-                    name="Temporary Tournament",
-                    game=game,
-                    registration_start_date=timezone.now(),
-                    registration_end_date=timezone.now() + timedelta(days=7),
-                    tournament_start_date=timezone.now() + timedelta(days=8),
-                    tournament_end_date=timezone.now() + timedelta(days=9),
-                    max_players=8,
-                    created_by=creator,
+            # Create a temporary tournament that's not saved to the database
+            # This avoids issues with players list in the recommendation service
+            tournament = Tournament(
+                name="Temporary Tournament",
+                game=game,
+                registration_start_date=timezone.now(),
+                registration_end_date=timezone.now() + timedelta(days=7),
+                tournament_start_date=timezone.now() + timedelta(days=8),
+                tournament_end_date=timezone.now() + timedelta(days=9),
+                max_players=8,
+                created_by=creator,
+            )
+
+            # Import the recommendation service
+            from .recommendation import TournamentRecommendationService
+
+            # Create the service directly instead of using the helper function
+            service = TournamentRecommendationService(tournament)
+
+            # Get all users who are not already in the tournament
+            # Since this is a new tournament, this should be all users
+            all_users = User.objects.all()
+
+            # Calculate scores manually
+            recommendations = []
+            for user in all_users:
+                if user != creator:
+                    try:
+                        score, reasons = service._calculate_score(user)
+                        if score > 0:
+                            recommendations.append((user, score, reasons))
+                    except Exception:
+                        pass
+
+            recommendations.sort(key=lambda x: x[1], reverse=True)
+
+            for user, score, reasons in recommendations:
+                response_data.append(
+                    {"id": user.id, "name": user.username, "email": user.email, "score": score, "reasons": reasons}
                 )
 
-                # Import the recommendation service
-                from .recommendation import get_tournament_recommendations
-
-                # Get recommendations
-                recommendations = get_tournament_recommendations(tournament)
-
-                # Format the response data
-                dynamic_data = []
-                for user, score, reasons in recommendations:
-                    dynamic_data.append(
-                        {"id": user.id, "name": user.name, "email": user.email, "score": score, "reasons": reasons}
-                    )
-
-                # Use dynamic data if available
-                if dynamic_data:
-                    response_data = dynamic_data
         except Exception as e:
-            # Just log the error and continue with hardcoded data
+            # Log the error
             import traceback
 
             print(f"Error using recommendation service: {str(e)}")
