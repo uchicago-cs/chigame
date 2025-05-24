@@ -3,10 +3,10 @@ from typing import Any
 
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
-from factory import Faker, LazyAttribute, SubFactory, lazy_attribute, post_generation
+from factory import Faker, LazyAttribute, SubFactory, post_generation
 from factory.django import DjangoModelFactory
 
-from chigame.users.models import FriendInvitation, Notification
+from chigame.users.models import FriendInvitation, Group, GroupInvitation, Notification, UserProfile
 
 
 class UserFactory(DjangoModelFactory):
@@ -34,24 +34,23 @@ class UserFactory(DjangoModelFactory):
         django_get_or_create = ["email"]
 
 
+class UserProfileFactory(DjangoModelFactory):
+    class Meta:
+        model = UserProfile
+
+    user = SubFactory(UserFactory)
+    bio = Faker("sentence", nb_words=35)
+    date_joined = Faker("date_time_this_year")
+
+
 class FriendInvitationFactory(DjangoModelFactory):
     class Meta:
         model = FriendInvitation
 
     sender = SubFactory(UserFactory)
+    receiver = SubFactory(UserFactory)
     accepted = Faker("boolean")
     timestamp = Faker("date_time_this_year")
-
-    @lazy_attribute
-    def receiver(self):
-        return FriendInvitationFactory.get_different_user(self.sender)
-
-    @staticmethod
-    def get_different_user(sender):
-        receiver = sender
-        while receiver.pk == sender.pk:
-            receiver = UserFactory()
-        return receiver
 
 
 class BaseNotificationFactory(DjangoModelFactory):
@@ -88,3 +87,34 @@ class FriendInvitationNotificationFactory(BaseNotificationFactory):
     actor = LazyAttribute(lambda x: x.actor)
     actor_content_type = LazyAttribute(lambda x: ContentType.objects.get(model=x.actor._meta.model_name))
     actor_object_id = LazyAttribute(lambda x: x.actor.pk)
+
+
+class GroupFactory(DjangoModelFactory):
+    class Meta:
+        model = Group
+
+    name = Faker("word")
+    description = Faker("sentence", nb_words=15)
+    created_by = SubFactory(UserFactory)
+    date_created = Faker("date_time_this_year")
+
+    @post_generation
+    def members(self, create, extracted, **kwargs):
+        if not create or not extracted:
+            # Simple build, or nothing to add, do nothing.
+            return
+
+        self.members.add(*extracted)
+
+
+class GroupInvitationFactory(DjangoModelFactory):
+    class Meta:
+        model = GroupInvitation
+
+    friend_group = SubFactory(GroupFactory)
+    sender = SubFactory(UserFactory)
+    receiver = SubFactory(UserFactory)
+    accepted = Faker("boolean")
+    timestamp = Faker("date_time_this_year")
+    # is_deleted is not set by default because only one active invitation
+    # is allowed between sender and receiver

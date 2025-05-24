@@ -49,6 +49,11 @@ let highlightedTiles = [];
 let gameOver = false;
 let drawOffered = false;
 let drawOfferedBy = null;
+// Initial time for each player
+let redTime = 300;
+let blackTime = 300;
+// this will determine whose timer to decrement
+let activeTimer = null;
 
 //BOT SETTINGS
 let vsEasyBot = true;
@@ -56,13 +61,11 @@ let vsEasyBot = true;
 // ----------------------------------------------------------------------------
 
 // ---INIT FUNCTIONS-----------------------------------------------------------
-
 function preload() {
   // load in the soundeffects
   this.load.audio('slide', 'sfx/slide.mp3');
   this.load.audio('hint', 'sfx/bling.mp3');
 }
-
 
 function create() {
   // Store reference to the scene
@@ -121,6 +124,13 @@ function create() {
 
     // Repopulate the board using the stored scene reference
     populatePieces(scene);
+
+    // reset the timers
+    stopPlayerTimer();
+    redTime = 300;
+    blackTime = 300;
+    updateTimerDisplay();
+    startPlayerTimer();
   }
 
   playAgainYes.addEventListener('click', resetGame);
@@ -131,6 +141,7 @@ function create() {
   forfeitBtn.addEventListener('click', () => {
     if (!gameOver && currentPlayer === lightPiece) {
       gameOver = true;
+      stopPlayerTimer();
       gameOverPrompts.classList.add('show');
       gameOverMessage.textContent = 'Red player has forfeited! Black wins!';
       gameOverMessage.classList.add('show');
@@ -139,6 +150,7 @@ function create() {
       document.getElementById('drawBtn').style.display = 'none';
     } else if (!gameOver && currentPlayer === darkPiece) {
       gameOver = true;
+      stopPlayerTimer();
       gameOverPrompts.classList.add('show');
       gameOverMessage.textContent = 'Black player has forfeited! Red wins!';
       gameOverMessage.classList.add('show');
@@ -178,6 +190,7 @@ function create() {
     } else {
       // Accept Draw (second click)
       gameOver = true;
+      stopPlayerTimer();
       gameOverPrompts.classList.add('show');
       gameOverMessage.textContent = 'Draw accepted! Game over!';
       gameOverMessage.classList.add('show');
@@ -193,7 +206,9 @@ function create() {
       resetDrawOffer();
     }
   });
-  easyBot.textContent =  `Easy Bot: ${vsEasyBot ? 'ON' : 'OFF'}`;
+  updateTimerDisplay(); // initial display
+  startPlayerTimer(); // red starts first
+  easyBot.textContent = `Easy Bot: ${vsEasyBot ? 'ON' : 'OFF'}`;
   easyBot.addEventListener('click', () => {
     vsEasyBot = !vsEasyBot;
     easyBot.textContent = `Easy Bot: ${vsEasyBot ? 'ON' : 'OFF'}`;
@@ -374,10 +389,19 @@ function movePiece(piece, moveX, moveY) {
   // Move the piece
   piece.x = moveX;
   piece.y = moveY;
-  piece.sprite.x = MARGIN + piece.x * TILE_SIZE + TILE_SIZE / 2;
-  piece.sprite.y = MARGIN + piece.y * TILE_SIZE + TILE_SIZE / 2;
+  const newX = MARGIN + moveX * TILE_SIZE + TILE_SIZE / 2;
+  const newY = MARGIN + moveY * TILE_SIZE + TILE_SIZE / 2;
 
-  // Play move sound effect
+  // Animate the piece movement
+  checkers.scene.scenes[0].tweens.add({
+    targets: piece.sprite,
+    x: newX,
+    y: newY,
+    duration: 300, // having done some testing and playing, I think 300 ms is the best
+    // https://docs.phaser.io/phaser/concepts/tweens
+    // https://rexrainbow.github.io/phaser3-rex-notes/docs/site/ease-function/
+    ease: 'Power3',
+  });
   piece.sprite.scene.sound.play('slide');
   console.log("Current board state:", getBoardState());
 }
@@ -389,6 +413,7 @@ function checkGameOver() {
 
   if (redPieces.length === 0) {
     gameOver = true;
+    stopPlayerTimer();
     const gameOverPrompts = document.getElementById('gameOverPrompts')
     const gameOverMessage = document.getElementById('gameOverMessage');
     gameOverPrompts.classList.add('show');
@@ -399,6 +424,7 @@ function checkGameOver() {
     document.getElementById('forfeitBtn').style.display = 'none';
   } else if (blackPieces.length === 0) {
     gameOver = true;
+    stopPlayerTimer();
     const gameOverPrompts = document.getElementById('gameOverPrompts')
     const gameOverMessage = document.getElementById('gameOverMessage');
     gameOverPrompts.classList.add('show');
@@ -416,7 +442,8 @@ function getPiece(x, y) {
 }
 
 // end the turn
-function endTurn(scene) {
+function endTurn() {
+  stopPlayerTimer(); // stop current timer
   // remove the selected piece and its highlight
   if (selectedPiece) {
     selectedPiece.sprite.setStrokeStyle();
@@ -425,6 +452,7 @@ function endTurn(scene) {
 
   // switch between red and black player turn
   currentPlayer = currentPlayer === lightPiece ? darkPiece : lightPiece;
+  startPlayerTimer(); // start next player’s timer
   // remove the highlight after a move is made
   clearHighlightedTiles();
 }
@@ -703,58 +731,59 @@ document.addEventListener('DOMContentLoaded', () => {
 
 //return arr of legal moves for given player
 function getLegalMoves(color) {
-    //arr to store legal moves
-    const moves = [];
-    //moving up or down board?
-    const direction = color === lightPiece ? -1 : 1;
+  //arr to store legal moves
+  const moves = [];
+  //moving up or down board?
+  const direction = color === lightPiece ? -1 : 1;
 
-    //loop thru pieces
-    pieces.forEach(piece => {
-      if (piece.color !== color) return; //return for other p;layer peices
-      // simple moves
-      [-1, 1].forEach(diagonal => { //try L and R diagonals
-        const col = piece.x + diagonal; //new col
-        const row = piece.y + direction; //new row
-        if ( //check if mvoe is valid
-          col >= 0 && col < BOARD_SIZE && row >= 0 && row < BOARD_SIZE &&
-          !getPiece(col, row) && isValidMove(piece, col, row)) {
-          moves.push({ piece, x: col, y: row }); //add move to arr
-        }
-      });
-      // jump moves for captures
-      [-2, 2].forEach(jump => {
-        const jump_col = piece.x + jump;
-        const jump_row = piece.y + 2 * direction;
-        if (
-          jump_col >= 0 && jump_col < BOARD_SIZE && jump_row >= 0 && jump_row < BOARD_SIZE &&
-          !getPiece(jump_col, jump_row) && isValidMove(piece, jump_col, jump_row)) {
-          moves.push({ piece, x: jump_col, y: jump_row });
-        }
-      });
+
+  //loop thru pieces
+  pieces.forEach(piece => {
+    if (piece.color !== color) return; //return for other p;layer peices
+    // simple moves
+    [-1, 1].forEach(diagonal => { //try L and R diagonals
+      const col = piece.x + diagonal; //new col
+      const row = piece.y + direction; //new row
+      if ( //check if mvoe is valid
+        col >= 0 && col < BOARD_SIZE && row >= 0 && row < BOARD_SIZE &&
+        !getPiece(col, row) && isValidMove(piece, col, row)) {
+        moves.push({ piece, x: col, y: row }); //add move to arr
+      }
     });
+    // jump moves for captures
+    [-2, 2].forEach(jump => {
+      const jump_col = piece.x + jump;
+      const jump_row = piece.y + 2 * direction;
+      if (
+        jump_col >= 0 && jump_col < BOARD_SIZE && jump_row >= 0 && jump_row < BOARD_SIZE &&
+        !getPiece(jump_col, jump_row) && isValidMove(piece, jump_col, jump_row)) {
+        moves.push({ piece, x: jump_col, y: jump_row });
+      }
+    });
+  });
 
-    return moves;
-  }
+  return moves;
+}
 
 
-  // Easy bot: pick a random legal move and play it
+// Easy bot: pick a random legal move and play it
 function easyBot(scene) {
-    //get legal moves
-    //check if game over
-    //it not do a random legal move
-    const legalMoves = getLegalMoves(darkPiece);
-    //if No legal moves
-    if (legalMoves.length === 0) {
-      console.log('Cant move');
-      return;
-    }
-    //get random move
-    const move = Phaser.Utils.Array.GetRandom(legalMoves);
-    //execute move
-    movePiece(move.piece, move.x, move.y);
-    // end bot's turn
-    endTurn(scene);
+  //get legal moves
+  //check if game over
+  //it not do a random legal move
+  const legalMoves = getLegalMoves(darkPiece);
+  //if No legal moves
+  if (legalMoves.length === 0) {
+    console.log('Cant move');
+    return;
   }
+  //get random move
+  const move = Phaser.Utils.Array.GetRandom(legalMoves);
+  //execute move
+  movePiece(move.piece, move.x, move.y);
+  // end bot's turn
+  endTurn(scene);
+}
 
 // Coordinates overlay button
 document.addEventListener('DOMContentLoaded', () => {
@@ -812,3 +841,73 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
+
+// functions for the timers
+function startPlayerTimer() {
+  // stop the current running timer
+  stopPlayerTimer();
+
+  // https://stackoverflow.com/questions/5978519/how-can-i-use-setinterval-and-clearinterval
+  activeTimer = setInterval(() => {
+    if (currentPlayer === COLORS.red) {
+      redTime--; // subtract 1 second from red's timer
+      // Black wins if red runs out of time
+      if (redTime <= 0) {
+        endGameOnTimeout(COLORS.black);
+      }
+    } else {
+      blackTime--; // subtract 1 second from black's timer
+      // Red wins if black runs out of time
+      if (blackTime <= 0) {
+        endGameOnTimeout(COLORS.red);
+      }
+    }
+    // update the time
+    updateTimerDisplay();
+  }, 1000); // function runs every 1000ms, aka 1 second
+}
+
+function stopPlayerTimer() {
+  if (activeTimer) {
+    // stop the currently running timer
+    clearInterval(activeTimer);
+    // reset timer ref to null
+    activeTimer = null;
+  }
+}
+
+function updateTimerDisplay() {
+  // get the HTML elements
+  const redDisplay = document.getElementById('red-timer');
+  const blackDisplay = document.getElementById('black-timer');
+
+  // change format to mm:ss
+  // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/padStart
+  const redMin = Math.floor(redTime / 60);
+  const redSec = String(redTime % 60).padStart(2, '0');
+  const blackMin = Math.floor(blackTime / 60);
+  const blackSec = String(blackTime % 60).padStart(2, '0');
+
+  // update the innerHTML
+  redDisplay.textContent = `Red: ${redMin}:${redSec}`;
+  blackDisplay.textContent = `Black: ${blackMin}:${blackSec}`;
+}
+
+function endGameOnTimeout(winnerColor) {
+  stopPlayerTimer(); // stop the timer so that it doesn't go into the negatives
+  gameOver = true;
+
+  const message = document.getElementById('gameOverMessage');
+  const gameOverPrompts = document.getElementById('gameOverPrompts');
+  const winner = winnerColor === COLORS.red ? 'Red' : 'Black';
+
+  // Show message
+  message.textContent = `${winner === 'Red' ? 'Black' : 'Red'} ran out of time! ${winner} wins!`;
+  message.classList.add('show');
+  gameOverPrompts.classList.add('show');
+
+  // Show "play again" option
+  document.getElementById('playAgainPrompt').style.display = 'block';
+  document.getElementById('drawBtn').style.display = 'none';
+  document.getElementById('forfeitBtn').style.display = 'none';
+}
