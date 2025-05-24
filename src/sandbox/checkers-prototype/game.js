@@ -1,8 +1,13 @@
 // ---GAME CONSTANTS----------------------------------------------------------------
+const START_WIDTH = 650;
+const START_HEIGHT = 650;
+const START_MARGIN = 10;
+const START_HIGHLIHGHT_SIZE = 3;
+
 const config = {
   type: Phaser.AUTO,
-  width: 650,
-  height: 650,
+  width: START_WIDTH,
+  height: START_HEIGHT,
   parent: 'game',
   scene: {
     preload,
@@ -14,13 +19,16 @@ const config = {
 const checkers = new Phaser.Game(config);
 
 // 8x8 board
-const MARGIN = 10;
 const BOARD_SIZE = 8;
+let margin = START_MARGIN;
+
 /*
 I made the canvas background color black. Therefore, by making the game board
 smaller to account for the margin, it'll appear as if there's a black border.
 */
-const TILE_SIZE = (config.width - 2 * MARGIN) / BOARD_SIZE;
+let tiles = [];
+let tile_size = (config.width - 2 * START_MARGIN) / BOARD_SIZE;
+
 // colors we will use in this game
 const COLORS = {
   light_brown: 0xefbb74,
@@ -31,22 +39,29 @@ const COLORS = {
   colorblind_blue: 0x1e88e5,
   colorblind_orange: 0xffc107,
 };
+let lightPiece = COLORS.red;
+let darkPiece = COLORS.black;
 let pieces = [];
 let selectedPiece = null;
-let currentPlayer = COLORS.red; // red starts first
+let currentPlayer = lightPiece; // red starts first
 let redCaptured = 0; // Number of pieces that red has captured
 let blackCaptured = 0; // Number of pieces that black has captured
 // change to adjust the piece size, any value less than 2 would make the pieces
 // bigger than the tiles
 const RADIUS_SCALE_FACTOR = 2.5;
 // selected piece highlight stroke width
-const HIGHLIGHT_SIZE = 3;
+let highlight_size = START_HIGHLIHGHT_SIZE;
 
 // an array to keep track of the highlighted tiles (valid moves)
 let highlightedTiles = [];
 let gameOver = false;
 let drawOffered = false;
 let drawOfferedBy = null;
+// Initial time for each player
+let redTime = 300;
+let blackTime = 300;
+// this will determine whose timer to decrement
+let activeTimer = null;
 
 //BOT SETTINGS
 let vsEasyBot = true;
@@ -98,7 +113,7 @@ function create() {
     // Reset game state
     gameOver = false;
     selectedPiece = null;
-    currentPlayer = COLORS.red;
+    currentPlayer = lightPiece;
     drawOffered = false;
     drawOfferedBy = null;
     redCaptured = 0;
@@ -117,6 +132,13 @@ function create() {
 
     // Repopulate the board using the stored scene reference
     populatePieces(scene);
+
+    // reset the timers
+    stopPlayerTimer();
+    redTime = 300;
+    blackTime = 300;
+    updateTimerDisplay();
+    startPlayerTimer();
   }
 
   playAgainYes.addEventListener('click', resetGame);
@@ -125,16 +147,18 @@ function create() {
   });
 
   forfeitBtn.addEventListener('click', () => {
-    if (!gameOver && currentPlayer === COLORS.red) {
+    if (!gameOver && currentPlayer === lightPiece) {
       gameOver = true;
+      stopPlayerTimer();
       gameOverPrompts.classList.add('show');
       gameOverMessage.textContent = 'Red player has forfeited! Black wins!';
       gameOverMessage.classList.add('show');
       document.getElementById('playAgainPrompt').style.display = 'flex';
       document.getElementById('forfeitBtn').style.display = 'none';
       document.getElementById('drawBtn').style.display = 'none';
-    } else if (!gameOver && currentPlayer === COLORS.black) {
+    } else if (!gameOver && currentPlayer === darkPiece) {
       gameOver = true;
+      stopPlayerTimer();
       gameOverPrompts.classList.add('show');
       gameOverMessage.textContent = 'Black player has forfeited! Red wins!';
       gameOverMessage.classList.add('show');
@@ -160,7 +184,7 @@ function create() {
     if (!drawOffered) {
       drawOffered = true;
       drawOfferedBy = currentPlayer;
-      if (currentPlayer === COLORS.red) {
+      if (currentPlayer === lightPiece) {
         gameOverMessage.textContent =
           'Red player has offered a draw. Black player, please accept or decline.';
       } else {
@@ -174,6 +198,7 @@ function create() {
     } else {
       // Accept Draw (second click)
       gameOver = true;
+      stopPlayerTimer();
       gameOverPrompts.classList.add('show');
       gameOverMessage.textContent = 'Draw accepted! Game over!';
       gameOverMessage.classList.add('show');
@@ -189,6 +214,8 @@ function create() {
       resetDrawOffer();
     }
   });
+  updateTimerDisplay(); // initial display
+  startPlayerTimer(); // red starts first
   easyBot.textContent = `Easy Bot: ${vsEasyBot ? 'ON' : 'OFF'}`;
   easyBot.addEventListener('click', () => {
     vsEasyBot = !vsEasyBot;
@@ -196,7 +223,7 @@ function create() {
   });
 }
 
-function update() { }
+function update() {}
 // ----------------------------------------------------------------------------
 
 // Draw the game board
@@ -208,15 +235,15 @@ function drawBoard(scene) {
       let tile_color = (x + y) % 2 === 0 ? COLORS.light_brown : COLORS.dark_brown;
 
       // draw tiles
-      const tile = scene.add
+      let tile = scene.add
         .rectangle(
           // phaser actually positions shape based on the center, not top-left
           // margin + x returns the top-left location of each tile
           // tile size / 2 returns the center of the tile
-          MARGIN + x * TILE_SIZE + TILE_SIZE / 2, // x position
-          MARGIN + y * TILE_SIZE + TILE_SIZE / 2, // y position
-          TILE_SIZE, // width
-          TILE_SIZE, // height
+          margin + x * tile_size + tile_size / 2, // x position
+          margin + y * tile_size + tile_size / 2, // y position
+          tile_size, // width
+          tile_size, // height
           tile_color
         )
         // make the tiles selectable so players can click on them to move pieces
@@ -238,22 +265,23 @@ function drawBoard(scene) {
           endTurn(scene);
         }
       });
+      tiles.push(tile);
     }
   }
 }
 
 function createPiece(x, y, color, scene) {
   // create a piece
-  const piece = {
+  let piece = {
     x,
     y,
     color,
     sprite: scene.add.circle(
       // same center position as when we create the board tiles/squares
-      MARGIN + x * TILE_SIZE + TILE_SIZE / 2,
-      MARGIN + y * TILE_SIZE + TILE_SIZE / 2,
+      margin + x * tile_size + tile_size / 2,
+      margin + y * tile_size + tile_size / 2,
       // circle radius
-      TILE_SIZE / RADIUS_SCALE_FACTOR,
+      tile_size / RADIUS_SCALE_FACTOR,
       color
     ),
   };
@@ -280,7 +308,7 @@ function createPiece(x, y, color, scene) {
 
       // also highlight the tiles the piece can move to
       selectedPiece = piece;
-      piece.sprite.setStrokeStyle(HIGHLIGHT_SIZE, COLORS.white);
+      piece.sprite.setStrokeStyle(highlight_size, COLORS.white);
       highlightValidMoves(scene, piece);
     }
   });
@@ -295,7 +323,7 @@ function populatePieces(scene) {
     for (let x = 0; x < BOARD_SIZE; x++) {
       // create black pieces on odd/dark tiles
       if ((x + y) % 2 === 1) {
-        createPiece(x, y, COLORS.black, scene);
+        createPiece(x, y, darkPiece, scene);
       }
     }
   }
@@ -305,7 +333,7 @@ function populatePieces(scene) {
     for (let x = 0; x < BOARD_SIZE; x++) {
       // create red pieces on odd/dark tiles
       if ((x + y) % 2 === 1) {
-        createPiece(x, y, COLORS.red, scene);
+        createPiece(x, y, lightPiece, scene);
       }
     }
   }
@@ -320,7 +348,7 @@ function isValidMove(piece, moveX, moveY) {
   // with our current orientation, red pieces always move up and black pieces move down
   // may need to fix this once we introduce multiplayer, which would require
   // us to flip the board for different players
-  const direction = piece.color === COLORS.red ? -1 : 1; // in js, y=0 at the top
+  const direction = piece.color === lightPiece ? -1 : 1; // in js, y=0 at the top
 
   // Normal move (1 step diagonally)
   if (Math.abs(dx) === 1 && dy === direction) {
@@ -355,7 +383,7 @@ function movePiece(piece, moveX, moveY) {
     if (captured) {
       captured.sprite.destroy(); // delete the sprite (remove from display state)
       pieces = pieces.filter((p) => p !== captured); // remove it from the array (game state)
-      if (currentPlayer === COLORS.red) {
+      if (currentPlayer === lightPiece) {
         redCaptured++;
       } else {
         blackCaptured++;
@@ -370,8 +398,8 @@ function movePiece(piece, moveX, moveY) {
   // Move the piece
   piece.x = moveX;
   piece.y = moveY;
-  const newX = MARGIN + moveX * TILE_SIZE + TILE_SIZE / 2;
-  const newY = MARGIN + moveY * TILE_SIZE + TILE_SIZE / 2;
+  const newX = margin + moveX * tile_size + tile_size / 2;
+  const newY = margin + moveY * tile_size + tile_size / 2;
 
   // Animate the piece movement
   checkers.scene.scenes[0].tweens.add({
@@ -383,20 +411,18 @@ function movePiece(piece, moveX, moveY) {
     // https://rexrainbow.github.io/phaser3-rex-notes/docs/site/ease-function/
     ease: 'Power3',
   });
-
-
-  // Play move sound effect
   piece.sprite.scene.sound.play('slide');
   console.log("Current board state:", getBoardState());
 }
 
 // Check if the game is over due to all pieces of one color being captured
 function checkGameOver() {
-  const redPieces = pieces.filter((p) => p.color === COLORS.red);
-  const blackPieces = pieces.filter((p) => p.color === COLORS.black);
+  const redPieces = pieces.filter((p) => p.color === lightPiece);
+  const blackPieces = pieces.filter((p) => p.color === darkPiece);
 
   if (redPieces.length === 0) {
     gameOver = true;
+    stopPlayerTimer();
     const gameOverPrompts = document.getElementById('gameOverPrompts')
     const gameOverMessage = document.getElementById('gameOverMessage');
     gameOverPrompts.classList.add('show');
@@ -407,6 +433,7 @@ function checkGameOver() {
     document.getElementById('forfeitBtn').style.display = 'none';
   } else if (blackPieces.length === 0) {
     gameOver = true;
+    stopPlayerTimer();
     const gameOverPrompts = document.getElementById('gameOverPrompts')
     const gameOverMessage = document.getElementById('gameOverMessage');
     gameOverPrompts.classList.add('show');
@@ -424,7 +451,8 @@ function getPiece(x, y) {
 }
 
 // end the turn
-function endTurn(scene) {
+function endTurn() {
+  stopPlayerTimer(); // stop current timer
   // remove the selected piece and its highlight
   if (selectedPiece) {
     selectedPiece.sprite.setStrokeStyle();
@@ -432,7 +460,8 @@ function endTurn(scene) {
   selectedPiece = null;
 
   // switch between red and black player turn
-  currentPlayer = currentPlayer === COLORS.red ? COLORS.black : COLORS.red;
+  currentPlayer = currentPlayer === lightPiece ? darkPiece : lightPiece;
+  startPlayerTimer(); // start next player’s timer
   // remove the highlight after a move is made
   clearHighlightedTiles();
 }
@@ -504,7 +533,8 @@ function giveHint() {
     // way of calling a specific square on the board. For now, I just have it return
     // the row and col on the matrix.
     alert(
-      `Hint: Move ${currentPlayer === COLORS.red ? 'red' : 'black'} piece at (row ${randomHint.piece.y
+      `Hint: Move ${currentPlayer === lightPiece ? 'red' : 'black'} piece at (row ${
+        randomHint.piece.y
       }, column ${randomHint.piece.x}) to (row ${randomHint.y}, column ${randomHint.x})`
     );
   } else {
@@ -583,14 +613,14 @@ function giveHint() {
     // way of calling a specific square on the board. For now, I just have it return
     // the row and col on the matrix.
     alert(
-      `Hint: Move ${currentPlayer === COLORS.red ? 'red' : 'black'} piece at (row ${randomHint.piece.y
+      `Hint: Move ${currentPlayer === lightPiece ? 'red' : 'black'} piece at (row ${
+        randomHint.piece.y
       }, column ${randomHint.piece.x}) to (row ${randomHint.y}, column ${randomHint.x})`
     );
   } else {
     // in a normal checkers game, the player loses if there are no moves left
     alert('No valid moves.');
   }
-
 
   // reset draw offer if it was made by the current player
   if (drawOffered && drawOfferedBy === currentPlayer) {
@@ -607,7 +637,7 @@ function giveHint() {
     declineDrawBtn.style.display = 'none';
   }
   //if black and bot is on, schedule bot move
-  if (vsEasyBot && currentPlayer === COLORS.black) {
+  if (vsEasyBot && currentPlayer === darkPiece){
     //delay so user has time to process bot movw after their own
     scene.time.delayedCall(300, easyBot, [scene], scene);
   }
@@ -630,7 +660,7 @@ function getBoardState() {
     const row = piece.y;
 
     if (row >= 0 && row < BOARD_SIZE && col >= 0 && col < BOARD_SIZE) {
-      if (piece.color == COLORS.red) {
+      if (piece.color == lightPiece) {
         board[row][col] = 1; // Red piece
       } else {
         board[row][col] = 2; // Black piece
@@ -686,15 +716,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const firstPieceColor = pieces[0].color;
     // if the first piece is a default color, change to colorblind colors
     if (firstPieceColor === COLORS.red || firstPieceColor === COLORS.black) {
-      changePieceColor(COLORS.colorblind_blue, COLORS.colorblind_orange);
-      changeColorButton.classList.add('selected');
+      lightPiece = COLORS.colorblind_orange;
+      darkPiece = COLORS.colorblind_blue;
+      if (currentPlayer === COLORS.red) {
+        currentPlayer = lightPiece;
+      } else {
+        currentPlayer = darkPiece;
+      }
     }
     // if the first piece is a colorblind color, change to default colors
     else {
-      changePieceColor(COLORS.black, COLORS.red);
-      changeColorButton.classList.remove('selected');
-
+      lightPiece = COLORS.red;
+      darkPiece = COLORS.black;
+      if (currentPlayer === COLORS.colorblind_orange) {
+        currentPlayer = lightPiece;
+      } else {
+        currentPlayer = darkPiece;
+      }
     }
+    changePieceColor(darkPiece, lightPiece);
   });
 });
 
@@ -703,7 +743,8 @@ function getLegalMoves(color) {
   //arr to store legal moves
   const moves = [];
   //moving up or down board?
-  const direction = color === COLORS.red ? -1 : 1;
+  const direction = color === lightPiece ? -1 : 1;
+
 
   //loop thru pieces
   pieces.forEach(piece => {
@@ -739,7 +780,7 @@ function easyBot(scene) {
   //get legal moves
   //check if game over
   //it not do a random legal move
-  const legalMoves = getLegalMoves(COLORS.black);
+  const legalMoves = getLegalMoves(darkPiece);
   //if No legal moves
   if (legalMoves.length === 0) {
     console.log('Cant move');
@@ -809,3 +850,150 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
+
+function resizegame(percentage) {
+  // Calculate new dimensions
+  const newWidth = Math.floor(START_WIDTH * percentage);
+  const newHeight = Math.floor(START_HEIGHT * percentage);
+
+  // Update game configuration
+  checkers.scale.resize(newWidth, newHeight);
+
+  // Update margin and tile size and highlight size
+  margin = START_MARGIN * percentage;
+  tile_size = (newWidth - 2 * margin) / BOARD_SIZE;
+  highlight_size = START_HIGHLIHGHT_SIZE * percentage;
+
+  // Update the positions of the tiles and pieces
+  tiles.forEach((tile, index) => {
+    const x = index % BOARD_SIZE;
+    const y = Math.floor(index / BOARD_SIZE);
+    tile.setPosition(
+      margin + x * tile_size + tile_size / 2,
+      margin + y * tile_size + tile_size / 2
+    );
+    tile.setSize(tile_size, tile_size);
+  });
+
+  pieces.forEach((piece) => {
+    // destroy the old sprite
+    piece.sprite.destroy();
+    // create a new sprite with the updated position and size
+    piece.sprite = checkers.scene.scenes[0].add.circle(
+      margin + piece.x * tile_size + tile_size / 2,
+      margin + piece.y * tile_size + tile_size / 2,
+      tile_size / RADIUS_SCALE_FACTOR,
+      piece.color
+    ).setInteractive();
+
+    // If this piece was selected, update the selectedPiece reference to the new sprite
+    if (selectedPiece === piece) {
+      selectedPiece.sprite = piece.sprite;
+      piece.sprite.setStrokeStyle(highlight_size, COLORS.white);
+    }
+
+    // make the new sprite do stuff when clicked
+    piece.sprite.on('pointerdown', () => {
+      // don't allow piece selection if game is over
+      if (gameOver) return;
+
+      // deselect and remove highlight if click a selected piece
+      if (selectedPiece === piece) {
+        selectedPiece.sprite.setStrokeStyle();
+        selectedPiece = null;
+
+        // if player selects their own pieces (does nothing if they click on opponent pieces)
+      } else if (piece.color === currentPlayer) {
+        // clear previous selected piece
+        if (selectedPiece) {
+          selectedPiece.sprite.setStrokeStyle();
+        }
+        // highlight the current piece that is being selected and set them as 'selectedPiece'
+        selectedPiece = piece;
+        piece.sprite.setStrokeStyle(highlight_size, COLORS.white);
+      }
+    });
+  });
+}
+
+// Event listener for the resize slider
+document.addEventListener('DOMContentLoaded', () => {
+  const resizeSlider = document.getElementById('resize-slider');
+  const resizeValue = document.getElementById('resize-value');
+
+  resizeSlider.addEventListener('input', () => {
+    const percent = parseInt(resizeSlider.value, 10);
+    resizeValue.textContent = percent + '%';
+    resizegame(percent / 100);
+  });
+});
+
+// functions for the timers
+function startPlayerTimer() {
+  // stop the current running timer
+  stopPlayerTimer();
+
+  // https://stackoverflow.com/questions/5978519/how-can-i-use-setinterval-and-clearinterval
+  activeTimer = setInterval(() => {
+    if (currentPlayer === COLORS.red) {
+      redTime--; // subtract 1 second from red's timer
+      // Black wins if red runs out of time
+      if (redTime <= 0) {
+        endGameOnTimeout(COLORS.black);
+      }
+    } else {
+      blackTime--; // subtract 1 second from black's timer
+      // Red wins if black runs out of time
+      if (blackTime <= 0) {
+        endGameOnTimeout(COLORS.red);
+      }
+    }
+    // update the time
+    updateTimerDisplay();
+  }, 1000); // function runs every 1000ms, aka 1 second
+}
+
+function stopPlayerTimer() {
+  if (activeTimer) {
+    // stop the currently running timer
+    clearInterval(activeTimer);
+    // reset timer ref to null
+    activeTimer = null;
+  }
+}
+
+function updateTimerDisplay() {
+  // get the HTML elements
+  const redDisplay = document.getElementById('red-timer');
+  const blackDisplay = document.getElementById('black-timer');
+
+  // change format to mm:ss
+  // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/padStart
+  const redMin = Math.floor(redTime / 60);
+  const redSec = String(redTime % 60).padStart(2, '0');
+  const blackMin = Math.floor(blackTime / 60);
+  const blackSec = String(blackTime % 60).padStart(2, '0');
+
+  // update the innerHTML
+  redDisplay.textContent = `Red: ${redMin}:${redSec}`;
+  blackDisplay.textContent = `Black: ${blackMin}:${blackSec}`;
+}
+
+function endGameOnTimeout(winnerColor) {
+  stopPlayerTimer(); // stop the timer so that it doesn't go into the negatives
+  gameOver = true;
+
+  const message = document.getElementById('gameOverMessage');
+  const gameOverPrompts = document.getElementById('gameOverPrompts');
+  const winner = winnerColor === COLORS.red ? 'Red' : 'Black';
+
+  // Show message
+  message.textContent = `${winner === 'Red' ? 'Black' : 'Red'} ran out of time! ${winner} wins!`;
+  message.classList.add('show');
+  gameOverPrompts.classList.add('show');
+
+  // Show "play again" option
+  document.getElementById('playAgainPrompt').style.display = 'block';
+  document.getElementById('drawBtn').style.display = 'none';
+  document.getElementById('forfeitBtn').style.display = 'none';
+}
