@@ -18,3 +18,11 @@
     </button>
   </div>
 </div>
+<div id="pinned-message-container"
+     class="text-bg-warning p-2 rounded-bottom shadow-sm"
+     style="{% if not chat.pinned_message %}display: none;
+            {% endif %}">
+  {% if chat.pinned_message %}
+    📌 <strong>{{ chat.pinned_message.user.username|default:chat.pinned_message.user.email }}</strong>: {{ chat.pinned_message.content }}
+  {% endif %}
+</div>

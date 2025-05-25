@@ -1,4 +1,6 @@
 import random
+import secrets
+import string
 from datetime import timedelta
 
 from django.contrib.contenttypes.models import ContentType
@@ -188,14 +190,29 @@ class Lobby(models.Model):
     max_players = models.PositiveIntegerField()
     time_constraint = models.PositiveIntegerField(default=300)
     lobby_created = models.DateTimeField(default=timezone.now)
+    # implementation of match functionality: join lobby by code
+    join_code = models.CharField(max_length=6, unique=True, blank=True, null=True)
 
-    # ================ VALIDATION ================
+    # ================ VALIDATON ================
+    def generate_unique_code(self, length=6):
+        """
+        Generates a unique code for users to enter lobby associated with a specific match.
+        """
+        characters = string.ascii_uppercase + string.digits
+        while True:
+            code = "".join(secrets.choice(characters) for _ in range(length))
+            if not Lobby.objects.filter(join_code=code).exists():
+                return code
+
     def clean(self):
         # Ensures min_players is not greater than max_players
         if self.min_players > self.max_players:
             raise ValidationError({"min_players": "min_players cannot be greater than max_players"})
 
     def save(self, *args, **kwargs):
+        # generate unique join code if it doesn't exist
+        if not self.join_code:
+            self.join_code = self.generate_unique_code()
         # Calls full_clean to run all validations before saving
         self.full_clean()
         super().save(*args, **kwargs)
@@ -210,6 +227,11 @@ class Match(models.Model):
     lobby = models.OneToOneField(Lobby, on_delete=models.CASCADE)
     date_played = models.DateTimeField()
     players = models.ManyToManyField(User, through="Player")
+    # a
+    start_time = models.DateTimeField(null=True, blank=True)
+    end_time = models.DateTimeField(null=True, blank=True)
+    duration = models.DurationField(null=True, blank=True)
+    average_rating = models.DecimalField(max_digits=3, decimal_places=2, null=True, blank=True)
     # a
     start_time = models.DateTimeField(null=True, blank=True)
     end_time = models.DateTimeField(null=True, blank=True)
@@ -250,9 +272,6 @@ class Match(models.Model):
         return None
 
 
-# a
-
-
 class Player(models.Model):
     """
     A player in a match.
@@ -276,6 +295,8 @@ class Player(models.Model):
     role = models.TextField(blank=True, null=True)
     outcome = models.PositiveSmallIntegerField(choices=OUTCOMES, blank=True, null=True)
     victory_type = models.TextField(blank=True, null=True)
+    # Addedum player performance
+    rating = models.DecimalField(max_digits=3, decimal_places=2, null=True, blank=True)
     # Addedum player performance
     rating = models.DecimalField(max_digits=3, decimal_places=2, null=True, blank=True)
 
@@ -384,15 +405,16 @@ class Tournament(models.Model):
         # when the tournament is created and would not be checked when the tournament is updated (
         # the date cannot be changed after the tournament is created)
         if self.pk is None:  # the tournament is being created
-            if self.registration_start_date < timezone.now():
-                raise ValidationError("The registration start date should be in the future.")
-            if self.registration_end_date < timezone.now():
-                raise ValidationError("The registration end date should be in the future.")
-            if self.tournament_start_date < timezone.now():
-                raise ValidationError("The tournament start date should be in the future.")
-            if self.tournament_end_date < timezone.now():
-                raise ValidationError("The tournament end date should be in the future.")
-
+            # addedum
+            min_time_delta = timezone.timedelta(minutes=5)  # minimum 5 minutes in advance
+            if self.registration_start_date < timezone.now() + min_time_delta:
+                raise ValidationError("The registration start date should be at least 5 minutes in the future.")
+            if self.registration_end_date < timezone.now() + min_time_delta:
+                raise ValidationError("The registration end date should be at least 5 minutes in the future.")
+            if self.tournament_start_date < timezone.now() + min_time_delta:
+                raise ValidationError("The tournament start date should be at least 5 minutes in the future.")
+            if self.tournament_end_date < timezone.now() + min_time_delta:
+                raise ValidationError("The tournament end date should be at least 5 minutes in the future.")
         # the registration start date should be earlier than the registration end date
         if self.registration_start_date >= self.registration_end_date:
             raise ValidationError("The registration start date should be earlier than the registration end date.")
@@ -444,6 +466,15 @@ class Tournament(models.Model):
             for bracket in brackets:
                 assert isinstance(bracket, Match)
                 bracket_users = bracket.players.all()
+
+                # a Get all players for each user in the bracket
+                bracket_players = []
+                for user in bracket_users:
+                    players = Player.objects.filter(user=user, match=bracket)
+                    if players.exists():
+                        # Use the most recent player record if multiple exist
+                        bracket_players.append(players.latest("id"))
+                # a
 
                 # a Get all players for each user in the bracket
                 bracket_players = []
@@ -587,6 +618,15 @@ class Tournament(models.Model):
                     # Use the most recent player record if multiple exist
                     bracket_players.append(players.latest("id"))
             # a
+            # bracket_players = [Player.objects.get(user=user, match=bracket) for user in bracket_users]
+            # a Get all players for each user in the bracket
+            bracket_players = []
+            for user in bracket_users:
+                players = Player.objects.filter(user=user, match=bracket)
+                if players.exists():
+                    # Use the most recent player record if multiple exist
+                    bracket_players.append(players.latest("id"))
+            # a
             bracket_winners = [
                 player.user for player in bracket_players if player.outcome == Player.WIN
             ]  # allow multiple winners
@@ -595,6 +635,7 @@ class Tournament(models.Model):
                 winners.append(winner)
 
         self.winners.set(winners)
+        # a self.matches.clear()
         # a self.matches.clear()
         self.save()
 
@@ -653,7 +694,6 @@ class Tournament(models.Model):
         self.save()
         return 0
 
-    # a
     def get_tournament_statistics(self):
         """
         Calculate and return various statistics about the tournament.
