@@ -91,7 +91,7 @@ def test_user_achievements_view_own_profile_1(client):
     user = UserFactory()
     client.force_login(user)
 
-    game = GameFactory
+    game = GameFactory()
     game.users.add(user)
     ach1 = AchievementFactory(game=game, threshold=0)
     ach2 = AchievementFactory(game=game, threshold=10)
