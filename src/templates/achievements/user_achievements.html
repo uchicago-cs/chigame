@@ -42,7 +42,7 @@
       </div>
       {% if not viewing_own_profile %}
         <div class="ms-auto">
-          <a href="{% url 'achievements:user_achievements' %}"
+          <a href="{% url 'user_achievements_by_username' %}"
              class="btn btn-primary toggle-button">View My Achievements</a>
         </div>
       {% endif %}
@@ -53,6 +53,25 @@
       <div class="progress-bar">
         <div class="progress-fill-dynamic"
              data-progress="{{ overall_stats.progress|floatformat:1 }}"></div>
+      </div>
+    </div>
+    <div class="recent-achievements-tab">Recent Achievements</div>
+    <div class="recent-achievements-box">
+      <div class="recent-achievements-content">
+        {% for user_achievement in recent_achievements %}
+          <div class="recent-achievement-item">
+            <div>
+              <span class="recent-achievement-name">{{ user_achievement.achievement.name }}</span>
+              <span class="recent-achievement-game">in {{ user_achievement.achievement.game.name }}</span>
+            </div>
+            <span class="recent-achievement-time"
+                  title="{{ user_achievement.date_earned|date:"F j, Y, g:i a" }}">
+              {{ user_achievement.date_earned|timesince }} ago
+            </span>
+          </div>
+        {% empty %}
+          <p>No recent achievements found.</p>
+        {% endfor %}
       </div>
     </div>
     <ul class="nav-tabs">
