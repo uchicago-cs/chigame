@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}
+  Write a Review for {{ game.name }}
+{% endblock title %}
+{% block content %}
+  <div class="container mt-4">
+    <h2>Write a Review for {{ game.name }}</h2>
+    <form method="post">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit" class="btn btn-primary">Submit Review</button>
+    </form>
+    <a href="{% url 'game-detail' pk=game.pk %}" class="btn btn-link mt-2">← Back to Game</a>
+  </div>
+{% endblock content %}
