@@ -774,7 +774,7 @@ def assign_label_to_notification(request, notification_id):
         notification.labels.add(label)
         messages.success(request, "Label assigned to notification.")
     except NotificationLabel.DoesNotExist:
-        messages.error(request, "Label not found or does not belong to you.")
+        messages.error(request, "Label not  found or does not belong to you.")
 
     return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
 
