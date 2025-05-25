@@ -887,10 +887,12 @@ function changePieceColor(newColorOne, newColorTwo) {
 // Event listener for the toggle colorblind button
 document.addEventListener('DOMContentLoaded', () => {
   const changeColorButton = document.getElementById('toggle-colorblind');
+
   changeColorButton.addEventListener('click', () => {
     const firstPieceColor = pieces[0].color;
     // if the first piece is a default color, change to colorblind colors
     if (firstPieceColor === COLORS.red || firstPieceColor === COLORS.black) {
+      changeColorButton.classList.add('selected');
       lightPiece = COLORS.colorblind_orange;
       darkPiece = COLORS.colorblind_blue;
       if (currentPlayer === COLORS.red) {
