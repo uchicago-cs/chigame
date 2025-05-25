@@ -754,6 +754,13 @@ class TournamentListView(ListView):
         if self.request.user.is_staff:
             return Tournament.objects.prefetch_related("matches").all()
 
+        # If the user is authenticated but not staff, show only tournaments they are part of
+        if self.request.user.is_authenticated:
+            return Tournament.objects.prefetch_related("matches").filter(players=self.request.user)
+
+        # For unauthenticated users, show all non-archived tournaments
+        return Tournament.objects.prefetch_related("matches").filter(archived=False)
+
         # For non-staff users, show only tournaments they are part of
         return (
             Tournament.objects.prefetch_related("matches")
@@ -1244,11 +1251,15 @@ class TournamentDetailView(DetailView):
             elif success == 1:
                 messages.error(request, "You have not joined this tournament")
                 return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
-            elif success == 3:
-                messages.error(request, "The registration period for this tournament has ended")
+            elif request.POST.get("action") == "archive":
+                tournament.set_archive(True)
+                messages.success(request, "You have successfully archived this tournament")
                 return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
-            else:
-                raise Exception("Invalid return value")
+
+            elif request.POST.get("action") == "unarchive":
+                tournament.set_archive(False)
+                messages.success(request, "You have successfully unarchived this tournament")
+                return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
 
         elif request.POST.get("action") == "join_match":
             # Get the user's current match in the tournament
