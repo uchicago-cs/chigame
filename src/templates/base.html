@@ -45,6 +45,9 @@
       <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
       <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&display=swap"
             rel="stylesheet" />
+      <!-- Bootstrap 5 -->
+      <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+            rel="stylesheet" />
     {% endblock css %}
     <!-- Le javascript
     ================================================== -->
@@ -199,21 +202,22 @@
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end notifications-dropdown"
                         aria-labelledby="notification-btn">
+                      <li class="dropdown-header notifications-title">Notifications</li>
                       {% if header_notifications %}
                         {% for n in header_notifications %}
                           <a href="{% url 'users:notification-detail' n.pk %}"
                              class="notification-item dropdown dropdown-item text-reset text-decoration-none {% if not n.read %}notification-unread{% endif %} notification-style-{{ n.get_style_key }}"
                              id="notification-{{ n.id }}">
                             <div class="d-flex justify-content-between align-items-start">
-                              {# Icon  #}
-                              <div class="notification-icon d-flex align-items-start">
-                                <i class="{{ n.get_icon_class }} me-2"></i>
-                                <div>
-                                  <span class="notification-strong">{{ n.get_rich_message|truncatewords:15 }}</span>
-                                  <br />
+                              <!-- Icon + Content -->
+                              <div class="notification-icon d-flex">
+                                <i class="{{ n.get_icon_class }} me-2 icon-lg"></i>
+                                <div class="d-flex flex-column">
+                                  <span class="dropdown-notification-strong">{{ n.get_sender_display }} {{ n.get_rich_message|truncatewords:15 }}</span>
                                   <small class="text-muted">{{ n.last_sent|timesince }} ago</small>
                                 </div>
                               </div>
+                              <!-- Dismiss Button -->
                               <button class="notification-dismiss-btn btn-close btn-sm ms-2"
                                       title="Dismiss"
                                       onclick="event.preventDefault(); dismissNotification({{ n.id }})"></button>
