@@ -21,7 +21,7 @@
         </div>
         <!-- Registration dates with calendar dropdowns -->
         <div class="col-md-6 mb-3">
-          <label for="id_registration_start_date" class="form-label">Registration start date</label>
+          <label for="id_registration_start_date" class="form-label">Registration start date and time</label>
           <input type="datetime-local"
                  name="{{ form.registration_start_date.html_name }}"
                  id="id_registration_start_date"
@@ -33,7 +33,8 @@
           {% endif %}
         </div>
         <div class="col-md-6 mb-3">
-          <label for="id_registration_end_date" class="form-label">Registration end date</label>
+          <!-- addedum -->
+          <label for="id_registration_end_date" class="form-label">Registration end date and time</label>
           <input type="datetime-local"
                  name="{{ form.registration_end_date.html_name }}"
                  id="id_registration_end_date"
@@ -46,7 +47,7 @@
         </div>
         <!-- Tournament dates with calendar dropdowns -->
         <div class="col-md-6 mb-3">
-          <label for="id_tournament_start_date" class="form-label">Tournament start date</label>
+          <label for="id_tournament_start_date" class="form-label">Tournament start date and time</label>
           <input type="datetime-local"
                  name="{{ form.tournament_start_date.html_name }}"
                  id="id_tournament_start_date"
@@ -58,7 +59,7 @@
           {% endif %}
         </div>
         <div class="col-md-6 mb-3">
-          <label for="id_tournament_end_date" class="form-label">Tournament end date</label>
+          <label for="id_tournament_end_date" class="form-label">Tournament end date and time</label>
           <input type="datetime-local"
                  name="{{ form.tournament_end_date.html_name }}"
                  id="id_tournament_end_date"
@@ -111,12 +112,21 @@
           </div>
           {% if form.draw_rules.errors %}<div class="text-danger">{{ form.draw_rules.errors }}</div>{% endif %}
         </div>
-        <!-- Players selection -->
+        <!-- Players selection - visible as a simple checkbox list -->
         <div class="col-12 mb-3">
-          <label for="{{ form.players.id_for_label }}" class="form-label">Players</label>
-          {{ form.players }}
-          {% if form.players.errors %}<div class="text-danger">{{ form.players.errors }}</div>{% endif %}
-          <small class="text-muted">Hold Ctrl/Cmd to select multiple players</small>
+          <label class="form-label">Players</label>
+          <p class="text-muted">Select players to invite to your tournament:</p>
+          <!-- Hidden original select for form submission -->
+          <div class="d-none">
+            <!-- Using Bootstrap's d-none class instead of inline style -->
+            {{ form.players }}
+            {% if form.players.errors %}<div class="text-danger">{{ form.players.errors }}</div>{% endif %}
+          </div>
+          <!-- Simple checkbox list for player selection -->
+          <div id="playerCheckboxList" class="list-group">
+            <!-- Will be populated with recommended players when a game is selected -->
+            <div class="text-muted">Please select a game to see recommended players.</div>
+          </div>
         </div>
         <!-- Submit button -->
         <div class="col-12 mt-4">
@@ -150,39 +160,66 @@
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-      document.getElementById('tournamentForm').addEventListener('submit', function(event) {
-        event.preventDefault();
+      document.addEventListener('DOMContentLoaded', function() {
+        const gameSelect = document.getElementById('{{ form.game.id_for_label }}');
+        const playersSelect = document.getElementById('{{ form.players.id_for_label }}');
+        const playerCheckboxList = document.getElementById('playerCheckboxList');
 
-        const requiredFields = {
-          'name': 'Name',
-          'game': 'Game',
-          'registration_start_date': 'Registration start date',
-          'registration_end_date': 'Registration end date',
-          'tournament_start_date': 'Tournament start date',
-          'tournament_end_date': 'Tournament end date',
-          'max_players': 'Max players',
-          'num_winner': 'Number of winners',
-          'description': 'Description',
-          'rules': 'Rules',
-          'draw_rules': 'Draw rules'
-        };
+        // Show recommendations when a game is selected
+        gameSelect.addEventListener('change', function() {
+          const gameId = this.value;
+          if (gameId) {
+            playerCheckboxList.innerHTML = '<div class="text-muted">Loading recommendations...</div>';
 
-        let emptyFields = [];
+            let url = `/games/tournaments/0/recommendations/?game_id=${gameId}`;
 
-        for (const [fieldId, fieldName] of Object.entries(requiredFields)) {
-          const field = document.getElementById('id_' + fieldId);
-          if (!field || !field.value.trim()) {
-            emptyFields.push(fieldName);
+            fetch(url)
+              .then(response => response.json())
+              .then(data => {
+                data.sort((a, b) => b.score - a.score);
+
+                let html = '';
+                data.forEach(player => {
+                  const reasonText = player.reasons.join(', ');
+
+                  html += `
+                    <div class="list-group-item">
+                      <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="player-${player.id}" value="${player.id}" onchange="updatePlayerSelection(this, ${player.id})" />
+                        <label class="form-check-label" for="player-${player.id}">
+                          <strong>${player.name || ''}</strong> (${player.email}) -
+                          <span class="text-muted">Recommended because: ${reasonText}</span>
+                        </label>
+                      </div>
+                    </div>
+                  `;
+                });
+
+                if (html) {
+                  playerCheckboxList.innerHTML = html;
+                } else {
+                  playerCheckboxList.innerHTML = '<div class="text-muted">No recommended players available</div>';
+                }
+              })
+              .catch(error => {
+                console.error('Error fetching recommendations:', error);
+                playerCheckboxList.innerHTML = '<div class="text-danger">Error loading recommendations. Please try again later.</div>';
+              });
+          } else {
+            playerCheckboxList.innerHTML = '<div class="text-muted">Please select a game to see recommended players.</div>';
+            Array.from(playersSelect.options).forEach(option => {
+              option.selected = false;
+            });
           }
-        }
+        });
 
-        if (emptyFields.length > 0) {
-          alert('Please fill out all required fields:\n' + emptyFields.join('\n'));
-          return;
-        }
+        window.updatePlayerSelection = function(checkbox, playerId) {
+          const option = Array.from(playersSelect.options).find(opt => opt.value == playerId);
 
-        // If all fields are filled, submit the form
-        this.submit();
+          if (option) {
+            option.selected = checkbox.checked;
+          }
+        };
       });
     </script>
   {% endblock extra_js %}
