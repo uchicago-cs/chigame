@@ -12,8 +12,8 @@
     {% for entry in entries %}
       <tr>
         <td>{{ entry.rank }}</td>
-        <td>{{ entry.user.display_name }}</td>
-        <td>{{ entry.user.region }}</td>
+        <td>{{ entry.user.user.name }}</td>
+        <td>{{ entry.region }}</td>
       </tr>
     {% endfor %}
   </tbody>
