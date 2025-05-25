@@ -1,0 +1,254 @@
+[
+    {
+        "model": "users.user",
+        "pk": 1,
+        "fields": {
+            "password": "argon2$argon2id$v=19$m=102400,t=2,p=8$Zzk2ZjFCTXl4RlJmOW1VU1JHa3QxZA$tiaFDXObRmwzYoVytjyCGFVfJnoqp1uYUOvCVUsUHpY",
+            "last_login": null,
+            "is_superuser": true,
+            "is_staff": true,
+            "is_active": true,
+            "date_joined": "2023-10-30T03:15:43.052Z",
+            "name": "player1",
+            "email": "player1@example.com",
+            "groups": [],
+            "user_permissions": []
+        }
+    },
+    {
+        "model": "users.user",
+        "pk": 2,
+        "fields": {
+            "password": "argon2$argon2id$v=19$m=102400,t=2,p=8$Zzk2ZjFCTXl4RlJmOW1VU1JHa3QxZA$tiaFDXObRmwzYoVytjyCGFVfJnoqp1uYUOvCVUsUHpY",
+            "last_login": null,
+            "is_superuser": false,
+            "is_staff": false,
+            "is_active": true,
+            "date_joined": "2023-10-30T03:15:43.052Z",
+            "username": "player2",
+            "email": "player2@example.com",
+            "groups": [],
+            "user_permissions": []
+        }
+    },
+    {
+        "model": "games.game",
+        "pk": 1,
+        "fields": {
+            "name": "Checkers",
+            "description": "A classic board game",
+            "image": "/static/images/no_picture_available.png",
+            "min_players": 2,
+            "max_players": 2,
+            "complexity": 2
+        }
+    },
+    {
+        "model": "games.game",
+        "pk": 2,
+        "fields": {
+            "name": "Word Game",
+            "description": "Guess the word",
+            "image": "/static/images/no_picture_available.png",
+            "min_players": 1,
+            "max_players": 1,
+            "complexity": 2
+        }
+    },
+    {
+        "model": "achievements.achievement",
+        "pk": 1,
+        "fields": {
+            "name": "First Jump",
+            "description": "Capture your first pieces",
+            "spoiler": false,
+            "rarity": 1,
+            "game": 1,
+            "threshold": 1.0
+        }
+    },
+    {
+        "model": "achievements.achievement",
+        "pk": 2,
+        "fields": {
+            "name": "King Me",
+            "description": "Get a piece to the opposite end of the board",
+            "spoiler": false,
+            "rarity": 2,
+            "game": 1,
+            "threshold": 1.0
+        }
+    },
+    {
+        "model": "achievements.achievement",
+        "pk": 3,
+        "fields": {
+            "name": "Triple Jump",
+            "description": "Capture 3 pieces in a single move",
+            "spoiler": false,
+            "rarity": 3,
+            "game": 1,
+            "threshold": 1.0
+        }
+    },
+    {
+        "model": "achievements.achievement",
+        "pk": 4,
+        "fields": {
+            "name": "Completionist",
+            "description": "Complete all challenges in the game",
+            "spoiler": false,
+            "rarity": 4,
+            "game": 1,
+            "threshold": 3.0
+        }
+    },
+    {
+        "model": "achievements.achievement",
+        "pk": 5,
+        "fields": {
+            "name": "First Word",
+            "description": "Complete your first word",
+            "spoiler": false,
+            "rarity": 1,
+            "game": 2,
+            "threshold": 1.0
+        }
+    },
+    {
+        "model": "achievements.achievement",
+        "pk": 6,
+        "fields": {
+            "name": "Wordsmith",
+            "description": "Create a word with more than 8 letters",
+            "spoiler": false,
+            "rarity": 2,
+            "game": 2,
+            "threshold": 1.0
+        }
+    },
+    {
+        "model": "achievements.achievement",
+        "pk": 7,
+        "fields": {
+            "name": "Triple Score",
+            "description": "Get a triple word score",
+            "spoiler": false,
+            "rarity": 3,
+            "game": 2,
+            "threshold": 1.0
+        }
+    },
+    {
+        "model": "achievements.achievement",
+        "pk": 8,
+        "fields": {
+            "name": "Lexicographer",
+            "description": "Use all 26 letters of the alphabet in a single game",
+            "spoiler": false,
+            "rarity": 4,
+            "game": 2,
+            "threshold": 1.0
+        }
+    },
+    {
+        "model": "achievements.achievement",
+        "pk": 9,
+        "fields": {
+            "name": "Quota",
+            "description": "Find the word \"quota\"",
+            "spoiler": true,
+            "rarity": 2,
+            "game": 2,
+            "threshold": 1.0
+        }
+    },
+    {
+        "model": "achievements.userachievement",
+        "pk": 1,
+        "fields": {
+            "user": 1,
+            "achievement": 1,
+            "pinned": false,
+            "date_earned": "2025-03-10T18:59:22Z",
+            "progress": 1.0
+        }
+    },
+    {
+        "model": "achievements.userachievement",
+        "pk": 2,
+        "fields": {
+            "user": 1,
+            "achievement": 2,
+            "pinned": false,
+            "date_earned": "2025-03-12T18:59:45Z",
+            "progress": 1.0
+        }
+    },
+    {
+        "model": "achievements.userachievement",
+        "pk": 3,
+        "fields": {
+            "user": 1,
+            "achievement": 4,
+            "pinned": false,
+            "date_earned": "2025-04-04T19:00:10Z",
+            "progress": 1.0
+        }
+    },
+    {
+        "model": "achievements.userachievement",
+        "pk": 4,
+        "fields": {
+            "user": 1,
+            "achievement": 5,
+            "pinned": false,
+            "date_earned": "2025-02-03T20:00:34Z",
+            "progress": 1.0
+        }
+    },
+    {
+        "model": "achievements.userachievement",
+        "pk": 5,
+        "fields": {
+            "user": 1,
+            "achievement": 6,
+            "pinned": false,
+            "date_earned": "2025-02-10T20:00:57Z",
+            "progress": 1.0
+        }
+    },
+    {
+        "model": "achievements.userachievement",
+        "pk": 6,
+        "fields": {
+            "user": 1,
+            "achievement": 7,
+            "pinned": false,
+            "date_earned": "2025-03-20T19:01:17Z",
+            "progress": 1.0
+        }
+    },
+    {
+        "model": "achievements.userachievement",
+        "pk": 7,
+        "fields": {
+            "user": 2,
+            "achievement": 8,
+            "pinned": true,
+            "date_earned": "2025-03-25T19:01:40Z",
+            "progress": 1.0
+        }
+    },
+    {
+        "model": "achievements.userachievement",
+        "pk": 8,
+        "fields": {
+            "user": 2,
+            "achievement": 5,
+            "pinned": false,
+            "date_earned": "2024-03-30T19:02:03Z",
+            "progress": 1.0
+        }
+    }
+]
