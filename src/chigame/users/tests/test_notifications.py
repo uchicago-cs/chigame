@@ -19,7 +19,7 @@ def test_notification_default_category_and_label():
         message="Friend request received",
     )
 
-    assert notif.category == "inbox"
+    assert notif.category == "social"
     assert notif.read is False
     assert notif.visible is True
     assert notif.labels.count() == 0
