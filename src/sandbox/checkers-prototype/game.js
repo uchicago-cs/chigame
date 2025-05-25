@@ -1200,7 +1200,8 @@ function resizeGame(percentage) {
         if (selectedPiece) {
           selectedPiece.sprite.setStrokeStyle();
         }
-        // highlight the current piece that is being selected and set them as 'selectedPiece'
+        // highlight the current piece that is being selected and set them as
+        // 'selectedPiece', highlighting the tiles the piece can move to
         selectedPiece = piece;
         piece.sprite.setStrokeStyle(highlight_size, COLORS.white);
         highlightValidMoves(checkers.scene.scenes[0], piece);
