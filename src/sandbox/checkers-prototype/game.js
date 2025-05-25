@@ -1096,7 +1096,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // function to resize the board based on the given percentage
-function resizegame(percentage) {
+function resizeGame(percentage) {
   // Calculate new dimensions
   const newWidth = Math.floor(START_WIDTH * percentage);
   const newHeight = Math.floor(START_HEIGHT * percentage);
@@ -1169,7 +1169,7 @@ document.addEventListener('DOMContentLoaded', () => {
   resizeSlider.addEventListener('input', () => {
     const percent = parseInt(resizeSlider.value, 10);
     resizeValue.textContent = percent + '%';
-    resizegame(percent / 100);
+    resizeGame(percent / 100);
   });
 });
 
