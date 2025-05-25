@@ -1,12 +1,25 @@
 from enum import Enum
 
 from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
+from django.utils import timezone
 
 from chigame.games.models import Game
 from chigame.users.models import User
 
 from .models import Achievement, UserAchievement
+
+
+def get_recent_achievements(pk, limit=5):
+    """
+    Helper function to get the most recent achievements for a user. This function should be used to call
+    the most recent achievements to be displayed on the user's profile page.
+    Args:
+        pl (int): The primary key of the user whose achievements are to be fetched.
+        limit (int): The maximum number of recent achievements to fetch. Default is 5.
+    """
+    return UserAchievement.objects.filter(user_id=pk).order_by("-date_earned")[:limit]
 
 
 def demo_game(request):
@@ -25,6 +38,50 @@ class AchievementType(Enum):
 
 
 @login_required
+def toggle_pin_achievement(request, achievement_id):
+    """
+    AJAX view to toggle whether an achievement is pinned for the current user
+    """
+    if request.method == "POST":
+        achievement = get_object_or_404(Achievement, id=achievement_id)
+
+        # Use get_or_create with defaults to avoid duplicates
+        user_achievement, created = UserAchievement.objects.get_or_create(
+            user=request.user, achievement=achievement, defaults={"date_earned": timezone.now(), "pinned": True}
+        )
+
+        # If not newly created, just toggle the pinned status
+        if not created:
+            user_achievement.pinned = not user_achievement.pinned
+            user_achievement.save(update_fields=["pinned"])  # Only update the pinned field
+
+        return JsonResponse({"status": "success", "pinned": user_achievement.pinned})
+
+    return JsonResponse({"status": "error"}, status=400)
+
+
+def get_pinned_achievements(request):
+    # Change from request.user.profile to request.user
+    pinned_achievements = UserAchievement.objects.filter(user=request.user, pinned=True).select_related(
+        "achievement", "achievement__game"
+    )
+
+    data = {
+        "pinned_achievements": [
+            {
+                "id": ua.achievement.id,
+                "name": ua.achievement.name,
+                "description": ua.achievement.description,
+                "game_name": ua.achievement.game.name,
+                "rarity": ua.achievement.rarity,
+                "date_earned": ua.date_earned.strftime("%B %d, %Y") if ua.date_earned else "Not unlocked",
+            }
+            for ua in pinned_achievements
+        ]
+    }
+    return JsonResponse(data)
+
+
 def user_achievements(request, pk=None, status=AchievementType.ALL, game_id=None):
     """
     Display a user's achievements page.
@@ -36,11 +93,11 @@ def user_achievements(request, pk=None, status=AchievementType.ALL, game_id=None
         # If a username is provided in the URL, get that user's profile
         target_user = get_object_or_404(User, pk=pk)  # Renamed to avoid confusion with request.user
         viewing_own_profile = target_user == request.user
+        recent_achievements = get_recent_achievements(target_user.pk, limit=5)
     else:
-        # If no username is provided, show the logged-in user's achievements
         target_user = request.user
         viewing_own_profile = True
-
+        recent_achievements = get_recent_achievements(target_user.pk, limit=5)
     # Get all games
     games = Game.objects.all()
 
@@ -187,6 +244,7 @@ def user_achievements(request, pk=None, status=AchievementType.ALL, game_id=None
             "progress": overall_progress,
         },
         "pinned_achievements": pinned_achievements_qs,
+        "recent_achievements": recent_achievements,
     }
 
     return render(request, "achievements/user_achievements.html", context)

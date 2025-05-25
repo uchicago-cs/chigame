@@ -1,5 +1,5 @@
 <template>
-  <div class="hero-section">
+<div class="hero-section">
   <div class="hero-content">
     <div class="hero">
       <p class="hero-title">Welcome to</p>
@@ -144,45 +144,58 @@
     </div>
   </div>
 <!-- Second row of homepage (Trending Games) -->
-<div class="homepage-block trending-games">
+<div class="homepage-block trending-games-title flex-grow-1">
   <div class="d-flex flex-row justify-content-between">
-    <span>Trending Games</span><span class="d-flex flex-column justify-content-around"><span class="see-more-link"><a class="nav-link" href="/">>> See all</a></span></span>
+    <span>Trending Games</span>
+    <span class="d-flex flex-column justify-content-around">
+      <span class="see-more-link">>> See all</span>
+    </span>
   </div>
-  <div class="trending-games-block tournament-name">
-    <img src="https://cf.geekdo-images.com/9nGoBZ0MRbi6rdH47sj2Qg__original/img/bA8irydTCNlE38QSzM9EhcUIuNU=/0x0/filters:format(jpeg)/pic5786795.jpg"
-         class="game-img"
-         alt="monopoly" />
-  </div>
+</div>
+<div class="trending-games homepage-block trending-games-block">
+  <Swiper
+    :modules="[Pagination, EffectCoverflow, Autoplay]"
+    effect="coverflow"
+    :pagination="true"
+    :autoplay="true"
+    class="mySwiper"
+    :grabCursor="true"
+    :centeredSlides="true"
+    slidesPerView="auto"
+    :coverflowEffect="{
+      rotate: 50,
+      stretch: 0,
+      depth: 100,
+      modifier: 1,
+      slideShadows: true
+    }"
+  >
+    <SwiperSlide v-for="(game, index) in trendingGames" :key="'trend-'+index">
+    <div class="game-slide">
+        <img :src="game.src" :alt="game.alt" class="game-img" />
+        <div class="game-name">{{ game.name }}</div>
+    </div>
+    </SwiperSlide>
+  </Swiper>
 </div>
 <!-- Third row of homepage (Tournaments) -->
 <div class="homepage-block tournaments">
-  <div class="d-flex flex-row justify-content-between">
-    Tournaments
-    <span class="d-flex flex-column justify-content-around"><span class="see-more-link"><a class="nav-link" href="/">>> See all</a></span></span>
-  </div>
-  <div class="d-flex flex-row justify-content-between tournaments-block">
-    <div class="tournament">
-      <img src="https://cf.geekdo-images.com/oWcB33sfig9QF_KBEv7iLQ__original/img/retN48ZHxCC5YaECdlWjRdWHPGs=/0x0/filters:format(png)/pic2439783.png"
-           class="tournament-img"
-           alt="battleship" />
-      <p class="tournament-name">Tournament Name</p>
-      <p class="tournament-description">Tournament Description</p>
+    <div class="d-flex flex-row justify-content-between">
+      <span>Tournaments</span>
+      <span class="d-flex flex-column justify-content-around">
+        <span class="see-more-link">
+          <router-link class="nav-link" to="/tournaments">&gt;&gt; See all</router-link>
+        </span>
+      </span>
     </div>
-    <div class="tournament">
-      <img src="https://cf.geekdo-images.com/0_RWFMNapgr5yCrdhvGi_Q__original/img/c4SiusUQuh7uc0k6HDwIXYsEc8M=/0x0/filters:format(jpeg)/pic8785991.jpg"
-           class="tournament-img"
-           alt="chess" />
-      <p class="tournament-name">Tournament Name</p>
-      <p class="tournament-description">Tournament Description</p>
+    <div class="d-flex flex-row justify-content-between tournaments-block">
+      <div class="tournament" v-for="tournament in tournaments" :key="tournament.id">
+        <img :src="tournament.image" class="tournament-img" :alt="tournament.name" />
+        <p class="tournament-name">{{ tournament.name }}</p>
+        <p class="tournament-description">{{ tournament.description }}</p>
+        <span class="tournament-status" :class="tournament.status.toLowerCase()">{{ tournament.status }}</span>
+      </div>
     </div>
-    <div class="tournament">
-      <img src="https://cf.geekdo-images.com/-DHiHBBSnvaLu0Do8CIykQ__original/img/fRfoyWezpQsumExNKVxf1cwtJfg=/0x0/filters:format(jpeg)/pic8204165.jpg"
-           class="tournament-img"
-           alt="uno" />
-      <p class="tournament-name">Tournament Name</p>
-      <p class="tournament-description">Tournament Description</p>
-    </div>
-  </div>
 </div>
 <!-- Fourth row of homepage -->
 <div class="d-flex flex-row justify-content-between">
@@ -223,6 +236,53 @@
   </div>
 </div>
 </template>
+
+<script setup>
+import { ref } from 'vue'
+import { Swiper, SwiperSlide } from 'swiper/vue'
+import 'swiper/css'
+import 'swiper/css/pagination'
+import 'swiper/css/effect-coverflow'
+import 'swiper/css/autoplay'
+
+import { Autoplay, Pagination, EffectCoverflow } from 'swiper/modules'
+
+import managementImg from './images/management.png'
+import checkersImg from './images/checkers.png'
+import wordgameImg from './images/wordgame.png'
+import reversiImg from './images/reversi.png'
+
+const tournaments = ref([
+  {
+    id: 1,
+    name: 'Checkers Showdown',
+    description: 'A classic checkers tournament for all skill levels.',
+    image: checkersImg,
+    status: 'Upcoming'
+  },
+  {
+    id: 2,
+    name: 'Word Masters',
+    description: 'Compete in Not Wordle for the top spot!',
+    image: wordgameImg,
+    status: 'Ongoing'
+  },
+  {
+    id: 3,
+    name: 'Reversi Blitz',
+    description: 'Fast-paced reversi action. Join now!',
+    image: reversiImg,
+    status: 'Completed'
+  }
+])
+
+const trendingGames = ref([
+  { src: managementImg, alt: 'Management' },
+  { src: checkersImg, alt: 'Checkers' },
+  { src: wordgameImg, alt: 'Word Game' },
+  { src: reversiImg, alt: 'Reversi' }
+])
+</script>
 
 <style lang="css" scoped>
 
@@ -337,12 +397,14 @@ height: 90%;
 }
 
 .tournaments {
-height: 60vh;
 margin-top: 0.5rem;
+margin-bottom: 2rem;
 }
 
 .tournaments-block {
-height: 90%;
+display: flex;
+flex-direction: row;
+gap: 1.5rem;
 }
 
 .tournament {
@@ -370,6 +432,26 @@ font-size: 1.3vw;
 font-weight: normal;
 margin-top: 0rem;
 }
+
+.tournament-status {
+  display: inline-block;
+  margin-top: 0.3vw;
+  padding: 0.2vw 1vw;
+  border-radius: 1vw;
+  font-size: 0.95vw;
+  font-weight: bold;
+}
+.tournament-status.upcoming {
+    background: #e0ffe0;
+    color: #228B22;
+}
+.tournament-status.ongoing {
+    background: #fff3cd;
+    color: #856404;
+}
+.tournament-status.completed {
+    background: #ffe5e5;
+    color: #800000; }
 
 .live-chat {
 height: 60vh;
@@ -526,6 +608,91 @@ text-align: right;
 .auth-button:hover {
   background-color: #a52a2a;
   transform: scale(1.05);
+}
+
+.swiper {
+  width: 100%;
+  height: 100%;
+  padding: 0px 64px;
+  display: flex;
+  align-items: cener;
+  justify-content: center;
+}
+
+.swiper-slide {
+  background: #fff;
+  border-radius: 20px;
+  width: 50%;
+  height: 90%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.swiper-slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 20px;
+}
+
+.trending-section {
+  margin-top: 0px;
+  margin-bottom: 60px;
+  text-align: center;
+}
+
+.section-title {
+  font-size: 36px;
+  font-weight: bold;
+  margin-bottom: 30px;
+}
+
+.trending-games {
+  height: 60vh;
+  margin: 1rem 5rem;
+  background: linear-gradient(135deg,rgb(255, 255, 255) 0%, #ffffff 100%);
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  padding: 1rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mySwiper {
+  width: 90%;
+  height: 90%;
+}
+
+.mySwiper .swiper-slide {
+  background: #fff;
+  border-radius: 15px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+}
+
+.mySwiper .swiper-slide:hover {
+  transform: scale(1.1);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.35);
+}
+
+.mySwiper .game-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 15px;
+  user-select: none;
+  pointer-events: none;
+}
+
+.trending-games-title {
+  margin-bottom: 0;
+  padding-bottom: 0;
 }
 
 </style>

@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 
 from chigame.games.models import Game
 
@@ -76,3 +77,16 @@ class ReviewFeedback(models.Model):
             Guide.GuideStatus.REQUESTED_CHANGE: "Requested Change",
         }
         return status_map.get(self.status, "Invalid Status")
+
+
+class GeneralFeedback(models.Model):
+    feedback = models.TextField(_("Feedback"))
+    created_at = models.DateTimeField(_("Created at"), auto_now_add=True)
+
+    class Meta:
+        verbose_name = _("General Feedback")
+        verbose_name_plural = _("General Feedback")
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"Feedback from {self.created_at}"
