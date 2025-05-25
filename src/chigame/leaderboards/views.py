@@ -3,9 +3,11 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
 from chigame.games.models import Game
-from chigame.leaderboards.models import Leaderboard, LeaderboardEntry, LeaderboardPrivacySetting
+
+from chigame.leaderboards.models import Leaderboard, LeaderboardEntry, LeaderboardPrivacySetting, Region
 
 from .forms import LeaderboardPrivacySettingForm
+
 
 
 def leaderboard_view(request, game_id):
@@ -16,13 +18,58 @@ def leaderboard_view(request, game_id):
         return render(request, "leaderboards/empty.html", {"game": game})
 
     entries = (
-        LeaderboardEntry.objects.filter(leaderboard=leaderboard)
-        # .select_related("user", "user__region")
-        .order_by("rank")
+        LeaderboardEntry.objects.filter(leaderboard=leaderboard).select_related("user", "region").order_by("rank")
     )
 
+    region_param = request.GET.get("region")
+    if region_param:
+        entries = entries.filter(region__region=region_param)
+
+    available_regions = Region.objects.values_list("region", flat=True).distinct()
+
     return render(
-        request, "leaderboards/leaderboard.html", {"game": game, "leaderboard": leaderboard, "entries": entries}
+        request,
+        "leaderboards/leaderboard.html",
+        {
+            "game": game,
+            "leaderboard": leaderboard,
+            "entries": entries,
+            "regions": available_regions,
+            "selected_region": region_param,
+        },
+    )
+
+
+def landing_page_view(request):
+    top_entries = []
+
+    for game in Game.objects.prefetch_related("leaderboards").all():
+        leaderboard = game.leaderboards.first()
+        if leaderboard:
+            top_entry = (
+                LeaderboardEntry.objects.filter(leaderboard=leaderboard)
+                .select_related("user", "region")
+                .order_by("rank")
+                .first()
+            )
+            if top_entry:
+                top_entries.append(
+                    {
+                        "game": game.name,
+                        "entry": top_entry,
+                    }
+                )
+
+    # Default view metric hardcoded as Points to match the leaderboard fixture
+    # Anonymity hardcoded as None, and will be linked with security settings in later PR
+    return render(
+        request,
+        "leaderboards/landing_page.html",
+        {
+            "top_entries": top_entries,
+            "default_view_metric": "Points",
+            "anonymity": None,
+        },
     )
 
 
@@ -114,3 +161,7 @@ def privacy_setting_delete(request, pk):
     context = {"setting": setting}
 
     return render(request, "leaderboards/privacy_setting_confirm_delete.html", context)
+
+
+def bar_chart(request, game_id):
+    return render(request, "leaderboards/bar_chart.html")

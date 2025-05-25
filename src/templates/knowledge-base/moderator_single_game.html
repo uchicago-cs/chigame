@@ -1,0 +1,65 @@
+{% extends "knowledge-base/base.html" %}
+
+{% load static %}
+
+<link rel="stylesheet" href="{% static 'css/knowledge-base-styles.css' %}" />
+{% block page-content %}
+  <h2>Manage Approved Guides for {{ game }}</h2>
+  <p>
+    Here is a list of approved guides. Please select one to publish, change your
+    choice of published guide, or unpublish your current guide.
+    Note that the "switch-to-publish" option automatically unpublishes the currently
+    published guide and publishes your selected guide.
+  </p>
+  <form method="get" class="mb-3 d-flex align-items-center gap-2">
+    <select name="sort" class="form-select w-auto">
+      <option value="">Sort by: Most Recent Update</option>
+      <option value="old" {% if request.GET.sort == "old" %}selected{% endif %}>Sort by: Oldest Update</option>
+    </select>
+    <button type="submit" class="btn btn-outline-secondary">Sort</button>
+  </form>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Author</th>
+        <th>Timestamp</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for guide in ApprovedGuides %}
+        <tr>
+          <td>{{ guide.author }}</td>
+          <td>{{ guide.recent_upload }}</td>
+          <td>
+            {% if game.published_guide_id == guide %}
+              Published
+            {% else %}
+              Not Published
+            {% endif %}
+          </td>
+          <td class="d-flex gap-2 flex-column justify-content-end">
+            <form action="{% url 'moderator-set-publish-guide' game_pk=game.pk guide_pk=guide.pk %}"
+                  method="post"
+                  class="d-flex justify-content-end">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-primary w-100">
+                {% if game.published_guide_id == guide %}
+                  Remove as active
+                {% elif game.published_guide_id %}
+                  Swap with active
+                {% else %}
+                  Set as active
+                {% endif %}
+              </button>
+            </form>
+            <a class="btn btn-outline-primary d-inline-block"
+               href="{% url 'download-guide' guide.pk %}">Download</a>
+          </td>
+        </tr>
+      {% endfor %}
+      {% if not ApprovedGuides %}<td colspan="5">No approved guides for {{ game }} yet.</td>{% endif %}
+    </tbody>
+  </table>
+{% endblock page-content %}
