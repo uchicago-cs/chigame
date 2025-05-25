@@ -303,6 +303,7 @@ function drawBoard(scene) {
   }
 }
 
+// function to create a single piece. Adds the piece to the pieces array
 function createPiece(x, y, color, scene) {
   // create a piece
   let piece = {
@@ -356,6 +357,7 @@ function createPiece(x, y, color, scene) {
   pieces.push(piece);
 }
 
+// function to populate the board with pieces, added to the pieces array
 function populatePieces(scene) {
   // black has three rows
   for (let y = 0; y < 3; y++) {
@@ -382,7 +384,6 @@ function populatePieces(scene) {
 // This function finds all possible jump paths for a given piece,
 // including single and multi-jump chains.
 // Each path includes a list of moves and the pieces captured along the way.
-
 function getJumpPaths(piece) {
   var allPaths = []; // Store all possible jump paths
 
@@ -395,7 +396,7 @@ function getJumpPaths(piece) {
 
     // Determine vertical jump direction (up for red, down for black)
     var dy;
-    if (piece.color === COLORS.red) {
+    if (piece.color === lightPiece) {
       dy = -2;
     } else {
       dy = 2;
@@ -463,8 +464,6 @@ function getJumpPaths(piece) {
   return allPaths;
 }
 
-
-
 // check if a move is valid
 function isValidMove(piece, moveX, moveY) {
   // calculate the change in y and x
@@ -505,6 +504,7 @@ function updateScore() {
   score.innerHTML = 'Red: ' + redCaptured + '<br>Black: ' + blackCaptured;
 }
 
+// function to move a piece
 function movePiece(piece, moveX, moveY) {
   const dx = moveX - piece.x;
   const dy = moveY - piece.y;
@@ -546,13 +546,13 @@ function movePiece(piece, moveX, moveY) {
     onComplete: () => {
       // Check for king promotion
       if (
-        (piece.color === COLORS.red && piece.y === 0) ||
-        (piece.color === COLORS.black && piece.y === BOARD_SIZE - 1)
+        (piece.color === lightPiece && piece.y === 0) ||
+        (piece.color === darkPiece && piece.y === BOARD_SIZE - 1)
       ) {
         if (!piece.isKing) {
           piece.isKing = true;
           const crown = piece.sprite.scene.add.image(newX, newY, 'crown');
-          crown.setDisplaySize(TILE_SIZE, TILE_SIZE);
+          crown.setDisplaySize(tile_size, tile_size);
           piece.kingIcon = crown;
         }
       }
@@ -608,7 +608,7 @@ function checkGameOver() {
   }
 }
 
-// helper function to get the piece
+// helper function to get a piece from its x, y location on the board
 function getPiece(x, y) {
   return pieces.find((p) => p.x === x && p.y === y);
 }
@@ -718,10 +718,10 @@ function highlightValidMoves(scene, piece) {
 
       // draw the tile highlight
       var highlight = scene.add.rectangle(
-        MARGIN + finalMove.x * TILE_SIZE + TILE_SIZE / 2,
-        MARGIN + finalMove.y * TILE_SIZE + TILE_SIZE / 2,
-        TILE_SIZE,
-        TILE_SIZE,
+        margin + finalMove.x * tile_size + tile_size / 2,
+        margin + finalMove.y * tile_size + tile_size / 2,
+        tile_size,
+        tile_size,
         0xffffff,
         0.3
       );
@@ -745,7 +745,7 @@ function highlightValidMoves(scene, piece) {
   // If no jumps, fallback to normal diagonal move
   var dxOptions = [-1, 1];
   var dy = 1;
-  if (piece.color === COLORS.red) {
+  if (piece.color === lightPiece) {
     dy = -1;
   }
 
@@ -761,10 +761,10 @@ function highlightValidMoves(scene, piece) {
     ) {
       // adds a slightly transparent square
       var highlight = scene.add.rectangle(
-        MARGIN + newX * TILE_SIZE + TILE_SIZE / 2,
-        MARGIN + newY * TILE_SIZE + TILE_SIZE / 2,
-        TILE_SIZE,
-        TILE_SIZE,
+        margin + newX * tile_size + tile_size / 2,
+        margin + newY * tile_size + tile_size / 2,
+        tile_size,
+        tile_size,
         0xffffff,
         0.3
       );
@@ -782,48 +782,7 @@ function highlightValidMoves(scene, piece) {
   }
 }
 
-  // We have yet to implement a feature where it checks whether there are valid
-  // moves remaining for a player after each turn. In a real game of checkers
-  // if there are no moves left, the player loses the game.
-  if (validMoves.length > 0) {
-    // Math.random() only returns floating point from 0 to 1 and would require a
-    // separate helper function to return a random index from the array...
-    // https://docs.phaser.io/phaser/concepts/math
-    // phaser.math.rnd.pick() selects a random element from the array
-    const randomHint = Phaser.Math.RND.pick(validMoves);
-    // unlike chess, where there's rank and file, I don't think there's a proper
-    // way of calling a specific square on the board. For now, I just have it return
-    // the row and col on the matrix.
-    alert(
-      `Hint: Move ${currentPlayer === COLORS.red ? 'red' : 'black'} piece at (row ${
-        randomHint.piece.y
-      }, column ${randomHint.piece.x}) to (row ${randomHint.y}, column ${randomHint.x})`
-    );
-  } else {
-    // in a normal checkers game, the player loses if there are no moves left
-    alert('No valid moves.');
-  }
-
-  // reset draw offer if it was made by the current player
-  if (drawOffered && drawOfferedBy === currentPlayer) {
-    const gameOverPrompts = document.getElementById('gameOverPrompts');
-    const gameOverMessage = document.getElementById('gameOverMessage');
-    const drawBtn = document.getElementById('drawBtn');
-    const declineDrawBtn = document.getElementById('declineDrawBtn');
-    drawOffered = false;
-    drawOfferedBy = null;
-    gameOverMessage.textContent = '';
-    gameOverMessage.classList.remove('show');
-    gameOverPrompts.classList.remove('show');
-    drawBtn.textContent = 'Offer Draw';
-    declineDrawBtn.style.display = 'none';
-  }
-  //if black and bot is on, schedule bot move
-  if (vsEasyBot && currentPlayer === COLORS.black) {
-    //delay so user has time to process bot movw after their own
-    scene.time.delayedCall(300, easyBot, [scene], scene);
-  }
-
+// function to execute a multiple jump chain
 function executeJumpChain(piece, jump) {
   for (var i = 0; i < jump.captures.length; i++) {
     var captured = jump.captures[i];
@@ -832,7 +791,7 @@ function executeJumpChain(piece, jump) {
       return p !== captured;
     });
 
-    if (currentPlayer === COLORS.red) {
+    if (currentPlayer === lightPiece) {
       redCaptured++;
     } else {
       blackCaptured++;
@@ -845,8 +804,8 @@ function executeJumpChain(piece, jump) {
   var final = jump.path[jump.path.length - 1];
   piece.x = final.x;
   piece.y = final.y;
-  piece.sprite.x = MARGIN + final.x * TILE_SIZE + TILE_SIZE / 2;
-  piece.sprite.y = MARGIN + final.y * TILE_SIZE + TILE_SIZE / 2;
+  piece.sprite.x = margin + final.x * tile_size + tile_size / 2;
+  piece.sprite.y = margin + final.y * tile_size + tile_size / 2;
 
   piece.sprite.scene.sound.play('slide');
 }
@@ -879,6 +838,7 @@ function getBoardState() {
   return board;
 }
 
+// makes a post request to the server with the current board state
 function sendBoardToServer(boardState) {
   fetch('/api/board-state/', {
     method: 'POST',
@@ -1070,7 +1030,7 @@ document.addEventListener('DOMContentLoaded', () => {
         colLabel.textContent = i + 1;
         Object.assign(colLabel.style, {
           position: 'absolute',
-          left: `${rect.left + MARGIN + i * TILE_SIZE + TILE_SIZE / 2}px`,
+          left: `${rect.left + margin + i * tile_size + tile_size / 2}px`,
           top: `${rect.top - 20}px`,
           transform: 'translateX(-50%)',
           fontFamily: '"Outfit", sans-serif',
@@ -1087,7 +1047,7 @@ document.addEventListener('DOMContentLoaded', () => {
         Object.assign(rowLabel.style, {
           position: 'absolute',
           left: `${rect.left - 20}px`,
-          top: `${rect.top + MARGIN + i * TILE_SIZE + TILE_SIZE / 2}px`,
+          top: `${rect.top + margin + i * tile_size + tile_size / 2}px`,
           transform: 'translateY(-50%)',
           fontFamily: '"Outfit", sans-serif',
           color: '#3b2f2a',
@@ -1130,6 +1090,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
+// function to resize the board based on the given percentage
 function resizegame(percentage) {
   // Calculate new dimensions
   const newWidth = Math.floor(START_WIDTH * percentage);
@@ -1214,7 +1175,7 @@ function startPlayerTimer() {
 
   // https://stackoverflow.com/questions/5978519/how-can-i-use-setinterval-and-clearinterval
   activeTimer = setInterval(() => {
-    if (currentPlayer === COLORS.red) {
+    if (currentPlayer === lightPiece) {
       redTime--; // subtract 1 second from red's timer
       // Black wins if red runs out of time
       if (redTime <= 0) {
@@ -1264,7 +1225,7 @@ function endGameOnTimeout(winnerColor) {
 
   const message = document.getElementById('gameOverMessage');
   const gameOverPrompts = document.getElementById('gameOverPrompts');
-  const winner = winnerColor === COLORS.red ? 'Red' : 'Black';
+  const winner = winnerColor === lightPiece ? 'Red' : 'Black';
 
   // Show message
   message.textContent = `${winner === 'Red' ? 'Black' : 'Red'} ran out of time! ${winner} wins!`;
