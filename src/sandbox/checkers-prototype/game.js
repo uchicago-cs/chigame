@@ -84,6 +84,7 @@ function preload() {
 function create() {
   // Store reference to the scene
   const scene = this;
+  const endPieceDiv = document.getElementById('endScreenPiece');
 
   drawBoard(this);
   populatePieces(this);
@@ -149,7 +150,30 @@ function create() {
 
   playAgainYes.addEventListener('click', resetGame);
   playAgainNo.addEventListener('click', () => {
+    // hide the play‐again prompt and game‐over overlay
     playAgainPrompt.style.display = 'none';
+    gameOverPrompts.classList.remove('show');
+    gameOverMessage.classList.remove('show');
+
+    const msg = gameOverMessage.textContent || '';
+    // only proceed on a win (not on a draw)
+    if (msg.includes('wins')) {
+      // determine if it’s a black‐win or red‐win
+      const isBlackWin = msg.includes('Black wins');
+      const winnerHex = isBlackWin ? '#000000' : '#ff0000';
+
+      // show & color the spinner
+      endPieceDiv.classList.remove('hidden');
+      endPieceDiv.classList.add('show');
+      endPieceDiv.style.color = winnerHex;
+
+      // show & set the overlay text in the same color
+      const textDiv = document.getElementById('endScreenText');
+      textDiv.textContent = isBlackWin ? 'Black Wins!' : 'Red Wins!';
+      textDiv.style.color = winnerHex;
+      textDiv.classList.remove('hidden');
+      textDiv.classList.add('show');
+    }
   });
 
   forfeitBtn.addEventListener('click', () => {
