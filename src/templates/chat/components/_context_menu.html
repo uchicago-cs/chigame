@@ -1,6 +1,6 @@
 <div id="contextMenu" class="context-menu">
   <div class="small text-muted mb-1" id="replyPreview"></div>
-  <button class="btn btn-sm btn-light w-100" onclick="pinningMessage()">Pinning Messages</button>
+  <button class="btn btn-sm btn-light w-100" onclick="pinMessage()">Pinning Messages</button>
   <button class="btn btn-sm btn-light w-100" onclick="replyToMessage()">Reply</button>
   <button class="btn btn-sm btn-light w-100"
           onclick="editMessage(replyToMessageId, replyToContent)">Edit Message</button>
@@ -165,6 +165,62 @@
     hideContextMenu();
   }
 
+  function pinMessage() {
+    const id = replyToMessageId;
+    const token = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    fetch(`/chat/message/${id}/pin`, {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': token
+        }
+      })
+      .then(res => res.json())
+      .then(data => {
+        const pm = data.pinned_message;
+
+        const banner = document.getElementById('pinned-message-container');
+        if (pm.is_pinned) {
+          banner.innerHTML = `📌 <strong>${pm.username}</strong>: ${pm.content}`;
+          banner.style.display = 'block'; // ← this is KEY!
+        } else {
+          banner.innerHTML = '';
+          banner.style.display = 'none';
+        }
+        document.querySelectorAll('.pinned-label').forEach(el => el.remove());
+
+        if (pm.is_pinned) {
+          const messageEl = document.querySelector(
+            `[data-message-id="${pm.id}"]`
+          );
+
+          // check for .message-meta
+          let meta = messageEl?.querySelector('.message-meta');
+
+          if (!meta) {
+            // create it if missing
+            meta = document.createElement('div');
+            meta.className = 'message-meta text-end text-muted small mt-1';
+
+
+
+            messageEl?.querySelector('.rounded')?.appendChild(meta);
+          }
+          meta.insertAdjacentHTML(
+            'beforeend',
+            `<span class="text-warning small ms-1 pinned-label">📌 Pinned</span>`
+          );
+        }
+      })
+      .catch(err => console.error('Pin failed:', err));
+
+    hideContextMenu();
+  }
+
+
+
+
+
   function addReactionToMessage(messageId, content) {
     const container = document.getElementById(`reactions-${messageId}`);
     if (!container) return;
@@ -184,6 +240,9 @@
       container.appendChild(span);
     }
   }
+
+
+
 
   function removeReactionFromMessage(messageId, content) {
     const container = document.getElementById(`reactions-${messageId}`);
