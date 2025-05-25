@@ -814,6 +814,23 @@ function executeJumpChain(piece, jump) {
   piece.sprite.x = margin + final.x * tile_size + tile_size / 2;
   piece.sprite.y = margin + final.y * tile_size + tile_size / 2;
 
+  // check for king promotion
+  if (
+    (piece.color === lightPiece && piece.y === 0) ||
+    (piece.color === darkPiece && piece.y === BOARD_SIZE - 1)
+  ) {
+    if (!piece.isKing) {
+      piece.isKing = true;
+      const crown = piece.sprite.scene.add.image(
+        margin + piece.x * tile_size + tile_size / 2,
+        margin + piece.y * tile_size + tile_size / 2,
+        'crown'
+      );
+      crown.setDisplaySize(tile_size, tile_size);
+      piece.kingIcon = crown;
+    }
+  }
+
   piece.sprite.scene.sound.play('slide');
 }
 
