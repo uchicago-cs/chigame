@@ -1,10 +1,11 @@
 from django.core.exceptions import ValidationError
 from django.db.models import Count, OuterRef, Subquery
 from django.http import JsonResponse
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
+from .forms import LiveChatForm
 from .models import LiveChat, LiveChatMessage, LiveChatMessageReaction
 
 
@@ -15,19 +16,56 @@ def chat(request, chat_id):
     # if the chat is public, add the request user to the chat
     if request.user.is_authenticated and chat.public and not chat.users.filter(id=request.user.id).exists():
         chat.users.add(request.user)
-
+    if request.user.is_authenticated and not chat.users.filter(id=request.user.id).exists():
+        chat.users.add(request.user)
     return render(request, "chat/index.html", {"chat": chat, "messages": messages})
 
 
 def live_chat_list(request):
     latest_message = LiveChatMessage.objects.filter(live_chat=OuterRef("pk")).order_by("-sent_at")
 
-    chats = LiveChat.objects.filter(public=True).annotate(
+    public_chats = LiveChat.objects.filter(public=True).annotate(
         user_count=Count("users"),
         last_message=Subquery(latest_message.values("content")[:1]),
         last_message_time=Subquery(latest_message.values("sent_at")[:1]),
     )
-    return render(request, "chat/live-chat-list.html", {"chats": chats})
+
+    private_chats = LiveChat.objects.filter(public=False, users=request.user).annotate(
+        user_count=Count("users"),
+        last_message=Subquery(latest_message.values("content")[:1]),
+        last_message_time=Subquery(latest_message.values("sent_at")[:1]),
+    )
+    return render(
+        request,
+        "chat/live-chat-list.html",
+        {
+            "public_chats": public_chats,
+            "private_chats": private_chats,
+        },
+    )
+
+
+def create_live_chat(request):
+    if request.method == "POST":
+        form = LiveChatForm(request.POST)
+
+        if form.is_valid():
+            form.save()
+            return redirect("live-chat-list")
+    else:
+        form = LiveChatForm()
+    return render(request, "chat/create-live-chat.html", {"form": form})
+
+
+def leave_chat(request, chat_id):
+    chat = get_object_or_404(LiveChat, id=chat_id)
+
+    if request.user in chat.users.all():
+        chat.users.remove(request.user)
+
+        if chat.users.count() == 0:
+            chat.delete()
+    return redirect("live-chat-list")
 
 
 def delete_message(request, message_id):
@@ -122,6 +160,17 @@ def react_to_message(request, message_id):
             return JsonResponse({"status": "reacted", "content": content}, status=200)
     except ValidationError as e:
         return JsonResponse({"error": str(e)}, status=400)  # not a single emoji
+
+
+def live_chat_preview_api(request):
+    chats = LiveChat.objects.filter(public=True)
+    return JsonResponse(
+        {
+            "chats": [
+                {"id": chat.id, "name": chat.name, "description": getattr(chat, "description", "")} for chat in chats
+            ]
+        }
+    )
 
 
 def edit_message(request, message_id):
