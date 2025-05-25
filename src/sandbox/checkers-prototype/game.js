@@ -1000,18 +1000,18 @@ function getLegalMoves(color) {
 
 // Easy bot: pick a random legal move and play it
 function easyBot(scene) {
-  //get legal moves
-  //check if game over
-  //it not do a random legal move
+  // get legal moves
+  // check if game over
+  // it not do a random legal move
   const legalMoves = getLegalMoves(darkPiece);
-  //if No legal moves
+  // if No legal moves
   if (legalMoves.length === 0) {
     console.log('Cant move');
     return;
   }
-  //get random move
+  // get random move
   const move = Phaser.Utils.Array.GetRandom(legalMoves);
-  //execute move
+  // execute move
   movePiece(move.piece, move.x, move.y);
   // end bot's turn
   endTurn(scene);
