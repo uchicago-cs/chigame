@@ -1,0 +1,24 @@
+[
+    {
+      "model": "games.gamehistory",
+      "pk": 1,
+      "fields": {
+        "user": 1,
+        "match": 1,
+        "date_played": "2025-05-23T12:00:00Z",
+        "is_completed": true,
+        "result": 0
+      }
+    },
+    {
+      "model": "games.gamehistory",
+      "pk": 2,
+      "fields": {
+        "user": 2,
+        "match": 1,
+        "date_played": "2025-05-23T12:00:00Z",
+        "is_completed": true,
+        "result": 2
+      }
+    }
+  ]
