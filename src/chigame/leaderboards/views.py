@@ -32,7 +32,3 @@ def leaderboard_view(request, game_id):
             "selected_region": region_param,
         },
     )
-
-
-def bar_chart(request, game_id):
-    return render(request, "leaderboards/bar_chart.html")

@@ -98,11 +98,7 @@
           <div class="card-header">
             <h3>
               {% if profile.user == request.user %}
-                {% if not profile.user.name or profile.user.name == "" %}
-                  Welcome to Chigame!
-                {% else %}
-                  Welcome to Chigame, {{ profile.user.name }}!
-                {% endif %}
+                Welcome to Chigame, {{ profile.user.name }}!
               {% else %}
                 {{ profile.user.name }}'s Profile
               {% endif %}

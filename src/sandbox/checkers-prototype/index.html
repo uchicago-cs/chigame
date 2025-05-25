@@ -23,15 +23,9 @@
       <h1>CHIGAME</h1>
       <!-- add buttons to this div -->
       <div class="nav-btns">
-        <!-- game timer for red and black -->
-        <div id="timers">
-          <div id="red-timer"></div>
-          <div id="black-timer"></div>
-        </div>
         <button id="forfeitBtn" class="btn">Forfeit</button>
         <button id="drawBtn" class="btn">Offer Draw</button>
         <button id="declineDrawBtn" class="btn">Decline Draw</button>
-        <button id="toggle-bot" class="btn">Play vs Bot: ON</button>
         <button class="btn"
                 onclick="window.open('https://github.com/uchicago-cs/chigame/wiki/Adding-Games-~-Checkers-Rules', '_blank')">
           Read Rules
@@ -58,7 +52,6 @@
           <!-- Add settings options here -->
           <button id="toggle-colorblind" class="setting-btn">Toggle Colorblind Mode</button>
           <button id="toggle-coordinates" class="setting-btn">Toggle Coordinates</button>
-          <button id="toggle-mute" class="setting-btn">Mute</button>
           <!-- Board Scale Slider -->
           <div class="setting-option">
             <i class="fa-solid fa-maximize"></i>
@@ -75,6 +68,7 @@
       </div>
       <div id="settings-tab">⚙️</div>
     </div>
+    <button id="settings-button" class="settings-button">⚙️</button>
     <div id="captured-pieces">
       <div id="score">
         Red: 0
