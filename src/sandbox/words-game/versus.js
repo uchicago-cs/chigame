@@ -122,6 +122,8 @@ socket.on('wordResult', ({ valid, reason, word, colorMap }) => {
     if (guessedWordCount === ROWS) {
         showNotification("Game Over.");
         gameOver = true;
+        socket.emit('lose', word);
+
     }
 });
 
@@ -193,7 +195,6 @@ function createSquares(boardId) {
         let square = document.createElement("div");
         square.classList.add("square");
         square.classList.add("animate__animated");
-
         square.setAttribute("id", index + 1);
         board.appendChild(square);
     }
@@ -205,7 +206,6 @@ function setupKeyboard() {
     for (let i = 0; i < keys.length; i++) {
         keys[i].onclick = ({ target }) => {
             playSound(clickSound);
-
             const letter = target.getAttribute("data-key").toLowerCase();
 
             if (letter === "enter") {
@@ -228,7 +228,6 @@ function handlePhysicalKeyboardInput() {
     document.addEventListener('keydown', (e) => {
         const key = e.key.toLowerCase();
         playSound(clickSound);
-
 
         if (key === "enter") {
             handleSubmitWord();
@@ -262,7 +261,6 @@ function updateGuessedWords(letter) {
         availableSpaceEl.textContent = letter.toUpperCase();
         availableSpaceEl.classList.add("pop-in");
         setTimeout(() => availableSpaceEl.classList.remove("pop-in"), 200);
-
     }
 }
 
@@ -286,7 +284,6 @@ function handleDeleteLetter() {
         }, 150);
         lastLetterEl.textContent = "";
     }
-
 }
 
 //Enter a guess
@@ -299,7 +296,6 @@ function handleSubmitWord() {
         shakeRow(guessedWordCount);
         return;
     }
-
 
     const currentWord = currentWordArr.join("").toLowerCase();
     socket.emit('submitWord', currentWord);
@@ -323,7 +319,6 @@ function startCountdownTimer(startTime, duration) {
         if (remaining <= 0) {
             clearInterval(timerInterval);
             showNotification("Time's up!");
-
             gameOver = true;
         }
     }
