@@ -12,8 +12,14 @@
   </head>
   <body>
     <div id="header">
-      <h1 class="name">WORDS</h1>
-      <h1>timer</h1>
+      <div class="nav-buttons">
+        <a href="{% index %}" class="nav-btn">Home</a>
+        <button id="settings-btn" class="nav-btn">⚙</button>
+      </div>
+      <div class="logo-title">
+        <h1 class="name">WORDS</h1>
+        <h1>timer</h1>
+      </div>
     </div>
     <div id="notification-wrapper">
       <div id="notification"></div>
@@ -80,6 +86,28 @@
             <!-- Empty, only hidden here for styling (line up with board 1)-->
           </div>
         </div>
+      </div>
+    </div>
+    <div id="settings" class="settings-screen hidden">
+      <div class="settings-content">
+        <h2>Settings</h2>
+        <h4>Sound Settings</h4>
+        <label for="volume">Volume:</label>
+        <input type="range" id="volume" min="0" max="100" value="50" />
+        <label>
+          <input type="checkbox" id="mute-toggle" />
+          Mute
+        </label>
+        <h4>Light/Dark mode</h4>
+        <label>
+          <input type="checkbox" id="dark-mode-toggle" />
+          Enable Light Mode
+        </label>
+        <h4>Colorblind mode</h4>
+        <label>
+          <input type="checkbox" id="colorblind-toggle" />
+          Enable Colorblind Mode
+        </label>
       </div>
     </div>
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
