@@ -2,7 +2,6 @@ from django.shortcuts import get_object_or_404, render
 
 from chigame.games.models import Game
 from chigame.leaderboards.models import LeaderboardEntry, Region
-from chigame.users.models import UserProfile
 
 
 def leaderboard_view(request, game_id):
@@ -36,45 +35,36 @@ def leaderboard_view(request, game_id):
 
 
 def landing_page_view(request):
-    # temp fallback for logged-out user: no LeaderboardEntries displayed
-    entries = []
+    top_entries = []
 
-    default_view_metric = None
-    anonymity = None
+    for game in Game.objects.prefetch_related("leaderboards").all():
+        leaderboard = game.leaderboards.first()
+        if leaderboard:
+            top_entry = (
+                LeaderboardEntry.objects.filter(leaderboard=leaderboard)
+                .select_related("user", "region")
+                .order_by("rank")
+                .first()
+            )
+            if top_entry:
+                top_entries.append(
+                    {
+                        "game": game.name,
+                        "entry": top_entry,
+                    }
+                )
 
-    if request.user.is_authenticated:
-        user_profile = get_object_or_404(UserProfile, user=request.user)
-        entries = (
-            LeaderboardEntry.objects.filter(user=user_profile).select_related("leaderboard__game").order_by("rank")[:5]
-        )
-
-        # We will likely need to add the following fields to the User model (cc User team):
-
-        # user = User.objects.get(pk=request.user.pk)
-        # default_view_metric = user.default_metric
-        # anonymity = user_profile.anonymity_setting
-
+    # Default view metric hardcoded as Points to match the leaderboard fixture
+    # Anonymity hardcoded as None, and will be linked with security settings in later PR
     return render(
         request,
         "leaderboards/landing_page.html",
         {
-            "entries": entries,
-            "default_view_metric": default_view_metric,
-            "anonymity": anonymity,
+            "top_entries": top_entries,
+            "default_view_metric": "Points",
+            "anonymity": None,
         },
     )
-
-
-def select_default_view_metric(request):
-    pass
-
-
-def select_anonymity(request):
-    pass
-
-
-def select_game_view_metric(request):
-    pass
 
 
 # def select_region(request):
@@ -83,4 +73,3 @@ def select_game_view_metric(request):
 
 def bar_chart(request, game_id):
     return render(request, "leaderboards/bar_chart.html")
-
