@@ -17,7 +17,7 @@ from django.core.paginator import Paginator
 from django.db.models import Avg, Case, Count, ExpressionWrapper, F, FloatField, Q, Value, When
 from django.db.models.functions import Lower
 from django.forms import ValidationError
-from django.http import HttpResponseForbidden, HttpResponseRedirect, JsonResponse
+from django.http import Http404, HttpResponse, HttpResponseForbidden, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
@@ -123,7 +123,7 @@ class GameDetailView(LoginRequiredMixin, FormMixin, DetailView):
         context["avg_rating"] = self.object.reviews.filter(is_public=True).aggregate(Avg("rating"))["rating__avg"]
 
         # FOR IF/twine GAMES
-        context["is_twine_game"] = self.object.twine_file.name.endswith(".html") if self.object.twine_file else False
+        context["is_twine_game"] = self.object.twine_file is not None
         context["recommended_games"] = get_recommended_games(
             game=self.object,
             user=self.request.user if self.request.user.is_authenticated else None,
@@ -171,13 +171,17 @@ class GameCreateView(UserPassesTestMixin, CreateView):
     def form_valid(self, form):
         self.object = form.save(commit=False)
         # ✅ Manually assign uploaded file
-        if self.request.FILES.get("twine_file"):
-            self.object.twine_file = self.request.FILES["twine_file"]
+        uploaded_file = self.request.FILES.get("twine_file")
+        if uploaded_file:
+            self.object.twine_file_name = uploaded_file.name
+            self.object.twine_file = uploaded_file.read()
+            uploaded_file.seek(0)
+
         self.object.save()
         return redirect(self.get_success_url())
 
     def get_success_url(self):
-        if self.object.twine_file and self.object.twine_file.name.endswith(".html"):
+        if self.object.twine_file_name and self.object.twine_file_name.endswith(".html"):
             return reverse("interactive-fiction-detail", kwargs={"pk": self.object.pk})
         return reverse("game-detail", kwargs={"pk": self.object.pk})
 
@@ -200,6 +204,17 @@ class GameEditView(UserPassesTestMixin, UpdateView):
         context = super().get_context_data(**kwargs)
         context["is_create"] = False
         return context
+
+
+def serve_twine_from_db(request, pk):
+    game = get_object_or_404(Game, pk=pk)
+    if not game.twine_file:
+        raise Http404("No Twine file stored in database.")
+    return HttpResponse(
+        game.twine_file,
+        content_type="text/html",
+        headers={"Content-Disposition": f'inline; filename="{game.twine_file_name}"'},
+    )
 
 
 # =============== BGG Searching =================
@@ -608,8 +623,7 @@ class IFGameCreateView(CreateView):
         context["game"] = latest_game
 
         if latest_game.twine_file:
-            context["uploaded_file_url"] = latest_game.twine_file.url
-
+            context["has_uploaded_twine"] = bool(latest_game.twine_file)
         return context
 
 
