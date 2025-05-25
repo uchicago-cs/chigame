@@ -67,9 +67,10 @@ async function fetchInitialBoardState() {
 }
 
 
+// ---INIT FUNCTIONS-----------------------------------------------------------
+function preload() {
 
-// ---INIT FUNCTIONS------------------------------------------------------------
-function preload() { }
+}
 
 async function create() {
   const state = await fetchInitialBoardState();

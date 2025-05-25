@@ -2,6 +2,10 @@
 
 {% load static %}
 
+{% block javascript %}
+  {{ block.super }}
+  <script src="{% static 'js/knowledge-base/like-favorite.js' %}"></script>
+{% endblock javascript %}
 {% block css %}
   {{ block.super }}
   <link rel="stylesheet"
@@ -16,7 +20,10 @@
       <div class="d-flex flex-column justify-content-between">
         <p>Authored by {{ guide.author }}</p>
         <p>Last edited {{ guide.recent_upload }}</p>
-        <p>{{ guide.likes.count }} ♥ and {{ guide.favorites.count }} ★</p>
+        <p>
+          <span id="like-count">{{ guide.likes.count }} ♥</span> and
+          <span id="fav-count">{{ guide.favorites.count }} ★</span>
+        </p>
       </div>
       <!-- second row, "last edited..." and a link to access the game -->
       <div class="d-flex flex-column align-items-end justify-content-between text-end">
@@ -43,4 +50,43 @@
     {{ guide.game_id }}, please go back to the
     <a href="{% url 'knowledge-base' %}">knowledge base landing page</a>.
   {% endif %}
-{% endblock page-content %}
+  {% if request.user.is_authenticated %}
+    <span type="submit"
+          id="like-span"
+          class="likefav-button"
+          data-user="{{ request.user }}"
+          data-like-url="{% url 'like-unlike-guide' guide.pk %}">
+      <i id="like-icon"
+        class="
+        {% if request.user in guide.likes.all %}
+          heart-liked
+        {% else %}
+          heart-hollow
+        {% endif %}"">♥</i>
+        <span id="like-text" class="likefav-text">
+          {% if request.user in guide.likes.all %}
+            Unlike
+          {% else %}
+            Like
+          {% endif %}
+        </span>
+      </span>
+      &nbsp;
+      <span type="submit"
+            id="fav-span"
+            class="likefav-button"
+            data-user="{{ request.user }}"
+            data-fav-url="{% url 'fav-unfav-guide' guide.pk %}">
+        <i id="fav-icon"
+           class=" {% if request.user in guide.favorites.all %} star-faved {% else %} star-hollow {% endif %}">★</i>
+        <span id="fav-text" class="likefav-text">
+          {% if request.user in guide.favorites.all %}
+            Unfavorite
+          {% else %}
+            Favorite
+          {% endif %}
+        </span>
+      </span>
+      {% csrf_token %}
+    {% endif %}
+  {% endblock page-content %}
