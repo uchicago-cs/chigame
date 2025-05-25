@@ -1214,7 +1214,7 @@ function resizeGame(percentage) {
 
   });
   // redraw the highlighted tiles
-  
+
   // if the coordinates are visible, update their size by redrawing them
   if (coordsVisible) {
     toggleCoordinateVisibility();
