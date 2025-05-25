@@ -28,7 +28,18 @@ const COLORS = {
   black: 0x000000,
   red: 0xff0000,
   white: 0xffffff,
+  colorblind_blue: 0x1e88e5,
+  colorblind_orange: 0xffc107,
 };
+
+const PLAYER_RED = 'RED';
+const PLAYER_BLACK = 'BLACK';
+
+let playerColors = {
+  [PLAYER_RED]: COLORS.red,
+  [PLAYER_BLACK]: COLORS.black,
+};
+
 let pieces = [];
 let selectedPiece = null;
 let currentPlayer = COLORS.red; // red starts first
@@ -56,7 +67,9 @@ async function fetchInitialBoardState() {
 }
 
 // ---INIT FUNCTIONS-----------------------------------------------------------
-function preload() { }
+function preload() {
+
+}
 
 async function create() {
   const state = await fetchInitialBoardState();
@@ -70,7 +83,9 @@ async function create() {
   }
 }
 
-function update() { }
+function update() {
+
+}
 // ----------------------------------------------------------------------------
 
 // Draw the game board
@@ -116,44 +131,46 @@ function drawBoard(scene) {
   }
 }
 
-function createPiece(x, y, color, scene) {
-  // create a piece
+function createPiece(x, y, logicalColor, scene) {
+  const owner = logicalColor === COLORS.red ? PLAYER_RED : PLAYER_BLACK;
+
   const piece = {
     x,
     y,
-    color,
+    owner,
+    color: playerColors[owner],  // use current visual color
     sprite: scene.add.circle(
-      // same center position as when we create the board tiles/squares
       MARGIN + x * TILE_SIZE + TILE_SIZE / 2,
       MARGIN + y * TILE_SIZE + TILE_SIZE / 2,
-      // circle radius
       TILE_SIZE / RADIUS_SCALE_FACTOR,
-      color
+      playerColors[owner] // use this for visual fill
     ),
   };
 
-  // make the piece clickable
   piece.sprite.setInteractive();
   piece.sprite.on('pointerdown', () => {
-    // deselect and remove highlight if click a selected piece
-    if (selectedPiece === piece) {
+    if (!selectedPiece && piece.owner === getCurrentPlayerOwner()) {
+      selectedPiece = piece;
+      piece.sprite.setStrokeStyle(HIGHLIGHT_SIZE, COLORS.white);
+    } else if (selectedPiece === piece) {
       selectedPiece.sprite.setStrokeStyle();
       selectedPiece = null;
-
-      // if player selects their own pieces (does nothing if they click on opponent pieces)
-    } else if (piece.color === currentPlayer) {
-      // clear previous selected piece
-      if (selectedPiece) {
-        selectedPiece.sprite.setStrokeStyle();
-      }
-      // highligt the current piece that is being selected and set them as 'selectedPiece'
+    } else if (piece.owner === getCurrentPlayerOwner()) {
+      selectedPiece.sprite.setStrokeStyle();
       selectedPiece = piece;
       piece.sprite.setStrokeStyle(HIGHLIGHT_SIZE, COLORS.white);
     }
   });
 
-  // push to array
   pieces.push(piece);
+}
+
+
+
+function getCurrentPlayerOwner() {
+  return currentPlayer === COLORS.red || currentPlayer === COLORS.colorblind_orange
+    ? PLAYER_RED
+    : PLAYER_BLACK;
 }
 
 function populatePieces(scene) {
@@ -200,7 +217,7 @@ function isValidMove(piece, moveX, moveY) {
   // with our current orientation, red pieces always move up and black pieces move down
   // may need to fix this once we introduce multiplayer, which would require
   // us to flip the board for different players
-  const direction = piece.color === COLORS.red ? -1 : 1; // in js, y=0 at the top
+  const direction = piece.owner === PLAYER_RED ? -1 : 1; // in js, y=0 at the top
 
   // Normal move (1 step diagonally)
   if (Math.abs(dx) === 1 && dy === direction) {
@@ -212,9 +229,7 @@ function isValidMove(piece, moveX, moveY) {
     // get the piece that was jumped over
     const captured = getPiece(piece.x + dx / 2, piece.y + dy / 2);
     // make sure there exists a piece that was jumped over, and it most be an opposing piece
-    return (
-      captured && captured.color !== piece.color // must be an opponent piece
-    );
+    return captured && captured.owner !== piece.owner;
   }
 
   // return false if it's not a normal or jump move
@@ -223,6 +238,8 @@ function isValidMove(piece, moveX, moveY) {
 }
 
 function movePiece(piece, moveX, moveY) {
+  updateScore();
+
   const dx = moveX - piece.x;
   const dy = moveY - piece.y;
 
@@ -279,7 +296,8 @@ function endTurn() {
   }
   selectedPiece = null;
   // switch between red and black player turn
-  currentPlayer = currentPlayer === COLORS.red ? COLORS.black : COLORS.red;
+  currentPlayer =
+    getCurrentPlayerOwner() === PLAYER_RED ? COLORS.black : COLORS.red;
 }
 
 // Retrieves a 2D array representation of the board state where 0 are unoccupied
@@ -299,7 +317,7 @@ function getBoardState() {
     const row = piece.y;
 
     if (row >= 0 && row < BOARD_SIZE && col >= 0 && col < BOARD_SIZE) {
-      if (piece.color == COLORS.red) {
+      if (piece.owner == PLAYER_RED) {
         board[row][col] = 1; // Red piece
       } else {
         board[row][col] = 2; // Black piece
@@ -309,6 +327,19 @@ function getBoardState() {
 
   return board;
 }
+
+// Updates score on frontend
+function updateScore() {
+  const redCount = pieces.filter(p => p.owner === PLAYER_RED).length;
+  const blackCount = pieces.filter(p => p.owner === PLAYER_BLACK).length;
+
+  const redCaptured = 12 - blackCount;
+  const blackCaptured = 12 - redCount;
+
+  const score = document.getElementById('score');
+  score.innerHTML = `Red: ${redCaptured}<br>Black: ${blackCaptured}`;
+}
+
 
 // If you have more than one tab open it will automatically update by calling
 // from the server
@@ -325,6 +356,7 @@ function reloadBoardFromState(state) {
 }
 
 function update() {
+  updateScore();
   // Every 2 seconds, poll server for board state
   if (!window.lastPollTime || Date.now() - window.lastPollTime > 2000) {
     window.lastPollTime = Date.now();
@@ -340,3 +372,104 @@ function update() {
       .catch(err => console.error("Polling error:", err));
   }
 }
+
+// Event Listener for Settings Menu
+document.addEventListener('DOMContentLoaded', () => {
+  const settingsContainer = document.getElementById('settings-container');
+
+  settingsContainer.addEventListener('mouseover', () => {
+    settingsContainer.classList.add('show');
+  });
+
+  settingsContainer.addEventListener('mouseout', () => {
+    settingsContainer.classList.remove('show');
+  });
+});
+
+// Function to change the color of all pieces
+function changePieceColor(newBlack, newRed) {
+  playerColors[PLAYER_BLACK] = newBlack;
+  playerColors[PLAYER_RED] = newRed;
+
+  pieces.forEach((piece) => {
+    const newColor = playerColors[piece.owner];
+    piece.color = newColor;
+    piece.sprite.setFillStyle(newColor);
+  });
+}
+
+// Event listener for the toggle colorblind button
+document.addEventListener('DOMContentLoaded', () => {
+  const changeColorButton = document.getElementById('toggle-colorblind');
+  changeColorButton.addEventListener('click', () => {
+    const firstPieceColor = pieces[0].color;
+    // if the first piece is a default color, change to colorblind colors
+    if (firstPieceColor === COLORS.red || firstPieceColor === COLORS.black) {
+      changePieceColor(COLORS.colorblind_blue, COLORS.colorblind_orange);
+      changeColorButton.classList.add('selected');
+    }
+    // if the first piece is a colorblind color, change to default colors
+    else {
+      changePieceColor(COLORS.black, COLORS.red);
+      changeColorButton.classList.remove('selected');
+
+    }
+  });
+});
+
+// Coordinates overlay button
+document.addEventListener('DOMContentLoaded', () => {
+  const toggleCoordinatesBtn = document.getElementById('toggle-coordinates');
+  let coordsVisible = false;
+  const coordElements = [];
+
+  toggleCoordinatesBtn.addEventListener('click', () => {
+    coordsVisible = !coordsVisible;
+
+    if (coordsVisible) {
+      // get board position on screen
+      const gameDiv = document.getElementById('game');
+      const rect = gameDiv.getBoundingClientRect();
+
+      // for each index, create a top label and a left label
+      for (let i = 0; i < BOARD_SIZE; i++) {
+        // Column label
+        const colLabel = document.createElement('div');
+        colLabel.textContent = i + 1;
+        Object.assign(colLabel.style, {
+          position: 'absolute',
+          left: `${rect.left + MARGIN + i * TILE_SIZE + TILE_SIZE / 2}px`,
+          top: `${rect.top - 20}px`,
+          transform: 'translateX(-50%)',
+          fontFamily: '"Outfit", sans-serif',
+          color: '#3b2f2a',
+          userSelect: 'none',
+          pointerEvents: 'none',
+        });
+        document.body.appendChild(colLabel);
+        coordElements.push(colLabel);
+
+        // Row label
+        const rowLabel = document.createElement('div');
+        rowLabel.textContent = i + 1;
+        Object.assign(rowLabel.style, {
+          position: 'absolute',
+          left: `${rect.left - 20}px`,
+          top: `${rect.top + MARGIN + i * TILE_SIZE + TILE_SIZE / 2}px`,
+          transform: 'translateY(-50%)',
+          fontFamily: '"Outfit", sans-serif',
+          color: '#3b2f2a',
+          userSelect: 'none',
+          pointerEvents: 'none',
+        });
+        document.body.appendChild(rowLabel);
+        coordElements.push(rowLabel);
+      }
+
+    } else {
+      // remove coordinates
+      coordElements.forEach(el => document.body.removeChild(el));
+      coordElements.length = 0;
+    }
+  });
+});

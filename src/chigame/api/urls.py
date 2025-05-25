@@ -18,6 +18,9 @@ game_patterns = [
         name="api-user-achievement-assignment",
     ),
     path("<int:pk>/achievements/create/", views.AchievementCreateView.as_view(), name="api-game-achievement-create"),
+    path("<int:game_id>/scores/", views.MetricScoreView.as_view(), name="api-game-submit-score"),
+    path("<int:game_id>/leaderboard/", views.GameLeaderboardView.as_view(), name="game-leaderboard"),
+    path("<int:pk>/popups/", views.GamePopupsAPIView.as_view(), name="api-game-popups"),
     path("data/", views.GameDataListView.as_view(), name="api-game-data-list"),
     path("<int:game_id>/data/<str:key>/", views.GameDataDetailView.as_view(), name="api-game-data-detail"),
     path("<int:pk>/review-stats/", views.GameReviewStatsAPIView.as_view(), name="api-game-review-stats"),
@@ -54,6 +57,7 @@ group_patterns = [
 login_patterns = [
     path("token/", TokenObtainPairView.as_view(), name="token-obtain-pair"),
     path("token/refresh/", TokenRefreshView.as_view(), name="token-refresh"),
+    path("signup/", views.Signup, name="signup"),
 ]
 
 urlpatterns = [

@@ -8,7 +8,8 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ("games", "0001_initial"),
+        ("users", "0013_merge_20250519_0011"),
+        ("games", "0038_merge_20250519_0011"),
     ]
 
     operations = [

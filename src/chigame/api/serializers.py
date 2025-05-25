@@ -2,19 +2,31 @@ from rest_framework import serializers
 
 from chigame.achievements.models import Achievement, UserAchievement
 from chigame.games.models import (
+    Announcement,
     Category,
     Chat,
+    Checkers,
+    CheckersBoard,
+    CheckersTurn,
     Feedback,
     Game,
     GameData,
+    GameList,
+    InteractiveFictionGame,
     Lobby,
+    Match,
+    MatchProposal,
     Mechanic,
     Message,
+    Person,
+    Player,
+    Publisher,
     Review,
     Tournament,
     User,
 )
-from chigame.users.models import Group
+from chigame.leaderboards.models import MetricScore
+from chigame.users.models import Group, UserProfile
 
 
 class GameSerializer(serializers.ModelSerializer):
@@ -132,6 +144,43 @@ class AchievementSerializer(serializers.ModelSerializer):
         fields = ["id", "name", "description", "rarity", "threshold"]
 
 
+class MetricScoreSerializer(serializers.ModelSerializer):
+    metric_id = serializers.IntegerField(write_only=True)
+    match_id = serializers.IntegerField(write_only=True)
+
+    class Meta:
+        model = MetricScore
+        fields = ["id", "score", "user", "metric", "match", "leaderboard_entry", "metric_id", "match_id"]
+        read_only_fields = ["id", "user", "metric", "match", "leaderboard_entry"]
+
+    def validate_score(self, value):
+        if value < 0:
+            raise serializers.ValidationError("Score must be a positive integer.")
+        return value
+
+
+class GameLeaderboardSerializer(serializers.ModelSerializer):
+    username = serializers.SerializerMethodField()
+    score = serializers.IntegerField(source="max_score")
+
+    class Meta:
+        model = MetricScore
+        fields = ["id", "username", "score"]
+
+    def get_username(self, obj):
+        user_profile = UserProfile.objects.get(id=obj["user"])
+        return user_profile.user.username
+
+
+class PopUpInfoSerializer(serializers.Serializer):
+    min_players = serializers.IntegerField()
+    max_players = serializers.IntegerField()
+    complexity = serializers.FloatField()
+    min_playtime = serializers.IntegerField()
+    max_playtime = serializers.IntegerField()
+    description = serializers.CharField()
+
+
 class GameDataSerializer(serializers.ModelSerializer):
     class Meta:
         model = GameData
@@ -150,3 +199,143 @@ class GameReviewStatsSerializer(serializers.Serializer):
     average_rating = serializers.DecimalField(max_digits=3, decimal_places=2, required=False)
     popularity = serializers.IntegerField()
     read_only_fields = ["id", "created_at", "user", "tournament"]
+
+
+class LiveChatSerializer(serializers.ModelSerializer):
+    users = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+
+    class Meta:
+        model = LiveChat
+        fields = ["id", "name", "users"]
+
+
+class InteractiveFictionGameSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = InteractiveFictionGame
+        fields = "__all__"
+
+
+class PersonSerializer(serializers.ModelSerializer):
+    games = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+
+    class Meta:
+        model = Person
+        fields = ["id", "name", "person_role", "games"]
+
+
+class PublisherSerializer(serializers.ModelSerializer):
+    games = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+
+    class Meta:
+        model = Publisher
+        fields = ["id", "name", "games", "website", "year_established"]
+
+
+class PlayerSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+
+    class Meta:
+        model = Player
+        fields = [
+            "id",
+            "user",
+            "match",
+            "team",
+            "role",
+            "outcome",
+            "victory_type",
+        ]
+
+
+class MatchSerializer(serializers.ModelSerializer):
+    players = PlayerSerializer(many=True, source="player_set", read_only=True)
+    game = serializers.PrimaryKeyRelatedField(read_only=True)
+    lobby = serializers.PrimaryKeyRelatedField(read_only=True)
+
+    class Meta:
+        model = Match
+        fields = ["id", "game", "lobby", "date_played", "players"]
+
+
+class MatchProposalSerializer(serializers.ModelSerializer):
+    proposer = UserSerializer(read_only=True)
+    joined = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+
+    class Meta:
+        model = MatchProposal
+        fields = [
+            "id",
+            "game",
+            "proposer",
+            "group",
+            "proposed_time",
+            "min_players",
+            "joined",
+        ]
+
+
+class AnnouncementSerializer(serializers.ModelSerializer):
+    recipients = UserSerializer(many=True, read_only=True)
+    sender = UserSerializer(read_only=True)
+
+    class Meta:
+        model = Announcement
+        fields = [
+            "id",
+            "recipients",
+            "content",
+            "sender",
+            "timestamp",
+            "sent",
+            "type",
+        ]
+
+
+class GameListSerializer(serializers.ModelSerializer):
+    created_by = UserSerializer(read_only=True)
+    games = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+
+    class Meta:
+        model = GameList
+        fields = [
+            "id",
+            "name",
+            "description",
+            "created_by",
+            "games",
+            "created_at",
+            "updated_at",
+        ]
+
+
+class CheckersSerializer(serializers.ModelSerializer):
+    player_1 = PlayerSerializer(read_only=True)
+    player_2 = PlayerSerializer(read_only=True)
+    winner = PlayerSerializer(read_only=True)
+
+    class Meta:
+        model = Checkers
+        fields = [
+            "id",
+            "player_1",
+            "player_2",
+            "winner",
+            "start_time",
+            "end_time",
+        ]
+
+
+class CheckersBoardSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CheckersBoard
+        fields = ["id", "state"]
+
+
+class CheckersTurnSerializer(serializers.ModelSerializer):
+    game = serializers.PrimaryKeyRelatedField(read_only=True)
+    board = serializers.PrimaryKeyRelatedField(read_only=True)
+    player = PlayerSerializer(read_only=True)
+
+    class Meta:
+        model = CheckersTurn
+        fields = ["id", "game", "board", "turn_number", "player"]
