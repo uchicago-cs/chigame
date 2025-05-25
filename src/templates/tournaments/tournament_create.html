@@ -5,7 +5,7 @@
 {% block content %}
   <div class="container my-5">
     <h1 class="mb-4">Create Tournament</h1>
-    <form method="post" class="needs-validation" novalidate>
+    <form method="post" class="needs-validation" novalidate id="tournamentForm">
       {% csrf_token %}
       <div class="row g-3">
         <!-- Name and Game fields in first row -->
@@ -26,6 +26,7 @@
                  name="{{ form.registration_start_date.html_name }}"
                  id="id_registration_start_date"
                  class="form-control"
+                 required
                  value="{{ form.registration_start_date.value|default:'' }}" />
           {% if form.registration_start_date.errors %}
             <div class="text-danger">{{ form.registration_start_date.errors }}</div>
@@ -37,6 +38,7 @@
                  name="{{ form.registration_end_date.html_name }}"
                  id="id_registration_end_date"
                  class="form-control"
+                 required
                  value="{{ form.registration_end_date.value|default:'' }}" />
           {% if form.registration_end_date.errors %}
             <div class="text-danger">{{ form.registration_end_date.errors }}</div>
@@ -49,6 +51,7 @@
                  name="{{ form.tournament_start_date.html_name }}"
                  id="id_tournament_start_date"
                  class="form-control"
+                 required
                  value="{{ form.tournament_start_date.value|default:'' }}" />
           {% if form.tournament_start_date.errors %}
             <div class="text-danger">{{ form.tournament_start_date.errors }}</div>
@@ -60,6 +63,7 @@
                  name="{{ form.tournament_end_date.html_name }}"
                  id="id_tournament_end_date"
                  class="form-control"
+                 required
                  value="{{ form.tournament_end_date.value|default:'' }}" />
           {% if form.tournament_end_date.errors %}
             <div class="text-danger">{{ form.tournament_end_date.errors }}</div>
@@ -112,5 +116,41 @@
   {% endblock extra_css %}
   {% block extra_js %}
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      document.getElementById('tournamentForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const requiredFields = {
+          'name': 'Name',
+          'game': 'Game',
+          'registration_start_date': 'Registration start date',
+          'registration_end_date': 'Registration end date',
+          'tournament_start_date': 'Tournament start date',
+          'tournament_end_date': 'Tournament end date',
+          'max_players': 'Max players',
+          'num_winner': 'Number of winners',
+          'description': 'Description',
+          'rules': 'Rules',
+          'draw_rules': 'Draw rules'
+        };
+
+        let emptyFields = [];
+
+        for (const [fieldId, fieldName] of Object.entries(requiredFields)) {
+          const field = document.getElementById('id_' + fieldId);
+          if (!field || !field.value.trim()) {
+            emptyFields.push(fieldName);
+          }
+        }
+
+        if (emptyFields.length > 0) {
+          alert('Please fill out all required fields:\n' + emptyFields.join('\n'));
+          return;
+        }
+
+        // If all fields are filled, submit the form
+        this.submit();
+      });
+    </script>
   {% endblock extra_js %}
 {% endblock content %}
