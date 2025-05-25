@@ -766,7 +766,7 @@ def assign_label_to_notification(request, notification_id):
 @login_required
 def notifications_by_label(request, label_id):
     """
-    Retrieves and displays all notifications associated with a specific label
+    Retrieves & displays all notifications associated with a specific label
     belonging to the logged-in user.
 
     It fetches the NotificationLabel object and then retrieves all notifications
