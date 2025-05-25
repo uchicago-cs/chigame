@@ -65,14 +65,20 @@ def top_time_played_bar_chart(request, game_id):
     leaderboard = game.leaderboards.filter(name__icontains="Time Played").first()
 
     if not leaderboard:
-        return render(request, "leaderboards/empty.html", {"game": game, "message": f"No 'Time Played' leaderboard found for {game.name}."})
+        return render(
++            request,
++            "leaderboards/empty.html",
++            {"game": game, "message": f"No 'Time Played' leaderboard found for {game.name}."},
++        )
 
     entries = LeaderboardEntry.objects.filter(leaderboard=leaderboard).select_related("user")
 
     time_played_metric = Metric.objects.filter(game=game, name__icontains="Time Played").first()
 
     if not time_played_metric:
-        return render(request, "leaderboards/error.html", {"message": f"No 'Time Played' metric found for {game.name}."})
+        return render(
++            request, "leaderboards/error.html", {"message": f"No 'Time Played' metric found for {game.name}."}
++        )
 
     leaderboard_data = []
     for entry in entries:
@@ -80,7 +86,7 @@ def top_time_played_bar_chart(request, game_id):
         if metric_score:
             leaderboard_data.append({"player": entry.user.user.name, "score": metric_score.score})
 
-    leaderboard_data.sort(key=lambda item: item['score'], reverse=True)
+    leaderboard_data.sort(key=lambda item: item["score"], reverse=True)
 
     context = {
         "game": game,
@@ -95,7 +101,11 @@ def top_games_won_bar_chart(request, game_id):
     leaderboard = game.leaderboards.filter(name__icontains="Games Won").first()
 
     if not leaderboard:
-        return render(request, "leaderboards/empty.html", {"game": game, "message": f"No 'Games Won' leaderboard found for {game.name}."})
+        return render(
++            request,
++            "leaderboards/empty.html",
++            {"game": game, "message": f"No 'Games Won' leaderboard found for {game.name}."},
++        )
 
     entries = LeaderboardEntry.objects.filter(leaderboard=leaderboard).select_related("user")
 
