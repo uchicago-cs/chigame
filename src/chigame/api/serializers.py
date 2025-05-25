@@ -223,7 +223,7 @@ class PersonSerializer(serializers.ModelSerializer):
         model = Person
         fields = ["id", "name", "person_role", "games"]
 
-     
+
 class PublisherSerializer(serializers.ModelSerializer):
     games = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
 
@@ -290,6 +290,7 @@ class AnnouncementSerializer(serializers.ModelSerializer):
             "sent",
             "type",
         ]
+
 
 class GameListSerializer(serializers.ModelSerializer):
     created_by = UserSerializer(read_only=True)
