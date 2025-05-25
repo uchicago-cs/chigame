@@ -687,7 +687,6 @@ class TournamentListView(ListView):
         if self.request.user.is_staff:
             return Tournament.objects.prefetch_related("matches").all()
 
-
         # If the user is authenticated but not staff, show only tournaments they are part of
         if self.request.user.is_authenticated:
             return Tournament.objects.prefetch_related("matches").filter(players=self.request.user)
@@ -701,7 +700,6 @@ class TournamentListView(ListView):
             .filter(Q(players=self.request.user) | Q(created_by=self.request.user))
             .distinct()
         )
-
 
     def get(self, request, *args, **kwargs):
         super().get(request, *args, **kwargs)
@@ -1628,41 +1626,6 @@ def remove_from_gamelist(request, pk, list_pk):
     game_list = get_object_or_404(GameList, pk=list_pk, created_by=request.user)
     game_list.games.remove(game)
     return redirect("game-detail", pk=pk)
-
-
-# a
-class MatchStatsView(DetailView):
-    model = Tournament
-    template_name = "tournaments/tournament_match_stats.html"
-    context_object_name = "tournament"
-
-    def get(self, request, *args, **kwargs):
-        tournament = self.get_object()
-        completed_matches = tournament.matches.filter(end_time__isnull=False)
-
-        if completed_matches:
-            total_duration = sum((match.end_time - match.start_time).total_seconds() for match in completed_matches)
-            average_duration = total_duration / completed_matches.count()
-            average_duration = timedelta(seconds=average_duration)
-        else:
-            average_duration = None
-
-        fastest_match = completed_matches.order_by("duration").first()
-        slowest_match = completed_matches.order_by("-duration").first()
-
-        context = {
-            "tournament": tournament,
-            "tournament_stats": {
-                "total_matches": tournament.matches.count(),
-                "completed_matches": completed_matches.count(),
-                "average_duration": average_duration,
-            },
-            "all_matches": completed_matches.order_by("-date_played"),
-            "fastest_match": fastest_match,
-            "slowest_match": slowest_match,
-        }
-
-        return render(request, "tournaments/tournament_match_stats.html", context)
 
 
 # Tournament Feedback Views
