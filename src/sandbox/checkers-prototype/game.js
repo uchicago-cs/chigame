@@ -582,7 +582,7 @@ function movePiece(piece, moveX, moveY) {
   // Play move sound
   piece.sprite.scene.sound.play('slide');
 
-  console.log('Current board state:', getBoardState());
+  //console.log('Current board state:', getBoardState());
 }
 
 // Check if the game is over due to all pieces of one color being captured
@@ -1044,7 +1044,7 @@ function toggleCoordinateVisibility() {
     // get board position on screen
     const gameDiv = document.getElementById('game');
     const rect = gameDiv.getBoundingClientRect();
-    console.log("toggle coordinates");
+
     // for each index, create a top label and a left label
     for (let i = 0; i < BOARD_SIZE; i++) {
       // Column label
@@ -1203,6 +1203,7 @@ function resizeGame(percentage) {
         // highlight the current piece that is being selected and set them as 'selectedPiece'
         selectedPiece = piece;
         piece.sprite.setStrokeStyle(highlight_size, COLORS.white);
+        highlightValidMoves(checkers.scene.scenes[0], piece);
       }
     });
   });
