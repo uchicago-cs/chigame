@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}
+  {{ gamelist.name }}
+{% endblock title %}
+{% block content %}
+  <div class="container mt-4">
+    <h1>{{ gamelist.name }}</h1>
+    {% if gamelist.description %}<p class="lead">{{ gamelist.description }}</p>{% endif %}
+    {% if gamelist.games.all %}
+      <ul class="list-group mt-3">
+        {% for game in gamelist.games.all %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <a href="{% url 'game-detail' game.pk %}">{{ game.name }}</a>
+            {# Optionally, add a button to remove from this specific list #}
+            <a href="{% url 'remove-from-gamelist' game.pk gamelist.pk %}"
+               class="btn btn-sm btn-outline-warning">Remove</a>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="mt-3">
+        This list is empty. <a href="{% url 'game-list' %}">Browse games</a> to add some!
+      </p>
+    {% endif %}
+    <a href="{% url 'game-list' %}" class="btn btn-primary mt-4">Back to Games</a>
+  </div>
+{% endblock content %}

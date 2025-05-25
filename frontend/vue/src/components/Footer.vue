@@ -16,7 +16,7 @@
     <router-link to="/about" class="nav-link">About</router-link>
   </li>
   <li class="nav-item">
-    <router-link to="/" class="nav-link">Games</router-link>
+    <router-link to="/games" class="nav-link">Games</router-link>
   </li>
   </ul>
   <ul class="navbar-nav flex-column footer-link-list two">
@@ -24,7 +24,7 @@
     <router-link to="/lobbies" class="nav-link">Lobbies</router-link>
   </li>
   <li class="nav-item">
-    <router-link to="/" class="nav-link">Tournaments</router-link>
+    <router-link to="/tournaments" class="nav-link">Tournaments</router-link>
   </li>
   <li class="nav-item">
     <router-link to="/forums" class="nav-link">Forums</router-link>
