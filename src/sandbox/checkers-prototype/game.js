@@ -1136,6 +1136,9 @@ function resizeGame(percentage) {
   tile_size = (newWidth - 2 * margin) / BOARD_SIZE;
   highlight_size = START_HIGHLIGHT_SIZE * percentage;
 
+  // clear old highlighted tiles
+  clearHighlightedTiles();
+
   // Update the positions of the tiles
   tiles.forEach((tile, index) => {
     const x = index % BOARD_SIZE;
@@ -1163,6 +1166,8 @@ function resizeGame(percentage) {
     if (selectedPiece === piece) {
       selectedPiece.sprite = piece.sprite;
       piece.sprite.setStrokeStyle(highlight_size, COLORS.white);
+      // redraw the highlighted tiles for valid moves with the new size
+      highlightValidMoves(checkers.scene.scenes[0], piece);
     }
 
     if (piece.isKing) {
