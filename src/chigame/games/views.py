@@ -1334,8 +1334,54 @@ class TournamentCreateView(CreateView):
         "rules",
         "draw_rules",
         "num_winner",
-        "players",  # This field should be removed in the production version. For testing only.
+        # We're not including "players" field here as we'll handle it differently
     ]
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        # Add a players field manually since we removed it from fields list
+        from django import forms
+
+        from chigame.users.models import User
+
+        form.fields["players"] = forms.ModelMultipleChoiceField(
+            queryset=User.objects.all(), required=False, widget=forms.SelectMultiple(attrs={"class": "form-control"})
+        )
+        return form
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Add empty recommendations list to context
+        context["recommendations"] = []
+        return context
+
+    def dispatch(self, request, *args, **kwargs):
+        # Handle AJAX requests for creating temporary tournaments for recommendations
+        if request.method == "POST" and request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            try:
+                # Create a temporary tournament object for recommendations
+                game_id = request.POST.get("game")
+                if not game_id:
+                    return JsonResponse({"error": "Game ID is required"}, status=400)
+
+                game = Game.objects.get(pk=game_id)
+                temp_tournament = Tournament(
+                    name="Temporary Tournament",
+                    game=game,
+                    registration_start_date=timezone.now(),
+                    registration_end_date=timezone.now() + timedelta(days=7),
+                    tournament_start_date=timezone.now() + timedelta(days=8),
+                    tournament_end_date=timezone.now() + timedelta(days=9),
+                    max_players=8,
+                    created_by=request.user,
+                )
+
+                # Don't save to database, just return the ID for frontend use
+                return JsonResponse({"tournament_id": temp_tournament.id})
+            except Exception as e:
+                return JsonResponse({"error": str(e)}, status=500)
+
+        return super().dispatch(request, *args, **kwargs)
 
     def form_invalid(self, form):
         # this is wo so we handle invalid form submission
@@ -1347,26 +1393,28 @@ class TournamentCreateView(CreateView):
     def form_valid(self, form):
         user = self.request.user
 
-        if form.cleaned_data["players"].count() > form.cleaned_data["max_players"]:
+        # Get selected players from the form
+        selected_players = form.cleaned_data.get("players", [])
+
+        if selected_players and len(selected_players) > form.cleaned_data["max_players"]:
             messages.error(self.request, "The number of players cannot exceed the maximum number of players")
             return redirect(reverse_lazy("tournament-create"))
 
         # Check if the user is not a staff member and has less than one token
-
         if not user.is_staff and user.tokens < 1:
             messages.error(self.request, "You do not have enough tokens to create a tournament.")
             return redirect("tournament-list")
 
         try:
             # Save the form instance but don't commit to the database yet
-
             tournament = form.save(commit=False)
             tournament.created_by = user
             tournament.full_clean()  # trigger the model's clean() method
             tournament.save()
 
-            players = form.cleaned_data["players"]
-            tournament.players.add(*players)
+            # Add selected players to the tournament
+            if selected_players:
+                tournament.players.add(*selected_players)
 
             # Auto-create a chat for this respective tournament
             chat = Chat(tournament=tournament)
@@ -1381,7 +1429,7 @@ class TournamentCreateView(CreateView):
             self.object = tournament
             return HttpResponseRedirect(self.get_success_url())
         except ValidationError as e:
-            # this w should handle validation errors from the model's clean() method?
+            # Handle validation errors from the model's clean() method
             for field, errors in e.message_dict.items():
                 for error in errors:
                     messages.error(self.request, f"{field}: {error}")
@@ -1943,6 +1991,95 @@ def checkers_game_get_board_state(request, board_id):
         return Response({"state": board.state})
     except CheckersBoard.DoesNotExist:
         return Response({"error": "Board not found"}, status=404)
+
+
+@api_view(["GET"])
+def get_tournament_player_recommendations(request, tournament_id):
+    """API endpoint to get recommended players for a tournament
+
+    Returns a list of recommended players with their scores and reasons
+    """
+    try:
+        game_id = request.GET.get("game_id")
+
+        response_data = []
+
+        if not game_id:
+            return Response(response_data)
+
+        from datetime import timedelta
+
+        from django.contrib.auth import get_user_model
+        from django.utils import timezone
+
+        from chigame.games.models import Game, Tournament
+
+        User = get_user_model()
+
+        try:
+            game = Game.objects.get(pk=game_id)
+
+            if request.user.is_authenticated:
+                creator = request.user
+            else:
+                # Use the first available user if not authenticated (for testing)
+                creator = User.objects.first()
+
+            # Create a temporary tournament that's not saved to the database
+            # This avoids issues with players list in the recommendation service
+            tournament = Tournament(
+                name="Temporary Tournament",
+                game=game,
+                registration_start_date=timezone.now(),
+                registration_end_date=timezone.now() + timedelta(days=7),
+                tournament_start_date=timezone.now() + timedelta(days=8),
+                tournament_end_date=timezone.now() + timedelta(days=9),
+                max_players=8,
+                created_by=creator,
+            )
+
+            # Import the recommendation service
+            from .recommendation import TournamentRecommendationService
+
+            # Create the service directly instead of using the helper function
+            service = TournamentRecommendationService(tournament)
+
+            # Get all users who are not already in the tournament
+            # Since this is a new tournament, this should be all users
+            all_users = User.objects.all()
+
+            # Calculate scores manually
+            recommendations = []
+            for user in all_users:
+                if user != creator:
+                    try:
+                        score, reasons = service._calculate_score(user)
+                        if score > 0:
+                            recommendations.append((user, score, reasons))
+                    except Exception:
+                        pass
+
+            recommendations.sort(key=lambda x: x[1], reverse=True)
+
+            for user, score, reasons in recommendations:
+                response_data.append(
+                    {"id": user.id, "name": user.username, "email": user.email, "score": score, "reasons": reasons}
+                )
+
+        except Exception as e:
+            # Log the error
+            import traceback
+
+            print(f"Error using recommendation service: {str(e)}")
+            print(traceback.format_exc())
+
+        return Response(response_data)
+    except Exception as e:
+        import traceback
+
+        print(f"Error in get_tournament_player_recommendations: {str(e)}")
+        print(traceback.format_exc())
+        return Response({"error": str(e)}, status=500)
 
 
 class GameListDetailView(LoginRequiredMixin, DetailView):
