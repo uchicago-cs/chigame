@@ -120,7 +120,7 @@
   "model": "users.user",
   "pk": 8,
   "fields": {
-    "password": "foo",
+    "password": "argon2$argon2id$v=19$m=102400,t=2,p=8$Zzk2ZjFCTXl4RlJmOW1VU1JHa3QxZA$tiaFDXObRmwzYoVytjyCGFVfJnoqp1uYUOvCVUsUHpY",
     "last_login": null,
     "is_superuser": false,
     "is_staff": false,
