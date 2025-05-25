@@ -5,7 +5,7 @@
 {% block content %}
   <div class="container my-5">
     <h1 class="mb-4">Create Tournament</h1>
-    <form method="post" class="needs-validation" novalidate>
+    <form method="post" class="needs-validation" novalidate id="tournamentForm">
       {% csrf_token %}
       <div class="row g-3">
         <!-- Name and Game fields in first row -->
@@ -26,6 +26,7 @@
                  name="{{ form.registration_start_date.html_name }}"
                  id="id_registration_start_date"
                  class="form-control"
+                 required
                  value="{{ form.registration_start_date.value|default:'' }}" />
           {% if form.registration_start_date.errors %}
             <div class="text-danger">{{ form.registration_start_date.errors }}</div>
@@ -37,6 +38,7 @@
                  name="{{ form.registration_end_date.html_name }}"
                  id="id_registration_end_date"
                  class="form-control"
+                 required
                  value="{{ form.registration_end_date.value|default:'' }}" />
           {% if form.registration_end_date.errors %}
             <div class="text-danger">{{ form.registration_end_date.errors }}</div>
@@ -49,6 +51,7 @@
                  name="{{ form.tournament_start_date.html_name }}"
                  id="id_tournament_start_date"
                  class="form-control"
+                 required
                  value="{{ form.tournament_start_date.value|default:'' }}" />
           {% if form.tournament_start_date.errors %}
             <div class="text-danger">{{ form.tournament_start_date.errors }}</div>
@@ -60,6 +63,7 @@
                  name="{{ form.tournament_end_date.html_name }}"
                  id="id_tournament_end_date"
                  class="form-control"
+                 required
                  value="{{ form.tournament_end_date.value|default:'' }}" />
           {% if form.tournament_end_date.errors %}
             <div class="text-danger">{{ form.tournament_end_date.errors }}</div>
@@ -80,16 +84,31 @@
         <div class="col-12 mb-3">
           <label for="{{ form.description.id_for_label }}" class="form-label">Description</label>
           {{ form.description }}
+          <div>
+            <small>
+              <span id="description-count">0</span>/1000 characters
+            </small>
+          </div>
           {% if form.description.errors %}<div class="text-danger">{{ form.description.errors }}</div>{% endif %}
         </div>
         <div class="col-12 mb-3">
           <label for="{{ form.rules.id_for_label }}" class="form-label">Rules</label>
           {{ form.rules }}
+          <div>
+            <small>
+              <span id="rules-count">0</span>/1000 characters
+            </small>
+          </div>
           {% if form.rules.errors %}<div class="text-danger">{{ form.rules.errors }}</div>{% endif %}
         </div>
         <div class="col-12 mb-3">
           <label for="{{ form.draw_rules.id_for_label }}" class="form-label">Draw rules</label>
           {{ form.draw_rules }}
+          <div>
+            <small>
+              <span id="draw-rules-count">0</span>/1000 characters
+            </small>
+          </div>
           {% if form.draw_rules.errors %}<div class="text-danger">{{ form.draw_rules.errors }}</div>{% endif %}
         </div>
         <!-- Players selection - visible as a simple checkbox list -->
@@ -120,6 +139,24 @@
           rel="stylesheet" />
   {% endblock extra_css %}
   {% block extra_js %}
+    <script>
+      function addCharCounter(textareaId, counterId, maxLen) {
+        const textarea = document.getElementById(textareaId);
+        const counter = document.getElementById(counterId);
+        if (!textarea || !counter) return;
+
+        function updateCount() {
+          counter.textContent = textarea.value.length;
+        }
+        textarea.addEventListener('input', updateCount);
+        updateCount();
+      }
+      document.addEventListener('DOMContentLoaded', function() {
+        addCharCounter('id_description', 'description-count', 1000);
+        addCharCounter('id_rules', 'rules-count', 1000);
+        addCharCounter('id_draw_rules', 'draw-rules-count', 1000);
+      });
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
       document.addEventListener('DOMContentLoaded', function() {
@@ -131,25 +168,19 @@
         gameSelect.addEventListener('change', function() {
           const gameId = this.value;
           if (gameId) {
-            // Show loading indicator
             playerCheckboxList.innerHTML = '<div class="text-muted">Loading recommendations...</div>';
 
-            // Fetch recommendations using the game ID
             let url = `/games/tournaments/0/recommendations/?game_id=${gameId}`;
 
             fetch(url)
               .then(response => response.json())
               .then(data => {
-                // Sort recommendations by score (highest first)
                 data.sort((a, b) => b.score - a.score);
 
-                // Display as simple list
                 let html = '';
                 data.forEach(player => {
-                  // Combine reasons into a single string
                   const reasonText = player.reasons.join(', ');
 
-                  // Create checkbox item
                   html += `
                     <div class="list-group-item">
                       <div class="form-check">
@@ -163,7 +194,6 @@
                   `;
                 });
 
-                // Update the list
                 if (html) {
                   playerCheckboxList.innerHTML = html;
                 } else {
@@ -176,20 +206,16 @@
               });
           } else {
             playerCheckboxList.innerHTML = '<div class="text-muted">Please select a game to see recommended players.</div>';
-            // Clear the players selection
             Array.from(playersSelect.options).forEach(option => {
               option.selected = false;
             });
           }
         });
 
-        // Function to update the hidden select when a checkbox is clicked
         window.updatePlayerSelection = function(checkbox, playerId) {
-          // Find the option in the select element
           const option = Array.from(playersSelect.options).find(opt => opt.value == playerId);
 
           if (option) {
-            // Update selection based on checkbox state
             option.selected = checkbox.checked;
           }
         };
