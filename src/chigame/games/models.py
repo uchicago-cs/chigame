@@ -1,9 +1,12 @@
 import random
+from datetime import timedelta
 
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models, transaction
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from django.utils import timezone
 
 from chigame.users.models import Group, Notification, User
@@ -207,6 +210,11 @@ class Match(models.Model):
     lobby = models.OneToOneField(Lobby, on_delete=models.CASCADE)
     date_played = models.DateTimeField()
     players = models.ManyToManyField(User, through="Player")
+    # a
+    start_time = models.DateTimeField(null=True, blank=True)
+    end_time = models.DateTimeField(null=True, blank=True)
+    duration = models.DurationField(null=True, blank=True)
+    average_rating = models.DecimalField(max_digits=3, decimal_places=2, null=True, blank=True)
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
@@ -214,6 +222,35 @@ class Match(models.Model):
         for player in self.players.all():
             self.game.users.add(player)
         self.game.save()
+
+    # a
+    def calculate_duration(self):
+        """duration of the match if start and end times are set"""
+        if self.start_time and self.end_time:
+            self.duration = self.end_time - self.start_time
+            self.save()
+
+    @classmethod
+    def get_fastest_match(cls):
+        """fastest completed match"""
+        return cls.objects.exclude(duration=None).order_by("duration").first()
+
+    @classmethod
+    def get_slowest_match(cls):
+        """slowest completed match"""
+        return cls.objects.exclude(duration=None).order_by("-duration").first()
+
+    @classmethod
+    def get_average_match_duration(cls):
+        """average duration of all completed matches"""
+        matches = cls.objects.exclude(duration=None)
+        if matches:
+            total_duration = sum(match.duration for match in matches)
+            return total_duration / matches.count()
+        return None
+
+
+# a
 
 
 class Player(models.Model):
@@ -239,6 +276,8 @@ class Player(models.Model):
     role = models.TextField(blank=True, null=True)
     outcome = models.PositiveSmallIntegerField(choices=OUTCOMES, blank=True, null=True)
     victory_type = models.TextField(blank=True, null=True)
+    # Addedum player performance
+    rating = models.DecimalField(max_digits=3, decimal_places=2, null=True, blank=True)
 
 
 class MatchProposal(models.Model):
@@ -345,15 +384,16 @@ class Tournament(models.Model):
         # when the tournament is created and would not be checked when the tournament is updated (
         # the date cannot be changed after the tournament is created)
         if self.pk is None:  # the tournament is being created
-            if self.registration_start_date < timezone.now():
-                raise ValidationError("The registration start date should be in the future.")
-            if self.registration_end_date < timezone.now():
-                raise ValidationError("The registration end date should be in the future.")
-            if self.tournament_start_date < timezone.now():
-                raise ValidationError("The tournament start date should be in the future.")
-            if self.tournament_end_date < timezone.now():
-                raise ValidationError("The tournament end date should be in the future.")
-
+            # addedum
+            min_time_delta = timezone.timedelta(minutes=5)  # minimum 5 minutes in advance
+            if self.registration_start_date < timezone.now() + min_time_delta:
+                raise ValidationError("The registration start date should be at least 5 minutes in the future.")
+            if self.registration_end_date < timezone.now() + min_time_delta:
+                raise ValidationError("The registration end date should be at least 5 minutes in the future.")
+            if self.tournament_start_date < timezone.now() + min_time_delta:
+                raise ValidationError("The tournament start date should be at least 5 minutes in the future.")
+            if self.tournament_end_date < timezone.now() + min_time_delta:
+                raise ValidationError("The tournament end date should be at least 5 minutes in the future.")
         # the registration start date should be earlier than the registration end date
         if self.registration_start_date >= self.registration_end_date:
             raise ValidationError("The registration start date should be earlier than the registration end date.")
@@ -405,7 +445,15 @@ class Tournament(models.Model):
             for bracket in brackets:
                 assert isinstance(bracket, Match)
                 bracket_users = bracket.players.all()
-                bracket_players = [Player.objects.get(user=user, match=bracket) for user in bracket_users]
+
+                # a Get all players for each user in the bracket
+                bracket_players = []
+                for user in bracket_users:
+                    players = Player.objects.filter(user=user, match=bracket)
+                    if players.exists():
+                        # Use the most recent player record if multiple exist
+                        bracket_players.append(players.latest("id"))
+                # a
                 bracket_with_outcome = any(player.outcome is not None for player in bracket_players)
                 if not bracket_with_outcome:  # the match has not finished
                     for player in bracket_players:
@@ -531,7 +579,15 @@ class Tournament(models.Model):
             # get the winners of the previous round
             assert isinstance(bracket, Match)
             bracket_users = bracket.players.all()
-            bracket_players = [Player.objects.get(user=user, match=bracket) for user in bracket_users]
+            # bracket_players = [Player.objects.get(user=user, match=bracket) for user in bracket_users]
+            # a Get all players for each user in the bracket
+            bracket_players = []
+            for user in bracket_users:
+                players = Player.objects.filter(user=user, match=bracket)
+                if players.exists():
+                    # Use the most recent player record if multiple exist
+                    bracket_players.append(players.latest("id"))
+            # a
             bracket_winners = [
                 player.user for player in bracket_players if player.outcome == Player.WIN
             ]  # allow multiple winners
@@ -540,10 +596,8 @@ class Tournament(models.Model):
                 winners.append(winner)
 
         self.winners.set(winners)
-        self.matches.clear()
+        # a self.matches.clear()
         self.save()
-
-        # Note: we don't delete the tournament because we want to keep it in the database
 
     def tournament_sign_up(self, user: User) -> int:
         """
@@ -599,6 +653,74 @@ class Tournament(models.Model):
         self.players.remove(user)
         self.save()
         return 0
+
+    # a
+    def get_tournament_statistics(self):
+        """
+        Calculate and return various statistics about the tournament.
+        Returns a dictionary containing:
+        - average_duration: Average duration of all completed matches
+        - fastest_match: The match with the shortest duration
+        - slowest_match: The match with the longest duration
+        - average_rating: Average rating of all completed matches
+        - total_matches: Total number of matches in the tournament
+        - completed_matches: Number of completed matches
+        """
+        matches = self.matches.all()
+
+        # Calculate average duration
+        completed_matches = [m for m in matches if m.duration is not None]
+        avg_duration = None
+        if completed_matches:
+            try:
+                # Convert all durations to seconds first
+                total_seconds = sum(m.duration.total_seconds() for m in completed_matches)
+                avg_seconds = total_seconds / len(completed_matches)
+                avg_duration = timedelta(seconds=avg_seconds)
+            except (AttributeError, TypeError):
+                avg_duration = None
+
+        # Get fastest and slowest matches
+        fastest_match = None
+        slowest_match = None
+        if completed_matches:
+            try:
+                fastest_match = min(completed_matches, key=lambda x: x.duration.total_seconds())
+                slowest_match = max(completed_matches, key=lambda x: x.duration.total_seconds())
+            except (AttributeError, TypeError):
+                pass
+
+        # Calculate average rating based on completed matches
+        avg_rating = None
+        if completed_matches:
+            try:
+                total_rating = 0
+                total_ratings_count = 0
+                for match in completed_matches:
+                    # Get all players in the match
+                    players = Player.objects.filter(match=match)
+                    # Sum up all non-None ratings
+                    match_ratings = [p.rating for p in players if p.rating is not None]
+                    if match_ratings:
+                        total_rating += sum(match_ratings)
+                        total_ratings_count += len(match_ratings)
+
+                if total_ratings_count > 0:
+                    avg_rating = total_rating / total_ratings_count
+            except (TypeError, ValueError):
+                avg_rating = None
+
+        return {
+            "average_duration": avg_duration,
+            "fastest_match": fastest_match,
+            "slowest_match": slowest_match,
+            "average_rating": avg_rating,
+            "total_matches": matches.count(),
+            "completed_matches": len(completed_matches),
+        }
+
+
+# a
 
 
 class Feedback(models.Model):
@@ -705,6 +827,7 @@ class Message(models.Model):
 
 class Review(models.Model):
     "Represents a game review"
+
     title = models.TextField(blank=True, null=True)
     review = models.TextField(blank=True, null=True)
     rating = models.DecimalField(
@@ -761,6 +884,23 @@ class GameData(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.game.name}: {self.key}"
+
+
+@receiver(post_save, sender=Lobby)
+def update_match_timing(sender, instance, **kwargs):
+    try:
+        match = Match.objects.get(lobby=instance)
+        if instance.match_status == Lobby.Viewable and not match.start_time:
+            # Match is starting
+            match.start_time = timezone.now()
+            match.save()
+        elif instance.match_status == Lobby.Finished and not match.end_time:
+            # Match is ending
+            match.end_time = timezone.now()
+            match.save()
+            match.calculate_duration()
+    except Match.DoesNotExist:
+        pass  # No match exists yet for this lobby
 
 
 # ================ CHECKERS =================
