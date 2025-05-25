@@ -214,8 +214,11 @@ function create() {
       resetDrawOffer();
     }
   });
+
   updateTimerDisplay(); // initial display
   startPlayerTimer(); // red starts first
+
+
   easyBot.textContent = `Easy Bot: ${vsEasyBot ? 'ON' : 'OFF'}`;
   easyBot.addEventListener('click', () => {
     vsEasyBot = !vsEasyBot;
@@ -223,7 +226,7 @@ function create() {
   });
 }
 
-function update() {}
+function update() { }
 // ----------------------------------------------------------------------------
 
 // Draw the game board
@@ -289,6 +292,11 @@ function createPiece(x, y, color, scene) {
   // make the piece clickable
   piece.sprite.setInteractive();
   piece.sprite.on('pointerdown', () => {
+    const settingsContainer = document.getElementById('settings-container');
+
+    // don't allow piece selection if menu is open;
+    if (settingsContainer.classList.contains('show')) return;
+
     // don't allow piece selection if game is over
     if (gameOver) return;
 
@@ -338,6 +346,93 @@ function populatePieces(scene) {
     }
   }
 }
+
+// Finds all possible paths the selected piece can take
+// This function finds all possible jump paths for a given piece,
+// including single and multi-jump chains.
+// Each path includes a list of moves and the pieces captured along the way.
+
+function getJumpPaths(piece) {
+  var allPaths = []; // Store all possible jump paths
+
+  // Recursive helper function to explore jump chains
+  function explore(x, y, capturedPieces, movePath, visited) {
+    var extended = false;
+
+    // Define possible jump directions (left or right)
+    var dxList = [-2, 2];
+
+    // Determine vertical jump direction (up for red, down for black)
+    var dy;
+    if (piece.color === COLORS.red) {
+      dy = -2;
+    } else {
+      dy = 2;
+    }
+
+    // Loop through both left and right diagonal jump options
+    for (var i = 0; i < dxList.length; i++) {
+      var dx = dxList[i];
+
+      // Calculate target tile for the jump
+      var newX = x + dx;
+      var newY = y + dy;
+
+      // Calculate coordinates of the piece being jumped over (in between)
+      var midX = x + dx / 2;
+      var midY = y + dy / 2;
+      var midKey = midX + ',' + midY; // used to track visited mid-pieces
+
+      // Make sure the jump destination is on the board and not occupied
+      if (
+        newX >= 0 && newX < BOARD_SIZE &&
+        newY >= 0 && newY < BOARD_SIZE &&
+        !getPiece(newX, newY)
+      ) {
+        var midPiece = getPiece(midX, midY);
+
+        // Check if there's an opponent's piece to jump over,
+        // and it hasn't been jumped already in this chain
+        if (
+          midPiece &&
+          midPiece.color !== piece.color &&
+          !visited.has(midKey)
+        ) {
+          // Clone visited set and mark this piece as visited
+          var newVisited = new Set(visited);
+          newVisited.add(midKey);
+
+          // Clone the list of captured pieces and add this one
+          var newCaptured = capturedPieces.slice();
+          newCaptured.push(midPiece);
+
+          // Clone the move path and add the new position
+          var newPath = movePath.slice();
+          newPath.push({ x: newX, y: newY });
+
+          // Save this partial or full jump path
+          allPaths.push({
+            path: newPath.slice(),
+            captures: newCaptured.slice()
+          });
+
+          // Recursively explore further jumps from this new position
+          explore(newX, newY, newCaptured, newPath, newVisited);
+
+          extended = true;
+        }
+      }
+    }
+  }
+
+  // Start exploring from the piece's current position with an empty path
+  explore(piece.x, piece.y, [], [], new Set());
+
+  // Return all valid jump chains
+  return allPaths;
+}
+
+
 
 // check if a move is valid
 function isValidMove(piece, moveX, moveY) {
@@ -451,7 +546,7 @@ function getPiece(x, y) {
 }
 
 // end the turn
-function endTurn() {
+function endTurn(scene) {
   stopPlayerTimer(); // stop current timer
   // remove the selected piece and its highlight
   if (selectedPiece) {
@@ -464,163 +559,6 @@ function endTurn() {
   startPlayerTimer(); // start next player’s timer
   // remove the highlight after a move is made
   clearHighlightedTiles();
-}
-
-// helper function to highlight the valid moves for the selected piece
-function highlightValidMoves(scene, piece) {
-  clearHighlightedTiles(); // remove any previous highlights
-
-  // iterate through the board
-  for (let y = 0; y < BOARD_SIZE; y++) {
-    for (let x = 0; x < BOARD_SIZE; x++) {
-      // check that the tile is not occupied and is a valid move
-      if (!getPiece(x, y) && isValidMove(piece, x, y)) {
-        // add a slighlty transparent white square on top of that tile to make
-        // the tile appear highlighted
-        const highlight = scene.add.rectangle(
-          MARGIN + x * TILE_SIZE + TILE_SIZE / 2,
-          MARGIN + y * TILE_SIZE + TILE_SIZE / 2,
-          TILE_SIZE,
-          TILE_SIZE,
-          0xffffff,
-          0.3
-        );
-        // add the game object to the array (so we can keep track and delete later)
-        highlightedTiles.push(highlight);
-      }
-    }
-  }
-}
-
-// helper function to clear all the highlighted tiles
-function clearHighlightedTiles() {
-  // remove each rect from the screen and then pop the reference from the array
-  while (highlightedTiles.length > 0) {
-    highlightedTiles.pop().destroy();
-  }
-}
-
-// generate a random valid move
-// after we finish implementing a bot, we could it make give an actual good suggestion
-function giveHint() {
-  // get all of the pieces of the current player
-  const playerPieces = pieces.filter((p) => p.color === currentPlayer);
-  let validMoves = [];
-
-  // get all of the valid moves for all of the pieces
-  for (const piece of playerPieces) {
-    for (let y = 0; y < BOARD_SIZE; y++) {
-      for (let x = 0; x < BOARD_SIZE; x++) {
-        if (!getPiece(x, y) && isValidMove(piece, x, y)) {
-          // add it to the array
-          // (this is a shorthand to initialize objects btw if you don't know)
-          validMoves.push({ piece, x, y });
-        }
-      }
-    }
-  }
-
-  // We have yet to implement a feature where it checks whether there are valid
-  // moves remaining for a player after each turn. In a real game of checkers
-  // if there are no moves left, the player loses the game.
-  if (validMoves.length > 0) {
-    // Math.random() only returns floating point from 0 to 1 and would require a
-    // separate helper function to return a random index from the array...
-    // https://docs.phaser.io/phaser/concepts/math
-    // phaser.math.rnd.pick() selects a random element from the array
-    const randomHint = Phaser.Math.RND.pick(validMoves);
-    // unlike chess, where there's rank and file, I don't think there's a proper
-    // way of calling a specific square on the board. For now, I just have it return
-    // the row and col on the matrix.
-    alert(
-      `Hint: Move ${currentPlayer === lightPiece ? 'red' : 'black'} piece at (row ${
-        randomHint.piece.y
-      }, column ${randomHint.piece.x}) to (row ${randomHint.y}, column ${randomHint.x})`
-    );
-  } else {
-    // in a normal checkers game, the player loses if there are no moves left
-    alert('No valid moves.');
-  }
-
-  // remove the highlight after a move is made
-  clearHighlightedTiles();
-}
-
-// helper function to highlight the valid moves for the selected piece
-function highlightValidMoves(scene, piece) {
-  clearHighlightedTiles(); // remove any previous highlights
-
-  // iterate through the board
-  for (let y = 0; y < BOARD_SIZE; y++) {
-    for (let x = 0; x < BOARD_SIZE; x++) {
-      // check that the tile is not occupied and is a valid move
-      if (!getPiece(x, y) && isValidMove(piece, x, y)) {
-        // add a slighlty transparent white square on top of that tile to make
-        // the tile appear highlighted
-        const highlight = scene.add.rectangle(
-          MARGIN + x * TILE_SIZE + TILE_SIZE / 2,
-          MARGIN + y * TILE_SIZE + TILE_SIZE / 2,
-          TILE_SIZE,
-          TILE_SIZE,
-          0xffffff,
-          0.3
-        );
-        // add the game object to the array (so we can keep track and delete later)
-        highlightedTiles.push(highlight);
-      }
-    }
-  }
-}
-
-// helper function to clear all the highlighted tiles
-function clearHighlightedTiles() {
-  // remove each rect from the screen and then pop the reference from the array
-  while (highlightedTiles.length > 0) {
-    highlightedTiles.pop().destroy();
-  }
-}
-
-// generate a random valid move
-// after we finish implementing a bot, we could it make give an actual good suggestion
-function giveHint() {
-  // get all of the pieces of the current player
-  const playerPieces = pieces.filter((p) => p.color === currentPlayer);
-  let validMoves = [];
-
-  // get all of the valid moves for all of the pieces
-  for (const piece of playerPieces) {
-    for (let y = 0; y < BOARD_SIZE; y++) {
-      for (let x = 0; x < BOARD_SIZE; x++) {
-        if (!getPiece(x, y) && isValidMove(piece, x, y)) {
-          // add it to the array
-          // (this is a shorthand to initialize objects btw if you don't know)
-          validMoves.push({ piece, x, y });
-        }
-      }
-    }
-  }
-
-  // We have yet to implement a feature where it checks whether there are valid
-  // moves remaining for a player after each turn. In a real game of checkers
-  // if there are no moves left, the player loses the game.
-  if (validMoves.length > 0) {
-    // Math.random() only returns floating point from 0 to 1 and would require a
-    // separate helper function to return a random index from the array...
-    // https://docs.phaser.io/phaser/concepts/math
-    // phaser.math.rnd.pick() selects a random element from the array
-    const randomHint = Phaser.Math.RND.pick(validMoves);
-    // unlike chess, where there's rank and file, I don't think there's a proper
-    // way of calling a specific square on the board. For now, I just have it return
-    // the row and col on the matrix.
-    alert(
-      `Hint: Move ${currentPlayer === lightPiece ? 'red' : 'black'} piece at (row ${
-        randomHint.piece.y
-      }, column ${randomHint.piece.x}) to (row ${randomHint.y}, column ${randomHint.x})`
-    );
-  } else {
-    // in a normal checkers game, the player loses if there are no moves left
-    alert('No valid moves.');
-  }
 
   // reset draw offer if it was made by the current player
   if (drawOffered && drawOfferedBy === currentPlayer) {
@@ -636,11 +574,171 @@ function giveHint() {
     drawBtn.textContent = 'Offer Draw';
     declineDrawBtn.style.display = 'none';
   }
+
   //if black and bot is on, schedule bot move
   if (vsEasyBot && currentPlayer === darkPiece){
-    //delay so user has time to process bot movw after their own
+    //delay so user has time to process bot move after their own
     scene.time.delayedCall(300, easyBot, [scene], scene);
   }
+}
+
+// helper function to clear all the highlighted tiles
+function clearHighlightedTiles() {
+  // remove each rect from the screen and then pop the reference from the array
+  while (highlightedTiles.length > 0) {
+    highlightedTiles.pop().destroy();
+  }
+}
+
+// generate a random valid move
+// after we finish implementing a bot, we could it make give an actual good suggestion
+function giveHint() {
+  // get all of the pieces of the current player
+  const playerPieces = pieces.filter((p) => p.color === currentPlayer);
+  let validMoves = [];
+
+  // get all of the valid moves for all of the pieces
+  for (const piece of playerPieces) {
+    for (let y = 0; y < BOARD_SIZE; y++) {
+      for (let x = 0; x < BOARD_SIZE; x++) {
+        if (!getPiece(x, y) && isValidMove(piece, x, y)) {
+          // add it to the array
+          // (this is a shorthand to initialize objects btw if you don't know)
+          validMoves.push({ piece, x, y });
+        }
+      }
+    }
+  }
+
+  // We have yet to implement a feature where it checks whether there are valid
+  // moves remaining for a player after each turn. In a real game of checkers
+  // if there are no moves left, the player loses the game.
+  if (validMoves.length > 0) {
+    // Math.random() only returns floating point from 0 to 1 and would require a
+    // separate helper function to return a random index from the array...
+    // https://docs.phaser.io/phaser/concepts/math
+    // phaser.math.rnd.pick() selects a random element from the array
+    const randomHint = Phaser.Math.RND.pick(validMoves);
+    // unlike chess, where there's rank and file, I don't think there's a proper
+    // way of calling a specific square on the board. For now, I just have it return
+    // the row and col on the matrix.
+    alert(
+      `Hint: Move ${currentPlayer === lightPiece ? 'red' : 'black'} piece at (row ${
+        randomHint.piece.y
+      }, column ${randomHint.piece.x}) to (row ${randomHint.y}, column ${randomHint.x})`
+    );
+  } else {
+    // in a normal checkers game, the player loses if there are no moves left
+    alert('No valid moves.');
+  }
+
+  // remove the highlight after a move is made
+  clearHighlightedTiles();
+}
+
+// helper function to highlight the valid moves for the selected piece
+function highlightValidMoves(scene, piece) {
+  clearHighlightedTiles(); // remove any previous highlights
+
+  var jumpPaths = getJumpPaths(piece);
+
+  if (jumpPaths.length > 0) {
+    // Highlight all final landing squares of all jump paths
+    for (var i = 0; i < jumpPaths.length; i++) {
+      var jump = jumpPaths[i];
+      var finalMove = jump.path[jump.path.length - 1];
+
+      // draw the tile highlight
+      var highlight = scene.add.rectangle(
+        MARGIN + finalMove.x * TILE_SIZE + TILE_SIZE / 2,
+        MARGIN + finalMove.y * TILE_SIZE + TILE_SIZE / 2,
+        TILE_SIZE,
+        TILE_SIZE,
+        0xffffff,
+        0.3
+      );
+
+      highlight.setInteractive();
+
+      // Allow clicking to perform full jump path (even if it’s just 1 jump)
+      highlight.on('pointerdown', (function (jumpData) {
+        return function () {
+          executeJumpChain(piece, jumpData);
+          endTurn(scene);
+        };
+      })(jump));
+
+      highlightedTiles.push(highlight);
+    }
+
+    return; // only jumps allowed when available
+  }
+
+  // If no jumps, fallback to normal diagonal move
+  var dxOptions = [-1, 1];
+  var dy = 1;
+  if (piece.color === COLORS.red) {
+    dy = -1;
+  }
+
+  for (var i = 0; i < dxOptions.length; i++) {
+    var dx = dxOptions[i];
+    var newX = piece.x + dx;
+    var newY = piece.y + dy;
+
+    if (
+      newX >= 0 && newX < BOARD_SIZE &&
+      newY >= 0 && newY < BOARD_SIZE &&
+      !getPiece(newX, newY)
+    ) {
+      // adds a slightly transparent square
+      var highlight = scene.add.rectangle(
+        MARGIN + newX * TILE_SIZE + TILE_SIZE / 2,
+        MARGIN + newY * TILE_SIZE + TILE_SIZE / 2,
+        TILE_SIZE,
+        TILE_SIZE,
+        0xffffff,
+        0.3
+      );
+
+      highlight.setInteractive();
+      highlight.on('pointerdown', (function (x, y) {
+        return function () {
+          movePiece(piece, x, y);
+          endTurn(scene);
+        };
+      })(newX, newY));
+
+      highlightedTiles.push(highlight);
+    }
+  }
+}
+
+function executeJumpChain(piece, jump) {
+  for (var i = 0; i < jump.captures.length; i++) {
+    var captured = jump.captures[i];
+    captured.sprite.destroy();
+    pieces = pieces.filter(function (p) {
+      return p !== captured;
+    });
+
+    if (currentPlayer === COLORS.red) {
+      redCaptured++;
+    } else {
+      blackCaptured++;
+    }
+  }
+
+  updateScore();
+  checkGameOver();
+
+  var final = jump.path[jump.path.length - 1];
+  piece.x = final.x;
+  piece.y = final.y;
+  piece.sprite.x = MARGIN + final.x * TILE_SIZE + TILE_SIZE / 2;
+  piece.sprite.y = MARGIN + final.y * TILE_SIZE + TILE_SIZE / 2;
+
+  piece.sprite.scene.sound.play('slide');
 }
 
 // Retrieves a 2D array representation of the board state where 0 are unoccupied
@@ -745,7 +843,6 @@ function getLegalMoves(color) {
   //moving up or down board?
   const direction = color === lightPiece ? -1 : 1;
 
-
   //loop thru pieces
   pieces.forEach(piece => {
     if (piece.color !== color) return; //return for other p;layer peices
@@ -802,6 +899,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   toggleCoordinatesBtn.addEventListener('click', () => {
     coordsVisible = !coordsVisible;
+    toggleCoordinatesBtn.classList.add('selected');
 
     if (coordsVisible) {
       // get board position on screen
@@ -845,8 +943,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
     } else {
       // remove coordinates
+      toggleCoordinatesBtn.classList.remove('selected');
       coordElements.forEach(el => document.body.removeChild(el));
       coordElements.length = 0;
+    }
+  });
+});
+
+// Mute button + “M” key shortcut
+document.addEventListener('DOMContentLoaded', () => {
+  const toggleMuteBtn = document.getElementById('toggle-mute');
+
+  // set initial label
+  toggleMuteBtn.textContent = checkers.sound.mute ? 'Unmute' : 'Mute';
+
+  toggleMuteBtn.addEventListener('click', () => {
+    // flip mute state first
+    checkers.sound.mute = !checkers.sound.mute;
+    // then update the label
+    toggleMuteBtn.textContent = checkers.sound.mute ? 'Mute' : 'Unmute';
+  });
+
+  // listen for “m” or “M” anywhere
+  document.addEventListener('keydown', (e) => {
+    if (e.key.toLowerCase() === 'm') {
+      // do exactly the same toggle logic:
+      checkers.sound.mute = !checkers.sound.mute;
+      toggleMuteBtn.textContent = checkers.sound.mute ? 'Mute' : 'Unmute';
     }
   });
 });
