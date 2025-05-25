@@ -30,12 +30,14 @@ urlpatterns = [
     # games
     path("", views.GameListView.as_view(), name="game-list"),
     path("create/", views.GameCreateView.as_view(), name="game-create"),
+    path("<int:pk>/delete/", views.GameDeleteView.as_view(), name="game-delete"),
     path("<int:pk>/edit", views.GameEditView.as_view(), name="game-edit"),
     path("bgg_search_by_name/", views.bgg_search_by_name, name="bgg_search_by_name"),
     path("search/", views.search_results, name="game-search-results"),
     path("<int:pk>/reviews/", views.ReviewListView.as_view(), name="game-review-list"),
+    path("games/<int:pk>/review/", views.add_review, name="add-review"),
     # interactive fiction
-    path("interactive-fiction/", views.InteractiveFictionView.as_view(), name="interactive-fiction"),
+    path("interactive-fiction/", views.IFGameCreateView.as_view(), name="interactive-fiction-create"),
     path("<int:pk>/upload/", UploadFileView.as_view(), name="upload-file"),
     path("if-game/<int:pk>/", InteractiveFictionView.as_view(), name="interactive-fiction-detail"),
     # tournaments
