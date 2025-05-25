@@ -55,8 +55,10 @@ async function fetchInitialBoardState() {
   }
 }
 
-// ---INIT FUNCTIONS------------------------------------------------------------
-function preload() { }
+// ---INIT FUNCTIONS-----------------------------------------------------------
+function preload() {
+
+}
 
 async function create() {
   const state = await fetchInitialBoardState();
@@ -70,7 +72,9 @@ async function create() {
   }
 }
 
-function update() { }
+function update() {
+
+}
 // ----------------------------------------------------------------------------
 
 // Draw the game board
@@ -223,6 +227,8 @@ function isValidMove(piece, moveX, moveY) {
 }
 
 function movePiece(piece, moveX, moveY) {
+  updateScore();
+
   const dx = moveX - piece.x;
   const dy = moveY - piece.y;
 
@@ -310,6 +316,18 @@ function getBoardState() {
   return board;
 }
 
+// Updates score on frontend
+function updateScore() {
+  const redCount = pieces.filter(p => p.color === COLORS.red).length;
+  const blackCount = pieces.filter(p => p.color === COLORS.black).length;
+  const redCaptured = 12 - blackCount;
+  const blackCaptured = 12 - redCount;
+
+  const score = document.getElementById('score');
+  score.innerHTML = `Red: ${redCaptured}<br>Black: ${blackCaptured}`;
+}
+
+
 // If you have more than one tab open it will automatically update by calling
 // from the server
 
@@ -325,6 +343,7 @@ function reloadBoardFromState(state) {
 }
 
 function update() {
+  updateScore();
   // Every 2 seconds, poll server for board state
   if (!window.lastPollTime || Date.now() - window.lastPollTime > 2000) {
     window.lastPollTime = Date.now();
