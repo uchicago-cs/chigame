@@ -9,14 +9,66 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Press+Start+2P&display=swap"
           rel="stylesheet" />
+    <style>
+      .login-container {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        margin-left: 0.5rem;
+      }
+
+      .login-form {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+      }
+
+      .login-input {
+        padding: 0.3rem;
+        border-radius: 3px;
+        border: 1px solid #ccc;
+        background: var(--bg-dark);
+        color: var(--text);
+      }
+
+      .login-button {
+        padding: 0.3rem 0.7rem;
+        border-radius: 3px;
+        background: var(--primary);
+        color: white;
+        border: none;
+      }
+
+      .user-info {
+        display: none;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .username-text {
+        color: var(--text);
+      }
+    </style>
   </head>
   <body>
     <div id="container">
-      <div id="title">
-        <div class="logo-container">
+      <div id="header">
+        <div class="nav-buttons">
+          <a href="{% url 'index' %}" class="nav-btn">Home</a>
+          <button id="how-to-play-btn" class="nav-btn">How to Play ▼</button>
+          <button id="settings-btn" class="nav-btn">⚙</button>
+        </div>
+        <div class="logo-title">
           <h1 class="name">WORDS</h1>
         </div>
+      </div>
+      <div id="title">
         <h2 class="select">Select Game Mode</h2>
+      </div>
+      <div class="profile-section">
+        <h3>
+          USERNAME: <span id="username">GUEST</span>
+        </h3>
       </div>
       <div class="game-modes">
         <div class="mode">
@@ -44,14 +96,17 @@
           </div>
         </div>
         <div class="mode">
-          <a href="#">
-            <button class="mode-btn disabled" onclick="alert('Coming soon!')">Versus</button>
+          <a href="{% url 'versus' %}">
+            <button class="mode-btn">Versus</button>
           </a>
           <div class="mode-description">
             <p>
-              <strong>COMING SOON</strong>
+              <strong>Versus Mode</strong>
             </p>
-            <p>Challenge your friends in real-time word battles.</p>
+            <p>
+              Challenge your friends in real-time word battles. Race against the clock to guess words faster
+              than your opponent.
+            </p>
           </div>
         </div>
         <div class="mode">
@@ -70,5 +125,6 @@
         <p>© 2025 WORDS - UNIVERSITY OF CHICAGO</p>
       </footer>
     </div>
+    <script src="index.js" defer></script>
   </body>
 </html>

@@ -7,8 +7,17 @@ body {
 }
 
 canvas {
-    display: inline-block;
+    display: block;
     background: #d2b48c;
+    margin: auto;
+}
+
+#game {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    width: 100vw;
 }
 
 .main-content {
@@ -17,6 +26,7 @@ canvas {
     align-items: center;
     margin-top: 5vh;
     height: 95vh;
+    width: 100vw;
 }
 
 .navbar {
@@ -205,12 +215,11 @@ canvas {
     padding: 1rem;
 }
 
-.setting-btn {
+.setting-btn, .setting-option {
     font-family: inherit;
     font-size: 20px;
     position: relative;
     display: inline-block;
-    cursor: pointer;
     padding: 15px 20px;
     border: none;
     border-radius: 50px;
@@ -226,13 +235,35 @@ canvas {
         color 0.1s;
 }
 
+.setting-btn {
+    cursor: pointer;
+}
+
+.setting-option input {
+    cursor: pointer;
+}
+
+.value-display {
+    position: absolute;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 2px 5px;
+    border-radius: 5px;
+    font-size: 12px;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translate(50%, 0);
+    transition: opacity 0.2s ease;
+}
+
 .setting-btn:hover {
     transform: translateY(2px);
     filter: brightness(0.9);
     box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-#toggle-colorblind.selected {
+.selected {
     background-color: transparent;
     color: rgb(29, 210, 114);
     outline: 3px solid rgb(29, 210, 114);
@@ -255,4 +286,15 @@ canvas {
     border-radius: 1rem 0 0 1rem;
     color: white;
     font-size: 20px;
+}
+
+.slider-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+#resize-slider {
+    width: 150px;
+    max-width: 100%;
 }
