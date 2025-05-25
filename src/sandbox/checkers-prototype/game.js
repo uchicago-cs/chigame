@@ -579,9 +579,6 @@ function movePiece(piece, moveX, moveY) {
     });
   }
 
-  // Play move sound
-  piece.sprite.scene.sound.play('slide');
-
   //console.log('Current board state:', getBoardState());
 }
 
