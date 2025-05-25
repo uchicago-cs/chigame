@@ -591,6 +591,7 @@ class InteractiveFictionDetailView(LoginRequiredMixin, FormMixin, DetailView):
             return HttpResponseRedirect(self.get_success_url())
         return self.form_invalid(form)
 
+
 class IFGameCreateView(CreateView):
     model = Game
     form_class = GameForm
@@ -631,6 +632,7 @@ class GameDeleteView(DeleteView):
         if not request.user.is_staff:
             return HttpResponseForbidden("You don't have permission to delete this game.")
         return super().dispatch(request, *args, **kwargs)
+
 
 class UploadFileView(View):
     def post(self, request, pk=None):
