@@ -1165,14 +1165,6 @@ function resizeGame(percentage) {
       piece.color
     ).setInteractive();
 
-    // If this piece was selected, update the selectedPiece reference to the new sprite
-    if (selectedPiece === piece) {
-      selectedPiece.sprite = piece.sprite;
-      piece.sprite.setStrokeStyle(highlight_size, COLORS.white);
-      // redraw the highlighted tiles for valid moves with the new size
-      highlightValidMoves(checkers.scene.scenes[0], piece);
-    }
-
     if (piece.isKing) {
       // remove the old crown icon
       if (piece.kingIcon) {
@@ -1196,6 +1188,7 @@ function resizeGame(percentage) {
       if (selectedPiece === piece) {
         selectedPiece.sprite.setStrokeStyle();
         selectedPiece = null;
+        clearHighlightedTiles();
 
         // if player selects their own pieces (does nothing if they click on opponent pieces)
       } else if (piece.color === currentPlayer) {
@@ -1210,7 +1203,18 @@ function resizeGame(percentage) {
         highlightValidMoves(checkers.scene.scenes[0], piece);
       }
     });
+
+    // If this piece was selected, update the selectedPiece reference to the new sprite
+    if (selectedPiece === piece) {
+      selectedPiece.sprite = piece.sprite;
+      piece.sprite.setStrokeStyle(highlight_size, COLORS.white);
+      // redraw the highlighted tiles for valid moves with the new size
+      highlightValidMoves(checkers.scene.scenes[0], piece);
+    }
+
   });
+  // redraw the highlighted tiles
+  
   // if the coordinates are visible, update their size by redrawing them
   if (coordsVisible) {
     toggleCoordinateVisibility();
