@@ -35,7 +35,7 @@ from rest_framework.response import Response
 from chigame.users.models import User
 
 from .filters import LobbyFilter
-from .forms import GameForm, IFGameForm, LobbyForm, ReviewForm
+from .forms import GameForm, LobbyForm, ReviewForm
 from .models import (
     Chat,
     Checkers,
@@ -44,7 +44,6 @@ from .models import (
     Feedback,
     Game,
     GameList,
-    InteractiveFictionGame,
     Lobby,
     Match,
     Player,
@@ -108,6 +107,9 @@ class GameDetailView(LoginRequiredMixin, FormMixin, DetailView):
     # for twine files, redirect to different IF view
     def dispatch(self, request, *args, **kwargs):
         self.object = self.get_object()
+        # Redirect to IF detail if this is a Twine file game
+        if self.object.twine_file and self.object.twine_file.name.endswith(".html"):
+            return redirect("interactive-fiction-detail", pk=self.object.pk)
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
@@ -562,7 +564,31 @@ def search_results(request):
 
 # =============== Interactive Fiction Views ===============
 class InteractiveFictionView(TemplateView):
+    template_name = "games/interactive-fiction/IF_game_detail.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        pk = self.kwargs.get("pk")
+
+        try:
+            game = Game.objects.get(pk=pk)
+        except Game.DoesNotExist:
+            game = None
+
+        context["game"] = game
+
+        if game.twine_file:
+            context["uploaded_file_url"] = game.twine_file.url
+
+        return context
+
+
+class IFGameCreateView(CreateView):
+    model = Game
+    form_class = GameForm
     template_name = "games/interactive-fiction/IF_game_create.html"
+    raise_exception = True  # if user is not staff member, raise exception
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -587,23 +613,27 @@ class InteractiveFictionView(TemplateView):
         return context
 
 
-class IFGameCreateView(UserPassesTestMixin, CreateView):
-    model = InteractiveFictionGame
-    form_class = IFGameForm
-    template_name = "games/interactive-fiction/IF_game_create.html"
+class GameDeleteView(DeleteView):
+    model = Game
+    template_name = "games/game_confirm_delete.html"
     success_url = reverse_lazy("game-list")
 
-    def test_func(self):
-        return self.request.user.is_staff
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        return context
+    def dispatch(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        # Only staff members can delete games
+        if not request.user.is_staff:
+            return HttpResponseForbidden("You don't have permission to delete this game.")
+        return super().dispatch(request, *args, **kwargs)
 
 
 class UploadFileView(View):
     def post(self, request, pk=None):
         uploaded_file = request.FILES.get("uploaded_file")
+        game_name = request.POST.get("name", "").strip() or "DEFAULT"
+
+        print("Name:", game_name)
+        print("POST:", request.POST)
+        print("FILES:", request.FILES)
 
         if uploaded_file:
             # Save the file to twine_games/
@@ -613,7 +643,7 @@ class UploadFileView(View):
 
             # Create a basic Game instance
             game = Game.objects.create(
-                name=uploaded_file.name.replace(".html", ""),
+                name=game_name,
                 description="Uploaded Twine game",
                 min_players=1,
                 max_players=1,
@@ -622,7 +652,7 @@ class UploadFileView(View):
             )
 
             messages.success(request, f"Game '{game.name}' uploaded successfully!")
-            return redirect("game-detail", pk=game.pk)
+            return redirect("game-list")
 
         messages.error(request, "No file selected.")
         return redirect("interactive-fiction")
@@ -657,15 +687,18 @@ class TournamentListView(ListView):
         if self.request.user.is_staff:
             return Tournament.objects.prefetch_related("matches").all()
 
-        # If the user is authenticated but not staff, show only tournaments they are part of
-        if self.request.user.is_authenticated:
-            return Tournament.objects.prefetch_related("matches").filter(players=self.request.user)
-
-        # For unauthenticated users, show all non-archived tournaments
-        return Tournament.objects.prefetch_related("matches").filter(archived=False)
+        # For non-staff users, show only tournaments they are part of
+        return (
+            Tournament.objects.prefetch_related("matches")
+            .filter(Q(players=self.request.user) | Q(created_by=self.request.user))
+            .distinct()
+        )
 
     def get(self, request, *args, **kwargs):
         super().get(request, *args, **kwargs)
+        print("get tournament list")
+        print(self.object_list)
+        print(self.get_queryset())
         for tournament in self.object_list:
             tournament.check_and_end_tournament()  # check if the tournament has ended
         return self.render_to_response(self.get_context_data())
@@ -813,6 +846,16 @@ class TournamentDetailView(DetailView):
             context["simulation_data"] = simulator_data
 
         return self.render_to_response(context)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        tournament = self.get_object()
+
+        # Fetch the user's feedback for this tournament
+        user_feedback = Feedback.objects.filter(tournament=tournament, user=self.request.user).first()
+        context["user_feedback"] = user_feedback
+
+        return context
 
     def post(self, request, *args, **kwargs):
         tournament = Tournament.objects.get(id=request.POST.get("tournament_id"))
@@ -1427,125 +1470,6 @@ class TournamentArchivedListView(ListView):
         return self.request.user.is_staff
 
 
-# Tournament Feedback Views
-@login_required
-def tournament_feedback_list(request, tournament_id):
-    """
-    View to display all feedback for a specific tournament.
-    Only the owner of the tournament can access this view.
-    """
-    tournament = get_object_or_404(Tournament, id=tournament_id)
-
-    # Check if the requesting user is the owner of the tournament
-    if tournament.created_by != request.user:
-        # Redirect or show an error message if the user is not the owner
-        messages.error(request, "You are not authorized to view feedback for this tournament.")
-        return redirect("tournament-list")  # Redirect to the tournament list or another appropriate page
-
-    # Retrieve feedback for the tournament
-    feedback_list = Feedback.objects.filter(tournament=tournament).order_by("-created_at")
-    return render(
-        request,
-        "tournaments/tournament_feedback_list.html",
-        {"tournament": tournament, "feedback_list": feedback_list},
-    )
-
-
-@login_required
-def user_feedback_list(request):
-    """
-    View to display all feedback submitted by the logged-in user.
-    """
-    user_feedback = Feedback.objects.filter(user=request.user).order_by("-created_at")
-
-    # Get the first tournament associated with the user's feedback (if any)
-    tournament = user_feedback.first().tournament if user_feedback.exists() else None
-
-    return render(
-        request,
-        "tournaments/tournament_user_feedback.html",
-        {"user_feedback": user_feedback, "tournament": tournament},
-    )
-
-
-@login_required
-def submit_feedback(request, tournament_id):
-    tournament = get_object_or_404(Tournament, id=tournament_id)
-
-    if request.method == "POST":
-        comment = request.POST.get("content")  # Match the field name in the model
-        rating = request.POST.get("rating")
-
-        if not comment or not rating:
-            messages.error(request, "All fields are required.")
-            return redirect("tournament-detail", pk=tournament.id)
-
-        Feedback.objects.create(
-            tournament=tournament,
-            user=request.user,
-            comment=comment,  # Use 'comment' if that's the field name in the model
-            rating=rating,
-        )
-        print("Submitting feedback by user:", request.user)
-
-        messages.success(request, "Feedback submitted successfully!")
-        return redirect("tournament-detail", pk=tournament.id)
-
-    return render(request, "tournaments/tournament_submit_feedback.html", {"tournament": tournament})
-
-
-@login_required
-def update_feedback_view(request, feedback_id):
-    """
-    View to handle updating feedback.
-    Only the original author or an admin can update feedback.
-    """
-    feedback = get_object_or_404(Feedback, id=feedback_id)
-
-    # Check if the user is authorized to update the feedback
-    if feedback.user != request.user and not request.user.is_staff:
-        return HttpResponseForbidden("You are not authorized to update this feedback.")
-
-    if request.method == "POST":
-        new_comment = request.POST.get("content")
-        new_rating = request.POST.get("rating")
-
-        if not new_comment or not new_rating:
-            messages.error(request, "All fields are required.")
-            return redirect("update-feedback", feedback_id=feedback.id)
-
-        # Update feedback fields
-        feedback.comment = new_comment
-        feedback.rating = new_rating
-        feedback.save()
-
-        messages.success(request, "Feedback updated successfully!")
-        return redirect("user-feedback-list")
-
-    return render(request, "tournaments/tournament_update_feedback.html", {"feedback": feedback})
-
-
-@login_required
-def delete_feedback_view(request, feedback_id):
-    """
-    View to handle deleting feedback.
-    Only the original author or an admin can delete feedback.
-    """
-    feedback = get_object_or_404(Feedback, id=feedback_id)
-
-    # Check if the user is authorized to delete the feedback
-    if feedback.user != request.user and not request.user.is_staff:
-        return HttpResponseForbidden("You are not authorized to delete this feedback.")
-
-    if request.method == "POST":
-        # Delete the feedback
-        feedback.delete()
-        messages.success(request, "Feedback deleted successfully!")
-        return redirect("user-feedback-list")
-
-    return render(request, "tournaments/tournament_delete_feedback.html", {"feedback": feedback})
-
-
 # Placeholder Game
 @login_required
 def coin_flip_game(request, pk):
@@ -1691,6 +1615,126 @@ def remove_from_gamelist(request, pk, list_pk):
     game_list = get_object_or_404(GameList, pk=list_pk, created_by=request.user)
     game_list.games.remove(game)
     return redirect("game-detail", pk=pk)
+
+
+# Tournament Feedback Views
+@login_required
+def tournament_feedback_list(request, tournament_id):
+    """
+    View to display all feedback for a specific tournament.
+    Only the owner of the tournament can access this view.
+    """
+    tournament = get_object_or_404(Tournament, id=tournament_id)
+
+    # Check if the requesting user is the owner of the tournament
+    if tournament.created_by != request.user:
+        # Redirect or show an error message if the user is not the owner
+        messages.error(request, "You are not authorized to view feedback for this tournament.")
+        return redirect("tournament-list")  # Redirect to the tournament list or another appropriate page
+
+    # Retrieve feedback for the tournament
+    feedback_list = Feedback.objects.filter(tournament=tournament).order_by("-created_at")
+    print("feedback list", feedback_list)
+    return render(
+        request,
+        "tournaments/tournament_feedback_list.html",
+        {"tournament": tournament, "feedback_list": feedback_list},
+    )
+
+
+@login_required
+def user_feedback_list(request):
+    """
+    View to display all feedback submitted by the logged-in user.
+    """
+    user_feedback = Feedback.objects.filter(user=request.user).order_by("-created_at")
+
+    # Get the first tournament associated with the user's feedback (if any)
+    tournament = user_feedback.first().tournament if user_feedback.exists() else None
+
+    return render(
+        request,
+        "tournaments/tournament_user_feedback.html",
+        {"user_feedback": user_feedback, "tournament": tournament},
+    )
+
+
+@login_required
+def submit_feedback(request, tournament_id):
+    tournament = get_object_or_404(Tournament, id=tournament_id)
+
+    if request.method == "POST":
+        comment = request.POST.get("content")  # Match the field name in the model
+        rating = request.POST.get("rating")
+
+        if not comment or not rating:
+            messages.error(request, "All fields are required.")
+            return redirect("tournament-detail", pk=tournament.id)
+
+        Feedback.objects.create(
+            tournament=tournament,
+            user=request.user,
+            comment=comment,  # Use 'comment' if that's the field name in the model
+            rating=rating,
+        )
+        print("Submitting feedback by user:", request.user)
+
+        messages.success(request, "Feedback submitted successfully!")
+        return redirect("tournament-detail", pk=tournament.id)
+
+    return render(request, "tournaments/tournament_submit_feedback.html", {"tournament": tournament})
+
+
+@login_required
+def update_feedback_view(request, feedback_id):
+    """
+    View to handle updating feedback.
+    Only the original author or an admin can update feedback.
+    """
+    feedback = get_object_or_404(Feedback, id=feedback_id)
+
+    # Check if the user is authorized to update the feedback
+    if feedback.user != request.user and not request.user.is_staff:
+        return HttpResponseForbidden("You are not authorized to update this feedback.")
+
+    if request.method == "POST":
+        new_comment = request.POST.get("content")
+        new_rating = request.POST.get("rating")
+
+        if not new_comment or not new_rating:
+            messages.error(request, "All fields are required.")
+            return redirect("update-feedback", feedback_id=feedback.id)
+
+        # Update feedback fields
+        feedback.comment = new_comment
+        feedback.rating = new_rating
+        feedback.save()
+
+        messages.success(request, "Feedback updated successfully!")
+        return redirect("user-feedback-list")
+
+    return render(request, "tournaments/tournament_update_feedback.html", {"feedback": feedback})
+
+
+@login_required
+def delete_feedback_view(request, feedback_id):
+    """
+    View to handle deleting feedback.
+    Only the original author or an admin can delete feedback.
+    """
+    feedback = get_object_or_404(Feedback, id=feedback_id)
+
+    # Check if the user is authorized to delete the feedback
+    if feedback.user != request.user and not request.user.is_staff:
+        return HttpResponseForbidden("You are not authorized to delete this feedback.")
+
+    if request.method == "POST":
+        # Delete the feedback
+        feedback.delete()
+        messages.success(request, "Feedback deleted successfully!")
+        return redirect("user-feedback-list")
+
+    return render(request, "tournaments/tournament_delete_feedback.html", {"feedback": feedback})
 
 
 class MatchStatsView(DetailView):
