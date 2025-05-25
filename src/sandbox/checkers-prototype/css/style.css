@@ -215,12 +215,11 @@ canvas {
     padding: 1rem;
 }
 
-.setting-btn {
+.setting-btn, .setting-option {
     font-family: inherit;
     font-size: 20px;
     position: relative;
     display: inline-block;
-    cursor: pointer;
     padding: 15px 20px;
     border: none;
     border-radius: 50px;
@@ -236,13 +235,35 @@ canvas {
         color 0.1s;
 }
 
+.setting-btn {
+    cursor: pointer;
+}
+
+.setting-option input {
+    cursor: pointer;
+}
+
+.value-display {
+    position: absolute;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 2px 5px;
+    border-radius: 5px;
+    font-size: 12px;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translate(50%, 0);
+    transition: opacity 0.2s ease;
+}
+
 .setting-btn:hover {
     transform: translateY(2px);
     filter: brightness(0.9);
     box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-#toggle-colorblind.selected {
+.selected {
     background-color: transparent;
     color: rgb(29, 210, 114);
     outline: 3px solid rgb(29, 210, 114);
