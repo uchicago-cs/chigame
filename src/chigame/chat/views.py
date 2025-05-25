@@ -172,7 +172,7 @@ def live_chat_preview_api(request):
         }
     )
 
-  
+
 def edit_message(request, message_id):
     """
     Edits a message from the database.
