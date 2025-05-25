@@ -1,3 +1,4 @@
+//Set UP
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
@@ -16,7 +17,6 @@ const words = fs.readFileSync('Words-Game/5WORDS.txt', 'utf8').split('\n').map(w
 let players = new Map(); // socket.id => { socket, word }
 const DICTIONARY_URL = "https://api.dictionaryapi.dev/api/v2/entries/en/";
 
-
 let gameStartTime = null;
 const GAME_DURATION_MS = 3 * 60 * 1000; // 3 minutes
 const WORD_LENGTH = 5;
@@ -24,6 +24,8 @@ let gameTimeout = null;
 let sharedWordSequence = [];
 const MAX_WORDS = 100;
 
+
+//Socket connections
 io.on('connection', socket => {
     // Clean up disconnected sockets
     players.forEach((playerData, id) => {
@@ -32,6 +34,7 @@ io.on('connection', socket => {
         }
     });
 
+    //Limit player to 2
     if (players.size >= 2) {
         socket.emit('roomFull', 'Only 2 players allowed.');
         socket.disconnect(true);
@@ -44,6 +47,7 @@ io.on('connection', socket => {
     socket.emit('welcome', { playerNum });
 
 
+    //Start game when 2 players join
     if (players.size === 2) {
         console.log(`Both players connected.`);
 
@@ -71,6 +75,7 @@ io.on('connection', socket => {
         }, GAME_DURATION_MS);
     }
 
+    //Submit word for players
     socket.on('submitWord', async (submittedWord) => {
         const playerData = players.get(socket.id);
 
@@ -84,6 +89,7 @@ io.on('connection', socket => {
 
         const isCorrect = submittedWord.toLowerCase() === playerData.word.toLowerCase();
 
+        //Correct Word
         if (isCorrect) {
             playerData.score += 1;
             playerData.wordIndex++;
@@ -127,7 +133,7 @@ io.on('connection', socket => {
         }
     });
 
-
+    //Disconnection of socket
     socket.on('disconnect', () => {
         const playerData = players.get(socket.id);
         if (playerData) {
@@ -153,11 +159,13 @@ io.on('connection', socket => {
 });
 
 
+//Word List for the game
 function generateWordSequence() {
     const shuffled = [...words].sort(() => 0.5 - Math.random());
     return shuffled.slice(0, MAX_WORDS);
 }
 
+//Tile colors for board
 function calculateTileColors(guessArr, correctWord) {
     const colors = Array(WORD_LENGTH).fill("grey");
     const correctLetters = correctWord.split("");
@@ -180,6 +188,7 @@ function calculateTileColors(guessArr, correctWord) {
     return colors;
 }
 
+//Check if word is valid
 async function isValidWord(word) {
     try {
         const response = await fetch(DICTIONARY_URL + word);
@@ -190,7 +199,7 @@ async function isValidWord(word) {
     }
 }
 
-
+//Start/Host the Server
 server.listen(3000, () =>
     console.log('Server running on http://localhost:3000')
 );
