@@ -34,5 +34,38 @@ def leaderboard_view(request, game_id):
     )
 
 
+def landing_page_view(request):
+    top_entries = []
+
+    for game in Game.objects.prefetch_related("leaderboards").all():
+        leaderboard = game.leaderboards.first()
+        if leaderboard:
+            top_entry = (
+                LeaderboardEntry.objects.filter(leaderboard=leaderboard)
+                .select_related("user", "region")
+                .order_by("rank")
+                .first()
+            )
+            if top_entry:
+                top_entries.append(
+                    {
+                        "game": game.name,
+                        "entry": top_entry,
+                    }
+                )
+
+    # Default view metric hardcoded as Points to match the leaderboard fixture
+    # Anonymity hardcoded as None, and will be linked with security settings in later PR
+    return render(
+        request,
+        "leaderboards/landing_page.html",
+        {
+            "top_entries": top_entries,
+            "default_view_metric": "Points",
+            "anonymity": None,
+        },
+    )
+
+
 def bar_chart(request, game_id):
     return render(request, "leaderboards/bar_chart.html")
