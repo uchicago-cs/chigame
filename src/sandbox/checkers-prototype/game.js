@@ -511,7 +511,7 @@ function movePiece(piece, moveX, moveY) {
     // https://rexrainbow.github.io/phaser3-rex-notes/docs/site/ease-function/
     ease: 'Power3',
   });
-   
+
   // Play move sound effect
   piece.sprite.scene.sound.play('slide', { volume: volumeAmount });
   console.log("Current board state:", getBoardState());
