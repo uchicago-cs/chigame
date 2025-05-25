@@ -2,7 +2,7 @@
 const START_WIDTH = 650;
 const START_HEIGHT = 650;
 const START_MARGIN = 10;
-const START_HIGHLIHGHT_SIZE = 3;
+const START_HIGHLIGHT_SIZE = 3;
 
 const config = {
   type: Phaser.AUTO,
@@ -29,6 +29,10 @@ smaller to account for the margin, it'll appear as if there's a black border.
 let tiles = [];
 let tile_size = (config.width - 2 * START_MARGIN) / BOARD_SIZE;
 
+// global variables for the coordinates overlay
+let coordsVisible = false;
+const coordElements = [];
+
 // colors we will use in this game
 const COLORS = {
   light_brown: 0xefbb74,
@@ -51,7 +55,7 @@ let blackCaptured = 0; // Number of pieces that black has captured
 // bigger than the tiles
 const RADIUS_SCALE_FACTOR = 2.5;
 // selected piece highlight stroke width
-let highlight_size = START_HIGHLIHGHT_SIZE;
+let highlight_size = START_HIGHLIGHT_SIZE;
 
 // an array to keep track of the highlighted tiles (valid moves)
 let highlightedTiles = [];
@@ -1011,61 +1015,65 @@ function easyBot(scene) {
   endTurn(scene);
 }
 
+// function to enable or disable the coordinates overlay
+function toggleCoordinateVisibility() {
+  const toggleCoordinatesBtn = document.getElementById('toggle-coordinates');
+  toggleCoordinatesBtn.classList.add('selected');
+  coordsVisible = !coordsVisible;
+
+  if (coordsVisible) {
+    // get board position on screen
+    const gameDiv = document.getElementById('game');
+    const rect = gameDiv.getBoundingClientRect();
+    console.log("toggle coordinates");
+    // for each index, create a top label and a left label
+    for (let i = 0; i < BOARD_SIZE; i++) {
+      // Column label
+      const colLabel = document.createElement('div');
+      colLabel.textContent = i + 1;
+      Object.assign(colLabel.style, {
+        position: 'absolute',
+        left: `${(rect.left + margin) + (i * tile_size) + (tile_size / 2)}px`,
+        top: `${rect.top - 20}px`,
+        transform: 'translateX(-50%)',
+        fontFamily: '"Outfit", sans-serif',
+        color: '#3b2f2a',
+        userSelect: 'none',
+        pointerEvents: 'none',
+      });
+      document.body.appendChild(colLabel);
+      coordElements.push(colLabel);
+
+      // Row label
+      const rowLabel = document.createElement('div');
+      rowLabel.textContent = i + 1;
+      Object.assign(rowLabel.style, {
+        position: 'absolute',
+        left: `${rect.left - 20}px`,
+        top: `${rect.top + margin + i * tile_size + tile_size / 2}px`,
+        transform: 'translateY(-50%)',
+        fontFamily: '"Outfit", sans-serif',
+        color: '#3b2f2a',
+        userSelect: 'none',
+        pointerEvents: 'none',
+      });
+      document.body.appendChild(rowLabel);
+      coordElements.push(rowLabel);
+    }
+  } else {
+    // remove coordinates
+    coordElements.forEach(el => document.body.removeChild(el));
+    coordElements.length = 0;
+    toggleCoordinatesBtn.classList.remove('selected');
+  }
+}
+
 // Coordinates overlay button
 document.addEventListener('DOMContentLoaded', () => {
   const toggleCoordinatesBtn = document.getElementById('toggle-coordinates');
-  let coordsVisible = false;
-  const coordElements = [];
 
   toggleCoordinatesBtn.addEventListener('click', () => {
-    coordsVisible = !coordsVisible;
-    toggleCoordinatesBtn.classList.add('selected');
-
-    if (coordsVisible) {
-      // get board position on screen
-      const gameDiv = document.getElementById('game');
-      const rect = gameDiv.getBoundingClientRect();
-
-      // for each index, create a top label and a left label
-      for (let i = 0; i < BOARD_SIZE; i++) {
-        // Column label
-        const colLabel = document.createElement('div');
-        colLabel.textContent = i + 1;
-        Object.assign(colLabel.style, {
-          position: 'absolute',
-          left: `${rect.left + margin + i * tile_size + tile_size / 2}px`,
-          top: `${rect.top - 20}px`,
-          transform: 'translateX(-50%)',
-          fontFamily: '"Outfit", sans-serif',
-          color: '#3b2f2a',
-          userSelect: 'none',
-          pointerEvents: 'none',
-        });
-        document.body.appendChild(colLabel);
-        coordElements.push(colLabel);
-
-        // Row label
-        const rowLabel = document.createElement('div');
-        rowLabel.textContent = i + 1;
-        Object.assign(rowLabel.style, {
-          position: 'absolute',
-          left: `${rect.left - 20}px`,
-          top: `${rect.top + margin + i * tile_size + tile_size / 2}px`,
-          transform: 'translateY(-50%)',
-          fontFamily: '"Outfit", sans-serif',
-          color: '#3b2f2a',
-          userSelect: 'none',
-          pointerEvents: 'none',
-        });
-        document.body.appendChild(rowLabel);
-        coordElements.push(rowLabel);
-      }
-    } else {
-      // remove coordinates
-      toggleCoordinatesBtn.classList.remove('selected');
-      coordElements.forEach(el => document.body.removeChild(el));
-      coordElements.length = 0;
-    }
+    toggleCoordinateVisibility();
   });
 });
 
@@ -1107,9 +1115,9 @@ function resizeGame(percentage) {
   // Update margin and tile size and highlight size
   margin = START_MARGIN * percentage;
   tile_size = (newWidth - 2 * margin) / BOARD_SIZE;
-  highlight_size = START_HIGHLIHGHT_SIZE * percentage;
+  highlight_size = START_HIGHLIGHT_SIZE * percentage;
 
-  // Update the positions of the tiles and pieces
+  // Update the positions of the tiles
   tiles.forEach((tile, index) => {
     const x = index % BOARD_SIZE;
     const y = Math.floor(index / BOARD_SIZE);
@@ -1120,6 +1128,7 @@ function resizeGame(percentage) {
     tile.setSize(tile_size, tile_size);
   });
 
+  // update the positions of the piece sprites
   pieces.forEach((piece) => {
     // destroy the old sprite
     piece.sprite.destroy();
@@ -1137,7 +1146,7 @@ function resizeGame(percentage) {
       piece.sprite.setStrokeStyle(highlight_size, COLORS.white);
     }
 
-    // make the new sprite do stuff when clicked
+    // add onclick functionality to the new sprite
     piece.sprite.on('pointerdown', () => {
       // don't allow piece selection if game is over
       if (gameOver) return;
@@ -1159,6 +1168,11 @@ function resizeGame(percentage) {
       }
     });
   });
+  // if the coordinates are visible, update their size by redrawing them
+  if (coordsVisible) {
+    toggleCoordinateVisibility();
+    toggleCoordinateVisibility();
+  }
 }
 
 // Event listener for the resize slider
