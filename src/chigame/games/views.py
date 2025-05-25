@@ -202,6 +202,73 @@ class GameEditView(UserPassesTestMixin, UpdateView):
         return context
 
 
+# =============== Game: Create and Join Matches  ===============
+class MatchCreateView(CreateView):
+    model = Match
+    template_name = "matches/match_create.html"
+    fields = [
+        "date_played",
+        "players",
+    ]
+
+    def dispatch(self, request, *args, **kwargs):
+        self.game = get_object_or_404(Game, pk=self.kwargs["pk"])
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        # remove the match creator from the players list
+        form.fields["players"].queryset = User.objects.exclude(pk=self.request.user.pk)
+        return form
+
+    def form_valid(self, form):
+        user = self.request.user
+        players = form.cleaned_data["players"]
+
+        # add match creator to the list of players automatically
+        all_players = list(players) + [user]
+
+        # min/max players rules
+        if len(all_players) < self.game.min_players:
+            messages.error(self.request, f"A match must have at least {self.game.min_players} players.")
+            return redirect("match-create", pk=self.game.pk)
+
+        if len(all_players) > self.game.max_players:
+            messages.error(self.request, f"A match cannot have more than {self.game.max_players} players.")
+            return redirect("match-create", pk=self.game.pk)
+
+        # Lobby creation
+        lobby = Lobby.objects.create(
+            match_status=Lobby.Lobbied,
+            name=f"{self.game.name} Lobby by {user.username}",
+            game=self.game,
+            game_mod_status=Lobby.Default_game,
+            created_by=user,
+            min_players=self.game.min_players,
+            max_players=self.game.max_players,
+        )
+        lobby.members.set(all_players)
+
+        # Match creation
+        match = form.save(commit=False)
+        match.game = self.game
+        match.lobby = lobby
+        match.save()
+        match.players.set(all_players)
+
+        self.object = match
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_success_url(self):
+        return reverse("match-code", kwargs={"pk": self.object.lobby.pk})
+
+
+class MatchCodeView(LoginRequiredMixin, DetailView):
+    model = Lobby
+    template_name = "matches/match_code.html"
+    context_object_name = "lobby"
+
+
 # =============== BGG Searching =================
 # The following functions involve using the BoardGameGeek API to search for games.
 # API documentation: https://boardgamegeek.com/wiki/page/BGG_XML_API2
@@ -686,6 +753,13 @@ class TournamentListView(ListView):
         # If the user is staff, show all tournaments
         if self.request.user.is_staff:
             return Tournament.objects.prefetch_related("matches").all()
+
+        # If the user is authenticated but not staff, show only tournaments they are part of
+        if self.request.user.is_authenticated:
+            return Tournament.objects.prefetch_related("matches").filter(players=self.request.user)
+
+        # For unauthenticated users, show all non-archived tournaments
+        return Tournament.objects.prefetch_related("matches").filter(archived=False)
 
         # For non-staff users, show only tournaments they are part of
         return (
@@ -1177,11 +1251,15 @@ class TournamentDetailView(DetailView):
             elif success == 1:
                 messages.error(request, "You have not joined this tournament")
                 return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
-            elif success == 3:
-                messages.error(request, "The registration period for this tournament has ended")
+            elif request.POST.get("action") == "archive":
+                tournament.set_archive(True)
+                messages.success(request, "You have successfully archived this tournament")
                 return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
-            else:
-                raise Exception("Invalid return value")
+
+            elif request.POST.get("action") == "unarchive":
+                tournament.set_archive(False)
+                messages.success(request, "You have successfully unarchived this tournament")
+                return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
 
         elif request.POST.get("action") == "join_match":
             # Get the user's current match in the tournament
