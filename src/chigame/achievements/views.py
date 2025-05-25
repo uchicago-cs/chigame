@@ -68,18 +68,22 @@ def get_pinned_achievements(request):
     return JsonResponse(data)
 
 
-def user_achievements(request, user_id=None):
+def user_achievements(request, pk=None):
     """
     Display a user's achievements page.
-    If username is provided, show that user's achievements.
+    If pk is provided, show that user's achievements.
     Otherwise, show the logged-in user's achievements.
     """
-    if user_id:
-        target_user = User.objects.get(id=user_id)
+
+    if pk:
+        # If a username is provided in the URL, get that user's profile
+        target_user = get_object_or_404(User, pk=pk)
         viewing_own_profile = target_user == request.user
+        recent_achievements = get_recent_achievements(target_user.pk, limit=5)
     else:
         target_user = request.user
         viewing_own_profile = True
+        recent_achievements = get_recent_achievements(target_user.pk, limit=5)
 
     # Get user-specific game lists
     games = Game.objects.filter(users=target_user)
@@ -228,6 +232,7 @@ def user_achievements(request, user_id=None):
             "progress": overall_progress,
         },
         "pinned_achievements": pinned_achievements_qs,
+        "recent_achievements": recent_achievements,
     }
 
     return render(request, "achievements/user_achievements.html", context)
