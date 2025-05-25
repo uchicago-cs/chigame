@@ -397,16 +397,19 @@ class RoundRobinSimulator:
     No concept of rounds; all matches are generated up front.
     """
 
-    def __init__(self, players: list[User]):
-        """
-        Initialize the round robin simulator.
-
-        Args:
-            players: List of User instances participating in the tournament
-        """
+    def __init__(
+        self,
+        players: list[User],
+        fixture: list[dict] | None = None,
+        seeds: dict[int, int] | None = None,
+        tiebreaker_mode: str = "random",
+    ):
         self.players = players
-        self.matches = []  # List of tuples (player1, player2)
-        self.results = {}  # Key: (player1.id, player2.id), Value: winner.id
+        self.fixture = fixture or []
+        self.seeds = seeds or self.compute_seeds_from_history()
+        self.tiebreaker_mode = tiebreaker_mode
+        self.matches = []
+        self.results = {}
         self.generate_matches()
 
     def generate_matches(self) -> None:
@@ -442,16 +445,23 @@ class RoundRobinSimulator:
     def get_sorted_standings(self) -> list[tuple[User, int]]:
         """
         Get the standings sorted by number of wins descending.
-
-        Returns:
-            A list of tuples (User instance, wins)
+        Tie-breaks are handled by self.tiebreaker_mode.
         """
         standings = self.get_standings()
         player_map = {player.id: player for player in self.players}
 
-        sorted_standings = sorted(
-            [(player_map[player_id], wins) for player_id, wins in standings.items()], key=lambda x: -x[1]
-        )
+        if self.tiebreaker_mode == "seed":
+            # Break ties using seed (lower is better)
+            sorted_standings = sorted(
+                [(player_map[pid], wins) for pid, wins in standings.items()],
+                key=lambda x: (-x[1], self.seeds.get(x[0].id, float("inf"))),
+            )
+        else:
+            # Fallback to original (random/insertion-order) tiebreaking
+            sorted_standings = sorted(
+                [(player_map[pid], wins) for pid, wins in standings.items()], key=lambda x: -x[1]
+            )
+
         return sorted_standings
 
     def get_match_data(self) -> list[dict]:
@@ -480,6 +490,47 @@ class RoundRobinSimulator:
             "tournament_winner": (self.get_sorted_standings()[0][0].id if self.results else None),
         }
 
+    def compute_seeds_from_history(self) -> dict[int, int]:
+        """
+        Compute seeds based on tournament win/loss ratio using fixture data.
+        """
+        wins = defaultdict(int)
+        losses = defaultdict(int)
+        players_set = set()
+
+        # Only consider tournaments in the fixture
+        tournaments = [obj for obj in self.fixture if obj["model"] == "games.tournament"]
+
+        for tournament in tournaments:
+            fields = tournament["fields"]
+            players = fields.get("players", [])
+            winners = set(fields.get("winners", []))  # supports multiple winners
+
+            for player in players:
+                players_set.add(player)
+                if player in winners:
+                    wins[player] += 1
+                else:
+                    losses[player] += 1
+
+        # Build list of (player_id, win, loss, ratio)
+        player_stats = []
+        for player in players_set:
+            win = wins[player]
+            loss = losses[player]
+            total = win + loss
+            win_ratio = win / total if total > 0 else 0
+            player_stats.append((player, win, loss, win_ratio))
+
+        # Sort: win_ratio DESC, wins DESC, player_id ASC
+        player_stats.sort(key=lambda x: (-x[3], -x[1], x[0]))
+
+        # Convert to seed mapping, keeping only those in self.players
+        valid_ids = {p.id for p in self.players}
+        seeds = {pid: i + 1 for i, (pid, *_rest) in enumerate(player_stats) if pid in valid_ids}
+
+        return seeds
+
 
 class MultiStageSimulator(RoundRobinSimulator):
     """
@@ -487,10 +538,16 @@ class MultiStageSimulator(RoundRobinSimulator):
     proceed to a single elimination bracket for the top players.
     """
 
-    def __init__(self, players: list[User], num_qualifiers: int = 4):
-        super().__init__(players)
+    def __init__(
+        self,
+        players: list[User],
+        seeds: dict[int, int] | None = None,
+        tiebreaker_mode: str = "random",
+        num_qualifiers: int = 4,
+    ):
+        super().__init__(players, seeds=seeds, tiebreaker_mode=tiebreaker_mode)
         self.num_qualifiers = num_qualifiers
-        self.final_matches = []  # Bracket matches for final stage
+        self.final_matches = []
         self.final_results = {}
         self.round_robin_simulated = False
 

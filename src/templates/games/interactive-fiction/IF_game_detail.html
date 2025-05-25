@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+
+{% block js %}
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2/dist/umd/popper.min.js"></script>
+{% endblock js %}
+{% block title %}
+  {{ game.name }} Details
+{% endblock title %}
+{% block content %}
+  <style>
+    .recommendation-img {
+      height: 150px;
+      object-fit: cover;
+    }
+  </style>
+  <div class="row mt-3 mb-3">
+    <div class="col-md-3">
+      <img src="{{ game.image }}" class="img-thumbnail" alt="game cover" />
+    </div>
+    <div class="col-md-9">
+      <h1 class="display-1">{{ game.name }}</h1>
+      <h4>Complexity: {{ game.complexity }}/5</h4>
+      <h4>Average Rating: {{ avg_rating|floatformat:2|default:"N/A" }}</h4>
+      <h4>Number of Reviews: {{ popularity|default:0 }}</h4>
+      {% for category in game.category.all %}
+        <a href="#"><span class="badge rounded-pill text-bg-primary">{{ category }}</span></a>
+      {% endfor %}
+      {% for mechanic in game.mechanics.all %}
+        <a href="#"><span class="badge rounded-pill text-bg-secondary">{{ mechanic }}</span></a>
+      {% endfor %}
+      <div class="btn-group btn-group-lg mt-3">
+        <a href="{{ game.twine_file.url }}"
+           target="_blank"
+           class="btn btn-outline-primary">Play Game in New Tab</a>
+        {% if user.is_authenticated %}
+          {% if game in favorites_list.games.all %}
+            <a href="{% url 'remove-from-favorites' pk=game.pk %}"
+               class="btn btn-outline-warning">Remove from Favorites</a>
+          {% else %}
+            <a href="{% url 'add-to-favorites' pk=game.pk %}"
+               class="btn btn-outline-success">Add to Favorites</a>
+          {% endif %}
+          {% if game_lists %}
+            <div class="btn-group ms-2">
+              <button class="btn btn-outline-primary dropdown-toggle"
+                      type="button"
+                      data-bs-toggle="dropdown"
+                      aria-expanded="false">Other Lists</button>
+              <ul class="dropdown-menu">
+                {% for glist in game_lists %}
+                  <li>
+                    {% if game in glist.games.all %}
+                      <a class="dropdown-item"
+                         href="{% url 'remove-from-gamelist' game.pk glist.pk %}">Remove from {{ glist.name }}</a>
+                    {% else %}
+                      <a class="dropdown-item"
+                         href="{% url 'add-to-gamelist' game.pk glist.pk %}">Add to {{ glist.name }}</a>
+                    {% endif %}
+                  </li>
+                {% endfor %}
+              </ul>
+            </div>
+          {% endif %}
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="row mb-3 bg-light p-3 rounded-2">
+    <div class="col-3">
+      <div id="description-list" class="list-group">
+        <a class="list-group-item list-group-item-action" href="#description">Description</a>
+        <a class="list-group-item list-group-item-action"
+           href="#player-description">Players</a>
+        <a class="list-group-item list-group-item-action"
+           href="#playtime-description">Playtime</a>
+        <a class="list-group-item list-group-item-action"
+           href="#rule-description">Rules</a>
+      </div>
+    </div>
+    <div class="col-9">
+      <div data-bs-target="#description-list" tabindex="0">
+        <h3 id="description">Description</h3>
+        {# there is no year 0 so if this is the year published don't display it #}
+        {% if game.year_published != 0 %}
+          <p class="lead">
+            Published in
+            {% if game.year_published < 0 %}
+              {# this code performs the operation: game.year_published * -1 #}
+              {# if multiplication is used elsewhere then it might be best to create a custom template tag #}
+              {% widthratio game.year_published 1 -1 %} BCE
+            {% else %}
+              {{ game.year_published }}
+            {% endif %}
+          </p>
+        {% endif %}
+        <p>{{ game.description|linebreaksbr }}</p>
+        <p>
+          <strong>Recommended Age:</strong> {{ game.suggested_age }}+
+        </p>
+        <h3 id="playtime-description">Playtime</h3>
+        {% if game.min_playtime == game.max_playtime %}
+          <p>{{ game.min_playtime }} minutes</p>
+        {% else %}
+          <p>{{ game.min_playtime }}–{{ game.max_playtime }} minutes</p>
+          <p>
+            <strong>Expected:</strong> {{ game.expected_playtime }} minutes
+          </p>
+        {% endif %}
+        <div class="mb-4">
+          <h3 id="new-review">Write a Review</h3>
+          <form method="post" action="{% url 'game-detail' pk=game.pk %}">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-primary">Submit Review</button>
+          </form>
+          {% if game.pk == 9999 %}
+            {# for interactive fiction games #}
+            <hr />
+            <h3>Upload a File</h3>
+            <form method="post"
+                  action="{% url 'upload-file' pk=game.pk %}"
+                  enctype="multipart/form-data">
+              {% csrf_token %}
+              <input type="file" id="myFile" name="uploaded_file" />
+              <input type="submit" class="btn btn-primary" value="Upload" />
+            </form>
+            <h3>Uploaded Story</h3>
+            <a href="{{ uploaded_file_url }}"
+               target="_blank"
+               class="btn btn-success">Play Uploaded Game</a>
+          {% endif %}
+        </div>
+        <a href="{% url 'game-review-list' pk=game.pk %}">See All Reviews for {{ game.name }}</a>
+      </div>
+    </div>
+  </div>
+  {% if recommended_games %}
+    <div class="row mt-4 mb-4 bg-light p-3 rounded-2">
+      <div class="col-12">
+        <h3 id="recommendations">Games You Might Also Enjoy</h3>
+        <p class="text-muted">Based on similar categories, mechanics, and designers</p>
+      </div>
+      <div class="row">
+        {% for rec_game in recommended_games %}
+          <div class="col-md-3 mb-3">
+            <div class="card h-100 {% if rec_game.played_penalty < 1 %}border-info{% endif %}">
+              <a href="{% url 'game-detail' rec_game.id %}"
+                 class="text-decoration-none text-dark">
+                <img src="{{ rec_game.image }}"
+                     class="card-img-top recommendation-img"
+                     alt="{{ rec_game.name }}" />
+                <div class="card-body">
+                  <h5 class="card-title">{{ rec_game.name }}</h5>
+                  <div class="d-flex mb-2 flex-wrap">
+                    {% for category in rec_game.categories.all|slice:":2" %}
+                      <span class="badge text-bg-primary me-1 mb-1">{{ category }}</span>
+                    {% endfor %}
+                    {% for mechanic in rec_game.mechanics.all|slice:":1" %}
+                      <span class="badge text-bg-secondary me-1 mb-1">{{ mechanic }}</span>
+                    {% endfor %}
+                  </div>
+                  <p class="card-text small">{{ rec_game.description|truncatewords:10 }}</p>
+                  {% if rec_game.played_penalty < 1 %}
+                    <div class="mt-2">
+                      <span class="badge text-bg-info">Previously Played</span>
+                    </div>
+                  {% endif %}
+                </div>
+                <div class="card-footer bg-transparent">
+                  <small class="text-muted">
+                    {% if rec_game.min_players == rec_game.max_players %}
+                      {{ rec_game.min_players }} players
+                    {% else %}
+                      {{ rec_game.min_players }}-{{ rec_game.max_players }} players
+                    {% endif %}
+                    • Complexity: {{ rec_game.complexity|floatformat:1 }}/5
+                  </small>
+                </div>
+              </a>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+  {% if user.is_staff %}
+    <div class="btn-group">
+      <a href="{% url 'game-edit' game.pk %}" class="btn btn-outline-primary">Edit</a>
+      <a href="#" class="btn btn-outline-primary">Delete</a>
+    </div>
+  {% endif %}
+  <a href="{% url 'game-list' %}">Back to Games List</a>
+{% endblock content %}
