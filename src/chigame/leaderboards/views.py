@@ -3,6 +3,7 @@ from django.shortcuts import get_object_or_404, render
 from chigame.games.models import Game
 from chigame.leaderboards.models import LeaderboardEntry, Region, Metric
 
+
 def get_tier_info(score, metric_name):
     tier_name = "Unranked"
     tier_badge = ""
@@ -101,12 +102,14 @@ def points_bar_chart(request, game_id):
         metric_score = entry.metric_scores.filter(metric__name=score_metric_name).first()
         if metric_score:
             tier_name, tier_badge = get_tier_info(metric_score.score, score_metric_name)
-            leaderboard_data.append({
-                "player": entry.user.user.name,
-                "score": metric_score.score,
-                "tier_name": tier_name,
-                "tier_badge": tier_badge,
-            })
+            leaderboard_data.append(
++                {
++                    "player": entry.user.user.name,
++                    "score": metric_score.score,
++                    "tier_name": tier_name,
++                    "tier_badge": tier_badge,
++                }
++            )
     leaderboard_data.sort(key=lambda item: item["score"], reverse=True)
 
     context = {
@@ -122,28 +125,36 @@ def top_time_played_bar_chart(request, game_id):
     leaderboard = game.leaderboards.filter(name__icontains="Time Played").first()
 
     if not leaderboard:
-        return render(request, "leaderboards/empty.html", {"game": game, "message": f"No 'Time Played' leaderboard found for {game.name}."})
+        return render(
++            request,
++            "leaderboards/empty.html",
++            {"game": game, "message": f"No 'Time Played' leaderboard found for {game.name}."},
++        )
 
     entries = LeaderboardEntry.objects.filter(leaderboard=leaderboard).select_related("user")
 
     time_played_metric = Metric.objects.filter(game=game, name__icontains="Time Played").first()
 
     if not time_played_metric:
-        return render(request, "leaderboards/error.html", {"message": f"No 'Time Played' metric found for {game.name}."})
+        return render(
++            request, "leaderboards/error.html", {"message": f"No 'Time Played' metric found for {game.name}."}
++        )
 
     leaderboard_data = []
     for entry in entries:
         metric_score = entry.metric_scores.filter(metric=time_played_metric).first()
         if metric_score:
             tier_name, tier_badge = get_tier_info(metric_score.score, time_played_metric.name)
-            leaderboard_data.append({
-                "player": entry.user.user.name,
-                "score": metric_score.score,
-                "tier_name": tier_name,
-                "tier_badge": tier_badge,
-            })
+            leaderboard_data.append(
++                {
++                    "player": entry.user.user.name,
++                    "score": metric_score.score,
++                    "tier_name": tier_name,
++                    "tier_badge": tier_badge,
++                }
++            )
 
-    leaderboard_data.sort(key=lambda item: item['score'], reverse=True)
+    leaderboard_data.sort(key=lambda item: item["score"], reverse=True)
 
     context = {
         "game": game,
@@ -158,7 +169,11 @@ def top_games_won_bar_chart(request, game_id):
     leaderboard = game.leaderboards.filter(name__icontains="Games Won").first()
 
     if not leaderboard:
-        return render(request, "leaderboards/empty.html", {"game": game, "message": f"No 'Games Won' leaderboard found for {game.name}."})
+        return render(
++            request,
++            "leaderboards/empty.html",
++            {"game": game, "message": f"No 'Games Won' leaderboard found for {game.name}."},
++        )
 
     entries = LeaderboardEntry.objects.filter(leaderboard=leaderboard).select_related("user")
 
@@ -172,14 +187,16 @@ def top_games_won_bar_chart(request, game_id):
         metric_score = entry.metric_scores.filter(metric=games_won_metric).first()
         if metric_score:
             tier_name, tier_badge = get_tier_info(metric_score.score, games_won_metric.name)
-            leaderboard_data.append({
-                "player": entry.user.user.name,
-                "score": metric_score.score,
-                "tier_name": tier_name,
-                "tier_badge": tier_badge,
-            })
+            leaderboard_data.append(
++                {
++                    "player": entry.user.user.name,
++                    "score": metric_score.score,
++                    "tier_name": tier_name,
++                    "tier_badge": tier_badge,
++                }
++            )
 
-    leaderboard_data.sort(key=lambda item: item['score'], reverse=True)
+    leaderboard_data.sort(key=lambda item: item["score"], reverse=True)
 
     context = {
         "game": game,
