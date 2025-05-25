@@ -25,23 +25,18 @@ from chigame.api.serializers import (
     GameReviewStatsSerializer,
     GameSerializer,
     GroupSerializer,
-    LiveChatSerializer,
     LobbySerializer,
     MechanicSerializer,
     MessageFeedSerializer,
     MessageSerializer,
-    MetricScoreSerializer,
-    PopUpInfoSerializer,
     ReviewSerializer,
     UserAchievementSerializer,
     UserSerializer,
 )
 from chigame.api.spam_utils import is_spam
-from chigame.chat.models import LiveChat, LiveChatUser
 from chigame.games.models import Feedback, Game, GameData, Lobby, Message, Review, Tournament
 from chigame.games.simulation_utils import run_complete_tournament_simulation
-from chigame.leaderboards.models import LeaderboardEntry, Match, Metric, MetricScore
-from chigame.users.models import Group, User, UserProfile
+from chigame.users.models import Group, User
 
 
 # Helper function to get user from slug
@@ -471,7 +466,6 @@ class GamePopupsAPIView(APIView):
             "description": game.description or "",
         }
         return Response(PopUpInfoSerializer(data).data)
-
 
 class GameDataListView(generics.ListCreateAPIView):
     """

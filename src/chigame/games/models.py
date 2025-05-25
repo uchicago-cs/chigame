@@ -35,7 +35,10 @@ class Game(models.Model):
     max_players = models.PositiveIntegerField()
 
     # interactive fiction  - twine file
-    twine_file = models.FileField(upload_to="twine_games/", null=True, blank=True)
+    # twine_file = models.FileField(upload_to="twine_games/", null=True, blank=True)
+    # want twine file to be binary to store in the actual database
+    twine_file_name = models.CharField(max_length=255, null=True, blank=True)
+    twine_file = models.BinaryField(null=True, blank=True)
 
     suggested_age = models.PositiveSmallIntegerField(
         null=True, blank=True
@@ -934,6 +937,7 @@ class CheckersBoard(models.Model):
     """
 
     state = models.JSONField()  # store positions/pieces as a 2D array
+    # state_bits = models.IntegerField() # stores positions as bits
 
     def __str__(self):
         return f"Board {self.id}"

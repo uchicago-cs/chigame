@@ -69,11 +69,13 @@ let vsEasyBot = true;
 // ----------------------------------------------------------------------------
 
 // ---INIT FUNCTIONS-----------------------------------------------------------
+
 function preload() {
   // load in the soundeffects
   this.load.audio('slide', 'sfx/slide.mp3');
   this.load.audio('hint', 'sfx/bling.mp3');
 }
+
 
 function create() {
   // Store reference to the scene
@@ -214,7 +216,6 @@ function create() {
       resetDrawOffer();
     }
   });
-
   updateTimerDisplay(); // initial display
   startPlayerTimer(); // red starts first
 
@@ -226,7 +227,7 @@ function create() {
   });
 }
 
-function update() { }
+function update() {}
 // ----------------------------------------------------------------------------
 
 // Draw the game board
@@ -732,6 +733,7 @@ function executeJumpChain(piece, jump) {
   updateScore();
   checkGameOver();
 
+
   var final = jump.path[jump.path.length - 1];
   piece.x = final.x;
   piece.y = final.y;
@@ -866,13 +868,12 @@ function getLegalMoves(color) {
         moves.push({ piece, x: jump_col, y: jump_row });
       }
     });
-  });
 
-  return moves;
-}
+    return moves;
+  }
 
 
-// Easy bot: pick a random legal move and play it
+  // Easy bot: pick a random legal move and play it
 function easyBot(scene) {
   //get legal moves
   //check if game over
@@ -883,13 +884,6 @@ function easyBot(scene) {
     console.log('Cant move');
     return;
   }
-  //get random move
-  const move = Phaser.Utils.Array.GetRandom(legalMoves);
-  //execute move
-  movePiece(move.piece, move.x, move.y);
-  // end bot's turn
-  endTurn(scene);
-}
 
 // Coordinates overlay button
 document.addEventListener('DOMContentLoaded', () => {

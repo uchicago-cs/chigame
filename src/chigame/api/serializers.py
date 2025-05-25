@@ -1,7 +1,6 @@
 from rest_framework import serializers
 
 from chigame.achievements.models import Achievement, UserAchievement
-from chigame.chat.models import LiveChat
 from chigame.games.models import (
     Announcement,
     Category,
@@ -136,7 +135,7 @@ class ReviewSerializer(serializers.ModelSerializer):
 class UserAchievementSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserAchievement
-        fields = ["id", "user", "pinned", "date_earned", "last_updated", "progress"]
+        fields = ["id", "user", "pinned", "date_earned", "progress"]
 
 
 class AchievementSerializer(serializers.ModelSerializer):

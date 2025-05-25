@@ -121,7 +121,7 @@ LOCAL_APPS = [
     "chigame.leaderboards",
     "chigame.chat",
     # Overridden django-machina apps
-    "chigame.forums.forum_conversation",
+    "chigame.forum_conversation",
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -344,7 +344,6 @@ REST_FRAMEWORK = {
     "PAGE_SIZE": 10,
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework_simplejwt.authentication.JWTAuthentication",
-        "rest_framework.authentication.SessionAuthentication",
     ],
 }
 

@@ -42,24 +42,26 @@
       <thead class="table-light">
         <tr>
           <th>Your Guides</th>
+          <th>Unique ID</th>
           <th>Upload Time</th>
           <th>Status</th>
+          <th>Actions</th>
         </tr>
       </thead>
       <tbody>
         {% for guide in guides %}
           <tr {% if guide.pk in unseen_feedback %}class="table-info"{% endif %}>
             <td>
-              <a href="{% url 'download-guide' guide.pk %}"
-                 class="btn btn-outline-secondary"><i class="fas fa-download"></i></a>
+              <a href="{% url 'download-guide' guide.pk %}" class="maroon"><i class="fas fa-download"></i></a>
               &nbsp;
               <a class="text-decoration-none"
                  href="{% url 'knowledge-base-guide-detail' guide.pk %}">Guide for {{ guide.game_id }}(ID={{ guide.pk }})</a>
             </td>
+            <td>{{ guide.pk }}</td>
             <td>Last Upload: {{ guide.recent_upload }}</td>
             <td>
               {% if guide.status == 0 %}
-                <span class="status-pending"><b>Pending...</b></span>
+                <span class="badge bg-warning text-light">{{ guide.get_status_display }}&nbsp;</span>
               {% elif guide.status == 1 %}
                 <a class="btn btn-success text-light"
                    href="{% url 'feedback-detail' guide.latest_feedback.pk %}"><b>{{ guide.get_status_display }}</b></a>
