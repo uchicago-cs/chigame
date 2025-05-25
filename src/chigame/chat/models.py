@@ -48,8 +48,6 @@ class LiveChatUser(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     live_chat = models.ForeignKey(LiveChat, on_delete=models.CASCADE)
-    profanity = models.BooleanField(default=True)
-
     profanity = models.BooleanField(default=False)
 
     def __str__(self):

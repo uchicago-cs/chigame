@@ -147,6 +147,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
         # Return the display name (username or email)
         return user.username or user.email, message_obj.id
 
+    @database_sync_to_async
+    def user_wants_filtering(self, user_id):
+        user = User.objects.get(id=user_id)
+        return user.profanity_filter
+    
     async def receive(self, text_data):
         """
         Receives messages from the client, saves them to the database once,
@@ -162,10 +167,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
             message = text_data_json["message"]
             user_id = text_data_json["user_id"]
             reply_to_id = text_data_json.get("reply_to")
-
-        # Apply profanity filter to message
+        
         chat_user = await database_sync_to_async(LiveChatUser.objects.get)(user=self.user, live_chat=self.live_chat)
-        if chat_user.profanity:
+        
+        # Determine whether to filter profanity:
+        if chat_user.profanity is not None:
+            should_filter = chat_user.profanity
+        else:
+            should_filter = await database_sync_to_async(lambda: self.user.profanity_filter)()
+        
+        if should_filter:
             filtered_message = self.profanity_filter.censor_message(message)
         else:
             filtered_message = message
