@@ -1148,6 +1148,20 @@ function resizeGame(percentage) {
       piece.sprite.setStrokeStyle(highlight_size, COLORS.white);
     }
 
+    if (piece.isKing) {
+      // remove the old crown icon
+      if (piece.kingIcon) {
+        piece.kingIcon.destroy();
+      }
+      // create a new crown icon with the updated position and size
+      piece.kingIcon = checkers.scene.scenes[0].add.image(
+        margin + piece.x * tile_size + tile_size / 2,
+        margin + piece.y * tile_size + tile_size / 2,
+        'crown'
+      );
+      piece.kingIcon.setDisplaySize(tile_size, tile_size);
+    }
+
     // add onclick functionality to the new sprite
     piece.sprite.on('pointerdown', () => {
       // don't allow piece selection if game is over
