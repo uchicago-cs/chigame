@@ -26,7 +26,7 @@ from .models import (
     NotificationLabel,
     UserProfile,
 )
-from .tables import UserTable, FriendsTable, GroupTable
+from .tables import GroupTable, UserTable
 
 User = get_user_model()
 
