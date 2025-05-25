@@ -36,6 +36,10 @@ urlpatterns = [
     path("search/", views.search_results, name="game-search-results"),
     path("<int:pk>/reviews/", views.ReviewListView.as_view(), name="game-review-list"),
     path("games/<int:pk>/review/", views.add_review, name="add-review"),
+    # matches
+    path("<int:pk>/match/create/", views.MatchCreateView.as_view(), name="match-create"),
+    path("<int:pk>/match/join/", views.join_match, name="match-join"),
+    path("lobby/<int:pk>/code/", views.MatchCodeView.as_view(), name="match-code"),
     # interactive fiction
     path("interactive-fiction/", views.IFGameCreateView.as_view(), name="interactive-fiction-create"),
     path("<int:pk>/upload/", UploadFileView.as_view(), name="upload-file"),

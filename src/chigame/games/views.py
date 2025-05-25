@@ -202,6 +202,111 @@ class GameEditView(UserPassesTestMixin, UpdateView):
         return context
 
 
+# =============== Game: Create and Join Matches  ===============
+class MatchCreateView(CreateView):
+    model = Match
+    template_name = "matches/match_create.html"
+    fields = [
+        "date_played",
+        "players",
+    ]
+
+    def dispatch(self, request, *args, **kwargs):
+        self.game = get_object_or_404(Game, pk=self.kwargs["pk"])
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        # remove the match creator from the players list
+        form.fields["players"].queryset = User.objects.exclude(pk=self.request.user.pk)
+        return form
+
+    def form_valid(self, form):
+        user = self.request.user
+        players = form.cleaned_data["players"]
+
+        # add match creator to the list of players automatically
+        all_players = list(players) + [user]
+
+        # min/max players rules
+        if len(all_players) < self.game.min_players:
+            messages.error(self.request, f"A match must have at least {self.game.min_players} players.")
+            return redirect("match-create", pk=self.game.pk)
+
+        if len(all_players) > self.game.max_players:
+            messages.error(self.request, f"A match cannot have more than {self.game.max_players} players.")
+            return redirect("match-create", pk=self.game.pk)
+
+        # Lobby creation
+        lobby = Lobby.objects.create(
+            match_status=Lobby.Lobbied,
+            name=f"{self.game.name} Lobby by {user.username}",
+            game=self.game,
+            game_mod_status=Lobby.Default_game,
+            created_by=user,
+            min_players=self.game.min_players,
+            max_players=self.game.max_players,
+        )
+        lobby.invited_members.set(all_players)
+
+        # Match creation
+        match = form.save(commit=False)
+        match.game = self.game
+        match.lobby = lobby
+        match.save()
+        match.players.set(all_players)
+
+        self.object = match
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_success_url(self):
+        return reverse("match-code", kwargs={"pk": self.object.lobby.pk})
+
+
+class MatchCodeView(LoginRequiredMixin, DetailView):
+    model = Lobby
+    template_name = "matches/match_code.html"
+    context_object_name = "lobby"
+
+
+@login_required
+def join_match(request, pk):
+    game = get_object_or_404(Game, pk=pk)
+    if request.method == "POST":
+        lobby_code = request.POST.get("lobby_code", "").strip().upper()
+        try:
+            lobby = Lobby.objects.get(join_code=lobby_code)
+
+            # Check if the user was invited
+            if request.user not in lobby.invited_members.all():
+                messages.error(request, "You were not invited to this match.")
+                return render(request, "matches/match_join.html", {"game": game})
+
+            # Check if the user is already a member
+            if request.user in lobby.members.all():
+                messages.info(request, "You have already joined this match.")
+                return redirect("lobby-details", pk=lobby.pk)
+
+            # Check if the match is already full
+            if lobby.match_status == 2:
+                messages.error(request, "This match is already full.")
+                return render(request, "matches/match_join.html", {"game": game})
+
+            lobby.members.add(request.user)
+            if lobby.members.all().count() == lobby.invited_members.all().count():
+                lobby.match_status = 2
+                messages.success(request, "You joined! Match is now full and ready to begin.")
+            else:
+                messages.success(request, "You have successfully joined the match.")
+
+            lobby.save()
+            return redirect("lobby-details", pk=lobby.pk)
+
+        except Lobby.DoesNotExist:
+            messages.error(request, "Invalid lobby code.")
+    return render(request, "matches/match_join.html", {"game": game})
+
+
 # =============== BGG Searching =================
 # The following functions involve using the BoardGameGeek API to search for games.
 # API documentation: https://boardgamegeek.com/wiki/page/BGG_XML_API2
