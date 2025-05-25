@@ -7,6 +7,7 @@ This directory contains fixtures for testing tournament workflows in the ChiGame
 `tournaments-simulation-fixture.json` contains a complete tournament setup with the following characteristics:
 
 - **Tournament Details**:
+
   - Name: Simulation Test Tournament
   - Game: test_game (Game ID: 1)
   - Registration Period: April 1, 2025 - April 20, 2025
@@ -15,6 +16,7 @@ This directory contains fixtures for testing tournament workflows in the ChiGame
   - Number of Winners: 1
 
 - **Players**:
+
   - 8 test players (User IDs: 101-108)
   - All players have emails in the format player#@example.com
   - All players have the password "test"
@@ -42,6 +44,7 @@ python manage.py loaddata src/chigame/games/fixtures/tournaments-simulation-fixt
 ### Important Note on Fixture Dependencies
 
 The fixtures must be loaded in the exact order specified above due to foreign key dependencies:
+
 1. Game fixtures must be loaded first as tournaments reference game IDs
 2. Player fixtures must be loaded second as tournaments and matches reference player IDs
 3. Tournament fixtures must be loaded last as they depend on both games and players
@@ -49,6 +52,7 @@ The fixtures must be loaded in the exact order specified above due to foreign ke
 ### Fixture Structure
 
 The fixture includes:
+
 - Tournament object
 - Tournament chat
 - Match lobbies
