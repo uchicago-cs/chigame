@@ -1,9 +1,10 @@
 from django.core.exceptions import ValidationError
 from django.http import JsonResponse
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
+from .forms import LiveChatForm
 from .models import LiveChat, LiveChatMessage, LiveChatMessageReaction
 
 
@@ -14,13 +15,37 @@ def chat(request, chat_id):
     # if the chat is public, add the request user to the chat
     if request.user.is_authenticated and chat.public and not chat.users.filter(id=request.user.id).exists():
         chat.users.add(request.user)
-
+    if request.user.is_authenticated and not chat.users.filter(id=request.user.id).exists():
+        chat.users.add(request.user)
     return render(request, "chat/index.html", {"chat": chat, "messages": messages})
 
 
 def live_chat_list(request):
     chats = LiveChat.objects.filter(public=True)
     return render(request, "chat/live-chat-list.html", {"chats": chats})
+
+
+def create_live_chat(request):
+    if request.method == "POST":
+        form = LiveChatForm(request.POST)
+
+        if form.is_valid():
+            form.save()
+            return redirect("live-chat-list")
+    else:
+        form = LiveChatForm()
+    return render(request, "chat/create-live-chat.html", {"form": form})
+
+
+def leave_chat(request, chat_id):
+    chat = get_object_or_404(LiveChat, id=chat_id)
+
+    if request.user in chat.users.all():
+        chat.users.remove(request.user)
+
+        if chat.users.count() == 0:
+            chat.delete()
+    return redirect("live-chat-list")
 
 
 def delete_message(request, message_id):
