@@ -6,7 +6,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
 from django.db.models import CharField, F, Q, Value
 from django.db.models.functions import Concat
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.safestring import mark_safe
 from django.views.decorators.http import require_POST
@@ -385,3 +385,37 @@ def ModeratorSetPublishedGuide(request, game_pk, guide_pk):
 
     game.save()
     return redirect("moderator-single-game", game_pk)  # or wherever you want to redirect
+
+
+@require_POST
+def LikeUnlikeGuide(request, pk):
+    guide = get_object_or_404(Guide, pk=pk)
+    liked = guide.likes.filter(pk=request.user.pk).exists()
+    # if originally like, then unlike it
+    if liked:
+        guide.likes.remove(request.user)
+    # if originally unlike, then like it
+    else:
+        guide.likes.add(request.user)
+    liked = not liked
+    like_count = guide.likes.count()
+
+    return JsonResponse({"liked": liked, "like_count": like_count})
+
+
+@require_POST
+@login_required
+def FavUnfavGuide(request, pk):
+    guide = get_object_or_404(Guide, pk=pk)
+    favorited = guide.favorites.filter(pk=request.user.pk).exists()
+    # if originally favorite, then unfavorite it
+    if favorited:
+        guide.favorites.remove(request.user)
+    # if originally unfavorite, then favorite it
+    else:
+        guide.favorites.add(request.user)
+
+    favorited = not favorited
+    fav_count = guide.favorites.count()
+
+    return JsonResponse({"favorited": favorited, "fav_count": fav_count})

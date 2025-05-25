@@ -19,6 +19,7 @@ game_patterns = [
     ),
     path("<int:pk>/achievements/create/", views.AchievementCreateView.as_view(), name="api-game-achievement-create"),
     path("<int:game_id>/scores/", views.MetricScoreView.as_view(), name="api-game-submit-score"),
+    path("<int:game_id>/leaderboard/", views.GameLeaderboardView.as_view(), name="game-leaderboard"),
     path("<int:pk>/popups/", views.GamePopupsAPIView.as_view(), name="api-game-popups"),
     path("data/", views.GameDataListView.as_view(), name="api-game-data-list"),
     path("<int:game_id>/data/<str:key>/", views.GameDataDetailView.as_view(), name="api-game-data-detail"),
@@ -64,6 +65,14 @@ login_patterns = [
     path("token/refresh/", TokenRefreshView.as_view(), name="token-refresh"),
 ]
 
+
+livechat_patterns = [
+    path("create/", views.LiveChatCreateView.as_view(), name="api-livechat-create"),
+    path("list/", views.LiveChatListView.as_view(), name="api-livechat-list"),
+    path("<int:chat_id>/add_user/", views.LiveChatAddUserView.as_view(), name="api-livechat-add-user"),
+    path("<int:pk>/", views.LiveChatDetailView.as_view(), name="api-livechat-detail"),
+]
+
 urlpatterns = [
     path("games/", include(game_patterns)),
     path("lobbies/", include(lobby_patterns)),
@@ -71,4 +80,5 @@ urlpatterns = [
     path("tournaments/", include(tournament_patterns)),
     path("groups/", include(group_patterns)),
     path("login/", include(login_patterns)),
+    path("livechats/", include(livechat_patterns)),
 ]
