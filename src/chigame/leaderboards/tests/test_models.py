@@ -1,5 +1,6 @@
 import datetime
 
+import pytest
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.db import transaction
@@ -9,15 +10,18 @@ from django.utils import timezone
 
 # Core application models under test
 from chigame.games.models import Game, Lobby, Match
-from chigame.leaderboards.models import Leaderboard, LeaderboardEntry, Metric, MetricScore
+from chigame.leaderboards.models import Leaderboard, LeaderboardEntry, LeaderboardPrivacySetting, Metric, MetricScore
 from chigame.users.models import UserProfile
 
 # Import factory definitions for model instantiation
 from .factories import (
     AuthUserFactory,
     GameFactory,
+    GamePrivacySettingFactory,
+    GlobalPrivacySettingFactory,
     LeaderboardEntryFactory,
     LeaderboardFactory,
+    LeaderboardSpecificPrivacySettingFactory,
     LobbyFactory,
     MatchFactory,
     MetricFactory,
@@ -26,8 +30,6 @@ from .factories import (
     UserProfileFactory,
 )
 
-# Provide display_name property for UserProfile __str__ tests
-UserProfile.display_name = property(lambda self: self.user.username)
 AuthUser = get_user_model()
 
 
@@ -81,14 +83,14 @@ class ModelTests(TestCase):
         self.assertEqual(str(self.leaderboard), self.leaderboard.name)
 
     def test_entry_str(self):
-        expected = f"{self.user_profile.user.username} - Rank {self.entry.rank}"
+        expected = f"{self.user_profile.user.name} - Rank {self.entry.rank}"
         self.assertEqual(str(self.entry), expected)
 
     def test_metric_str(self):
         self.assertEqual(str(self.metric), self.metric.name)
 
     def test_metric_score_str(self):
-        expected = f"{self.user_profile.user.username} - {self.metric.name}: {self.metric_score.score}"
+        expected = f"{self.user_profile.user.name} - {self.metric.name}: {self.metric_score.score}"
         self.assertEqual(str(self.metric_score), expected)
 
     # Validation of required fields via full_clean()
@@ -270,3 +272,128 @@ class ModelTests(TestCase):
         self.assertEqual(ms.user_id, self.user_profile.id)
         self.assertEqual(ms.metric_id, self.metric.id)
         self.assertEqual(ms.match_id, self.match.id)
+
+
+# ========== TESTS FOR LEADERBOARD PRIVACY SETTING (LPS) ==========
+# Hierarchy of privacy settings:
+#   1. Specific leaderboard Setting (highest priority)
+#   2. Game-level setting
+#   3. Global setting (lowest priority)
+
+
+@pytest.mark.django_db
+def test_LPS_get_user_setting_specific_leaderboard():
+    """
+    Testing that the method get_user_setting returns the correct setting
+    when a specific leaderboard is provided.
+    If all game and leaderboard are provided, the specific leaderboard setting
+    should be returned.
+    """
+    user = UserProfileFactory()
+    game = GameFactory()
+    leaderboard = LeaderboardFactory(game=game)
+    specific_setting = LeaderboardSpecificPrivacySettingFactory(
+        user=user, game=game, leaderboard=leaderboard, complete_opt_out=True, display_as_anonymous=False
+    )
+    GamePrivacySettingFactory(user=user, game=game, complete_opt_out=False, display_as_anonymous=False)
+    GlobalPrivacySettingFactory(user=user, complete_opt_out=False, display_as_anonymous=False)
+
+    test_setting = LeaderboardPrivacySetting.get_user_setting(user, game, leaderboard)
+
+    assert test_setting == specific_setting
+    assert test_setting.complete_opt_out
+    assert not test_setting.display_as_anonymous
+
+
+@pytest.mark.django_db
+def test_LPS_get_user_setting_game_level():
+    """
+    Testing that the method get_user_setting returns the correct setting
+    when a game is provided.
+    If only the game is provided, the setting for it should be returned.
+    """
+    user = UserProfileFactory()
+    game = GameFactory()
+    LeaderboardFactory(game=game)
+    game_setting = GamePrivacySettingFactory(user=user, game=game, complete_opt_out=True, display_as_anonymous=False)
+    GlobalPrivacySettingFactory(user=user, complete_opt_out=False, display_as_anonymous=False)
+
+    test_setting = LeaderboardPrivacySetting.get_user_setting(user, game)
+
+    assert test_setting == game_setting
+    assert test_setting.complete_opt_out
+    assert not test_setting.display_as_anonymous
+
+
+@pytest.mark.django_db
+def test_LPS_get_user_setting_global():
+    """
+    Testing that the method get_user_setting returns the correct setting
+    when neither a game nor a leaderboard are provided.
+    It should return the global setting.
+    """
+    user = UserProfileFactory()
+    game = GameFactory()
+    LeaderboardFactory(game=game)
+    global_setting = GlobalPrivacySettingFactory(user=user, complete_opt_out=True, display_as_anonymous=False)
+
+    test_setting = LeaderboardPrivacySetting.get_user_setting(user)
+
+    assert test_setting == global_setting
+    assert test_setting.complete_opt_out
+    assert not test_setting.display_as_anonymous
+
+
+@pytest.mark.django_db
+def test_LPS_get_user_setting_fallback_to_game_leaderboard_missing():
+    """
+    Testing that even if a leaderboard is provided, but there is no specific
+    setting for it, the method get_user_setting will fall back to the
+    game-level setting.
+    """
+    user = UserProfileFactory()
+    game = GameFactory()
+    leaderboard = LeaderboardFactory(game=game)
+    game_setting = GamePrivacySettingFactory(user=user, game=game, complete_opt_out=True, display_as_anonymous=False)
+    GlobalPrivacySettingFactory(user=user, complete_opt_out=False, display_as_anonymous=False)
+
+    test_setting = LeaderboardPrivacySetting.get_user_setting(user, game, leaderboard)
+
+    assert test_setting == game_setting
+    assert test_setting.complete_opt_out
+    assert not test_setting.display_as_anonymous
+
+
+@pytest.mark.django_db
+def test_LPS_get_user_setting_fallback_to_global_game_missing():
+    """
+    Testing that even if a leaderboard and game are provided, but there is no specific
+    setting for it, the method get_user_setting will fall back to the
+    global-level setting.
+    """
+    user = UserProfileFactory()
+    game = GameFactory()
+    leaderboard = LeaderboardFactory(game=game)
+    global_setting = GlobalPrivacySettingFactory(user=user, complete_opt_out=True, display_as_anonymous=False)
+
+    test_setting = LeaderboardPrivacySetting.get_user_setting(user, game, leaderboard)
+
+    assert test_setting == global_setting
+    assert test_setting.complete_opt_out
+    assert not test_setting.display_as_anonymous
+
+
+@pytest.mark.django_db
+def test_LPS_get_user_setting_none():
+    """
+    What happens when no settings are created for the user?
+    """
+    user = UserProfileFactory()
+    game = GameFactory()
+    leaderboard = LeaderboardFactory(game=game)
+    assert LeaderboardPrivacySetting.get_user_setting(user) is None
+    assert LeaderboardPrivacySetting.get_user_setting(user, game) is None
+    assert LeaderboardPrivacySetting.get_user_setting(user, game, leaderboard) is None
+
+
+# ===========================================================

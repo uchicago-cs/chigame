@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <div class="container">
+    <div class="container mt-4">
+      <h1 class="mb-4">Chats</h1>
+      <a href="{% url 'create-live-chat' %}" class="btn btn-primary">+ create new chat</a>
+      <!-- Nav Tabs -->
+      <ul class="nav nav-tabs" id="chatTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active"
+                  id="public-tab"
+                  data-bs-toggle="tab"
+                  data-bs-target="#public"
+                  type="button"
+                  role="tab">Public</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link"
+                  id="private-tab"
+                  data-bs-toggle="tab"
+                  data-bs-target="#private"
+                  type="button"
+                  role="tab">Private</button>
+        </li>
+      </ul>
+      <!-- Tab Content -->
+      <div class="tab-content mt-3">
+        <!-- Public Chats -->
+        <div class="tab-pane fade show active" id="public" role="tabpanel">
+          <div class="search-container mb-3">
+            <input type="text"
+                   id="search-input"
+                   class="form-control"
+                   placeholder="Search public chats..."
+                   value="{{ request.GET.q|default:'' }}" />
+          </div>
+          {% include "chat/components/_chat_list.html" with chats=public_chats %}
+        </div>
+        <!-- Private Chats -->
+        <div class="tab-pane fade" id="private" role="tabpanel">
+          {% include "chat/components/_chat_list.html" with chats=private_chats %}
+          <div class="list-group">
+            {% for chat in chats %}
+              <a href="{% url 'chat-page' chat.id %}"
+                 class="list-group-item list-group-item-action d-flex justify-content-between align-items-start">
+                <div class="flex-grow-1">
+                  <div class="d-flex align-items-center gap-2 mb-1">
+                    <h5 class="mb-1">{{ chat.name }}</h5>
+                    <span class="badge bg-primary rounded-pill extra-small-text">
+                      {{ chat.user_count }} user{{ chat.user_count|pluralize }}
+                    </span>
+                  </div>
+                  <div class="text-muted small">{{ chat.last_message|default:"No messages yet." }}</div>
+                </div>
+                {% if chat.last_message_time %}
+                  <div class="text-muted small">{{ chat.last_message_time|date:"g:i A" }}</div>
+                {% endif %}
+              </a>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const searchInput = document.getElementById('search-input');
+
+      const debounce = (func, delay) => {
+        let timeout;
+        return function(...args) {
+          clearTimeout(timeout);
+          timeout = setTimeout(() => func.apply(this, args), delay);
+        };
+      };
+
+      const handleSearchInput = debounce(function() {
+        const searchQuery = this.value.trim();
+        const currentUrl = new URL(window.location.href);
+
+        if (searchQuery) {
+          currentUrl.searchParams.set('q', searchQuery);
+        } else {
+          currentUrl.searchParams.delete('q');
+        }
+
+        window.history.pushState({}, '', currentUrl);
+
+        // Filter the chat list
+        const chatItems = document.querySelectorAll('.list-group-item');
+        chatItems.forEach(item => {
+          const chatName = item.textContent.toLowerCase();
+          if (chatName.includes(searchQuery.toLowerCase())) {
+            item.style.display = '';
+          } else {
+            item.style.display = 'none';
+          }
+        });
+      });
+      searchInput.addEventListener('input', handleSearchInput);
+      xw
+    });
+  </script>
+{% endblock content %}

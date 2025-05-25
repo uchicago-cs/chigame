@@ -1,0 +1,12 @@
+/* Define our custom styles for markdown-rendered tags here */
+
+.render-warning {
+  font-weight: 800;
+  background-color: #F88;
+}
+
+blockquote {
+  margin-left: 12px;
+  padding-left: 12px;
+  border-left: 1px solid #CCC;
+}
