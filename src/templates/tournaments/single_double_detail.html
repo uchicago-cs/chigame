@@ -1,133 +1,133 @@
 <div class="simulation-actions">
-  <form method="post" class="inline-form">
+  <!-- Seeding preference selection -->
+  <form method="post" class="inline-form mb-3">
     {% csrf_token %}
     <input type="hidden" name="tournament_id" value="{{ tournament.id }}" />
-    <input type="hidden" name="action" value="advance_round" />
-    <button type="submit">Advance to Next Round</button>
+    <input type="hidden" name="action" value="set_seeding_mode" />
+    <label>Simulation Mode:</label>
+    <select name="use_seeding" onchange="this.form.submit()">
+      <option value="">-- Select --</option>
+      <option value="false"
+              {% if not request.session.seeding_mode %}selected{% endif %}>Unseeded</option>
+      <option value="true" {% if request.session.seeding_mode %}selected{% endif %}>Seeded</option>
+    </select>
   </form>
-  <form method="post" class="inline-form">
-    {% csrf_token %}
-    <input type="hidden" name="tournament_id" value="{{ tournament.id }}" />
-    <input type="hidden" name="action" value="reset_simulation" />
-    <button type="submit">Reset Simulation</button>
-  </form>
-  <form method="post" class="inline-form">
-    {% csrf_token %}
-    <input type="hidden" name="tournament_id" value="{{ tournament.id }}" />
-    <input type="hidden" name="action" value="run_full_simulation" />
-    <button type="submit">Run Full Simulation</button>
-  </form>
-</div>
-<div class="tournament-bracket">
-  <h3>Tournament Bracket</h3>
-  {% if simulation_data.tournament_winner %}
-    <div class="tournament-winner">
-      <h3>Tournament Winner</h3>
-      {% for player in tournament.get_all_players %}
-        {% if player.id == simulation_data.tournament_winner %}
-          <p>
-            {% if player.name %}
-              <strong>{{ player.name }}</strong>
-            {% else %}
-              <strong>{{ player.email }}</strong>
-            {% endif %}
-          </p>
-        {% endif %}
-      {% endfor %}
-    </div>
+  {% if request.session.seeding_mode is not None %}
+    <!-- Common buttons shown after mode is picked -->
+    <form method="post" class="inline-form">
+      {% csrf_token %}
+      <input type="hidden" name="tournament_id" value="{{ tournament.id }}" />
+      <input type="hidden" name="action" value="advance_round" />
+      <button type="submit">Advance to Next Round</button>
+    </form>
+    <form method="post" class="inline-form">
+      {% csrf_token %}
+      <input type="hidden" name="tournament_id" value="{{ tournament.id }}" />
+      <input type="hidden" name="action" value="reset_simulation" />
+      <button type="submit">Reset Simulation</button>
+    </form>
+    <form method="post" class="inline-form">
+      {% csrf_token %}
+      <input type="hidden" name="tournament_id" value="{{ tournament.id }}" />
+      <input type="hidden" name="action" value="run_full_simulation" />
+      <input type="hidden"
+             name="use_seeding"
+             value="{{ request.session.seeding_mode|yesno:'true,false' }}" />
+      <button type="submit">Run Full Simulation ({{ request.session.seeding_mode|yesno:'Seeded,Unseeded' }})</button>
+    </form>
   {% endif %}
-  <div class="bracket-container">
-    {% for round_num, brackets in simulation_data.rounds.items %}
-      <div class="round">
-        <div class="bracket-title">Round {{ round_num }}</div>
-        {% if brackets.winners %}
-          <div class="bracket-title">Winners Bracket</div>
-          {% for match in brackets.winners %}
-            <div class="match winners">
-              {% for player_data in match.players %}
-                <div class="match-player {% if player_data.id == match.winner %}winner{% elif match.winner and player_data.id != match.winner %}loser{% endif %}">
-                  {% for player in tournament.get_all_players %}
-                    {% if player.id == player_data.id %}
-                      {% if player.name %}
-                        {{ player.name }}
-                      {% else %}
-                        {{ player.email }}
-                      {% endif %}
+</div>
+<div class="bracket-container">
+  {% for round_num, brackets in simulation_data.rounds.items %}
+    <div class="round">
+      <div class="bracket-title">Round {{ round_num }}</div>
+      {% if brackets.winners %}
+        <div class="bracket-title">Winners Bracket</div>
+        {% for match in brackets.winners %}
+          <div class="match winners">
+            {% for player_data in match.players %}
+              <div class="match-player {% if player_data.id == match.winner %}winner{% elif match.winner and player_data.id != match.winner %}loser{% endif %}">
+                {% for player in tournament.get_all_players %}
+                  {% if player.id == player_data.id %}
+                    {% if player.name %}
+                      {{ player.name }}
+                    {% else %}
+                      {{ player.email }}
                     {% endif %}
-                  {% endfor %}
-                </div>
-              {% endfor %}
-              {% if not match.winner %}
-                <form method="post">
-                  {% csrf_token %}
-                  <input type="hidden" name="tournament_id" value="{{ tournament.id }}" />
-                  <input type="hidden" name="action" value="simulate_match" />
-                  <input type="hidden" name="match_id" value="{{ match.id }}" />
-                  <button type="submit" class="simulate-match-btn">Simulate Match</button>
-                </form>
-              {% endif %}
-            </div>
-          {% endfor %}
-        {% endif %}
-        {% if brackets.losers %}
-          <div class="bracket-title">Losers Bracket</div>
-          {% for match in brackets.losers %}
-            <div class="match losers">
-              {% for player_data in match.players %}
-                <div class="match-player {% if player_data.id == match.winner %}winner{% elif match.winner and player_data.id != match.winner %}loser{% endif %}">
-                  {% for player in tournament.get_all_players %}
-                    {% if player.id == player_data.id %}
-                      {% if player.name %}
-                        {{ player.name }}
-                      {% else %}
-                        {{ player.email }}
-                      {% endif %}
+                  {% endif %}
+                {% endfor %}
+              </div>
+            {% endfor %}
+            {% if not match.winner %}
+              <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="tournament_id" value="{{ tournament.id }}" />
+                <input type="hidden" name="action" value="simulate_match" />
+                <input type="hidden" name="match_id" value="{{ match.id }}" />
+                <button type="submit" class="simulate-match-btn">Simulate Match</button>
+              </form>
+            {% endif %}
+          </div>
+        {% endfor %}
+      {% endif %}
+      {% if brackets.losers %}
+        <div class="bracket-title">Losers Bracket</div>
+        {% for match in brackets.losers %}
+          <div class="match losers">
+            {% for player_data in match.players %}
+              <div class="match-player {% if player_data.id == match.winner %}winner{% elif match.winner and player_data.id != match.winner %}loser{% endif %}">
+                {% for player in tournament.get_all_players %}
+                  {% if player.id == player_data.id %}
+                    {% if player.name %}
+                      {{ player.name }}
+                    {% else %}
+                      {{ player.email }}
                     {% endif %}
-                  {% endfor %}
-                </div>
-              {% endfor %}
-              {% if not match.winner %}
-                <form method="post">
-                  {% csrf_token %}
-                  <input type="hidden" name="tournament_id" value="{{ tournament.id }}" />
-                  <input type="hidden" name="action" value="simulate_match" />
-                  <input type="hidden" name="match_id" value="{{ match.id }}" />
-                  <button type="submit" class="simulate-match-btn">Simulate Match</button>
-                </form>
-              {% endif %}
-            </div>
-          {% endfor %}
-        {% endif %}
-        {% if brackets.final %}
-          <div class="bracket-title">Final Match</div>
-          {% for match in brackets.final %}
-            <div class="match final">
-              {% for player_data in match.players %}
-                <div class="match-player {% if player_data.id == match.winner %}winner{% elif match.winner and player_data.id != match.winner %}loser{% endif %}">
-                  {% for player in tournament.get_all_players %}
-                    {% if player.id == player_data.id %}
-                      {% if player.name %}
-                        {{ player.name }}
-                      {% else %}
-                        {{ player.email }}
-                      {% endif %}
+                  {% endif %}
+                {% endfor %}
+              </div>
+            {% endfor %}
+            {% if not match.winner %}
+              <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="tournament_id" value="{{ tournament.id }}" />
+                <input type="hidden" name="action" value="simulate_match" />
+                <input type="hidden" name="match_id" value="{{ match.id }}" />
+                <button type="submit" class="simulate-match-btn">Simulate Match</button>
+              </form>
+            {% endif %}
+          </div>
+        {% endfor %}
+      {% endif %}
+      {% if brackets.final %}
+        <div class="bracket-title">Final Match</div>
+        {% for match in brackets.final %}
+          <div class="match final">
+            {% for player_data in match.players %}
+              <div class="match-player {% if player_data.id == match.winner %}winner{% elif match.winner and player_data.id != match.winner %}loser{% endif %}">
+                {% for player in tournament.get_all_players %}
+                  {% if player.id == player_data.id %}
+                    {% if player.name %}
+                      {{ player.name }}
+                    {% else %}
+                      {{ player.email }}
                     {% endif %}
-                  {% endfor %}
-                </div>
-              {% endfor %}
-              {% if not match.winner %}
-                <form method="post">
-                  {% csrf_token %}
-                  <input type="hidden" name="tournament_id" value="{{ tournament.id }}" />
-                  <input type="hidden" name="action" value="simulate_match" />
-                  <input type="hidden" name="match_id" value="{{ match.id }}" />
-                  <button type="submit" class="simulate-match-btn">Simulate Match</button>
-                </form>
-              {% endif %}
-            </div>
-          {% endfor %}
-        {% endif %}
-      </div>
-    {% endfor %}
-  </div>
+                  {% endif %}
+                {% endfor %}
+              </div>
+            {% endfor %}
+            {% if not match.winner %}
+              <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="tournament_id" value="{{ tournament.id }}" />
+                <input type="hidden" name="action" value="simulate_match" />
+                <input type="hidden" name="match_id" value="{{ match.id }}" />
+                <button type="submit" class="simulate-match-btn">Simulate Match</button>
+              </form>
+            {% endif %}
+          </div>
+        {% endfor %}
+      {% endif %}
+    </div>
+  {% endfor %}
 </div>
