@@ -1245,13 +1245,13 @@ function startPlayerTimer() {
       redTime--; // subtract 1 second from red's timer
       // Black wins if red runs out of time
       if (redTime <= 0) {
-        endGameOnTimeout(COLORS.black);
+        endGameOnTimeout(darkPiece);
       }
     } else {
       blackTime--; // subtract 1 second from black's timer
       // Red wins if black runs out of time
       if (blackTime <= 0) {
-        endGameOnTimeout(COLORS.red);
+        endGameOnTimeout(lightPiece);
       }
     }
     // update the time
