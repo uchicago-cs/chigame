@@ -967,7 +967,7 @@ function getLegalMoves(color) {
       const col = piece.x + diagonal; //new col
       const row = piece.y + direction; //new row
       if (
-        //check if mvoe is valid
+        //check if move is valid
         col >= 0 &&
         col < BOARD_SIZE &&
         row >= 0 &&
