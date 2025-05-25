@@ -67,6 +67,9 @@ let activeTimer = null;
 //BOT SETTINGS
 let vsEasyBot = true;
 
+// track mute state outside of phaser game
+let muted = false;
+
 // default volume
 let volumeAmount = 1;
 
@@ -1071,21 +1074,23 @@ document.addEventListener('DOMContentLoaded', () => {
   const toggleMuteBtn = document.getElementById('toggle-mute');
 
   // set initial label
-  toggleMuteBtn.textContent = checkers.sound.mute ? 'Unmute' : 'Mute';
+  toggleMuteBtn.textContent = muted ? 'Unmute' : 'Mute';
 
   toggleMuteBtn.addEventListener('click', () => {
     // flip mute state first
-    checkers.sound.mute = !checkers.sound.mute;
+    muted = !muted;
+    checkers.sound.mute = muted;
     // then update the label
-    toggleMuteBtn.textContent = checkers.sound.mute ? 'Mute' : 'Unmute';
+    toggleMuteBtn.textContent = muted ? 'Unmute' : 'Mute';
   });
 
   // listen for “m” or “M” anywhere
   document.addEventListener('keydown', (e) => {
     if (e.key.toLowerCase() === 'm') {
       // do exactly the same toggle logic:
-      checkers.sound.mute = !checkers.sound.mute;
-      toggleMuteBtn.textContent = checkers.sound.mute ? 'Mute' : 'Unmute';
+      muted = !muted;
+      checkers.sound.mute = muted;
+      toggleMuteBtn.textContent = muted ? 'Unmute' : 'Mute';
     }
   });
 });
