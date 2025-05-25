@@ -185,7 +185,7 @@ class ReviewFactory(factory.django.DjangoModelFactory):
     user = factory.SubFactory(UserFactory)
     game = factory.SubFactory(GameFactory)
 
-    
+
 class AchievementFactory(DjangoModelFactory):
     class Meta:
         model = Achievement
