@@ -8,7 +8,11 @@
   <ul>
     {% for game in object_list %}
       <li>
-        <a href="{% url 'game-detail' game.id %}">{{ game.name }}</a>
+        {% if game.twine_file %}
+          <a href="{% url 'interactive-fiction-detail' game.id %}">{{ game.name }}</a>
+        {% else %}
+          <a href="{% url 'game-detail' game.id %}">{{ game.name }}</a>
+        {% endif %}
       </li>
     {% endfor %}
   </ul>
