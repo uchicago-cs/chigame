@@ -814,6 +814,12 @@ function executeJumpChain(piece, jump) {
   piece.sprite.x = margin + final.x * tile_size + tile_size / 2;
   piece.sprite.y = margin + final.y * tile_size + tile_size / 2;
 
+  // move the king icon if applicable
+  if (piece.isKing && piece.kingIcon) {
+    piece.kingIcon.x = piece.sprite.x;
+    piece.kingIcon.y = piece.sprite.y;
+  }
+
   // check for king promotion
   if (
     (piece.color === lightPiece && piece.y === 0) ||
