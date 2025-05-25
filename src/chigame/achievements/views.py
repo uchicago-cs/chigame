@@ -69,7 +69,7 @@ def get_pinned_achievements(request):
     return JsonResponse(data)
 
 
-def user_achievements(request, user_id=None):
+def user_achievements(request, pk=None):
     """
     Display a user's achievements page.
     If pk is provided, show that user's achievements.
