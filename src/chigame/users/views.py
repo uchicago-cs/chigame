@@ -29,7 +29,7 @@ from .models import (
     NotificationLabel,
     UserProfile,
 )
-from .tables import FriendsTable, GroupTable, UserTable
+from .tables import GroupTable, UserTable
 
 User = get_user_model()
 
