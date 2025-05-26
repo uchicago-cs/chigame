@@ -5,6 +5,9 @@ window.addEventListener("load", async () => {
     const modalContent = document.querySelector('.modal-content');
     const overlay = document.getElementById('menu-overlay');
 
+    //restore settings
+    restoreSettings();
+
     // Show the overlay on load for the word length modal - make it immediately visible
     overlay.classList.add('visible');
     overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
@@ -503,10 +506,10 @@ Process for selecting daily word involves taking today's date as an integer (YYY
 hashing it using the above function
 */
 function getNewWord() {
-    if (mode === 'game') {
+    if (mode === 'solo') {
         word = allowedWords[Math.floor(Math.random() * allowedWords.length)];
         console.log(`Today's Word: ${word}`);
-    } else if (mode === 'solo') {
+    } else if (mode === 'game') {
         const today = new Date();
         const year = today.getFullYear();
         const month = String(today.getMonth() + 1).padStart(2, '0');
@@ -825,17 +828,24 @@ function shakeRow(rowIndex) {
     }
 }
 
-
+//Settings toggles
 document.getElementById("dark-mode-toggle").addEventListener("change", function () {
     document.body.classList.toggle("dark-mode", this.checked);
+    saveSettings();
 });
 
 document.getElementById("colorblind-toggle").addEventListener("change", function () {
     document.body.classList.toggle("colorblind-mode", this.checked);
+    saveSettings();
 });
-//hard mode toggle
+
 document.getElementById("hard-mode-toggle").addEventListener("change", function () {
     document.body.classList.toggle("hard-mode", this.checked);
+    saveSettings();
+});
+
+document.getElementById("mute-toggle").addEventListener("change", function () {
+    saveSettings();
 });
 
 //Sound
@@ -902,6 +912,39 @@ function restoreGameState(){
     gameWon = parsedGS.gameWon ?? false;
 
     return true;
+}
+
+//Function to save visual and audio settings
+function saveSettings(){
+    const settings = {
+        darkMode: document.getElementById("dark-mode-toggle").checked,
+        colorblindMode: document.getElementById("colorblind-toggle").checked,
+        hardMode: document.getElementById("hard-mode-toggle").checked,
+        mute: document.getElementById("mute-toggle").checked
+    };
+    localStorage.setItem("gameSettings", JSON.stringify(settings));
+}
+
+//Function restores settings
+function restoreSettings() {
+    const saved = localStorage.getItem("gameSettings");
+    if (!saved){
+        return;
+    }
+
+    const settings = JSON.parse(saved);
+
+    document.getElementById("dark-mode-toggle").checked = settings.darkMode;
+    document.body.classList.toggle("dark-mode", settings.darkMode);
+
+    document.getElementById("colorblind-toggle").checked = settings.colorblindMode;
+    document.body.classList.toggle("colorblind-mode", settings.colorblindMode);
+
+    document.getElementById("hard-mode-toggle").checked = settings.hardMode;
+    document.body.classList.toggle("hard-mode", settings.hardMode);
+
+    document.getElementById("mute-toggle").checked = settings.mute;
+
 }
 
 // Function to handle closing animation with a delay
