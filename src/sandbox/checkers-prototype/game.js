@@ -1453,3 +1453,4 @@ function endGameOnTimeout(winnerColor) {
   document.getElementById('drawBtn').style.display = 'none';
   document.getElementById('forfeitBtn').style.display = 'none';
 }
+}
