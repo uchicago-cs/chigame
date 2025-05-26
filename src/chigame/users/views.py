@@ -811,7 +811,6 @@ def notifications_by_label(request, label_id):
 
 
 @login_required
-
 def edit_profile(request, pk):
     """
     View for editing user profile information including bio.
@@ -837,6 +836,7 @@ def edit_profile(request, pk):
     }
 
     return render(request, "users/edit_profile.html", context)
+
 
 def recommendation_preferences(request, pk):
     """
