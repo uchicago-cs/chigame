@@ -113,7 +113,7 @@ def test_user_achievements_view_own_profile_1(client):
     assert overall["total"] == 2
 
 
-@pytest.mark.skip(reason="Flaky in CI - passes locally, investigating")
+@pytest.mark.django_db
 def test_user_achievements_view_own_profile_2(client):
     user = UserFactory()
     client.force_login(user)
