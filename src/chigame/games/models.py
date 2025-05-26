@@ -47,7 +47,7 @@ class Game(models.Model):
         ('comedy', 'Comedy'),
         ('drama', 'Drama'),
     ]
-    genre = models.CharField(max_length=50, choices=GENRE_CHOICES, default="not specified")
+    genre = models.CharField(max_length=50, choices=GENRE_CHOICES, default="drama")
 
     CONTENT_SENSITIVITY_CHOICES = [
         ('everyone', 'Everyone'),
