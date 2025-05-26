@@ -520,6 +520,9 @@ function movePiece(piece, moveX, moveY) {
   if (Math.abs(dx) === 2 && Math.abs(dy) === 2) {
     const captured = getPiece(piece.x + dx / 2, piece.y + dy / 2);
     if (captured) {
+      if (captured.isKing && captured.kingIcon) {
+        captured.kingIcon.destroy();
+      }
       captured.sprite.destroy(); // delete the sprite (remove from display state)
       if (captured.kingIcon) captured.kingIcon.destroy(); // destroy the icon as well
       pieces = pieces.filter((p) => p !== captured); // remove it from the array (game state)
@@ -790,6 +793,10 @@ function highlightValidMoves(scene, piece) {
 function executeJumpChain(piece, jump) {
   for (var i = 0; i < jump.captures.length; i++) {
     var captured = jump.captures[i];
+    
+    if (captured.isKing && captured.kingIcon) {
+      captured.kingIcon.destroy();
+    }
     captured.sprite.destroy();
     pieces = pieces.filter(function (p) {
       return p !== captured;
