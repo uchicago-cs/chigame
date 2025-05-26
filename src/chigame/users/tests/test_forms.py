@@ -28,7 +28,7 @@ class TestUserAdminCreationForm:
             3) The desired error message is raised
         """
 
-        email = faker.unqiue.email()
+        email = faker.unique.email()
         password = faker.password(length=12)
 
         UserFactory(email=email)
