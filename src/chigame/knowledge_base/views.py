@@ -171,9 +171,7 @@ class ContributorManageGuide(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         guides = self.request.user.authored_guides.all()
-
         # for sorting
-
         sort = self.request.GET.get("sort")
         if sort == "old":
             guides = guides.order_by("recent_upload")
