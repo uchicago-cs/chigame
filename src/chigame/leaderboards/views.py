@@ -114,7 +114,9 @@ def points_bar_chart(request, game_id):
                      "tier_name": tier_name,
                      "tier_badge": tier_badge,
                  }
+             )
              
+    
     leaderboard_data.sort(key=lambda item: item["score"], reverse=True)
 
     context = {
