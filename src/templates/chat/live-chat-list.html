@@ -97,16 +97,18 @@
           currentUrl.searchParams.delete('q');
         }
 
-        window.history.pushState({}, '', currentUrl);
 
-        // Filter the chat list
-        const chatItems = document.querySelectorAll('.list-group-item');
+        window.history.pushState({}, '', currentUrl);
+        const chatItems = document.querySelectorAll('#public .list-group-item');
         chatItems.forEach(item => {
-          const chatName = item.textContent.toLowerCase();
-          if (chatName.includes(searchQuery.toLowerCase())) {
-            item.style.display = '';
+          const nameEl = item.querySelector('h5');
+          const chatName = nameEl?.textContent.trim().toLowerCase() || '';
+          const match = chatName.includes(searchQuery.toLowerCase());
+
+          if (match) {
+            item.classList.remove('d-none');
           } else {
-            item.style.display = 'none';
+            item.classList.add('d-none');
           }
         });
       });
