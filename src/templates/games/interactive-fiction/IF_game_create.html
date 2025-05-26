@@ -4,7 +4,6 @@
   Interactive Fiction Game
 {% endblock title %}
 {% block content %}
-  <!-- Include Choices.js CDN -->
   <link rel="stylesheet"
         href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
@@ -60,10 +59,6 @@
 
     .btn-success {
       margin-top: 2rem;
-    }
-
-    .btn-success,
-    .btn-secondary {
       background-color: #16a34a;
       color: #fff;
       border: none;
@@ -77,9 +72,14 @@
     .btn-secondary {
       margin-left: 0.5rem;
       background-color: #0d9b40;
-      /* slightly darker to differentiate */
       text-decoration: none;
       margin-top: 50px;
+      color: #fff;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1rem;
     }
 
     .custom-label-section .btn-secondary {
@@ -94,7 +94,6 @@
       cursor: pointer;
       color: #555;
       width: 568px;
-      width: 568px;
     }
 
     .upload-zone.hover {
@@ -105,7 +104,6 @@
       display: none;
     }
 
-    /* custom‑label input wrapper */
     .label-add-wrapper {
       margin-top: 0.75rem;
       display: flex;
@@ -116,7 +114,6 @@
       flex: 1;
     }
 
-    /* custom-label section styling */
     .custom-label-section {
       margin-top: 1rem;
       background-color: #f8f9fa;
@@ -143,13 +140,50 @@
       border-color: #0d9b40;
       outline: none;
     }
+
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.4);
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal.show {
+      display: flex;
+    }
+
+    .modal-content {
+      background-color: #fff;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 90%;
+      max-width: 400px;
+      border-radius: 8px;
+    }
+
+    .modal-buttons {
+      text-align: right;
+      margin-top: 1rem;
+    }
+
+    .modal-buttons button {
+      margin-left: 10px;
+    }
+
+    .hidden-submit {
+      display: none;
+    }
   </style>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      /* ---------- Choices.js on labels ---------- */
       const labelSelect = document.getElementById('id_labels');
       let labelChoices = null;
-
       if (labelSelect) {
         labelChoices = new Choices(labelSelect, {
           removeItemButton: true,
@@ -162,36 +196,24 @@
           addItemFilter: value => value.trim().length > 0,
         });
       }
-
-      /* ---------- custom‑label button logic ---------- */
       const addBtn = document.getElementById('add_label_btn');
       const inputField = document.getElementById('custom_label_input');
 
       function addCustomLabel() {
         const newLabel = (inputField.value || '').trim();
         if (!newLabel || !labelChoices) return;
-
-        // prevent duplicates (Choices keeps choices in config.choices)
-        const exists = labelChoices.config.choices.some(
-          c => c.label.toLowerCase() === newLabel.toLowerCase()
-        );
+        const exists = labelChoices.config.choices.some(c => c.label.toLowerCase() === newLabel.toLowerCase());
         if (exists) {
           inputField.value = '';
           return;
         }
-
-        // add & select
-        labelChoices.setChoices(
-          [{
-            value: newLabel,
-            label: newLabel,
-            selected: true
-          }],
-          'value', 'label', false
-        );
+        labelChoices.setChoices([{
+          value: newLabel,
+          label: newLabel,
+          selected: true
+        }], 'value', 'label', false);
         inputField.value = '';
       }
-
       if (addBtn && inputField) {
         addBtn.addEventListener('click', addCustomLabel);
         inputField.addEventListener('keyup', e => {
@@ -199,75 +221,191 @@
         });
       }
 
-      /* ---------- upload‑zone logic ---------- */
+      // file upload zones logic (unchanged)
       document.querySelectorAll('.upload-zone').forEach(zone => {
         const inputId = zone.dataset.inputId;
         const input = document.getElementById(inputId);
         if (!input) return;
 
+        const zoneType = inputId.includes('cover_image') ? 'image' : 'html';
+
         function showFileName(file) {
           zone.innerHTML = `
-            <div>
+              <div>
               <strong>Selected file:</strong><br />
               ${file.name}<br />
-            </div>`;
+              <button type="button" class="deselect-btn">Deselect File</button>
+              </div>
+          `;
+          zone.querySelector('.deselect-btn').addEventListener('click', (e) => {
+            e.stopPropagation(); // prevents file navigator from showing up exactly
+            input.value = '';
+            zone.innerHTML = 'Drag & drop a file here<br />or click to browse';
+          });
+        }
+
+        function isImageFile(file) {
+          return file && file.type.startsWith('image/');
         }
 
         function isHtmlFile(file) {
           return file && file.name.toLowerCase().endsWith('.html');
         }
 
-        function handleFile(file) {
-          if (!isHtmlFile(file)) {
-            alert('Only .html files are allowed!');
+        function handleFile(file, zoneType) {
+          const isValid = zoneType === 'image' ?
+            isImageFile(file) :
+            isHtmlFile(file);
+
+          if (!isValid) {
+            alert(zoneType === 'image' ?
+              'Only image files are allowed!' :
+              'Only .html files are allowed!');
             input.value = '';
             zone.innerHTML = 'Drag & drop a file here<br />or click to browse';
             return false;
           }
-          showFileName(file);
+
+          if (zoneType === 'image') {
+            const reader = new FileReader();
+            reader.onload = () => {
+              zone.innerHTML = `
+                <div>
+                  <strong>Selected Image</strong><br />
+                  ${file.name}<br />
+                  <img src="${reader.result}" alt="Image Preview" style="max-width: 100%; max-height: 150px;" />
+                </div>`;
+            };
+            reader.readAsDataURL(file);
+          } else {
+            zone.innerHTML = `
+              <div>
+                <strong>Selected file:</strong><br />
+                ${file.name}<br />
+              </div>`;
+          }
+
           return true;
         }
 
         zone.addEventListener('click', () => input.click());
-
         zone.addEventListener('dragover', e => {
           e.preventDefault();
           zone.classList.add('hover');
         });
-
-
         zone.addEventListener('dragleave', () => zone.classList.remove('hover'));
-
-
         zone.addEventListener('drop', e => {
           e.preventDefault();
           zone.classList.remove('hover');
           const file = e.dataTransfer.files[0];
-          if (file && handleFile(file)) {
+          if (file && handleFile(file, zoneType)) {
             input.files = e.dataTransfer.files;
           }
         });
-
         input.addEventListener('change', () => {
           const file = input.files[0];
           if (file) {
             showFileName(file);
-            handleFile(file);
+            handleFile(file, zoneType);
           }
-
         });
       });
+
+      // Confirmation modal logic
+      const realSubmitBtn = document.getElementById('real_submit_btn');
+      const modal = document.getElementById('confirmation_modal');
+      const openModalBtn = document.getElementById('open_modal_btn');
+      const closeModalBtn = document.getElementById('close_modal_btn');
+      const reviewContainer = document.getElementById('modal_review_fields');
+
+      function gatherFormData() {
+        const name = document.getElementById('id_name').value;
+        const author = document.getElementById('id_author').value;
+        const desc = document.getElementById('id_description').value;
+        const genreEl = document.getElementById('id_genre');
+        const genreText = genreEl.options[genreEl.selectedIndex]?.text || '';
+        const year = document.getElementById('id_year_published').value;
+        const rules = document.getElementById('id_rules').value;
+        const warning = document.getElementById('id_content_warning').value;
+        const labels = Array.from(document.getElementById('id_labels').selectedOptions)
+          .map(o => o.text).join(', ');
+        const allowComments = document.getElementById('id_allow_comments').checked ? 'Yes' : 'No';
+        const enableRatings = document.getElementById('id_enable_ratings').checked ? 'Yes' : 'No';
+
+        return `
+          <p><strong>Game Name:</strong> ${name}</p>
+          <p><strong>Author:</strong> ${author}</p>
+          <p><strong>Description:</strong> ${desc}</p>
+          <p><strong>Genre:</strong> ${genreText}</p>
+          <p><strong>Labels:</strong> ${labels || '—'}</p>
+          <p><strong>Year Published:</strong> ${year || '—'}</p>
+          <p><strong>Rules:</strong> ${rules}</p>
+          <p><strong>Content Warning:</strong> ${warning || 'None'}</p>
+          <p><strong>Allow Comments:</strong> ${allowComments}</p>
+          <p><strong>Enable Ratings:</strong> ${enableRatings}</p>
+        `;
+      }
+
+      openModalBtn.addEventListener('click', function(event) {
+        event.preventDefault();
+        reviewContainer.innerHTML = gatherFormData();
+        modal.classList.add('show');
+      });
+
+      closeModalBtn.addEventListener('click', function() {
+        modal.classList.remove('show');
+      });
+      document.getElementById('confirm_submit_btn').addEventListener('click', function() {
+        modal.classList.remove('show');
+        realSubmitBtn.click();
+      });
+      window.onclick = function(event) {
+        if (event.target === modal) modal.classList.remove('show');
+      };
+
+      const previewBtn = document.getElementById("preview_game");
+
+      if (previewBtn) {
+        previewBtn.addEventListener("click", function() {
+          const fileInput = document.getElementById("myFile");
+          const file = fileInput.files[0];
+
+          if (!file || !file.name.toLowerCase().endsWith(".html")) {
+            alert("Please select a valid .html game file first.");
+            return;
+          }
+
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            const htmlContent = e.target.result;
+
+            const previewWindow = window.open("", "_blank");
+            if (!previewWindow) {
+              alert("Popup blocked. Please allow popups for this site.");
+              return;
+            }
+
+            // Ensure the content gets fully rendered
+            previewWindow.document.open();
+            previewWindow.document.write(htmlContent);
+            previewWindow.document.close();
+          };
+          reader.readAsText(file);
+        });
+      }
     });
   </script>
   <h1>Create Interactive Fiction Game</h1>
-  <form method="post" enctype="multipart/form-data" id="game_form">
+  <form method="post"
+        enctype="multipart/form-data"
+        id="game_form"
+        action="{% url 'upload-file' pk=game.pk %}">
     {% csrf_token %}
     <div>
       <label for="id_name">Game Name:</label>
       <input type="text"
-             name="name"
              id="id_name"
-             value="{{ form.name.value }}"
+             value="{{ form.name.value|default_if_none:'' }}"
              required />
     </div>
     <div>
@@ -275,12 +413,12 @@
       <input type="text"
              name="author"
              id="id_author"
-             value="{{ form.author.value }}"
+             value="{{ form.author.value|default_if_none:'' }}"
              required />
     </div>
     <div>
       <label for="id_description">Description:</label>
-      <textarea name="description" id="id_description" required>{{ form.description.value }}</textarea>
+      <textarea name="description" id="id_description" required>{{ form.description.value|default_if_none:'' }}</textarea>
     </div>
     <div>
       <label for="id_genre">Genre:</label>
@@ -294,7 +432,6 @@
     <div>
       <label for="id_labels">Game Labels:</label>
       <select id="id_labels" name="labels" multiple>
-        <!-- Tone & Mood -->
         <optgroup label="Tone & Mood">
           <option value="Dark">Dark</option>
           <option value="Uplifting">Uplifting</option>
@@ -303,15 +440,13 @@
           <option value="Tense">Tense</option>
           <option value="Dreamlike">Dreamlike</option>
         </optgroup>
-        <!-- Accessibility & Audience -->
         <optgroup label="Accessibility & Audience">
-          <option value="All Ages">All Ages</option>
+          <option value="All Ages">All Ages</option>
           <option value="Teen">Teen</option>
           <option value="Mature">Mature</option>
           <option value="Screen‑reader Friendly">Screen‑reader Friendly</option>
           <option value="Translated">Translated</option>
         </optgroup>
-        <!-- Languages -->
         <optgroup label="Languages">
           <option value="English">English</option>
           <option value="Spanish">Spanish</option>
@@ -319,7 +454,6 @@
           <option value="German">German</option>
           <option value="Portuguese">Portuguese</option>
         </optgroup>
-        <!-- Difficulty -->
         <optgroup label="Difficulty">
           <option value="Easy">Easy</option>
           <option value="Beginner‑friendly">Beginner‑friendly</option>
@@ -327,22 +461,19 @@
           <option value="Intermediate">Intermediate</option>
           <option value="Hard">Hard</option>
         </optgroup>
-        <!-- Length -->
         <optgroup label="Length">
           <option value="Short">Short</option>
           <option value="Medium Length">Medium</option>
           <option value="Long">Long</option>
-          <option value="10‑20 minutes">10‑20 minutes</option>
-          <option value="1‑2 hours">1‑2 hours</option>
+          <option value="10‑20 minutes">10‑20 minutes</option>
+          <option value="1‑2 hours">1‑2 hours</option>
         </optgroup>
-        <!-- Release Status -->
         <optgroup label="Release Status">
           <option value="Demo">Demo</option>
           <option value="Beta">Beta</option>
           <option value="Complete">Complete</option>
         </optgroup>
       </select>
-      <!-- custom label add -->
       <div class="custom-label-section">
         <p class="custom-label-prompt">Don't see your label above? Type in a custom label below.</p>
         <div class="label-add-wrapper">
@@ -350,25 +481,25 @@
                  id="custom_label_input"
                  placeholder="Type custom label"
                  class="custom-label-input" />
-          <button type="button" id="add_label_btn" class="btn-secondary">Add&nbsp;Label</button>
+          <button type="button" id="add_label_btn" class="btn-secondary">Add Label</button>
         </div>
       </div>
     </div>
     <div>
       <label for="id_rules">Rules:</label>
-      <textarea name="rules" id="id_rules" placeholder="Enter the rules" rows="4">{{ form.rules.value }}</textarea>
+      <textarea name="rules" id="id_rules" placeholder="Enter the rules" rows="4">{{ form.rules.value|default_if_none:'' }}</textarea>
     </div>
     <div>
       <label for="id_year_published">Year Published:</label>
       <input type="number"
              name="year_published"
              id="id_year_published"
-             value="{{ form.year_published.value }}"
+             value="{{ form.year_published.value|default_if_none:'' }}"
              placeholder="Year Published" />
     </div>
     <div>
       <label for="id_content_warning">Content Warning (optional):</label>
-      <textarea name="content_warning" id="id_content_warning" rows="3">{{ form.content_warning.value }}</textarea>
+      <textarea name="content_warning" id="id_content_warning" rows="3">{{ form.content_warning.value|default_if_none:'' }}</textarea>
     </div>
     <div>
       <label for="id_image">Cover Image</label>
@@ -380,7 +511,8 @@
       <input type="file"
              id="id_cover_image"
              name="uploaded_file"
-             class="if-file-input" />
+             class="if-file-input"
+             accept="image/*" />
     </div>
     <div>
       <label for="id_allow_comments">
@@ -402,11 +534,6 @@
     </div>
     <hr />
     <h3>Upload Game Files</h3>
-  </form>
-  <form method="post"
-        action="{% url 'upload-file' pk=game.pk %}"
-        enctype="multipart/form-data">
-    {% csrf_token %}
     <div class="upload-zone" data-input-id="myFile">
       Drag &amp; drop a file here
       <br />
@@ -417,8 +544,20 @@
            name="uploaded_file"
            class="if-file-input"
            accept=".html" />
-    <button type="submit" class="btn-success">Upload Game</button>
+    <button id="open_modal_btn" class="btn-success">Upload Game</button>
+    <button type="submit" id="real_submit_btn" class="hidden-submit">Submit</button>
   </form>
   <h3>Publish Story</h3>
   <a href="{{ uploaded_file_url }}" target="_blank" class="btn-success">Play Uploaded Game</a>
+  <div id="confirmation_modal" class="modal">
+    <div class="modal-content">
+      <h3>Confirm Submission</h3>
+      <p>Please review your information. Are you ready to submit?</p>
+      <div class="modal-review" id="modal_review_fields"></div>
+      <div class="modal-buttons">
+        <button id="close_modal_btn" class="btn-secondary">Cancel</button>
+        <button id="confirm_submit_btn" class="btn-success">Submit</button>
+      </div>
+    </div>
+  </div>
 {% endblock content %}
