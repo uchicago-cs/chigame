@@ -295,6 +295,21 @@ canvas {
     font-size: 20px;
 }
 
+.turn-indicator {
+  display: flex;
+  align-items: center;
+}
+
+.turn-indicator .dot {
+  height: 25px;
+  width: 25px;
+  background-color: #ff0000;
+  border-radius: 50%;
+  display: inline-block;
+  border: 1px solid black;
+  margin-right: 5px;
+}
+
 /* Game over displays */
 #gameOverPrompts {
   perspective: 800px;
