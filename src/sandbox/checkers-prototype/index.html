@@ -21,6 +21,11 @@
     <script src="game.js"></script>
     <nav class="navbar">
       <h1>CHIGAME</h1>
+      <!-- turn indicator -->
+      <div class="turn-indicator">
+        <span class="dot"></span>
+        <p id="player-turn">Red</p>
+      </div>
       <!-- add buttons to this div -->
       <div class="nav-btns">
         <!-- game timer for red and black -->
@@ -59,6 +64,7 @@
           <button id="toggle-colorblind" class="setting-btn">Toggle Colorblind Mode</button>
           <button id="toggle-coordinates" class="setting-btn">Toggle Coordinates</button>
           <button id="toggle-mute" class="setting-btn">Mute</button>
+          <!-- Volume Slider -->
           <div class="setting-option">
             <i class="fa fa-volume-up"></i>
             <input type="range"
@@ -71,16 +77,16 @@
             <div id="volume-display" class="value-display"></div>
           </div>
           <!-- Board Scale Slider -->
-          <div class="slider-container">
-            <label for="resize-slider">
-              Board Scale: <span id="resize-value">100%</span>
-            </label>
+          <div class="setting-option">
+            <i class="fa-solid fa-maximize"></i>
             <input type="range"
                    id="resize-slider"
                    min="50"
                    max="120"
                    value="100"
-                   step="5" />
+                   step="5"
+                   title="resize slider" />
+            <div id="resize-display" class="value-display"></div>
           </div>
         </div>
       </div>
