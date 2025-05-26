@@ -1,9 +1,17 @@
-<div class="d-flex p-3 bg-light border-top">
-  <input type="text"
-         id="id_message_send_input"
-         placeholder="Type a message"
-         class="form-control rounded-pill me-2" />
-  <button type="submit"
-          id="id_message_send_button"
-          class="btn btn-danger rounded-pill px-4">Send</button>
+<div id="replying-to-preview" class="mb-2 d-none">
+  <div class="small text-muted">
+    Replying to <strong id="preview-username"></strong>: “<span id="preview-content"></span>”
+    <button class="btn btn-sm btn-link text-danger p-0 ms-2" id="cancel-reply">(cancel)</button>
+  </div>
+</div>
+<div class="p-3 bg-light border-top">
+  <div class="d-flex">
+    <input type="text"
+           id="id_message_send_input"
+           placeholder="Type a message"
+           class="form-control rounded-pill me-2" />
+    <button type="submit"
+            id="id_message_send_button"
+            class="btn btn-danger rounded-pill px-4">Send</button>
+  </div>
 </div>

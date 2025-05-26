@@ -2,11 +2,15 @@
 
 {% load static %}
 
-{% block extrahead %}
+{% block title %}
+  Archived Tournaments
+{% endblock title %}
+{% block css %}
+  {{ block.super }}
   <link rel="stylesheet"
         type="text/css"
-        href="{% static 'tournament_styles.css' %}" />
-{% endblock extrahead %}
+        href="{% static 'css/tournament_styles.css' %}" />
+{% endblock css %}
 {% block content %}
   <h1>Archived Tournaments</h1>
   <form method="post">

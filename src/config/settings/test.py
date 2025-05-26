@@ -3,7 +3,7 @@ With these settings, tests run faster.
 """
 
 from .base import *  # noqa
-from .base import env
+from .base import BASE_DIR, env
 
 # GENERAL
 # ------------------------------------------------------------------------------
@@ -24,11 +24,15 @@ PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#caches
 CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "",
+    },
     # django-machina attachments cache
     # https://django-machina.readthedocs.io/en/latest/getting_started.html#django-settings
     "machina_attachments": {
         "BACKEND": "django.core.cache.backends.filebased.FileBasedCache",
-        "LOCATION": "/tmp",
+        "LOCATION": str(BASE_DIR / "tmp"),
     },
 }
 
