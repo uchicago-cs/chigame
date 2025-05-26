@@ -9,6 +9,7 @@ window.addEventListener("load", async () => {
     document.documentElement.classList.add('theme-transition-disabled');
     modal.classList.remove('visible');
     modal.style.opacity = '0';
+
     if (modalContent) {
         modalContent.style.transform = 'scale(0.95)';
         modalContent.style.opacity = '0';
@@ -922,7 +923,7 @@ function shakeRow(rowIndex) {
     }
 }
 
-
+//Settings toggles
 document.getElementById("dark-mode-toggle").addEventListener("change", function () {
     document.body.classList.toggle("dark-mode", this.checked);
     saveSettings();
@@ -932,7 +933,7 @@ document.getElementById("colorblind-toggle").addEventListener("change", function
     document.body.classList.toggle("colorblind-mode", this.checked);
     saveSettings();
 });
-//hard mode toggle
+
 document.getElementById("hard-mode-toggle").addEventListener("change", function () {
     document.body.classList.toggle("hard-mode", this.checked);
     saveSettings();
@@ -1008,7 +1009,6 @@ async function restoreGameState(){
     return true;
 }
 
-//save settings
 function saveSettings(){
     const settings = {
         darkMode: document.getElementById("dark-mode-toggle").checked,
