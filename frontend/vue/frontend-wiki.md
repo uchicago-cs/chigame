@@ -16,20 +16,24 @@
 
 3. Installation
 
-    Make sure when working on vue code to first:
+    Make sure when working on vue code to first (always):
     - cd frontend/vue
 
     To install Node
     Download: https://nodejs.org/
 
     To install npm (should come with node by default but just in case):
-    - in linux run...
+    - in linux, to install program run...
     sudo apt install npm
-    (npm install or npm i should work too)
+    - after, to be able to have program, run...
+    npm install or npm i
 
 4. Running the Development Server
 
-    To start the Vue frontend:
+    Make sure when working on vue code to first (always):
+    - cd frontend/vue
+
+    Every time you want to start the Vue frontend:
     - npm run dev
 
     Default URL (http://localhost:5173)
