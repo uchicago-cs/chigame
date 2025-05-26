@@ -1176,6 +1176,7 @@ document.addEventListener('DOMContentLoaded', () => {
     muted = !muted;
     checkers.sound.mute = muted;
     // then update the label
+    toggleMuteBtn.classList.toggle('selected');
     toggleMuteBtn.textContent = muted ? 'Unmute' : 'Mute';
   });
 
@@ -1186,6 +1187,7 @@ document.addEventListener('DOMContentLoaded', () => {
       muted = !muted;
       checkers.sound.mute = muted;
       toggleMuteBtn.textContent = muted ? 'Unmute' : 'Mute';
+      toggleMuteBtn.classList.toggle('selected');
     }
   });
 });
