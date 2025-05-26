@@ -1,4 +1,6 @@
 import random
+import secrets
+import string
 from datetime import timedelta
 
 from django.contrib.contenttypes.models import ContentType
@@ -183,22 +185,74 @@ class Lobby(models.Model):
     game = models.ForeignKey(Game, on_delete=models.CASCADE)
     game_mod_status = models.PositiveSmallIntegerField(choices=MODS, default=1)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    invited_members = models.ManyToManyField(User, related_name="invited_lobbies", blank=True)
     members = models.ManyToManyField(User, related_name="lobbies")
     min_players = models.PositiveIntegerField()
     max_players = models.PositiveIntegerField()
     time_constraint = models.PositiveIntegerField(default=300)
     lobby_created = models.DateTimeField(default=timezone.now)
+    # implementation of match functionality: join lobby by code
+    join_code = models.CharField(max_length=6, unique=True, blank=True, null=True)
 
-    # ================ VALIDATION ================
+    # ================ VALIDATON ================
+    def generate_unique_code(self, length=6):
+        """
+        Generates a unique code for users to enter lobby associated with a specific match.
+        """
+        characters = string.ascii_uppercase + string.digits
+        while True:
+            code = "".join(secrets.choice(characters) for _ in range(length))
+            if not Lobby.objects.filter(join_code=code).exists():
+                return code
+
     def clean(self):
         # Ensures min_players is not greater than max_players
         if self.min_players > self.max_players:
             raise ValidationError({"min_players": "min_players cannot be greater than max_players"})
 
+    # Adding a class method to check the old version of the instacnce from the model
+    @classmethod
+    def from_db(cls, db, field_names, values):
+        instance = super().from_db(db, field_names, values)
+        instance._loaded_values = dict(zip(field_names, values))
+        return instance
+
     def save(self, *args, **kwargs):
+        # generate unique join code if it doesn't exist
+        if not self.join_code:
+            self.join_code = self.generate_unique_code()
         # Calls full_clean to run all validations before saving
         self.full_clean()
+        creating = self._state.adding
+        old_status = None
+
+        if not creating and hasattr(self, "_loaded_values"):
+            old_status = self._loaded_values.get("match_status")
+
         super().save(*args, **kwargs)
+
+        match = getattr(self, "match", None)
+        if not match:
+            return
+
+        players = match.players.all()
+
+        # When the match status changes from Lobbied to In-Progress
+        if old_status != 2 and self.match_status == 2:
+            # Create GameHistory objects for all players in the match
+            for user in players:
+                GameHistory.objects.get_or_create(
+                    user=user, match=match, defaults={"is_completed": False, "result": None}
+                )
+
+        # When the match status changes from In-Progress to Finished
+        if old_status == 2 and self.match_status == 3:
+            for user in players:
+                try:
+                    player = Player.objects.get(user=user, match=match)
+                    GameHistory.objects.filter(user=user, match=match).update(is_completed=True, result=player.outcome)
+                except Player.DoesNotExist:
+                    continue
 
 
 class Match(models.Model):
@@ -884,6 +938,38 @@ class GameData(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.game.name}: {self.key}"
+
+
+class GameHistory(models.Model):
+    """
+    Used to store the history of completed or in-progress matches.
+    Matches in unstarted lobbies are not included.
+    """
+
+    WIN = 0
+    DRAW = 1
+    LOSE = 2
+    INCOMPLETE = 3
+
+    OUTCOMES = (
+        (WIN, "win"),
+        (DRAW, "draw"),
+        (LOSE, "lose"),
+        (INCOMPLETE, "incomplete"),
+    )
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="game_history_entries")
+    match = models.ForeignKey(Match, on_delete=models.CASCADE, related_name="game_history_entries")
+    date_played = models.DateTimeField(auto_now_add=True)
+    is_completed = models.BooleanField()
+    result = models.PositiveSmallIntegerField(choices=OUTCOMES, blank=True, null=True)
+
+    class Meta:
+        unique_together = ("user", "match")
+        verbose_name_plural = "Game History"
+
+    def __str__(self):
+        return f"History: Match {self.match.id} played by {self.user} completed {self.is_completed}"
 
 
 @receiver(post_save, sender=Lobby)

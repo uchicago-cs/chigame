@@ -3,20 +3,29 @@
 {% load static %}
 
 {% block title %}
-  My Details:
+  User Details: {{ object.username }}
 {% endblock title %}
 {% block content %}
   <div class="container">
-    <div class="row">
-      <div class="col-sm-12">
-        <h2>My Account:</h2>
-      </div>
-    </div>
+    <h1>{{ object.name|default:object.username }}</h1>
+    <p>
+      <strong>Username:</strong> {{ object.username }}
+    </p>
+    <p>
+      <strong>Email:</strong> {{ object.email }}
+    </p>
+    <p>
+      <strong>Joined:</strong> {{ object.date_joined|date:"Y-m-d" }}
+    </p>
     {% if object == request.user %}
+      <a href="{% url 'account_email' %}" class="btn btn-primary">Manage Email</a>
+      <a href="{% url 'account_change_password' %}" class="btn btn-primary">Change Password</a>
+      {# Link to the more detailed profile page #}
+      <a href="{% url 'users:user-profile' object.pk %}" class="btn btn-info">View Full Profile</a>
       <!-- Action buttons -->
       <style>
         .list-item {
-          margin-bottom: 25px;
+          margin-bottom: 5px;
           list-style-type: none;
         }
 
@@ -107,7 +116,7 @@
             {% if object.is_staff %}
               <li class="list-item">
                 Users:
-                <a class="btn btn-primary"
+                <a class="btn btn-primary btn-sm update-button"
                    href="{% url 'users:user-list' %}"
                    role="button">List of Users</a>
               </li>
@@ -119,6 +128,5 @@
       <!-- Display a message or take a different action -->
       <p>This account does not belong to you. Access is forbidden.</p>
     {% endif %}
-    <!-- End Action buttons -->
   </div>
 {% endblock content %}
