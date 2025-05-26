@@ -1,7 +1,7 @@
 from django import forms
 from django.core.validators import MaxValueValidator, MinValueValidator
 
-from .models import Game, InteractiveFictionGame, Lobby, Review, Genre, Label
+from .models import Game, InteractiveFictionGame, Lobby, Review
 
 
 class GameForm(forms.ModelForm):
@@ -25,7 +25,7 @@ class IFGameForm(forms.ModelForm):
     class Meta:
         model = InteractiveFictionGame
         fields = [
-            "name", "description", "image", "categories", "genre", "labels",
+            "name", "description", "image", "categories", "genre",
             "suggested_age", "rules", "year_published"
         ]
 
@@ -48,19 +48,6 @@ class IFGameForm(forms.ModelForm):
         required=False,
         widget=forms.NumberInput(attrs={"placeholder": "Year Published"})
     )
-
-    genre = forms.ModelChoiceField(
-        queryset=Genre.objects.all(),
-        required=False,
-        widget=forms.Select(attrs={"placeholder": "Select Genre"})
-    )
-
-    labels = forms.ModelMultipleChoiceField(
-        queryset=Label.objects.all(),
-        required=False,
-        widget=forms.CheckboxSelectMultiple
-    )
-
 
 class LobbyForm(forms.ModelForm):
     class Meta:

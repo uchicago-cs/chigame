@@ -9,19 +9,6 @@ from django.utils import timezone
 from chigame.users.models import Group, Notification, User
 
 
-class Label(models.Model):
-    name = models.CharField(max_length=100, unique=True)
-
-    def __str__(self):
-        return self.name
-    
-
-class Genre(models.Model):
-    name = models.CharField(max_length=100, unique=True)
-
-    def __str__(self):
-        return self.name
-
 class Game(models.Model):
     """
     A game like Chess, Checkers, Go, etc.
@@ -46,8 +33,23 @@ class Game(models.Model):
 
     # interactive fiction  - twine file
     twine_file = models.FileField(upload_to="twine_games/", null=True, blank=True)
-    genre = models.ForeignKey(Genre, on_delete=models.SET_NULL, null=True, blank=True)
-    labels = models.ManyToManyField(Label, blank=True)
+    GENRE_CHOICES = [
+        ('fantasy', 'Fantasy'),
+        ('sci-fi', 'Sci-Fi'),
+        ('horror', 'Horror'),
+        ('romance', 'Romance'),
+        ('mystery', 'Mystery'),
+        ('comedy', 'Comedy'),
+        ('drama', 'Drama'),
+    ]
+    genre = models.CharField(max_length=50, choices=GENRE_CHOICES, default="not specified")
+
+    CONTENT_SENSITIVITY_CHOICES = [
+        ('everyone', 'Everyone'),
+        ('teen', 'Teen'),
+        ('mature', 'Mature'),
+    ]
+    content_sensitivity = models.CharField(max_length=20, choices=CONTENT_SENSITIVITY_CHOICES, default="everyone")
 
     suggested_age = models.PositiveSmallIntegerField(
         null=True, blank=True
