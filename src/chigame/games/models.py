@@ -186,6 +186,7 @@ class Lobby(models.Model):
     game = models.ForeignKey(Game, on_delete=models.CASCADE)
     game_mod_status = models.PositiveSmallIntegerField(choices=MODS, default=1)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    invited_members = models.ManyToManyField(User, related_name="invited_lobbies", blank=True)
     members = models.ManyToManyField(User, related_name="lobbies")
     min_players = models.PositiveIntegerField()
     max_players = models.PositiveIntegerField()

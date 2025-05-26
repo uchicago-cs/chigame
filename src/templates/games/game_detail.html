@@ -45,7 +45,8 @@
             <i class="bi bi-play-fill"></i> Play Game
           </a>
         {% endif %}
-        <a href="#" class="btn btn-outline-primary">Join a Match</a>
+        <a href="{% url 'match-join' pk=game.pk %}"
+           class="btn btn-outline-primary">Join a Match</a>
         <a href="{% url 'match-create' pk=game.pk %}"
            class="btn btn-outline-primary">Create a Match</a>
         {% if user.is_authenticated %}
