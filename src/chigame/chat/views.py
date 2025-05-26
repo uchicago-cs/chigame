@@ -1,4 +1,5 @@
 from django.core.exceptions import ValidationError
+from django.db.models import Count, OuterRef, Subquery
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.csrf import csrf_exempt
@@ -21,8 +22,27 @@ def chat(request, chat_id):
 
 
 def live_chat_list(request):
-    chats = LiveChat.objects.filter(public=True)
-    return render(request, "chat/live-chat-list.html", {"chats": chats})
+    latest_message = LiveChatMessage.objects.filter(live_chat=OuterRef("pk")).order_by("-sent_at")
+
+    public_chats = LiveChat.objects.filter(public=True).annotate(
+        user_count=Count("users"),
+        last_message=Subquery(latest_message.values("content")[:1]),
+        last_message_time=Subquery(latest_message.values("sent_at")[:1]),
+    )
+
+    private_chats = LiveChat.objects.filter(public=False, users=request.user).annotate(
+        user_count=Count("users"),
+        last_message=Subquery(latest_message.values("content")[:1]),
+        last_message_time=Subquery(latest_message.values("sent_at")[:1]),
+    )
+    return render(
+        request,
+        "chat/live-chat-list.html",
+        {
+            "public_chats": public_chats,
+            "private_chats": private_chats,
+        },
+    )
 
 
 def create_live_chat(request):
@@ -72,6 +92,43 @@ def delete_message(request, message_id):
     return JsonResponse({"message": "Message deleted successfully"}, status=200)
 
 
+def pin_message(request, message_id):
+    """
+    Pins a message in the chat
+
+    Args:
+        request: The request object.
+        message_id: The id of the message to delete.
+
+    Returns:
+        A JSON response.
+    """
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "Unauthorized"}, status=401)
+
+    message = get_object_or_404(LiveChatMessage, id=message_id)
+
+    if not message.live_chat.users.filter(id=request.user.id).exists():
+        return JsonResponse({"error": "Unauthorized"}, status=401)
+
+    chat = message.live_chat
+    chat.pinned_message = message
+    chat.save()
+
+    return JsonResponse(
+        {
+            "message": "Message pinned successfully",
+            "pinned_message": {
+                "id": message.id,
+                "content": message.content,
+                "username": message.user.username or message.user.email,
+                "is_pinned": True,
+            },
+        },
+        status=200,
+    )
+
+
 @csrf_exempt
 @require_POST
 def react_to_message(request, message_id):
@@ -103,6 +160,17 @@ def react_to_message(request, message_id):
             return JsonResponse({"status": "reacted", "content": content}, status=200)
     except ValidationError as e:
         return JsonResponse({"error": str(e)}, status=400)  # not a single emoji
+
+
+def live_chat_preview_api(request):
+    chats = LiveChat.objects.filter(public=True)
+    return JsonResponse(
+        {
+            "chats": [
+                {"id": chat.id, "name": chat.name, "description": getattr(chat, "description", "")} for chat in chats
+            ]
+        }
+    )
 
 
 def edit_message(request, message_id):
