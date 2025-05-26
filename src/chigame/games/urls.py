@@ -1,9 +1,7 @@
-from django.conf import settings
-from django.conf.urls.static import static
 from django.urls import path
 
 from . import views
-from .views import InteractiveFictionView, LobbyCreateView, UploadFileView
+from .views import InteractiveFictionDetailView, LobbyCreateView, UploadFileView
 
 urlpatterns = [
     # lobbies
@@ -42,7 +40,7 @@ urlpatterns = [
     # interactive fiction
     path("interactive-fiction/", views.IFGameCreateView.as_view(), name="interactive-fiction-create"),
     path("<int:pk>/upload/", UploadFileView.as_view(), name="upload-file"),
-    path("if-game/<int:pk>/", InteractiveFictionView.as_view(), name="interactive-fiction-detail"),
+    path("if-game/<int:pk>/", InteractiveFictionDetailView.as_view(), name="interactive-fiction-detail"),
     # tournaments
     path("tournaments/", views.TournamentListView.as_view(), name="tournament-list"),
     path("tournaments/<int:pk>/", views.TournamentDetailView.as_view(), name="tournament-detail"),
@@ -50,6 +48,8 @@ urlpatterns = [
     path("tournaments/<int:pk>/update/", views.TournamentUpdateView.as_view(), name="tournament-update"),
     path("tournaments/<int:pk>/delete/", views.TournamentDeleteView.as_view(), name="tournament-delete"),
     path("tournaments/archived/", views.TournamentArchivedListView.as_view(), name="tournament-archived"),
+    # addedum
+    path("tournaments/<int:pk>/match-stats/", views.MatchStatsView.as_view(), name="tournament-match-stats"),
     # placeholder game
     path("lobby/<int:pk>/coinflip", views.coin_flip_game, name="placeholder-game"),
     path("<int:pk>/", views.GameDetailView.as_view(), name="game-detail"),
@@ -71,7 +71,10 @@ urlpatterns = [
     path("checkers/<int:pk>/", views.checkers_game_view, name="checkers-game"),
     path("checkers/<int:board_id>/update/", views.checkers_game_update_board_state, name="update_board_state"),
     path("checkers/<int:board_id>/state/", views.checkers_game_get_board_state, name="checkers-get-state"),
+    # tournament recommendations
+    path(
+        "tournaments/<int:tournament_id>/recommendations/",
+        views.get_tournament_player_recommendations,
+        name="tournament-recommendations",
+    ),
 ]
-# for an uploaded twine file this makes the files accessible at a url
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
