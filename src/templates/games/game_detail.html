@@ -50,6 +50,8 @@
             <a href="{% url 'add-to-favorites' pk=game.pk %}"
                class="btn btn-outline-success">Add to Favorites</a>
           {% endif %}
+          <a href="{% url 'game_history' game.id %}"
+             class="btn btn-outline-dark ms-2">View Game History</a>
           {% if game_lists %}
             <div class="btn-group ms-2">
               <button class="btn btn-outline-primary dropdown-toggle"
