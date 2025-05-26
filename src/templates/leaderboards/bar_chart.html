@@ -19,16 +19,16 @@
         datasets: [{
           label: '{{ score_metric_name }}',
           data: [{
-             %
-             for data in leaderboard_data %
-           } {
-             {
-               data.score
-             }
-           }, {
-             %
-             endfor %
-           }],
+            %
+            for data in leaderboard_data %
+          } {
+            {
+              data.score
+            }
+          }, {
+            %
+            endfor %
+          }],
           backgroundColor: 'rgba(128, 0, 0, 0.8)',
           borderColor: 'rgba(128, 0, 0, 1)',
           borderWidth: 1
