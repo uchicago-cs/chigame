@@ -75,4 +75,7 @@ urlpatterns = [
         user_achievements,
         name="other-user-achievements-game-status",
     ),
+    # Group paths
+    path("groups/", views.GroupListView.as_view(), name="group-list"),
+    path("groups/<int:pk>/", views.GroupDetailView.as_view(), name="group-detail"),
 ]
