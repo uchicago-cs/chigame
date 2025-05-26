@@ -212,6 +212,7 @@ def top_games_won_bar_chart(request, game_id):
     }
     return render(request, "leaderboards/bar_chart.html", context)
 
+
 def landing_page_view(request):
     top_entries = []
 
