@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}
+  Groups
+{% endblock title %}
+{% load render_table from django_tables2 %}
+
+{% block content %}
+  <h1>Groups</h1>
+  {% render_table table %}
+{% endblock content %}

@@ -12,19 +12,21 @@ from django.utils.translation import gettext_lazy as _
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_POST
 from django.views.generic import DetailView, RedirectView, UpdateView
+from django_tables2 import SingleTableView
 
 from chigame.games.models import Lobby, Player, Tournament
 
 from .models import (
     FriendInvitation,
     FriendRequestNotification,
+    Group,
     GroupInvitationNotification,
     MatchInvitationNotification,
     Notification,
     NotificationLabel,
     UserProfile,
 )
-from .tables import FriendsTable, UserTable
+from .tables import GroupTable, UserTable
 
 User = get_user_model()
 
@@ -53,6 +55,24 @@ class BaseUserUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
 
     def get_object(self):
         return self.request.user
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        try:
+            context["profile"] = self.request.user.userprofile
+        except UserProfile.DoesNotExist:
+            context["profile"] = None
+        return context
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        try:
+            profile = self.request.user.userprofile
+            profile.bio = self.request.POST.get("bio", profile.bio)
+            profile.save()
+        except UserProfile.DoesNotExist:
+            pass
+        return response
 
 
 class NameUpdateView(BaseUserUpdateView):
@@ -158,6 +178,10 @@ def user_profile_detail_view(request, pk):
     pending friend requests between the current user and the user
     being viewed.
 
+    IMPORTANT NOTE TO DEVELOPERS: Profile url takes user pk, not profile pk.
+    It might not necessarily be the case that providing profile pk will get you
+    the profile of the user you want.
+
     Args:
         request (HttpRequest)
         pk (int): The primary key of the user whose profile is being viewed
@@ -241,7 +265,9 @@ def send_friend_invitation(request, pk):
             receiver=other_user,
             type=Notification.FRIEND_REQUEST,
             message=Notification.DEFAULT_MESSAGES[Notification.FRIEND_REQUEST],
+            category="social",
         )
+
     # if the other user has already sent a friend request, return an error
     elif invitation.sender.pk == other_user.pk:
         messages.info(request, "You already have a pending friend invitation from this profile.")
@@ -253,7 +279,10 @@ def send_friend_invitation(request, pk):
             notification.renew_notification()
         except Notification.DoesNotExist:
             notification = Notification.objects.create(
-                actor=invitation, receiver=other_user, type=Notification.FRIEND_REQUEST
+                actor=invitation,
+                receiver=other_user,
+                type=Notification.FRIEND_REQUEST,
+                category="social",
             )
     return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
 
@@ -391,7 +420,7 @@ def user_search_results(request):
     context = {"found": False, "query_type": "Users"}
     if query_input:
         profiles_list = UserProfile.objects.filter(
-            Q(user__email__icontains=query_input) | Q(user__name__icontains=query_input)
+            Q(user__username__icontains=query_input) | Q(user__name__icontains=query_input)
         )
         if profiles_list.count() > 0:
             context["found"] = True
@@ -510,9 +539,8 @@ def friend_list_view(request, pk):
     target_user = get_object_or_404(User, pk=pk)
     # fetch the target user's friends
     friends = target_user.friends.all()
-    # render the friends table
-    table = FriendsTable(friends)
-    context = {"table": table}
+    context = {"friends": friends}
+
     # if the target user is the current user, render the friends list
     if pk == user.id:
         return render(request, "users/user_friend_list.html", context)
@@ -695,7 +723,7 @@ def move_notification(request, pk):
     if new_category and new_category in dict(Notification.CATEGORY_CHOICES):
         notification.category = new_category
         notification.save()
-        # messages.success(request, f"Notification moved to {new_category}.")
+        # messages.success(request, f"Notification moved to {new_category}.") # Message Location needs to be fixed
         return redirect("users:user-inbox-category", pk=request.user.pk, category=next_category)
 
     label_id = request.POST.get("label_id")
@@ -820,3 +848,13 @@ def delete_notification_label(request, label_id):
 
     messages.success(request, f"Label '{label_name}' deleted successfully.")
     return redirect(reverse("users:manage-labels-page"))
+
+class GroupListView(SingleTableView):
+    model = Group
+    table_class = GroupTable
+    template_name = "users/group_list.html"
+
+
+class GroupDetailView(DetailView):
+    model = Group
+    template_name = "users/group_detail.html"
