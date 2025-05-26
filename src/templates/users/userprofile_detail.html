@@ -215,6 +215,29 @@
             </div>
           </div>
         </div>
+        {% if profile.user == request.user %}
+          <div class="card mt-4">
+            <div class="card-header">
+              <h3>My Game Lists</h3>
+            </div>
+            <div class="card-body">
+              {% if game_lists %}
+                <ul class="list-group list-group-flush">
+                  {% for game_list in game_lists %}
+                    <li class="list-group-item">
+                      <a href="{% url 'gamelist-detail' game_list.pk %}">{{ game_list.name }}</a>
+                      <span class="badge bg-secondary rounded-pill float-end">{{ game_list.games.count }} game{{ game_list.games.count|pluralize }}</span>
+                    </li>
+                  {% endfor %}
+                </ul>
+              {% else %}
+                <p class="text-muted">
+                  You don't have any game lists yet. <a href="{% url 'game-list' %}">Browse games</a> to create some!
+                </p>
+              {% endif %}
+            </div>
+          </div>
+        {% endif %}
       </div>
     </div>
   </div>
