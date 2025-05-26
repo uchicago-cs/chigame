@@ -6,7 +6,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
     dependencies = [
         ("users", "0012_userprofile_favorite_games"),
-        ("users", "0014_alter_friendinvitation_unique_together"),
+        ("users", "0013_recommendationpreferences"),
     ]
 
     operations = []
