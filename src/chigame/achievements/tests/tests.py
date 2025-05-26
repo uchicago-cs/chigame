@@ -70,7 +70,7 @@ def test_achievement_percentage():
     match = MatchFactory()
     user = match.players.first()
     achievement = AchievementFactory(game=match.game)
-    UserAchievementFactory(user=user, achievement=achievement)
+    CompletedUserAchievementFactory(user=user, achievement=achievement)
     percentage = achievement.get_achievement_percentage()
     assert 0.0001 > abs(percentage - (1 / len(match.game.users.all())))
 

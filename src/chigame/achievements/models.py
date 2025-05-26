@@ -1,6 +1,6 @@
-from django.core.exceptions import ValidationError
 import copy
 
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 
@@ -122,7 +122,7 @@ class UserAchievement(models.Model):
     achievement = models.ForeignKey(Achievement, on_delete=models.CASCADE)
     pinned = models.BooleanField(default=False)
     date_earned = models.DateTimeField(null=True, blank=True)
-    last_updated = models.DateTimeField(auto_now_add=True)
+    last_updated = models.DateTimeField(blank=True, default=timezone.now())
     progress = models.FloatField(null=True, blank=True, default=1)
     # progress can be updated if achievement has a threshold
 
