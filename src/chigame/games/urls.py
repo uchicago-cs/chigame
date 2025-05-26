@@ -34,6 +34,7 @@ urlpatterns = [
     path("search/", views.search_results, name="game-search-results"),
     path("<int:pk>/reviews/", views.ReviewListView.as_view(), name="game-review-list"),
     path("games/<int:pk>/review/", views.add_review, name="add-review"),
+    path("games/<int:game_id>/history/", views.game_history_view, name="game_history"),
     # matches
     path("<int:pk>/match/create/", views.MatchCreateView.as_view(), name="match-create"),
     path("lobby/<int:pk>/code/", views.MatchCodeView.as_view(), name="match-code"),
