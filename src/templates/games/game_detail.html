@@ -40,7 +40,8 @@
       {% endfor %}
       <div class="btn-group btn-group-lg mt-3">
         <a href="#" class="btn btn-outline-primary">Join a Match</a>
-        <a href="#" class="btn btn-outline-primary">Create a Match</a>
+        <a href="{% url 'match-create' pk=game.pk %}"
+           class="btn btn-outline-primary">Create a Match</a>
         {% if user.is_authenticated %}
           {% if game in favorites_list.games.all %}
             <a href="{% url 'remove-from-favorites' pk=game.pk %}"
@@ -49,6 +50,8 @@
             <a href="{% url 'add-to-favorites' pk=game.pk %}"
                class="btn btn-outline-success">Add to Favorites</a>
           {% endif %}
+          <a href="{% url 'game_history' game.id %}"
+             class="btn btn-outline-dark ms-2">View Game History</a>
           {% if game_lists %}
             <div class="btn-group ms-2">
               <button class="btn btn-outline-primary dropdown-toggle"
@@ -206,7 +209,7 @@
   {% if user.is_staff %}
     <div class="btn-group">
       <a href="{% url 'game-edit' game.pk %}" class="btn btn-outline-primary">Edit</a>
-      <a href="#" class="btn btn-outline-primary">Delete</a>
+      <a href="{% url 'game-delete' game.pk %}" class="btn btn-outline-danger">Delete</a>
     </div>
   {% endif %}
   <a href="{% url 'game-list' %}">Back to Games List</a>

@@ -4,16 +4,26 @@ from .models import User
 
 
 class FriendsTable(tables.Table):
-    email = tables.Column(
-        verbose_name="Email",
-        accessor="email",  # Access display_name through the User relationship
+    """
+    Table to display a user's friends in user_friend_list.html
+    """
+
+    username = tables.Column(
+        verbose_name="",  # Empty string to hide the column header because it's not needed
+        accessor="username",
         linkify=("users:user-profile", {"pk": tables.A("pk")}),
     )
 
     class Meta:
-        model = User  # Referencing the UserProfile model
+        model = User
         template_name = "django_tables2/bootstrap.html"
-        fields = ["email"]  # Adjust fields to show relevant information from the UserProfile model
+        fields = ["username"]
+        attrs = {
+            "class": "table",
+            "thead": {
+                "class": "d-none"
+            },  # This hides the entire header row because it's not needed since it is self-explanatory
+        }
 
 
 class UserTable(tables.Table):
@@ -25,3 +35,12 @@ class UserTable(tables.Table):
         fields = ["name", "first_name", "last_name", "email"]
 
         # Add information about top ranking users, total points collected, etc.
+
+
+class GroupTable(tables.Table):
+    name = tables.Column(verbose_name="Name")
+
+    class Meta:
+        model = User
+        template_name = "django_tables2/bootstrap.html"
+        fields = ["name", "description", "members", "created_by", "date_created"]
