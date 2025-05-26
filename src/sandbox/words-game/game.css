@@ -869,3 +869,9 @@ body.colorblind-mode {
     --primary: #0000FF;
     --accent: #FF8000;
 }
+
+/* Colorblind mode styles */
+body.colorblind-mode {
+    --primary: #0000FF;
+    --accent: #FF8000;
+}

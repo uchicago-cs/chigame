@@ -1,0 +1,288 @@
+/* Achievements Panel Styling */
+:root {
+    --achievement-common: #8e8e8e;
+    --achievement-uncommon: #4CAF50;
+    --achievement-rare: #2196F3;
+    --achievement-precious: #FFC107;
+}
+
+/* Achievements Button */
+.achievements-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    font-family: inherit;
+    padding: 0.4rem 0.8rem;
+    cursor: pointer;
+    border: none;
+    border-radius: 0px;
+    background-color: var(--primary);
+    color: white;
+    text-transform: uppercase;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.3);
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+}
+
+.achievements-btn:hover {
+    background-color: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.4);
+}
+
+/* Achievements Panel */
+#achievements-panel {
+    position: fixed;
+    top: 0;
+    right: -500px;
+    width: 450px;
+    height: 100vh;
+    background-color: var(--card-bg);
+    box-shadow: -5px 0 15px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    overflow-y: auto;
+    padding: 2.5rem 1.5rem 1.5rem 1.5rem; /* Increased top padding */
+    transition: right 0.3s ease;
+}
+
+#achievements-panel.visible {
+    right: 0;
+}
+
+#achievements-panel h2 {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 1.5rem;
+    color: var(--primary);
+    margin-top: 1rem; /* Extra margin at the top */
+    margin-bottom: 1.5rem;
+    text-align: center;
+    text-transform: uppercase;
+    background-color: var(--bg-darker);
+    padding: 0.5rem 1rem;
+    border-radius: 0px;
+    box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.2);
+    border-left: 4px solid var(--primary);
+}
+
+.achievements-close {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: none;
+    border: none;
+    font-size: 1.8rem; /* Increased size */
+    color: var(--text);
+    cursor: pointer;
+    z-index: 1010; /* Make sure it's above other elements */
+    width: 40px; /* Fixed width */
+    height: 40px; /* Fixed height */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--bg-darker); /* Background color */
+    border-radius: 0px; /* Sharp rectangular edges */
+    box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.2);
+}
+
+.achievements-close:hover {
+    background-color: var(--primary);
+}
+
+.achievements-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.achievement-item {
+    display: flex;
+    background-color: var(--bg-darker);
+    border-radius: 0px; /* Sharp rectangular edges */
+    padding: 1rem;
+    gap: 1rem;
+    transition: transform 0.2s ease;
+    border-left: 4px solid var(--achievement-common);
+    box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.2); /* Matching shadow style */
+}
+
+.achievement-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.3); /* Enhanced shadow on hover */
+}
+
+.achievement-icon {
+    width: 50px;
+    height: 50px;
+    background-color: var(--card-border);
+    border-radius: 0px; /* Sharp rectangular edges */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text);
+    font-size: 1.5rem;
+}
+
+.achievement-info {
+    flex: 1;
+}
+
+.achievement-title {
+    font-family: 'Press Start 2P', cursive;
+    font-weight: 400; /* Press Start 2P looks better with normal weight */
+    font-size: 0.8rem; /* Smaller size for better readability with this font */
+    margin-bottom: 0.5rem; /* Increased spacing below title */
+    color: var(--text);
+    letter-spacing: 0.05rem; /* Slight letter spacing for better readability */
+    line-height: 1.4; /* Increased line height for better readability */
+}
+
+.achievement-description {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.achievement-locked {
+    opacity: 0.5;
+}
+
+/* Achievement rarities */
+.achievement-common {
+    border-left-color: var(--achievement-common);
+}
+
+.achievement-uncommon {
+    border-left-color: var(--achievement-uncommon);
+}
+
+.achievement-rare {
+    border-left-color: var(--achievement-rare);
+}
+
+.achievement-precious {
+    border-left-color: var(--achievement-precious);
+}
+
+/* Scrollbar styling - matching the How to Play menu */
+#achievements-panel::-webkit-scrollbar {
+    width: 8px;
+}
+
+#achievements-panel::-webkit-scrollbar-track {
+    background: var(--bg-darker);
+    border-radius: 0px;
+}
+
+#achievements-panel::-webkit-scrollbar-thumb {
+    background: var(--primary);
+    border-radius: 0px;
+}
+
+#achievements-panel::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-hover);
+}
+
+/* Dark mode compatibility */
+body.dark-mode #achievements-panel {
+    background-color: var(--card-bg);
+}
+
+/* Achievement Notification Styles */
+#notification-wrapper {
+    position: fixed;
+    top: 20px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    pointer-events: none;
+    z-index: 9999;
+}
+
+#notification {
+    transform: translateY(-100px);
+    opacity: 0;
+    transition: transform 0.5s ease, opacity 0.5s ease;
+    max-width: 90%;
+    width: 400px;
+}
+
+#notification.show {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.achievement-notification {
+    background-color: var(--bg-darker);
+    border-radius: 0px;
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    border-left: 4px solid var(--primary);
+    pointer-events: all;
+}
+
+.achievement-notification .achievement-icon {
+    min-width: 50px;
+    height: 50px;
+    font-size: 1.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--card-border);
+    border-radius: 0px;
+    box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.2);
+}
+
+.achievement-notification .achievement-info {
+    flex: 1;
+}
+
+.achievement-notification .achievement-title {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.8rem;
+    margin-bottom: 5px;
+    color: var(--text);
+}
+
+.achievement-notification .achievement-description {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+/* Mobile responsiveness */
+@media (max-width: 480px) {
+    #achievements-panel {
+        width: 100%;
+        right: -100%;
+    }
+
+    .achievement-item {
+        padding: 0.75rem;
+    }
+
+    .achievement-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.2rem;
+    }
+
+    .achievement-notification {
+        padding: 10px;
+        gap: 10px;
+    }
+
+    .achievement-notification .achievement-icon {
+        min-width: 40px;
+        height: 40px;
+        font-size: 1.5rem;
+    }
+}
