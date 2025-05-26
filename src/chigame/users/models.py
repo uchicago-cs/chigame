@@ -79,13 +79,13 @@ class User(AbstractUser):
         self.last_seen = timezone.now()
         self.save(update_fields=["last_seen"])
 
-    def is_online(self, threshold_minutes=5):
-        if not self.last_seen:
-            return False
-        threshold = timezone.now() - timezone.timedelta(minutes=threshold_minutes)
-        return self.last_seen >= threshold
-
     def get_online_status(self):
+        """
+        Get the user's online status.
+
+        Returns:
+            str: "online" (within 5 minutes), "recently_active" (within 1 hour), or "offline"
+        """
         if not self.last_seen:
             return "offline"
 
@@ -98,6 +98,32 @@ class User(AbstractUser):
             return "recently_active"
         else:
             return "offline"
+
+    def is_online(self, threshold_minutes=5):
+        """
+        Check if user is online within the specified threshold.
+
+        Args:
+            threshold_minutes (int): Minutes threshold for considering user online
+
+        Returns:
+            bool: True if user was active within threshold_minutes, False otherwise
+        """
+        if not self.last_seen:
+            return False
+        threshold = timezone.now() - timezone.timedelta(minutes=threshold_minutes)
+        return self.last_seen >= threshold
+
+    @property
+    def is_currently_online(self):
+        """
+        Property for checking if user is currently online (within 5 minutes).
+        Uses the same logic as get_online_status for consistency.
+
+        Returns:
+            bool: True if user status is "online", False otherwise
+        """
+        return self.get_online_status() == "online"
 
     def get_last_seen_display(self):
         if not self.last_seen:
