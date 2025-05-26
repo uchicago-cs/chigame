@@ -57,6 +57,17 @@ def create_live_chat(request):
     return render(request, "chat/create-live-chat.html", {"form": form})
 
 
+def leave_chat(request, chat_id):
+    chat = get_object_or_404(LiveChat, id=chat_id)
+
+    if request.user in chat.users.all():
+        chat.users.remove(request.user)
+
+        if chat.users.count() == 0:
+            chat.delete()
+    return redirect("live-chat-list")
+
+
 def delete_message(request, message_id):
     """
     Deletes a message from the database.
@@ -149,6 +160,17 @@ def react_to_message(request, message_id):
             return JsonResponse({"status": "reacted", "content": content}, status=200)
     except ValidationError as e:
         return JsonResponse({"error": str(e)}, status=400)  # not a single emoji
+
+
+def live_chat_preview_api(request):
+    chats = LiveChat.objects.filter(public=True)
+    return JsonResponse(
+        {
+            "chats": [
+                {"id": chat.id, "name": chat.name, "description": getattr(chat, "description", "")} for chat in chats
+            ]
+        }
+    )
 
 
 def edit_message(request, message_id):
