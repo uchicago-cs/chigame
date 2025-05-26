@@ -852,6 +852,7 @@ def unassign_label_from_notification(request, notification_id, label_id):
 
     return redirect(reverse("users:notifications-by-label", kwargs={"label_id": label_id}))
 
+
 class GroupListView(SingleTableView):
     model = Group
     table_class = GroupTable
@@ -861,4 +862,3 @@ class GroupListView(SingleTableView):
 class GroupDetailView(DetailView):
     model = Group
     template_name = "users/group_detail.html"
-
