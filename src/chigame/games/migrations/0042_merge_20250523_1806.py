@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("games", "0039_match_average_rating_match_duration_match_end_time_and_more"),
         ("games", "0041_merge_20250521_2013"),
