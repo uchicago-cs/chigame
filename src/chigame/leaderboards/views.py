@@ -108,15 +108,14 @@ def points_bar_chart(request, game_id):
         if metric_score:
             tier_name, tier_badge = get_tier_info(metric_score.score, score_metric_name)
             leaderboard_data.append(
-                 {
-                     "player": entry.user.user.name,
-                     "score": metric_score.score,
-                     "tier_name": tier_name,
-                     "tier_badge": tier_badge,
-                 }
-             )
-             
-    
+                {
+                    "player": entry.user.user.name,
+                    "score": metric_score.score,
+                    "tier_name": tier_name,
+                    "tier_badge": tier_badge,
+                }
+            )
+
     leaderboard_data.sort(key=lambda item: item["score"], reverse=True)
 
     context = {
@@ -142,13 +141,13 @@ def top_time_played_bar_chart(request, game_id):
         if metric_score:
             tier_name, tier_badge = get_tier_info(metric_score.score, time_played_metric.name)
             leaderboard_data.append(
-                 {
-                     "player": entry.user.user.name,
-                     "score": metric_score.score,
-                     "tier_name": tier_name,
-                     "tier_badge": tier_badge,
-                 }
-             )
+                {
+                    "player": entry.user.user.name,
+                    "score": metric_score.score,
+                    "tier_name": tier_name,
+                    "tier_badge": tier_badge,
+                }
+            )
 
     leaderboard_data.sort(key=lambda item: item["score"], reverse=True)
 
@@ -159,6 +158,7 @@ def top_time_played_bar_chart(request, game_id):
         "score_metric_name": time_played_metric.name,
     }
     return render(request, "leaderboards/bar_chart.html", context)
+
 
 def top_games_won_bar_chart(request, game_id):
     game = get_object_or_404(Game, id=game_id)
@@ -177,13 +177,13 @@ def top_games_won_bar_chart(request, game_id):
         if metric_score:
             tier_name, tier_badge = get_tier_info(metric_score.score, games_won_metric.name)
             leaderboard_data.append(
-                 {
-                     "player": entry.user.user.name,
-                     "score": metric_score.score,
-                     "tier_name": tier_name,
-                     "tier_badge": tier_badge,
-                 }
-             )
+                {
+                    "player": entry.user.user.name,
+                    "score": metric_score.score,
+                    "tier_name": tier_name,
+                    "tier_badge": tier_badge,
+                }
+            )
 
     leaderboard_data.sort(key=lambda item: item["score"], reverse=True)
 
