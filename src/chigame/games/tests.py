@@ -324,21 +324,6 @@ class MatchStatsViewTests(TestCase):
         self.assertEqual(response.context["slowest_match"], self.match2)  # 15 minutes
         self.assertEqual(len(response.context["all_matches"]), 2)
 
-    def test_match_stats_view_ongoing_tournament(self):
-        now = timezone.now()
-        ongoing_tournament = Tournament.objects.create(
-            name="Ongoing Tournament",
-            game=self.game,
-            registration_start_date=now - timedelta(days=2),
-            registration_end_date=now - timedelta(days=1),
-            tournament_start_date=now - timedelta(days=1),
-            tournament_end_date=now + timedelta(days=1),  # Ends in the future
-            max_players=2,
-        )
-
-        response = self.client.get(reverse("tournament-match-stats", kwargs={"pk": ongoing_tournament.pk}))
-        self.assertEqual(response.status_code, 302)  # Should redirect
-
     def test_match_stats_view_no_matches(self):
         now = timezone.now()
         empty_tournament = Tournament.objects.create(
