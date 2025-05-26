@@ -14,7 +14,6 @@ from django.views.decorators.http import require_POST
 from django.views.generic import DetailView, RedirectView, UpdateView
 from django_tables2 import SingleTableView
 
-
 from chigame.games.models import Game, GameList, Lobby, Player, Tournament
 
 from .models import (
@@ -880,6 +879,7 @@ def remove_favorite_game(request, game_id):
 
     return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
 
+
 def recommendation_preferences(request, pk):
     """
     Allow users to customize their game recommendation preferences.
@@ -926,4 +926,3 @@ class GroupListView(SingleTableView):
 class GroupDetailView(DetailView):
     model = Group
     template_name = "users/group_detail.html"
-
