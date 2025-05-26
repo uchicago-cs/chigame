@@ -849,6 +849,7 @@ def delete_notification_label(request, label_id):
     messages.success(request, f"Label '{label_name}' deleted successfully.")
     return redirect(reverse("users:manage-labels-page"))
 
+
 class GroupListView(SingleTableView):
     model = Group
     table_class = GroupTable
