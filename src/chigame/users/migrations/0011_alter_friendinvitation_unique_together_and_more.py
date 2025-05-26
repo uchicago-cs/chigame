@@ -15,11 +15,11 @@ class Migration(migrations.Migration):
             name="friendinvitation",
             unique_together=set(),
         ),
-        migrations.AddField(
-            model_name="group",
-            name="description",
-            field=models.TextField(blank=True),
-        ),
+        # migrations.AddField(
+        #     model_name="group",
+        #     name="description",
+        #     field=models.TextField(blank=True),
+        # ),
         migrations.AlterField(
             model_name="group",
             name="members",
