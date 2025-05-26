@@ -125,8 +125,10 @@
           <a href="{% url 'tournament-chat' tournament.id %}">
             <button>{{ tournament.name }} Chat</button>
           </a>
+          <a href="{% url 'tournament-match-stats' tournament.id %}">
+            <button>View Match Analytics</button>
+          </a>
         {% endif %}
-        <!-- You can add more fields as needed -->
       </li>
     {% empty %}
       <li>No tournaments available.</li>

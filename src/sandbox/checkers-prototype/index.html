@@ -12,17 +12,31 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap"
           rel="stylesheet" />
+    <!-- imported icons -->
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
   </head>
   <body>
     <!-- linking to game.js -->
     <script src="game.js"></script>
     <nav class="navbar">
       <h1>CHIGAME</h1>
+      <!-- turn indicator -->
+      <div class="turn-indicator">
+        <span class="dot"></span>
+        <p id="player-turn">Red</p>
+      </div>
       <!-- add buttons to this div -->
       <div class="nav-btns">
+        <!-- game timer for red and black -->
+        <div id="timers">
+          <div id="red-timer"></div>
+          <div id="black-timer"></div>
+        </div>
         <button id="forfeitBtn" class="btn">Forfeit</button>
         <button id="drawBtn" class="btn">Offer Draw</button>
         <button id="declineDrawBtn" class="btn">Decline Draw</button>
+        <button id="toggle-bot" class="btn">Play vs Bot: ON</button>
         <button class="btn"
                 onclick="window.open('https://github.com/uchicago-cs/chigame/wiki/Adding-Games-~-Checkers-Rules', '_blank')">
           Read Rules
@@ -49,11 +63,35 @@
           <!-- Add settings options here -->
           <button id="toggle-colorblind" class="setting-btn">Toggle Colorblind Mode</button>
           <button id="toggle-coordinates" class="setting-btn">Toggle Coordinates</button>
+          <button id="toggle-mute" class="setting-btn">Mute</button>
+          <!-- Volume Slider -->
+          <div class="setting-option">
+            <i class="fa fa-volume-up"></i>
+            <input type="range"
+                   id="volume-slider"
+                   min="0"
+                   max="300"
+                   value="100"
+                   step="5"
+                   title="volume slider" />
+            <div id="volume-display" class="value-display"></div>
+          </div>
+          <!-- Board Scale Slider -->
+          <div class="setting-option">
+            <i class="fa-solid fa-maximize"></i>
+            <input type="range"
+                   id="resize-slider"
+                   min="50"
+                   max="120"
+                   value="100"
+                   step="5"
+                   title="resize slider" />
+            <div id="resize-display" class="value-display"></div>
+          </div>
         </div>
       </div>
       <div id="settings-tab">⚙️</div>
     </div>
-    <button id="settings-button" class="settings-button">⚙️</button>
     <div id="captured-pieces">
       <div id="score">
         Red: 0
@@ -61,5 +99,7 @@
         Black: 0
       </div>
     </div>
+    <div id="endScreenPiece" class="hidden"></div>
+    <div id="endScreenText" class="hidden">Red Wins!</div>
   </body>
 </html>
