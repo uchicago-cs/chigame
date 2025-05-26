@@ -1,9 +1,7 @@
 from collections import defaultdict
 
 from django.core.exceptions import ValidationError
-
 from django.db.models import Count, OuterRef, Subquery
-
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.csrf import csrf_exempt
