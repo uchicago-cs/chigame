@@ -43,6 +43,7 @@ from .models import (
     CheckersTurn,
     Feedback,
     Game,
+    GameHistory,
     GameList,
     Lobby,
     Match,
@@ -1869,6 +1870,37 @@ def delete_feedback_view(request, feedback_id):
         return redirect("user-feedback-list")
 
     return render(request, "tournaments/tournament_delete_feedback.html", {"feedback": feedback})
+
+
+# =============== Game History Views ===============
+@login_required
+def create_game_history_entry(user, match):
+    # Try to get the Player object if it exists
+    try:
+        player = Player.objects.get(user=user, match=match)
+        outcome = player.outcome
+    except Player.DoesNotExist:
+        outcome = None
+
+    GameHistory.objects.get_or_create(
+        user=user,
+        match=match,
+        defaults={
+            "is_completed": match.lobby.match_status == 3,  # Lobby.Finished
+            "result": outcome,
+        },
+    )
+
+
+@login_required
+def game_history_view(request, game_id):
+    game = get_object_or_404(Game, id=game_id)
+    entries = (
+        GameHistory.objects.filter(user=request.user, match__game=game)
+        .select_related("match")
+        .order_by("-date_played")
+    )
+    return render(request, "games/game_history.html", {"game": game, "entries": entries})
 
 
 class MatchStatsView(DetailView):
