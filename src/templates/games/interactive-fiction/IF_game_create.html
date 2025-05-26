@@ -230,7 +230,18 @@
         const zoneType = inputId.includes('cover_image') ? 'image' : 'html';
 
         function showFileName(file) {
-          zone.innerHTML = `<div><strong>Selected file:</strong><br />${file.name}<br /></div>`;
+          zone.innerHTML = `
+              <div>
+              <strong>Selected file:</strong><br />
+              ${file.name}<br />
+              <button type="button" class="deselect-btn">Deselect File</button>
+              </div>
+          `;
+          zone.querySelector('.deselect-btn').addEventListener('click', (e) => {
+            e.stopPropagation(); // prevents file navigator from showing up exactly
+            input.value = '';
+            zone.innerHTML = 'Drag & drop a file here<br />or click to browse';
+          });
         }
 
         function isImageFile(file) {
@@ -394,8 +405,7 @@
       <label for="id_name">Game Name:</label>
       <input type="text"
              id="id_name"
-             name="name"
-             value="{{ form.name.value }}"
+             value="{{ form.name.value|default_if_none:'' }}"
              required />
     </div>
     <div>
@@ -403,12 +413,12 @@
       <input type="text"
              name="author"
              id="id_author"
-             value="{{ form.author.value }}"
+             value="{{ form.author.value|default_if_none:'' }}"
              required />
     </div>
     <div>
       <label for="id_description">Description:</label>
-      <textarea name="description" id="id_description" required>{{ form.description.value }}</textarea>
+      <textarea name="description" id="id_description" required>{{ form.description.value|default_if_none:'' }}</textarea>
     </div>
     <div>
       <label for="id_genre">Genre:</label>
@@ -477,19 +487,19 @@
     </div>
     <div>
       <label for="id_rules">Rules:</label>
-      <textarea name="rules" id="id_rules" placeholder="Enter the rules" rows="4">{{ form.rules.value }}</textarea>
+      <textarea name="rules" id="id_rules" placeholder="Enter the rules" rows="4">{{ form.rules.value|default_if_none:'' }}</textarea>
     </div>
     <div>
       <label for="id_year_published">Year Published:</label>
       <input type="number"
              name="year_published"
              id="id_year_published"
-             value="{{ form.year_published.value }}"
+             value="{{ form.year_published.value|default_if_none:'' }}"
              placeholder="Year Published" />
     </div>
     <div>
       <label for="id_content_warning">Content Warning (optional):</label>
-      <textarea name="content_warning" id="id_content_warning" rows="3">{{ form.content_warning.value }}</textarea>
+      <textarea name="content_warning" id="id_content_warning" rows="3">{{ form.content_warning.value|default_if_none:'' }}</textarea>
     </div>
     <div>
       <label for="id_image">Cover Image</label>

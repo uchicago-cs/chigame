@@ -65,6 +65,17 @@ def test_achievement_set_progress():
 
 
 @pytest.mark.django_db
+def test_achievement_percentage():
+    """Test that the achievement percentage feature accurately calculates percentage"""
+    match = MatchFactory()
+    user = match.players.first()
+    achievement = AchievementFactory(game=match.game)
+    UserAchievementFactory(user=user, achievement=achievement)
+    percentage = achievement.get_achievement_percentage()
+    assert 0.0001 > abs(percentage - (1 / len(match.game.users.all())))
+
+
+@pytest.mark.django_db
 def test_get_recent_achievements():
     user = UserFactory()
     # Create 6 achievements with different dates
