@@ -230,7 +230,18 @@
         const zoneType = inputId.includes('cover_image') ? 'image' : 'html';
 
         function showFileName(file) {
-          zone.innerHTML = `<div><strong>Selected file:</strong><br />${file.name}<br /></div>`;
+          zone.innerHTML = `
+              <div>
+              <strong>Selected file:</strong><br />
+              ${file.name}<br />
+              <button type="button" class="deselect-btn">Deselect File</button>
+              </div>
+          `;
+          zone.querySelector('.deselect-btn').addEventListener('click', (e) => {
+            e.stopPropagation(); // prevents file navigator from showing up exactly
+            input.value = '';
+            zone.innerHTML = 'Drag & drop a file here<br />or click to browse';
+          });
         }
 
         function isImageFile(file) {
