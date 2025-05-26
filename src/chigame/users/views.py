@@ -807,6 +807,7 @@ def notifications_by_label(request, label_id):
     }
     return render(request, "users/notifications_by_label.html", context)
 
+
 @login_required
 def recommendation_preferences(request, pk):
     """
@@ -844,6 +845,7 @@ def recommendation_preferences(request, pk):
 
     return render(request, "users/recommendation_preferences.html", context)
 
+
 class GroupListView(SingleTableView):
     model = Group
     table_class = GroupTable
@@ -853,4 +855,3 @@ class GroupListView(SingleTableView):
 class GroupDetailView(DetailView):
     model = Group
     template_name = "users/group_detail.html"
-

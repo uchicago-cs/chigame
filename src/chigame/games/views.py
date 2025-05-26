@@ -553,11 +553,9 @@ def get_recommended_games(game, user=None, limit=5):
             # Use defaults
             pass
 
-
     game_categories = game.categories.all()
     game_mechanics = game.mechanics.all()
     game_people = game.people.all()
-
 
     all_games = all_games.annotate(
         category_score=Count("categories", filter=Q(categories__in=game_categories)) * category_weight
@@ -566,7 +564,6 @@ def get_recommended_games(game, user=None, limit=5):
         mechanics_score=Count("mechanics", filter=Q(mechanics__in=game_mechanics)) * mechanics_weight
     )
     all_games = all_games.annotate(people_score=Count("people", filter=Q(people__in=game_people)) * people_weight)
-
 
     if game.complexity:
         # Convert Decimal to float before arithmetic operations

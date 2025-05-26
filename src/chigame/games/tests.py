@@ -134,6 +134,7 @@ class FeedbackTests(TestCase):
         response = self.client.post(update_url_other, {"content": "Hack", "rating": 2})
         self.assertEqual(response.status_code, 403)
 
+
 User = get_user_model()
 
 
