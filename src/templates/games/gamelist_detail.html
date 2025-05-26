@@ -1,28 +1,73 @@
 {% extends "base.html" %}
 
+{% load static %}
+
 {% block title %}
   {{ gamelist.name }}
 {% endblock title %}
 {% block content %}
   <div class="container mt-4">
-    <h1>{{ gamelist.name }}</h1>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h1>{{ gamelist.name }}</h1>
+      <div>
+        {% if gamelist.name != "Favorites" %}
+          {# Add Rename and Delete buttons here if desired in the future #}
+          {# For now, let's keep it simple #}
+        {% endif %}
+        <a href="{% url 'game-list' %}" class="btn btn-outline-primary">Browse More Games</a>
+      </div>
+    </div>
     {% if gamelist.description %}<p class="lead">{{ gamelist.description }}</p>{% endif %}
     {% if gamelist.games.all %}
-      <ul class="list-group mt-3">
+      <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mt-3">
         {% for game in gamelist.games.all %}
-          <li class="list-group-item d-flex justify-content-between align-items-center">
-            <a href="{% url 'game-detail' game.pk %}">{{ game.name }}</a>
-            {# Optionally, add a button to remove from this specific list #}
-            <a href="{% url 'remove-from-gamelist' game.pk gamelist.pk %}"
-               class="btn btn-sm btn-outline-warning">Remove</a>
-          </li>
+          <div class="col">
+            <div class="card h-100 shadow-sm">
+              {% if game.image and game.image != "/static/images/no_picture_available.png" %}
+                <img src="{{ game.image }}"
+                     class="card-img-top"
+                     alt="{{ game.name }}"
+                     class="gamelist-card-img" />
+              {% else %}
+                <img src="{% static 'images/no_picture_available.png' %}"
+                     class="card-img-top"
+                     alt="No image available"
+                     class="gamelist-card-img" />
+              {% endif %}
+              <div class="card-body d-flex flex-column">
+                <h5 class="card-title">
+                  <a href="{% url 'game-detail' game.pk %}">{{ game.name }}</a>
+                </h5>
+                <p class="card-text text-muted small">
+                  Players: {{ game.min_players }} - {{ game.max_players }}
+                  {% if game.expected_playtime %}
+                    <br />
+                    Playtime: {{ game.expected_playtime }} min
+                  {% endif %}
+                </p>
+                <div class="mt-auto d-flex justify-content-end">
+                  <a href="{% url 'remove-from-gamelist' game.pk gamelist.pk %}"
+                     class="btn btn-sm btn-outline-danger">Remove</a>
+                </div>
+              </div>
+            </div>
+          </div>
         {% endfor %}
-      </ul>
+      </div>
     {% else %}
-      <p class="mt-3">
+      <p class="mt-3 lead text-center">
         This list is empty. <a href="{% url 'game-list' %}">Browse games</a> to add some!
       </p>
     {% endif %}
-    <a href="{% url 'game-list' %}" class="btn btn-primary mt-4">Back to Games</a>
+    <div class="mt-4 text-center">
+      <a href="{% url 'users:user-profile' request.user.pk %}"
+         class="btn btn-secondary">Back to My Profile</a>
+    </div>
   </div>
+  <style>
+    .gamelist-card-img {
+      height: 200px;
+      object-fit: cover;
+    }
+  </style>
 {% endblock content %}
