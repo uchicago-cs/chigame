@@ -2,7 +2,7 @@
 const START_WIDTH = 650;
 const START_HEIGHT = 650;
 const START_MARGIN = 10;
-const START_HIGHLIHGHT_SIZE = 3;
+const START_HIGHLIGHT_SIZE = 3;
 
 const config = {
   type: Phaser.AUTO,
@@ -29,6 +29,10 @@ smaller to account for the margin, it'll appear as if there's a black border.
 let tiles = [];
 let tile_size = (config.width - 2 * START_MARGIN) / BOARD_SIZE;
 
+// global variables for the coordinates overlay
+let coordsVisible = false;
+const coordElements = [];
+
 // colors we will use in this game
 const COLORS = {
   light_brown: 0xefbb74,
@@ -38,6 +42,7 @@ const COLORS = {
   white: 0xffffff,
   colorblind_blue: 0x1e88e5,
   colorblind_orange: 0xffc107,
+  yellow: 0xffff00,
 };
 let lightPiece = COLORS.red;
 let darkPiece = COLORS.black;
@@ -50,7 +55,7 @@ let blackCaptured = 0; // Number of pieces that black has captured
 // bigger than the tiles
 const RADIUS_SCALE_FACTOR = 2.5;
 // selected piece highlight stroke width
-let highlight_size = START_HIGHLIHGHT_SIZE;
+let highlight_size = START_HIGHLIGHT_SIZE;
 
 // an array to keep track of the highlighted tiles (valid moves)
 let highlightedTiles = [];
@@ -66,10 +71,18 @@ let activeTimer = null;
 //BOT SETTINGS
 let vsEasyBot = true;
 
+// track mute state outside of phaser game
+let muted = false;
+
+// default volume
+let volumeAmount = 1;
+
 // ----------------------------------------------------------------------------
 
 // ---INIT FUNCTIONS-----------------------------------------------------------
 function preload() {
+  this.load.image('crown', 'img/crown.svg');
+  this.textures.get('crown').setFilter(Phaser.Textures.FilterMode.LINEAR);
   // load in the soundeffects
   this.load.audio('slide', 'sfx/slide.mp3');
   this.load.audio('hint', 'sfx/bling.mp3');
@@ -78,6 +91,7 @@ function preload() {
 function create() {
   // Store reference to the scene
   const scene = this;
+  const endPieceDiv = document.getElementById('endScreenPiece');
 
   drawBoard(this);
   populatePieces(this);
@@ -86,7 +100,7 @@ function create() {
   // Listen for the 'h' key, give hint if pressed
   this.input.keyboard.on('keydown-H', () => {
     // Play hint sound effect
-    this.sound.play('hint');
+    this.sound.play('hint', { volume: volumeAmount });
 
     giveHint();
   });
@@ -128,7 +142,7 @@ function create() {
     drawBtn.textContent = 'Offer Draw';
     forfeitBtn.style.display = 'block';
     declineDrawBtn.style.display = 'none';
-    score.innerHTML = "Red: 0<br>Black: 0";
+    score.innerHTML = 'Red: 0<br>Black: 0';
 
     // Repopulate the board using the stored scene reference
     populatePieces(scene);
@@ -143,7 +157,30 @@ function create() {
 
   playAgainYes.addEventListener('click', resetGame);
   playAgainNo.addEventListener('click', () => {
+    // hide the play‐again prompt and game‐over overlay
     playAgainPrompt.style.display = 'none';
+    gameOverPrompts.classList.remove('show');
+    gameOverMessage.classList.remove('show');
+
+    const msg = gameOverMessage.textContent || '';
+    // only proceed on a win (not on a draw)
+    if (msg.includes('wins')) {
+      // determine if it’s a black‐win or red‐win
+      const isBlackWin = msg.includes('Black wins');
+      const winnerHex = isBlackWin ? '#000000' : '#ff0000';
+
+      // show & color the spinner
+      endPieceDiv.classList.remove('hidden');
+      endPieceDiv.classList.add('show');
+      endPieceDiv.style.color = winnerHex;
+
+      // show & set the overlay text in the same color
+      const textDiv = document.getElementById('endScreenText');
+      textDiv.textContent = isBlackWin ? 'Black Wins!' : 'Red Wins!';
+      textDiv.style.color = winnerHex;
+      textDiv.classList.remove('hidden');
+      textDiv.classList.add('show');
+    }
   });
 
   forfeitBtn.addEventListener('click', () => {
@@ -214,8 +251,11 @@ function create() {
       resetDrawOffer();
     }
   });
+
   updateTimerDisplay(); // initial display
   startPlayerTimer(); // red starts first
+
+
   easyBot.textContent = `Easy Bot: ${vsEasyBot ? 'ON' : 'OFF'}`;
   easyBot.addEventListener('click', () => {
     vsEasyBot = !vsEasyBot;
@@ -270,12 +310,14 @@ function drawBoard(scene) {
   }
 }
 
+// function to create a single piece. Adds the piece to the pieces array
 function createPiece(x, y, color, scene) {
   // create a piece
   let piece = {
     x,
     y,
     color,
+    isking: false,
     sprite: scene.add.circle(
       // same center position as when we create the board tiles/squares
       margin + x * tile_size + tile_size / 2,
@@ -289,6 +331,11 @@ function createPiece(x, y, color, scene) {
   // make the piece clickable
   piece.sprite.setInteractive();
   piece.sprite.on('pointerdown', () => {
+    const settingsContainer = document.getElementById('settings-container');
+
+    // don't allow piece selection if menu is open;
+    if (settingsContainer.classList.contains('show')) return;
+
     // don't allow piece selection if game is over
     if (gameOver) return;
 
@@ -317,6 +364,7 @@ function createPiece(x, y, color, scene) {
   pieces.push(piece);
 }
 
+// function to populate the board with pieces, added to the pieces array
 function populatePieces(scene) {
   // black has three rows
   for (let y = 0; y < 3; y++) {
@@ -339,6 +387,90 @@ function populatePieces(scene) {
   }
 }
 
+// Finds all possible paths the selected piece can take
+// This function finds all possible jump paths for a given piece,
+// including single and multi-jump chains.
+// Each path includes a list of moves and the pieces captured along the way.
+function getJumpPaths(piece) {
+  var allPaths = []; // Store all possible jump paths
+
+  // Recursive helper function to explore jump chains
+  function explore(x, y, capturedPieces, movePath, visited) {
+    var extended = false;
+
+    // Define possible jump directions (left or right)
+    var dxList = [-2, 2];
+
+    // Determine vertical jump direction (up for red, down for black)
+    var dy;
+    if (piece.color === lightPiece) {
+      dy = -2;
+    } else {
+      dy = 2;
+    }
+
+    // Loop through both left and right diagonal jump options
+    for (var i = 0; i < dxList.length; i++) {
+      var dx = dxList[i];
+
+      // Calculate target tile for the jump
+      var newX = x + dx;
+      var newY = y + dy;
+
+      // Calculate coordinates of the piece being jumped over (in between)
+      var midX = x + dx / 2;
+      var midY = y + dy / 2;
+      var midKey = midX + ',' + midY; // used to track visited mid-pieces
+
+      // Make sure the jump destination is on the board and not occupied
+      if (
+        newX >= 0 && newX < BOARD_SIZE &&
+        newY >= 0 && newY < BOARD_SIZE &&
+        !getPiece(newX, newY)
+      ) {
+        var midPiece = getPiece(midX, midY);
+
+        // Check if there's an opponent's piece to jump over,
+        // and it hasn't been jumped already in this chain
+        if (
+          midPiece &&
+          midPiece.color !== piece.color &&
+          !visited.has(midKey)
+        ) {
+          // Clone visited set and mark this piece as visited
+          var newVisited = new Set(visited);
+          newVisited.add(midKey);
+
+          // Clone the list of captured pieces and add this one
+          var newCaptured = capturedPieces.slice();
+          newCaptured.push(midPiece);
+
+          // Clone the move path and add the new position
+          var newPath = movePath.slice();
+          newPath.push({ x: newX, y: newY });
+
+          // Save this partial or full jump path
+          allPaths.push({
+            path: newPath.slice(),
+            captures: newCaptured.slice()
+          });
+
+          // Recursively explore further jumps from this new position
+          explore(newX, newY, newCaptured, newPath, newVisited);
+
+          extended = true;
+        }
+      }
+    }
+  }
+
+  // Start exploring from the piece's current position with an empty path
+  explore(piece.x, piece.y, [], [], new Set());
+
+  // Return all valid jump chains
+  return allPaths;
+}
+
 // check if a move is valid
 function isValidMove(piece, moveX, moveY) {
   // calculate the change in y and x
@@ -350,13 +482,19 @@ function isValidMove(piece, moveX, moveY) {
   // us to flip the board for different players
   const direction = piece.color === lightPiece ? -1 : 1; // in js, y=0 at the top
 
+  const isKing = piece.isKing;
+
+  // if the piece is a king, it can move in both y directions
+  const validDirection = isKing ? Math.abs(dy) === 1 : dy === direction;
+  const validJumpDirection = isKing ? Math.abs(dy) === 2 : dy === 2 * direction;
+
   // Normal move (1 step diagonally)
-  if (Math.abs(dx) === 1 && dy === direction) {
+  if (Math.abs(dx) === 1 && validDirection) {
     return true;
   }
 
   // Jump move (2 steps diagonally)
-  if (Math.abs(dx) === 2 && dy === 2 * direction) {
+  if (Math.abs(dx) === 2 && validJumpDirection) {
     // get the piece that was jumped over
     const captured = getPiece(piece.x + dx / 2, piece.y + dy / 2);
     // make sure there exists a piece that was jumped over, and it must be an opposing piece
@@ -370,9 +508,10 @@ function isValidMove(piece, moveX, moveY) {
 // Updates score on frontend
 function updateScore() {
   const score = document.getElementById('score');
-  score.innerHTML = "Red: " + redCaptured + "<br>Black: " + blackCaptured;
+  score.innerHTML = 'Red: ' + redCaptured + '<br>Black: ' + blackCaptured;
 }
 
+// function to move a piece
 function movePiece(piece, moveX, moveY) {
   const dx = moveX - piece.x;
   const dy = moveY - piece.y;
@@ -382,6 +521,7 @@ function movePiece(piece, moveX, moveY) {
     const captured = getPiece(piece.x + dx / 2, piece.y + dy / 2);
     if (captured) {
       captured.sprite.destroy(); // delete the sprite (remove from display state)
+      if (captured.kingIcon) captured.kingIcon.destroy(); // destroy the icon as well
       pieces = pieces.filter((p) => p !== captured); // remove it from the array (game state)
       if (currentPlayer === lightPiece) {
         redCaptured++;
@@ -398,21 +538,48 @@ function movePiece(piece, moveX, moveY) {
   // Move the piece
   piece.x = moveX;
   piece.y = moveY;
+
   const newX = margin + moveX * tile_size + tile_size / 2;
   const newY = margin + moveY * tile_size + tile_size / 2;
 
-  // Animate the piece movement
+  // Animate movement
   checkers.scene.scenes[0].tweens.add({
     targets: piece.sprite,
     x: newX,
     y: newY,
-    duration: 300, // having done some testing and playing, I think 300 ms is the best
-    // https://docs.phaser.io/phaser/concepts/tweens
-    // https://rexrainbow.github.io/phaser3-rex-notes/docs/site/ease-function/
+    duration: 250, // I think best to have this in 200-300 ms range
     ease: 'Power3',
+    // onComplete is needed so crown icon only loads after animation is over
+    onComplete: () => {
+      // Check for king promotion
+      if (
+        (piece.color === lightPiece && piece.y === 0) ||
+        (piece.color === darkPiece && piece.y === BOARD_SIZE - 1)
+      ) {
+        if (!piece.isKing) {
+          piece.isKing = true;
+          const crown = piece.sprite.scene.add.image(newX, newY, 'crown');
+          crown.setDisplaySize(tile_size, tile_size);
+          piece.kingIcon = crown;
+        }
+      }
+    },
   });
-  piece.sprite.scene.sound.play('slide');
-  console.log("Current board state:", getBoardState());
+
+  // Play move sound effect
+  piece.sprite.scene.sound.play('slide', { volume: volumeAmount });
+  // Move king icon if applicable
+  if (piece.isKing && piece.kingIcon) {
+    checkers.scene.scenes[0].tweens.add({
+      targets: piece.kingIcon,
+      x: newX,
+      y: newY,
+      duration: 300,
+      ease: 'Power3',
+    });
+  }
+
+  //console.log('Current board state:', getBoardState());
 }
 
 // Check if the game is over due to all pieces of one color being captured
@@ -445,13 +612,13 @@ function checkGameOver() {
   }
 }
 
-// helper function to get the piece
+// helper function to get a piece from its x, y location on the board
 function getPiece(x, y) {
   return pieces.find((p) => p.x === x && p.y === y);
 }
 
 // end the turn
-function endTurn() {
+function endTurn(scene) {
   stopPlayerTimer(); // stop current timer
   // remove the selected piece and its highlight
   if (selectedPiece) {
@@ -464,163 +631,6 @@ function endTurn() {
   startPlayerTimer(); // start next player’s timer
   // remove the highlight after a move is made
   clearHighlightedTiles();
-}
-
-// helper function to highlight the valid moves for the selected piece
-function highlightValidMoves(scene, piece) {
-  clearHighlightedTiles(); // remove any previous highlights
-
-  // iterate through the board
-  for (let y = 0; y < BOARD_SIZE; y++) {
-    for (let x = 0; x < BOARD_SIZE; x++) {
-      // check that the tile is not occupied and is a valid move
-      if (!getPiece(x, y) && isValidMove(piece, x, y)) {
-        // add a slighlty transparent white square on top of that tile to make
-        // the tile appear highlighted
-        const highlight = scene.add.rectangle(
-          MARGIN + x * TILE_SIZE + TILE_SIZE / 2,
-          MARGIN + y * TILE_SIZE + TILE_SIZE / 2,
-          TILE_SIZE,
-          TILE_SIZE,
-          0xffffff,
-          0.3
-        );
-        // add the game object to the array (so we can keep track and delete later)
-        highlightedTiles.push(highlight);
-      }
-    }
-  }
-}
-
-// helper function to clear all the highlighted tiles
-function clearHighlightedTiles() {
-  // remove each rect from the screen and then pop the reference from the array
-  while (highlightedTiles.length > 0) {
-    highlightedTiles.pop().destroy();
-  }
-}
-
-// generate a random valid move
-// after we finish implementing a bot, we could it make give an actual good suggestion
-function giveHint() {
-  // get all of the pieces of the current player
-  const playerPieces = pieces.filter((p) => p.color === currentPlayer);
-  let validMoves = [];
-
-  // get all of the valid moves for all of the pieces
-  for (const piece of playerPieces) {
-    for (let y = 0; y < BOARD_SIZE; y++) {
-      for (let x = 0; x < BOARD_SIZE; x++) {
-        if (!getPiece(x, y) && isValidMove(piece, x, y)) {
-          // add it to the array
-          // (this is a shorthand to initialize objects btw if you don't know)
-          validMoves.push({ piece, x, y });
-        }
-      }
-    }
-  }
-
-  // We have yet to implement a feature where it checks whether there are valid
-  // moves remaining for a player after each turn. In a real game of checkers
-  // if there are no moves left, the player loses the game.
-  if (validMoves.length > 0) {
-    // Math.random() only returns floating point from 0 to 1 and would require a
-    // separate helper function to return a random index from the array...
-    // https://docs.phaser.io/phaser/concepts/math
-    // phaser.math.rnd.pick() selects a random element from the array
-    const randomHint = Phaser.Math.RND.pick(validMoves);
-    // unlike chess, where there's rank and file, I don't think there's a proper
-    // way of calling a specific square on the board. For now, I just have it return
-    // the row and col on the matrix.
-    alert(
-      `Hint: Move ${currentPlayer === lightPiece ? 'red' : 'black'} piece at (row ${
-        randomHint.piece.y
-      }, column ${randomHint.piece.x}) to (row ${randomHint.y}, column ${randomHint.x})`
-    );
-  } else {
-    // in a normal checkers game, the player loses if there are no moves left
-    alert('No valid moves.');
-  }
-
-  // remove the highlight after a move is made
-  clearHighlightedTiles();
-}
-
-// helper function to highlight the valid moves for the selected piece
-function highlightValidMoves(scene, piece) {
-  clearHighlightedTiles(); // remove any previous highlights
-
-  // iterate through the board
-  for (let y = 0; y < BOARD_SIZE; y++) {
-    for (let x = 0; x < BOARD_SIZE; x++) {
-      // check that the tile is not occupied and is a valid move
-      if (!getPiece(x, y) && isValidMove(piece, x, y)) {
-        // add a slighlty transparent white square on top of that tile to make
-        // the tile appear highlighted
-        const highlight = scene.add.rectangle(
-          MARGIN + x * TILE_SIZE + TILE_SIZE / 2,
-          MARGIN + y * TILE_SIZE + TILE_SIZE / 2,
-          TILE_SIZE,
-          TILE_SIZE,
-          0xffffff,
-          0.3
-        );
-        // add the game object to the array (so we can keep track and delete later)
-        highlightedTiles.push(highlight);
-      }
-    }
-  }
-}
-
-// helper function to clear all the highlighted tiles
-function clearHighlightedTiles() {
-  // remove each rect from the screen and then pop the reference from the array
-  while (highlightedTiles.length > 0) {
-    highlightedTiles.pop().destroy();
-  }
-}
-
-// generate a random valid move
-// after we finish implementing a bot, we could it make give an actual good suggestion
-function giveHint() {
-  // get all of the pieces of the current player
-  const playerPieces = pieces.filter((p) => p.color === currentPlayer);
-  let validMoves = [];
-
-  // get all of the valid moves for all of the pieces
-  for (const piece of playerPieces) {
-    for (let y = 0; y < BOARD_SIZE; y++) {
-      for (let x = 0; x < BOARD_SIZE; x++) {
-        if (!getPiece(x, y) && isValidMove(piece, x, y)) {
-          // add it to the array
-          // (this is a shorthand to initialize objects btw if you don't know)
-          validMoves.push({ piece, x, y });
-        }
-      }
-    }
-  }
-
-  // We have yet to implement a feature where it checks whether there are valid
-  // moves remaining for a player after each turn. In a real game of checkers
-  // if there are no moves left, the player loses the game.
-  if (validMoves.length > 0) {
-    // Math.random() only returns floating point from 0 to 1 and would require a
-    // separate helper function to return a random index from the array...
-    // https://docs.phaser.io/phaser/concepts/math
-    // phaser.math.rnd.pick() selects a random element from the array
-    const randomHint = Phaser.Math.RND.pick(validMoves);
-    // unlike chess, where there's rank and file, I don't think there's a proper
-    // way of calling a specific square on the board. For now, I just have it return
-    // the row and col on the matrix.
-    alert(
-      `Hint: Move ${currentPlayer === lightPiece ? 'red' : 'black'} piece at (row ${
-        randomHint.piece.y
-      }, column ${randomHint.piece.x}) to (row ${randomHint.y}, column ${randomHint.x})`
-    );
-  } else {
-    // in a normal checkers game, the player loses if there are no moves left
-    alert('No valid moves.');
-  }
 
   // reset draw offer if it was made by the current player
   if (drawOffered && drawOfferedBy === currentPlayer) {
@@ -636,11 +646,195 @@ function giveHint() {
     drawBtn.textContent = 'Offer Draw';
     declineDrawBtn.style.display = 'none';
   }
+
   //if black and bot is on, schedule bot move
   if (vsEasyBot && currentPlayer === darkPiece){
-    //delay so user has time to process bot movw after their own
+    //delay so user has time to process bot move after their own
     scene.time.delayedCall(300, easyBot, [scene], scene);
   }
+}
+
+// helper function to clear all the highlighted tiles
+function clearHighlightedTiles() {
+  // remove each rect from the screen and then pop the reference from the array
+  while (highlightedTiles.length > 0) {
+    highlightedTiles.pop().destroy();
+  }
+}
+
+// generate a random valid move
+// after we finish implementing a bot, we could it make give an actual good suggestion
+function giveHint() {
+  // get all of the pieces of the current player
+  const playerPieces = pieces.filter((p) => p.color === currentPlayer);
+  let validMoves = [];
+
+  // get all of the valid moves for all of the pieces
+  for (const piece of playerPieces) {
+    for (let y = 0; y < BOARD_SIZE; y++) {
+      for (let x = 0; x < BOARD_SIZE; x++) {
+        if (!getPiece(x, y) && isValidMove(piece, x, y)) {
+          // add it to the array
+          // (this is a shorthand to initialize objects btw if you don't know)
+          validMoves.push({ piece, x, y });
+        }
+      }
+    }
+  }
+
+  // We have yet to implement a feature where it checks whether there are valid
+  // moves remaining for a player after each turn. In a real game of checkers
+  // if there are no moves left, the player loses the game.
+  if (validMoves.length > 0) {
+    // Math.random() only returns floating point from 0 to 1 and would require a
+    // separate helper function to return a random index from the array...
+    // https://docs.phaser.io/phaser/concepts/math
+    // phaser.math.rnd.pick() selects a random element from the array
+    const randomHint = Phaser.Math.RND.pick(validMoves);
+    // unlike chess, where there's rank and file, I don't think there's a proper
+    // way of calling a specific square on the board. For now, I just have it return
+    // the row and col on the matrix.
+    alert(
+      `Hint: Move ${currentPlayer === lightPiece ? 'red' : 'black'} piece at (row ${
+        randomHint.piece.y
+      }, column ${randomHint.piece.x}) to (row ${randomHint.y}, column ${randomHint.x})`
+    );
+  } else {
+    // in a normal checkers game, the player loses if there are no moves left
+    alert('No valid moves.');
+  }
+
+  // remove the highlight after a move is made
+  clearHighlightedTiles();
+}
+
+// helper function to highlight the valid moves for the selected piece
+function highlightValidMoves(scene, piece) {
+  clearHighlightedTiles(); // remove any previous highlights
+
+  var jumpPaths = getJumpPaths(piece);
+
+  if (jumpPaths.length > 0) {
+    // Highlight all final landing squares of all jump paths
+    for (var i = 0; i < jumpPaths.length; i++) {
+      var jump = jumpPaths[i];
+      var finalMove = jump.path[jump.path.length - 1];
+
+      // draw the tile highlight
+      var highlight = scene.add.rectangle(
+        margin + finalMove.x * tile_size + tile_size / 2,
+        margin + finalMove.y * tile_size + tile_size / 2,
+        tile_size,
+        tile_size,
+        0xffffff,
+        0.3
+      );
+
+      highlight.setInteractive();
+
+      // Allow clicking to perform full jump path (even if it’s just 1 jump)
+      highlight.on('pointerdown', (function (jumpData) {
+        return function () {
+          executeJumpChain(piece, jumpData);
+          endTurn(scene);
+        };
+      })(jump));
+
+      highlightedTiles.push(highlight);
+    }
+
+    return; // only jumps allowed when available
+  }
+
+  // If no jumps, fallback to normal diagonal move
+  var dxOptions = [-1, 1];
+  var dy = 1;
+  if (piece.color === lightPiece) {
+    dy = -1;
+  }
+
+  for (var i = 0; i < dxOptions.length; i++) {
+    var dx = dxOptions[i];
+    var newX = piece.x + dx;
+    var newY = piece.y + dy;
+
+    if (
+      newX >= 0 && newX < BOARD_SIZE &&
+      newY >= 0 && newY < BOARD_SIZE &&
+      !getPiece(newX, newY)
+    ) {
+      // adds a slightly transparent square
+      var highlight = scene.add.rectangle(
+        margin + newX * tile_size + tile_size / 2,
+        margin + newY * tile_size + tile_size / 2,
+        tile_size,
+        tile_size,
+        0xffffff,
+        0.3
+      );
+
+      highlight.setInteractive();
+      highlight.on('pointerdown', (function (x, y) {
+        return function () {
+          movePiece(piece, x, y);
+          endTurn(scene);
+        };
+      })(newX, newY));
+
+      highlightedTiles.push(highlight);
+    }
+  }
+}
+
+// function to execute a multiple jump chain
+function executeJumpChain(piece, jump) {
+  for (var i = 0; i < jump.captures.length; i++) {
+    var captured = jump.captures[i];
+    captured.sprite.destroy();
+    pieces = pieces.filter(function (p) {
+      return p !== captured;
+    });
+
+    if (currentPlayer === lightPiece) {
+      redCaptured++;
+    } else {
+      blackCaptured++;
+    }
+  }
+
+  updateScore();
+  checkGameOver();
+
+  var final = jump.path[jump.path.length - 1];
+  piece.x = final.x;
+  piece.y = final.y;
+  piece.sprite.x = margin + final.x * tile_size + tile_size / 2;
+  piece.sprite.y = margin + final.y * tile_size + tile_size / 2;
+
+  // move the king icon if applicable
+  if (piece.isKing && piece.kingIcon) {
+    piece.kingIcon.x = piece.sprite.x;
+    piece.kingIcon.y = piece.sprite.y;
+  }
+
+  // check for king promotion
+  if (
+    (piece.color === lightPiece && piece.y === 0) ||
+    (piece.color === darkPiece && piece.y === BOARD_SIZE - 1)
+  ) {
+    if (!piece.isKing) {
+      piece.isKing = true;
+      const crown = piece.sprite.scene.add.image(
+        margin + piece.x * tile_size + tile_size / 2,
+        margin + piece.y * tile_size + tile_size / 2,
+        'crown'
+      );
+      crown.setDisplaySize(tile_size, tile_size);
+      piece.kingIcon = crown;
+    }
+  }
+
+  piece.sprite.scene.sound.play('slide');
 }
 
 // Retrieves a 2D array representation of the board state where 0 are unoccupied
@@ -671,6 +865,7 @@ function getBoardState() {
   return board;
 }
 
+// makes a post request to the server with the current board state
 function sendBoardToServer(boardState) {
   fetch('/api/board-state/', {
     method: 'POST',
@@ -712,10 +907,12 @@ function changePieceColor(newColorOne, newColorTwo) {
 // Event listener for the toggle colorblind button
 document.addEventListener('DOMContentLoaded', () => {
   const changeColorButton = document.getElementById('toggle-colorblind');
+
   changeColorButton.addEventListener('click', () => {
     const firstPieceColor = pieces[0].color;
     // if the first piece is a default color, change to colorblind colors
     if (firstPieceColor === COLORS.red || firstPieceColor === COLORS.black) {
+      changeColorButton.classList.add('selected');
       lightPiece = COLORS.colorblind_orange;
       darkPiece = COLORS.colorblind_blue;
       if (currentPlayer === COLORS.red) {
@@ -726,6 +923,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     // if the first piece is a colorblind color, change to default colors
     else {
+      changePieceColor(COLORS.black, COLORS.red);
+      changeColorButton.classList.remove('selected');
       lightPiece = COLORS.red;
       darkPiece = COLORS.black;
       if (currentPlayer === COLORS.colorblind_orange) {
@@ -738,6 +937,40 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
+// Event listener for the volume slider
+document.addEventListener('DOMContentLoaded', () => {
+  const volumeSlider = document.getElementById("volume-slider");
+  const volumeDisplay = document.getElementById("volume-display");
+
+  function updateVolume() {
+    volumeAmount = volumeSlider.value / 100;
+    volumeDisplay.textContent = `${volumeSlider.value}%`;
+
+    // math to align the slider
+    const thumbX = (volumeSlider.value - volumeSlider.min) /
+      (volumeSlider.max - volumeSlider.min) *
+      (volumeSlider.getBoundingClientRect().width -
+        parseFloat(window.getComputedStyle(volumeSlider).getPropertyValue('height'))) +
+      volumeSlider.offsetLeft;
+
+    volumeDisplay.style.left = `${thumbX}px`;
+    volumeDisplay.style.top = `${volumeSlider.offsetTop - 25}px`;
+    volumeDisplay.style.transform = `translate(-25%, 0)`;
+  }
+
+  volumeSlider.addEventListener("input", updateVolume);
+  volumeSlider.addEventListener("mouseover", () => {
+    volumeDisplay.style.opacity = "100";
+    volumeDisplay.style.visibility = "visible";
+    updateVolume();
+  });
+
+  volumeSlider.addEventListener("mouseout", () => {
+    volumeDisplay.style.opacity = "0";
+    volumeDisplay.style.visibility = "hidden";
+  });
+});
+
 //return arr of legal moves for given player
 function getLegalMoves(color) {
   //arr to store legal moves
@@ -745,27 +978,38 @@ function getLegalMoves(color) {
   //moving up or down board?
   const direction = color === lightPiece ? -1 : 1;
 
-
   //loop thru pieces
-  pieces.forEach(piece => {
+  pieces.forEach((piece) => {
     if (piece.color !== color) return; //return for other p;layer peices
     // simple moves
-    [-1, 1].forEach(diagonal => { //try L and R diagonals
+    [-1, 1].forEach((diagonal) => {
+      //try L and R diagonals
       const col = piece.x + diagonal; //new col
       const row = piece.y + direction; //new row
-      if ( //check if mvoe is valid
-        col >= 0 && col < BOARD_SIZE && row >= 0 && row < BOARD_SIZE &&
-        !getPiece(col, row) && isValidMove(piece, col, row)) {
+      if (
+        //check if move is valid
+        col >= 0 &&
+        col < BOARD_SIZE &&
+        row >= 0 &&
+        row < BOARD_SIZE &&
+        !getPiece(col, row) &&
+        isValidMove(piece, col, row)
+      ) {
         moves.push({ piece, x: col, y: row }); //add move to arr
       }
     });
     // jump moves for captures
-    [-2, 2].forEach(jump => {
+    [-2, 2].forEach((jump) => {
       const jump_col = piece.x + jump;
       const jump_row = piece.y + 2 * direction;
       if (
-        jump_col >= 0 && jump_col < BOARD_SIZE && jump_row >= 0 && jump_row < BOARD_SIZE &&
-        !getPiece(jump_col, jump_row) && isValidMove(piece, jump_col, jump_row)) {
+        jump_col >= 0 &&
+        jump_col < BOARD_SIZE &&
+        jump_row >= 0 &&
+        jump_row < BOARD_SIZE &&
+        !getPiece(jump_col, jump_row) &&
+        isValidMove(piece, jump_col, jump_row)
+      ) {
         moves.push({ piece, x: jump_col, y: jump_row });
       }
     });
@@ -774,84 +1018,115 @@ function getLegalMoves(color) {
   return moves;
 }
 
-
 // Easy bot: pick a random legal move and play it
 function easyBot(scene) {
-  //get legal moves
-  //check if game over
-  //it not do a random legal move
+  // get legal moves
+  // check if game over
+  // it not do a random legal move
   const legalMoves = getLegalMoves(darkPiece);
-  //if No legal moves
+  // if No legal moves
   if (legalMoves.length === 0) {
     console.log('Cant move');
     return;
   }
-  //get random move
+  // get random move
   const move = Phaser.Utils.Array.GetRandom(legalMoves);
-  //execute move
+  // execute move
   movePiece(move.piece, move.x, move.y);
   // end bot's turn
   endTurn(scene);
 }
 
+// function to enable or disable the coordinates overlay
+function toggleCoordinateVisibility() {
+  const toggleCoordinatesBtn = document.getElementById('toggle-coordinates');
+  toggleCoordinatesBtn.classList.add('selected');
+  coordsVisible = !coordsVisible;
+
+  if (coordsVisible) {
+    // get board position on screen
+    const gameDiv = document.getElementById('game');
+    const rect = gameDiv.getBoundingClientRect();
+
+    // for each index, create a top label and a left label
+    for (let i = 0; i < BOARD_SIZE; i++) {
+      // Column label
+      const colLabel = document.createElement('div');
+      colLabel.textContent = i + 1;
+      Object.assign(colLabel.style, {
+        position: 'absolute',
+        left: `${(rect.left + margin) + (i * tile_size) + (tile_size / 2)}px`,
+        top: `${rect.top - 20}px`,
+        transform: 'translateX(-50%)',
+        fontFamily: '"Outfit", sans-serif',
+        color: '#3b2f2a',
+        userSelect: 'none',
+        pointerEvents: 'none',
+      });
+      document.body.appendChild(colLabel);
+      coordElements.push(colLabel);
+
+      // Row label
+      const rowLabel = document.createElement('div');
+      rowLabel.textContent = i + 1;
+      Object.assign(rowLabel.style, {
+        position: 'absolute',
+        left: `${rect.left - 20}px`,
+        top: `${rect.top + margin + i * tile_size + tile_size / 2}px`,
+        transform: 'translateY(-50%)',
+        fontFamily: '"Outfit", sans-serif',
+        color: '#3b2f2a',
+        userSelect: 'none',
+        pointerEvents: 'none',
+      });
+      document.body.appendChild(rowLabel);
+      coordElements.push(rowLabel);
+    }
+  } else {
+    // remove coordinates
+    coordElements.forEach(el => document.body.removeChild(el));
+    coordElements.length = 0;
+    toggleCoordinatesBtn.classList.remove('selected');
+  }
+}
+
 // Coordinates overlay button
 document.addEventListener('DOMContentLoaded', () => {
   const toggleCoordinatesBtn = document.getElementById('toggle-coordinates');
-  let coordsVisible = false;
-  const coordElements = [];
 
   toggleCoordinatesBtn.addEventListener('click', () => {
-    coordsVisible = !coordsVisible;
+    toggleCoordinateVisibility();
+  });
+});
 
-    if (coordsVisible) {
-      // get board position on screen
-      const gameDiv = document.getElementById('game');
-      const rect = gameDiv.getBoundingClientRect();
+// Mute button + “M” key shortcut
+document.addEventListener('DOMContentLoaded', () => {
+  const toggleMuteBtn = document.getElementById('toggle-mute');
 
-      // for each index, create a top label and a left label
-      for (let i = 0; i < BOARD_SIZE; i++) {
-        // Column label
-        const colLabel = document.createElement('div');
-        colLabel.textContent = i + 1;
-        Object.assign(colLabel.style, {
-          position: 'absolute',
-          left: `${rect.left + MARGIN + i * TILE_SIZE + TILE_SIZE / 2}px`,
-          top: `${rect.top - 20}px`,
-          transform: 'translateX(-50%)',
-          fontFamily: '"Outfit", sans-serif',
-          color: '#3b2f2a',
-          userSelect: 'none',
-          pointerEvents: 'none',
-        });
-        document.body.appendChild(colLabel);
-        coordElements.push(colLabel);
+  // set initial label
+  toggleMuteBtn.textContent = muted ? 'Unmute' : 'Mute';
 
-        // Row label
-        const rowLabel = document.createElement('div');
-        rowLabel.textContent = i + 1;
-        Object.assign(rowLabel.style, {
-          position: 'absolute',
-          left: `${rect.left - 20}px`,
-          top: `${rect.top + MARGIN + i * TILE_SIZE + TILE_SIZE / 2}px`,
-          transform: 'translateY(-50%)',
-          fontFamily: '"Outfit", sans-serif',
-          color: '#3b2f2a',
-          userSelect: 'none',
-          pointerEvents: 'none',
-        });
-        document.body.appendChild(rowLabel);
-        coordElements.push(rowLabel);
-      }
+  toggleMuteBtn.addEventListener('click', () => {
+    // flip mute state first
+    muted = !muted;
+    checkers.sound.mute = muted;
+    // then update the label
+    toggleMuteBtn.textContent = muted ? 'Unmute' : 'Mute';
+  });
 
-    } else {
-      // remove coordinates
-      coordElements.forEach(el => document.body.removeChild(el));
-      coordElements.length = 0;
+  // listen for “m” or “M” anywhere
+  document.addEventListener('keydown', (e) => {
+    if (e.key.toLowerCase() === 'm') {
+      // do exactly the same toggle logic:
+      muted = !muted;
+      checkers.sound.mute = muted;
+      toggleMuteBtn.textContent = muted ? 'Unmute' : 'Mute';
     }
   });
 });
 
-function resizegame(percentage) {
+// function to resize the board based on the given percentage
+function resizeGame(percentage) {
   // Calculate new dimensions
   const newWidth = Math.floor(START_WIDTH * percentage);
   const newHeight = Math.floor(START_HEIGHT * percentage);
@@ -862,9 +1137,12 @@ function resizegame(percentage) {
   // Update margin and tile size and highlight size
   margin = START_MARGIN * percentage;
   tile_size = (newWidth - 2 * margin) / BOARD_SIZE;
-  highlight_size = START_HIGHLIHGHT_SIZE * percentage;
+  highlight_size = START_HIGHLIGHT_SIZE * percentage;
 
-  // Update the positions of the tiles and pieces
+  // clear old highlighted tiles
+  clearHighlightedTiles();
+
+  // Update the positions of the tiles
   tiles.forEach((tile, index) => {
     const x = index % BOARD_SIZE;
     const y = Math.floor(index / BOARD_SIZE);
@@ -875,6 +1153,7 @@ function resizegame(percentage) {
     tile.setSize(tile_size, tile_size);
   });
 
+  // update the positions of the piece sprites
   pieces.forEach((piece) => {
     // destroy the old sprite
     piece.sprite.destroy();
@@ -886,13 +1165,21 @@ function resizegame(percentage) {
       piece.color
     ).setInteractive();
 
-    // If this piece was selected, update the selectedPiece reference to the new sprite
-    if (selectedPiece === piece) {
-      selectedPiece.sprite = piece.sprite;
-      piece.sprite.setStrokeStyle(highlight_size, COLORS.white);
+    if (piece.isKing) {
+      // remove the old crown icon
+      if (piece.kingIcon) {
+        piece.kingIcon.destroy();
+      }
+      // create a new crown icon with the updated position and size
+      piece.kingIcon = checkers.scene.scenes[0].add.image(
+        margin + piece.x * tile_size + tile_size / 2,
+        margin + piece.y * tile_size + tile_size / 2,
+        'crown'
+      );
+      piece.kingIcon.setDisplaySize(tile_size, tile_size);
     }
 
-    // make the new sprite do stuff when clicked
+    // add onclick functionality to the new sprite
     piece.sprite.on('pointerdown', () => {
       // don't allow piece selection if game is over
       if (gameOver) return;
@@ -901,6 +1188,7 @@ function resizegame(percentage) {
       if (selectedPiece === piece) {
         selectedPiece.sprite.setStrokeStyle();
         selectedPiece = null;
+        clearHighlightedTiles();
 
         // if player selects their own pieces (does nothing if they click on opponent pieces)
       } else if (piece.color === currentPlayer) {
@@ -908,12 +1196,30 @@ function resizegame(percentage) {
         if (selectedPiece) {
           selectedPiece.sprite.setStrokeStyle();
         }
-        // highlight the current piece that is being selected and set them as 'selectedPiece'
+        // highlight the current piece that is being selected and set them as
+        // 'selectedPiece', highlighting the tiles the piece can move to
         selectedPiece = piece;
         piece.sprite.setStrokeStyle(highlight_size, COLORS.white);
+        highlightValidMoves(checkers.scene.scenes[0], piece);
       }
     });
+
+    // If this piece was selected, update the selectedPiece reference to the new sprite
+    if (selectedPiece === piece) {
+      selectedPiece.sprite = piece.sprite;
+      piece.sprite.setStrokeStyle(highlight_size, COLORS.white);
+      // redraw the highlighted tiles for valid moves with the new size
+      highlightValidMoves(checkers.scene.scenes[0], piece);
+    }
+
   });
+  // redraw the highlighted tiles
+
+  // if the coordinates are visible, update their size by redrawing them
+  if (coordsVisible) {
+    toggleCoordinateVisibility();
+    toggleCoordinateVisibility();
+  }
 }
 
 // Event listener for the resize slider
@@ -924,7 +1230,7 @@ document.addEventListener('DOMContentLoaded', () => {
   resizeSlider.addEventListener('input', () => {
     const percent = parseInt(resizeSlider.value, 10);
     resizeValue.textContent = percent + '%';
-    resizegame(percent / 100);
+    resizeGame(percent / 100);
   });
 });
 
@@ -935,17 +1241,17 @@ function startPlayerTimer() {
 
   // https://stackoverflow.com/questions/5978519/how-can-i-use-setinterval-and-clearinterval
   activeTimer = setInterval(() => {
-    if (currentPlayer === COLORS.red) {
+    if (currentPlayer === lightPiece) {
       redTime--; // subtract 1 second from red's timer
       // Black wins if red runs out of time
       if (redTime <= 0) {
-        endGameOnTimeout(COLORS.black);
+        endGameOnTimeout(darkPiece);
       }
     } else {
       blackTime--; // subtract 1 second from black's timer
       // Red wins if black runs out of time
       if (blackTime <= 0) {
-        endGameOnTimeout(COLORS.red);
+        endGameOnTimeout(lightPiece);
       }
     }
     // update the time
@@ -985,7 +1291,7 @@ function endGameOnTimeout(winnerColor) {
 
   const message = document.getElementById('gameOverMessage');
   const gameOverPrompts = document.getElementById('gameOverPrompts');
-  const winner = winnerColor === COLORS.red ? 'Red' : 'Black';
+  const winner = winnerColor === lightPiece ? 'Red' : 'Black';
 
   // Show message
   message.textContent = `${winner === 'Red' ? 'Black' : 'Red'} ran out of time! ${winner} wins!`;
