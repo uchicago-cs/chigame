@@ -24,7 +24,7 @@ from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.utils.timezone import now
 from django.views import View
-from django.views.generic import CreateView, DeleteView, DetailView, ListView, TemplateView, UpdateView
+from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 from django.views.generic.edit import FormMixin
 from rest_framework import status
 from rest_framework.decorators import api_view
@@ -41,6 +41,7 @@ from .models import (
     CheckersTurn,
     Feedback,
     Game,
+    GameHistory,
     GameList,
     Lobby,
     Match,
@@ -653,25 +654,33 @@ def search_results(request):
 
 
 # =============== Interactive Fiction Views ===============
-class InteractiveFictionView(TemplateView):
+class InteractiveFictionDetailView(LoginRequiredMixin, FormMixin, DetailView):
+    model = Game
     template_name = "games/interactive-fiction/IF_game_detail.html"
+    context_object_name = "game"
+    form_class = ReviewForm
+
+    def get_success_url(self):
+        return reverse("interactive-fiction-detail", kwargs={"pk": self.object.pk})
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
-        pk = self.kwargs.get("pk")
-
-        try:
-            game = Game.objects.get(pk=pk)
-        except Game.DoesNotExist:
-            game = None
-
-        context["game"] = game
-
-        if game.twine_file:
-            context["uploaded_file_url"] = game.twine_file.url
-
+        context["form"] = self.get_form()
+        context["reviews"] = Review.objects.filter(game=self.object)
+        if self.object.twine_file:
+            context["uploaded_file_url"] = self.object.twine_file.url
         return context
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        form = self.get_form()
+        if form.is_valid():
+            review = form.save(commit=False)
+            review.user = request.user
+            review.game = self.object
+            review.save()
+            return HttpResponseRedirect(self.get_success_url())
+        return self.form_invalid(form)
 
 
 class IFGameCreateView(CreateView):
@@ -1884,6 +1893,37 @@ def delete_feedback_view(request, feedback_id):
         return redirect("user-feedback-list")
 
     return render(request, "tournaments/tournament_delete_feedback.html", {"feedback": feedback})
+
+
+# =============== Game History Views ===============
+@login_required
+def create_game_history_entry(user, match):
+    # Try to get the Player object if it exists
+    try:
+        player = Player.objects.get(user=user, match=match)
+        outcome = player.outcome
+    except Player.DoesNotExist:
+        outcome = None
+
+    GameHistory.objects.get_or_create(
+        user=user,
+        match=match,
+        defaults={
+            "is_completed": match.lobby.match_status == 3,  # Lobby.Finished
+            "result": outcome,
+        },
+    )
+
+
+@login_required
+def game_history_view(request, game_id):
+    game = get_object_or_404(Game, id=game_id)
+    entries = (
+        GameHistory.objects.filter(user=request.user, match__game=game)
+        .select_related("match")
+        .order_by("-date_played")
+    )
+    return render(request, "games/game_history.html", {"game": game, "entries": entries})
 
 
 class MatchStatsView(DetailView):

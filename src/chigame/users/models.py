@@ -133,6 +133,7 @@ class FriendInvitation(models.Model):
         """
         sender = self.sender
         receiver = self.receiver
+
         # add the receiver to the sender's friends list (it is symmetrical)
         sender.friends.add(receiver)
         # set the invitation as accepted
