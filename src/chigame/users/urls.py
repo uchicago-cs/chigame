@@ -74,4 +74,7 @@ urlpatterns = [
         name="unassign-label-from-notification",
     ),
     path("labels/<int:label_id>/delete/", views.delete_notification_label, name="delete-notification-label"),
+    # Group paths
+    path("groups/", views.GroupListView.as_view(), name="group-list"),
+    path("groups/<int:pk>/", views.GroupDetailView.as_view(), name="group-detail"),
 ]

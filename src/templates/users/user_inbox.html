@@ -114,6 +114,7 @@
                           <i class="bi bi-folder2-open icon-lg"></i>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
+                          <!-- Move to Category -->
                           <li class="dropdown-header">Move to Category</li>
                           {% for key, dd_cat_label_text in category_choices %}
                             <li>
@@ -127,6 +128,7 @@
                           <li>
                             <hr class="dropdown-divider" />
                           </li>
+                          <!-- Assign Label -->
                           <li class="dropdown-header">Assign Label</li>
                           {% for label_obj_dd in labels %}
                             <li>
