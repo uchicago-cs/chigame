@@ -204,6 +204,7 @@ def top_time_played_bar_chart(request, game_id):
     time_played_metric = Metric.objects.filter(game=game, name__icontains="Time Played").first()
 
     if not time_played_metric:
+        return render(
              request, "leaderboards/error.html", {"message": f"No 'Time Played' metric found for {game.name}."}
          )
 
