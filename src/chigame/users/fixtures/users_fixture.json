@@ -146,7 +146,7 @@
   "pk": 2,
   "fields": {
     "user": 2,
-    "bio": "Casual gamer and friend",
+    "bio": "A brief bio about User One",
     "date_joined": "2023-10-30T03:21:40.213Z"
   }
 },
@@ -155,7 +155,7 @@
   "pk": 3,
   "fields": {
     "user": 3,
-    "bio": "Competitive player",
+    "bio": "A brief bio about User Two",
     "date_joined": "2023-10-30T03:22:35.174Z"
   }
 },
@@ -164,7 +164,7 @@
   "pk": 4,
   "fields": {
     "user": 4,
-    "bio": "New to gaming but loving it",
+    "bio": "A brief bio about User Three",
     "date_joined": "2023-10-30T03:24:37.723Z"
   }
 },
@@ -173,7 +173,7 @@
   "pk": 5,
   "fields": {
     "user": 5,
-    "bio": "Veteran gamer and strategist",
+    "bio": "A brief bio about User Four",
     "date_joined": "2023-10-30T03:24:56.555Z"
   }
 },
@@ -182,8 +182,8 @@
   "pk": 6,
   "fields": {
     "user": 6,
-    "bio": "Gaming enthusiast and community member",
-    "date_joined": "2023-10-30T03:25:56.555Z"
+    "bio": "A brief bio about User Five",
+    "date_joined": "2023-10-30T03:25:12.630Z"
   }
 },
 {
