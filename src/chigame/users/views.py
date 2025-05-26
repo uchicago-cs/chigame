@@ -12,19 +12,21 @@ from django.utils.translation import gettext_lazy as _
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_POST
 from django.views.generic import DetailView, RedirectView, UpdateView
+from django_tables2 import SingleTableView
 
 from chigame.games.models import Lobby, Player, Tournament
 
 from .models import (
     FriendInvitation,
     FriendRequestNotification,
+    Group,
     GroupInvitationNotification,
     MatchInvitationNotification,
     Notification,
     NotificationLabel,
     UserProfile,
 )
-from .tables import UserTable
+from .tables import GroupTable, UserTable
 
 User = get_user_model()
 
@@ -804,3 +806,14 @@ def notifications_by_label(request, label_id):
         "notifications": notifications,
     }
     return render(request, "users/notifications_by_label.html", context)
+
+
+class GroupListView(SingleTableView):
+    model = Group
+    table_class = GroupTable
+    template_name = "users/group_list.html"
+
+
+class GroupDetailView(DetailView):
+    model = Group
+    template_name = "users/group_detail.html"
