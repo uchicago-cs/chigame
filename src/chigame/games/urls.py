@@ -1,7 +1,7 @@
 from django.urls import path
 
 from . import views
-from .views import InteractiveFictionView, LobbyCreateView, UploadFileView
+from .views import InteractiveFictionDetailView, LobbyCreateView, UploadFileView
 
 urlpatterns = [
     # lobbies
@@ -40,7 +40,7 @@ urlpatterns = [
     # interactive fiction
     path("interactive-fiction/", views.IFGameCreateView.as_view(), name="interactive-fiction-create"),
     path("<int:pk>/upload/", UploadFileView.as_view(), name="upload-file"),
-    path("if-game/<int:pk>/", InteractiveFictionView.as_view(), name="interactive-fiction-detail"),
+    path("if-game/<int:pk>/", InteractiveFictionDetailView.as_view(), name="interactive-fiction-detail"),
     # tournaments
     path("tournaments/", views.TournamentListView.as_view(), name="tournament-list"),
     path("tournaments/<int:pk>/", views.TournamentDetailView.as_view(), name="tournament-detail"),
@@ -71,4 +71,10 @@ urlpatterns = [
     path("checkers/<int:pk>/", views.checkers_game_view, name="checkers-game"),
     path("checkers/<int:board_id>/update/", views.checkers_game_update_board_state, name="update_board_state"),
     path("checkers/<int:board_id>/state/", views.checkers_game_get_board_state, name="checkers-get-state"),
+    # tournament recommendations
+    path(
+        "tournaments/<int:tournament_id>/recommendations/",
+        views.get_tournament_player_recommendations,
+        name="tournament-recommendations",
+    ),
 ]
