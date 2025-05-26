@@ -1,4 +1,7 @@
 <script>
+  let replyToMessageId = null;
+  let replyToUsername = null;
+  let replyToContent = null;
   const protocol = window.location.protocol === "https:" ? "wss://" : "ws://";
   const chatId = "{{ chat.id }}";
   const chatSocket = new WebSocket(
@@ -28,7 +31,8 @@
   };
 
   document.querySelector("#id_message_send_button").onclick = function(e) {
-    var messageInput = document.querySelector("#id_message_send_input").value;
+    const inputElement = document.querySelector("#id_message_send_input");
+    const messageInput = inputElement.value;
     if (messageInput.trim() === "") return;
 
     chatSocket.send(
@@ -39,21 +43,23 @@
       })
     );
 
+    // ✅ Properly clear input and reset reply state
+    inputElement.value = "";
     replyToMessageId = null;
     replyToUsername = null;
     replyToContent = null;
-
-    messageInput = "";
     document.getElementById("replying-to-preview").classList.add("d-none");
   };
 
+
   function escapeHTML(str) {
-    return str
-      .replace(/&/g, "&amp;")
+    if (typeof str !== "string") return "";
+    return str.replace(/&/g, "&amp;")
       .replace(/</g, "&lt;").replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&#039;");
   }
+
 
   /**
    * This function is called when a message is received from the server.
@@ -79,21 +85,7 @@
     const escapedUsername = escapeHTML(data.username);
     const escapedMessage = escapeHTML(data.message);
     messageContainer.setAttribute("oncontextmenu", `showContextMenu(event, ${data.message_id}, '${escapedUsername}', '${escapedMessage}'); return false;`);
-    const escapeHtml = (str) =>
-      str.replace(
-        /[&<>'"]/g,
-        (char) =>
-        ({
-          "&": "&amp;",
-          "<": "&lt;",
-          ">": "&gt;",
-          "'": "&#39;",
-          '"': "&quot;",
-        } [char])
-      );
 
-    const escapedUsername = escapeHtml(data.username);
-    const escapedMessage = escapeHtml(data.message);
     messageContainer.setAttribute(
       "oncontextmenu",
       `showContextMenu(event, ${data.message_id}, '${escapedUsername}', '${escapedMessage}'); return false;`
