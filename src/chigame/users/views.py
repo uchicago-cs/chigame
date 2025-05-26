@@ -16,7 +16,7 @@ from django.views.generic import DetailView, RedirectView, UpdateView, View
 from django.views.generic.edit import CreateView, DeleteView
 from django_tables2 import SingleTableView
 
-from chigame.games.models import Lobby, Player, Tournament
+from chigame.games.models import GameList, Lobby, Player, Tournament
 
 from .models import (
     FriendInvitation,
@@ -202,7 +202,8 @@ def user_profile_detail_view(request, pk):
     if request.user.is_authenticated and request.user.pk == pk:
         # if user is accessing their own profile, create a profile if it doesn't exist
         profile = UserProfile.get_or_create_profile(request.user)
-        return render(request, "users/userprofile_detail.html", {"profile": profile})
+        game_lists = GameList.objects.filter(created_by=request.user)
+        return render(request, "users/userprofile_detail.html", {"profile": profile, "game_lists": game_lists})
     else:
         # fetch another user's profile
         try:
