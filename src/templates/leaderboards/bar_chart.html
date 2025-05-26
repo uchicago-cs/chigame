@@ -2,7 +2,7 @@
 
 {% block content %}
   <h1>{{ leaderboard.name }}</h1>
-  <div style="margin-bottom: 20px;">
+  <div>
     <a href="{% url 'bar_chart' game.id %}"
        class="btn {% if 'Points' in score_metric_name %}btn-dark active{% else %}btn-outline-dark{% endif %}">
       Points
