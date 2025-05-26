@@ -130,8 +130,15 @@
   /**
    * Reacts to a message on the frontend.
    */
-  function reactToMessage(content = "❤️") {
-    const messageId = replyToMessageId;
+  function reactToMessage(content = "❤️", messageId = null) {
+    if (!messageId) {
+      messageId = replyToMessageId;
+    }
+
+    if (!messageId) {
+      console.error("No messageId available for reaction.");
+      return;
+    }
     replyToMessageId = null;
     replyToUsername = null;
     replyToContent = null;
@@ -269,9 +276,4 @@
     hideContextMenu();
 
   }
-
-  //   function reactToMessage() {
-  //     hideContextMenu();
-
-  //   }
 </script>
