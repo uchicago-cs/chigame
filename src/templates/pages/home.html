@@ -261,6 +261,7 @@
   </div>
 {% endblock content %}
 {% block javascript %}
+  {{ block.super }}
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       const swiper = new Swiper('.swiper', {

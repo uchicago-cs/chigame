@@ -28,8 +28,10 @@ class LeaderboardEntry(models.Model):
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name="leaderboard_entries")
     rank = models.IntegerField()
 
+    region = models.ForeignKey(Region, null=True, blank=True, on_delete=models.SET_NULL)
+
     def __str__(self):
-        return f"{self.user.display_name} - Rank {self.rank}"
+        return f"{self.user.user.name} - Rank {self.rank}"
 
 
 class Metric(models.Model):
@@ -50,12 +52,13 @@ class MetricScore(models.Model):
     match = models.ForeignKey(Match, on_delete=models.CASCADE, related_name="metric_scores")
 
     def __str__(self):
-        return f"{self.user.display_name} - {self.metric.name}: {self.score}"
+        return f"{self.user.user.name} - {self.metric.name}: {self.score}"
 
 
 class LeaderboardPrivacySetting(models.Model):
     """
     Stores user Settings for leaderboard visibility.
+
     Setting hierarchy:
     1. Specific leaderboard Setting (highest priority)
     2. Game-level setting
@@ -83,23 +86,26 @@ class LeaderboardPrivacySetting(models.Model):
 
     def __str__(self):
         if self.leaderboard:
-            return f"{self.user.display_name}'s settings for {self.leaderboard.name}"
+            return f"{self.user.user.name}'s settings for {self.leaderboard.name}"
         elif self.game:
-            return f"{self.user.display_name}'s settings for {self.game.name}"
+            return f"{self.user.user.name}'s settings for {self.game.name}"
         else:
-            return f"{self.user.display_name}'s global settings"
+            return f"{self.user.user.name}'s global settings"
 
     @classmethod
     def get_user_setting(cls, user, game=None, leaderboard=None):
         """
         Retrieve the user's setting for a specific game or leaderboard.
         If no specific game or leaderboard is provided, return global setting.
+
         This follows the hierarchy:
         1. Specific leaderboard Setting (highest priority)
         2. Game-level setting
         3. Global setting (lowest priority)
+
         If no setting is found, return None.
         """
+
         if leaderboard:
             # specific leaderboard setting
             setting = cls.objects.filter(user=user, leaderboard=leaderboard).first()

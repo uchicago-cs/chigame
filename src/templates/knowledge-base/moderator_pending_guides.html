@@ -1,6 +1,21 @@
 {% extends "knowledge-base/base.html" %}
 
 {% block page-content %}
+  {% if messages %}
+    <ul class="messages">
+      {% for message in messages %}
+        {% if 'guide-reviewed' in message.tags %}
+          <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert"
+                    aria-label="Close"></button>
+          </div>
+        {% endif %}
+      {% endfor %}
+    </ul>
+  {% endif %}
   <h1 class="mb-4">Pending Guides</h1>
   <form method="get" class="mb-3 d-flex align-items-center gap-2">
     <select name="sort" class="form-select w-auto">
@@ -42,4 +57,5 @@
       </tbody>
     </table>
   </div>
+  <a href="{% url 'moderator-manage-by-game' %}">Manage Published Guides</a>
 {% endblock page-content %}

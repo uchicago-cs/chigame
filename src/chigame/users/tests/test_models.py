@@ -1,12 +1,118 @@
 import pytest
+from django.core.exceptions import ValidationError
 
-from chigame.users.models import Notification, User
+from chigame.users.models import FriendInvitation, Notification, User, UserProfile
 
-from .factories import FriendInvitationFactory, FriendInvitationNotificationFactory, UserFactory
+from .factories import (
+    FriendInvitationFactory,
+    FriendInvitationNotificationFactory,
+    GroupFactory,
+    GroupInvitationFactory,
+    UserFactory,
+)
 
 
 def test_user_get_absolute_url(user: User):
     assert user.get_absolute_url() == f"/users/{user.pk}/"
+
+
+@pytest.mark.django_db
+def test_create_user_with_email_only():
+    # test that user can be created without username, just email
+    user = User.objects.create_user(email="test@example.com", password="testpass")
+    assert user.email == "test@example.com"
+    assert user.username is None
+
+
+@pytest.mark.django_db
+def test_validate_username():
+    # test that username cannot be completely numeric
+    user = User.objects.create_user(email="test@test.com", username="validname", password="test")
+    user.username = "123456"
+    with pytest.raises(ValidationError):
+        user.full_clean()
+        user.save()
+
+
+@pytest.mark.django_db
+def test_profile_creation():
+    # start with fresh user without profile and then create profile
+    user = UserFactory()
+    UserProfile.get_or_create_profile(user)
+    assert UserProfile.objects.filter(user=user).exists()
+
+
+@pytest.mark.django_db
+def test_one_active_one_deleted_invitation():
+    # Test there can be one active invitation and one deleted invitation
+    # There should be no uniqueness constraints on sender and receiver since
+    # there can be multiple deleted invitations!
+    sender = UserFactory()
+    receiver = UserFactory()
+
+    # Create a active invitation, delete it, then create a new one
+    old_invitation = FriendInvitationFactory(sender=sender, receiver=receiver, is_deleted=False)
+    old_invitation.is_deleted = True
+    old_invitation.save()
+
+    # Now create a new active invitation
+    new_invitation = FriendInvitationFactory(sender=sender, receiver=receiver, is_deleted=False)
+
+    assert new_invitation.sender == sender
+    assert new_invitation.receiver == receiver
+
+    # Only one active invitation
+    active_invitations = FriendInvitation.objects.filter(sender=sender, receiver=receiver, is_deleted=False)
+    assert active_invitations.count() == 1
+
+
+@pytest.mark.django_db
+def test_friendinvitation_accept_invitation():
+    # Test that after accepting invitation, sender and receiver become friends
+    sender = UserFactory()
+    receiver = UserFactory()
+    invitation = FriendInvitationFactory(sender=sender, receiver=receiver, is_deleted=False)
+    invitation.accept_invitation()
+    assert invitation.accepted is True
+    assert sender.friends.filter(pk=receiver.pk).exists()
+    assert receiver.friends.filter(pk=sender.pk).exists()
+
+
+@pytest.mark.django_db
+def test_friendinvitation_delete_invitation():
+    # Test that after deleting invitation, sender and receiver are not friends
+    # Also ensure that the invitation is soft deleted
+    sender = UserFactory()
+    receiver = UserFactory()
+    invitation = FriendInvitationFactory(sender=sender, receiver=receiver, is_deleted=False)
+    invitation.delete()
+    assert invitation.is_deleted is True
+    assert not sender.friends.filter(pk=receiver.pk).exists()
+    assert not receiver.friends.filter(pk=sender.pk).exists()
+
+
+@pytest.mark.django_db
+def test_groupinvitation_accept_invitation():
+    # Test that after accepting group invitation, receiver is added to group
+    sender = UserFactory()
+    receiver = UserFactory()
+    group = GroupFactory(created_by=sender)
+    invitation = GroupInvitationFactory(friend_group=group, sender=sender, receiver=receiver, is_deleted=False)
+    invitation.accept_invitation()
+    assert invitation.accepted is True
+    assert group.members.filter(pk=receiver.pk).exists()
+
+
+@pytest.mark.django_db
+def test_groupinvitation_delete_invitation():
+    # Test that after deleting invitation, receiver is not in group
+    sender = UserFactory()
+    receiver = UserFactory()
+    group = GroupFactory(created_by=sender)
+    invitation = GroupInvitationFactory(sender=sender, receiver=receiver, is_deleted=False)
+    invitation.delete()
+    assert invitation.is_deleted is True
+    assert not group.members.filter(pk=receiver.pk).exists()
 
 
 @pytest.mark.django_db
@@ -103,22 +209,66 @@ def test_notificationqueryset_mark_x_methods():
 
 @pytest.mark.django_db
 def test_notificationqueryset_is_x_methods():
-    FriendInvitationNotificationFactory.create_batch(5)
-    notifications = Notification.objects.all()
+    notifications = FriendInvitationNotificationFactory.create_batch(5)
 
-    assert len(Notification.objects.is_unread()) == 5
-    assert len(Notification.objects.is_read()) == 0
-    assert len(Notification.objects.is_deleted()) == 0
-    assert len(Notification.objects.is_not_deleted()) == 5
+    # Mark 2 as read, 2 as deleted
+    notifications[0].mark_as_read()
+    notifications[1].mark_as_read()
+    notifications[2].mark_as_deleted()
+    notifications[3].mark_as_deleted()
 
-    notifications.mark_all_read()
-    assert len(Notification.objects.is_unread()) == 0
-    assert len(Notification.objects.is_read()) == 5
+    read_notifications = Notification.objects.is_read()
+    unread_notifications = Notification.objects.is_unread()
+    deleted_notifications = Notification.objects.is_deleted()
+    not_deleted_notifications = Notification.objects.is_not_deleted()
 
-    notifications.mark_all_deleted()
-    assert len(Notification.objects.is_deleted()) == 5
-    assert len(Notification.objects.is_not_deleted()) == 0
+    assert len(read_notifications) == 2
+    assert len(unread_notifications) == 3
+    assert len(deleted_notifications) == 2
+    assert len(not_deleted_notifications) == 3
 
-    notifications.restore_all_deleted()
-    assert len(Notification.objects.is_deleted()) == 0
-    assert len(Notification.objects.is_not_deleted()) == 5
+
+@pytest.mark.django_db
+def test_notification_auto_categorization():
+    """Test that notifications are automatically categorized based on their type."""
+    # Create a friend invitation notification
+    notification = Notification.objects.create(
+        receiver=UserFactory(),
+        type=Notification.FRIEND_REQUEST,
+        actor=FriendInvitationFactory(),
+        message="Test friend request",
+    )
+
+    # Should be automatically categorized as "social"
+    assert notification.category == "social"
+
+    # Test group invitation
+    group_notification = Notification.objects.create(
+        receiver=UserFactory(),
+        type=Notification.GROUP_INVITATION,
+        actor=GroupInvitationFactory(),
+        message="Test group invitation",
+    )
+
+    # Should be automatically categorized as "social"
+    assert group_notification.category == "social"
+
+    # Test reminder notification
+    reminder_notification = Notification.objects.create(
+        receiver=UserFactory(), type=Notification.REMINDER, actor=UserFactory(), message="Test reminder"
+    )
+
+    # Should be automatically categorized as "updates"
+    assert reminder_notification.category == "updates"
+
+    # Test notification with explicit category (should not be overridden)
+    explicit_notification = Notification.objects.create(
+        receiver=UserFactory(),
+        type=Notification.FRIEND_REQUEST,
+        actor=FriendInvitationFactory(),
+        category="promotions",  # Explicitly set to something else
+        message="Test with explicit category",
+    )
+
+    # Should keep the explicitly set category
+    assert explicit_notification.category == "promotions"
