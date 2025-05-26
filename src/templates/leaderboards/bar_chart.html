@@ -2,21 +2,20 @@
 
 {% block content %}
   <h1>{{ leaderboard.name }}</h1>
-
   {% if leaderboard_data %}
     <canvas id="leaderboardChart" width="400" height="300"></canvas>
-
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
       const leaderboardData = {
         labels: [{
-             %
-             for data in leaderboard_data %
-           }
-           '{{ data.player }}', {
-             % endfor %
-           }
-         ],
+            %
+            for data in leaderboard_data %
+          }
+          '{{ data.player }}', {
+            %
+            endfor %
+          }
+        ],
         datasets: [{
           label: '{{ score_metric_name }}',
           data: [{
@@ -27,7 +26,8 @@
                data.score
              }
            }, {
-             % endfor %
+             %
+             endfor %
            }],
           backgroundColor: 'rgba(128, 0, 0, 0.8)',
           borderColor: 'rgba(128, 0, 0, 1)',
