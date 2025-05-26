@@ -37,6 +37,7 @@ def leaderboard_view(request, game_id):
         },
     )
 
+
 def bar_chart(request, game_id):
     game = get_object_or_404(Game, id=game_id)
     leaderboard = game.leaderboards.first()
@@ -62,6 +63,7 @@ def bar_chart(request, game_id):
         "score_metric_name": score_metric_name,
     }
     return render(request, "leaderboards/bar_chart.html", context)
+
 
 def landing_page_view(request):
     top_entries = []
