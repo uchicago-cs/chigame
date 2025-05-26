@@ -21,8 +21,7 @@ from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.utils.timezone import now
-from django.views.generic import CreateView, DeleteView, DetailView, ListView, TemplateView, UpdateView
-from django.views import View
+from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 from django.views.generic.edit import FormMixin
 from rest_framework import status
 from rest_framework.decorators import api_view
