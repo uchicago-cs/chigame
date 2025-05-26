@@ -57,6 +57,33 @@
       top: 300px;
       left: 321px;
     }
+
+    .popup {
+      opacity: 0;
+      transform: translate(-50%, -50%) translateY(20px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      background: white;
+      border-radius: 1rem;
+      padding: 1rem;
+      border: solid;
+      border-radius: 1rem;
+      pointer-events: none;
+      /* Keep popup in the layout but invisible */
+    }
+
+    .popup.show {
+      opacity: 1;
+      transform: translate(-50%, -50%) translateY(0);
+      pointer-events: auto;
+    }
+
+    .popup.hide {
+      opacity: 0;
+      transform: translate(-50%, -50%) translateY(20px);
+    }
   </style>
 {% endblock css %}
 {% load static %}
@@ -72,12 +99,44 @@
       <button type="submit" class="button button5">Click here</button>
       <button type="submit" class="button button6">Click here</button>
     </form>
+    <div id="popup1" class="popup">
+      Achievement&nbsp;<b>Click a button</b>&nbsp;earned!
+    </div>
+    <div id="popup2" class="popup">
+      Achievement&nbsp;<b>Click a button five times</b>&nbsp;earned!
+    </div>
     <script>
+      // Get both popups
+      const popup1 = document.getElementById('popup1');
+      const popup2 = document.getElementById('popup2');
       const form = document.getElementById('apiForm');
+      let count = 0;
+
+      function showPopup(popup) {
+        popup.classList.add('show');
+
+        // Hide the popup after 3 seconds
+        setTimeout(() => {
+          hidePopup(popup);
+        }, 3000);
+      }
+
+      function hidePopup(popup) {
+        popup.classList.remove('show');
+
+        // Wait for the fade-out to finish before hiding
+        setTimeout(() => {
+          popup.style.display = 'none';
+        }, 500); // match the transition duration
+      }
 
       const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
       form.addEventListener('submit', function(event) {
         event.preventDefault();
+
+        // Increment count every time a button is clicked
+        count++;
+        console.log(count);
 
         const formData = new FormData(form);
         const data = {};
@@ -85,27 +144,66 @@
           data[key] = value;
         });
 
-        fetch('api/award-achievement/', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-CSRFToken': csrfToken
-            },
-            credentials: 'include',
-            body: JSON.stringify(data)
-          })
-          .then(response => {
-            if (!response.ok) {
-              throw new Error('Network response was not ok');
-            }
-            return response.json();
-          })
-          .then(data => {
-            console.log('Success:', data);
-          })
-          .catch(error => {
-            console.error('Error:', error);
-          });
+        // Award the threshold achievement if 5 clicks have been registered
+        if (count == 5) {
+          fetch('api/award-threshold-achievement/', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+              },
+              credentials: 'include',
+              body: JSON.stringify(data)
+            })
+            .then(response => {
+              if (!response.ok) {
+                throw new Error('Network response was not ok');
+              }
+              return response.json();
+            })
+            .then(data => {
+              console.log('Success:', data);
+              console.log(data.message)
+              if (data.message === "T") {
+                console.log("showing popup");
+                showPopup(popup2);
+              } else {
+                console.log("not showing popup");
+              }
+            })
+            .catch(error => {
+              console.error('Error:', error);
+            });
+        } else {
+          fetch('api/award-achievement/', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+              },
+              credentials: 'include',
+              body: JSON.stringify(data)
+            })
+            .then(response => {
+              if (!response.ok) {
+                throw new Error('Network response was not ok');
+              }
+              return response.json();
+            })
+            .then(data => {
+              console.log('Success:', data);
+              console.log(data.message)
+              if (data.message === "T") {
+                console.log("showing popup");
+                showPopup(popup1);
+              } else {
+                console.log("not showing popup");
+              }
+            })
+            .catch(error => {
+              console.error('Error:', error);
+            });
+        }
       });
     </script>
   </body>

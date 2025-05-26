@@ -7,7 +7,7 @@ from django.views import View
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, status
 from rest_framework.authentication import SessionAuthentication
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import SAFE_METHODS, BasePermission, IsAuthenticated, IsAuthenticatedOrReadOnly
@@ -307,7 +307,6 @@ class ReviewCreateView(generics.CreateAPIView):
 class ReviewDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
-    queryset = Review.objects.none()
 
     def perform_destroy(self, instance):
         if instance.user != self.request.user:
@@ -667,6 +666,12 @@ class UserAchievementListView(APIView):
         ]
 
         return Response(data)
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def CheckAuth(request):
+    return Response({"authenticated": True})
 
 
 @api_view(["POST"])
