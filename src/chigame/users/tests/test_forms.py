@@ -1,10 +1,12 @@
 """
 Module for all Form Tests.
 """
+
 import pytest
 from django.forms import EmailField
 from django.test import RequestFactory
 from django.utils.translation import gettext_lazy as _
+from factory import Faker
 
 from chigame.users.forms import UserAdminChangeForm, UserAdminCreationForm, UserSignupForm, generate_unique_username
 from chigame.users.models import User
@@ -44,11 +46,13 @@ class TestUserAdminCreationForm:
         """
         Tests that the form is valid when email and matching passwords are provided.
         """
+        fake_email = Faker("email").generate({})
+        fake_password = Faker("password", length=12).generate({})
         form = UserAdminCreationForm(
             {
-                "email": "newuser@example.com",
-                "password1": "validpass123",
-                "password2": "validpass123",
+                "email": fake_email,
+                "password1": fake_password,
+                "password2": fake_password,
             }
         )
         assert form.is_valid()
@@ -70,11 +74,13 @@ class TestUserSignupForm:
         """
         Ensure that a unique username is automatically generated during signup.
         """
+        fake_email = Faker("email").generate({})
+        fake_password = Faker("password", length=14).generate({})
         form = UserSignupForm()
         form.cleaned_data = {
-            "email": "autouser@example.com",
-            "password1": "somepass123",
-            "password2": "somepass123",
+            "email": fake_email,
+            "password1": fake_password,
+            "password2": fake_password,
         }
         request = RequestFactory().post("accounts/signup/")
         request.session = {}
@@ -90,7 +96,13 @@ def test_generate_unique_username_does_not_duplicate_existing():
     """
     Ensure generate_unique_username never returns a username that already exists.
     """
-    existing_username = "pikachu7777"
-    UserFactory(username=existing_username)
-    for i in range(10):
-        assert generate_unique_username() != existing_username
+    existing_usernames = set()
+    for x in range(50):
+        user = UserFactory()
+        existing_usernames.add(user.username)
+
+    for y in range(10):
+        new_username = generate_unique_username()
+        assert new_username not in existing_usernames
+        UserFactory(username=new_username)
+        existing_usernames.add(new_username)
