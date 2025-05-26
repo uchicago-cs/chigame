@@ -43,6 +43,7 @@ from .models import (
     CheckersTurn,
     Feedback,
     Game,
+    GameHistory,
     GameList,
     Lobby,
     Match,
@@ -247,7 +248,8 @@ class MatchCreateView(CreateView):
             min_players=self.game.min_players,
             max_players=self.game.max_players,
         )
-        lobby.members.set(all_players)
+
+        lobby.invited_members.set(all_players)
 
         # Match creation
         match = form.save(commit=False)
@@ -267,6 +269,44 @@ class MatchCodeView(LoginRequiredMixin, DetailView):
     model = Lobby
     template_name = "matches/match_code.html"
     context_object_name = "lobby"
+
+
+@login_required
+def join_match(request, pk):
+    game = get_object_or_404(Game, pk=pk)
+    if request.method == "POST":
+        lobby_code = request.POST.get("lobby_code", "").strip().upper()
+        try:
+            lobby = Lobby.objects.get(join_code=lobby_code)
+
+            # Check if the user was invited
+            if request.user not in lobby.invited_members.all():
+                messages.error(request, "You were not invited to this match.")
+                return render(request, "matches/match_join.html", {"game": game})
+
+            # Check if the user is already a member
+            if request.user in lobby.members.all():
+                messages.info(request, "You have already joined this match.")
+                return redirect("lobby-details", pk=lobby.pk)
+
+            # Check if the match is already full
+            if lobby.match_status == 2:
+                messages.error(request, "This match is already full.")
+                return render(request, "matches/match_join.html", {"game": game})
+
+            lobby.members.add(request.user)
+            if lobby.members.all().count() == lobby.invited_members.all().count():
+                lobby.match_status = 2
+                messages.success(request, "You joined! Match is now full and ready to begin.")
+            else:
+                messages.success(request, "You have successfully joined the match.")
+
+            lobby.save()
+            return redirect("lobby-details", pk=lobby.pk)
+
+        except Lobby.DoesNotExist:
+            messages.error(request, "Invalid lobby code.")
+    return render(request, "matches/match_join.html", {"game": game})
 
 
 # =============== BGG Searching =================
@@ -1869,6 +1909,37 @@ def delete_feedback_view(request, feedback_id):
         return redirect("user-feedback-list")
 
     return render(request, "tournaments/tournament_delete_feedback.html", {"feedback": feedback})
+
+
+# =============== Game History Views ===============
+@login_required
+def create_game_history_entry(user, match):
+    # Try to get the Player object if it exists
+    try:
+        player = Player.objects.get(user=user, match=match)
+        outcome = player.outcome
+    except Player.DoesNotExist:
+        outcome = None
+
+    GameHistory.objects.get_or_create(
+        user=user,
+        match=match,
+        defaults={
+            "is_completed": match.lobby.match_status == 3,  # Lobby.Finished
+            "result": outcome,
+        },
+    )
+
+
+@login_required
+def game_history_view(request, game_id):
+    game = get_object_or_404(Game, id=game_id)
+    entries = (
+        GameHistory.objects.filter(user=request.user, match__game=game)
+        .select_related("match")
+        .order_by("-date_played")
+    )
+    return render(request, "games/game_history.html", {"game": game, "entries": entries})
 
 
 class MatchStatsView(DetailView):
