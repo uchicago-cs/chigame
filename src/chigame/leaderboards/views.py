@@ -1,8 +1,10 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+
 from chigame.games.models import Game
-from chigame.leaderboards.models import Leaderboard, LeaderboardEntry, LeaderboardPrivacySetting, Region, Metric
+from chigame.leaderboards.models import Leaderboard, LeaderboardEntry, LeaderboardPrivacySetting, Metric, Region
+
 from .forms import LeaderboardPrivacySettingForm
 
 
@@ -58,6 +60,7 @@ def get_tier_info(score, metric_name):
 
     return tier_name, tier_badge
 
+
 def leaderboard_view(request, game_id):
     game = get_object_or_404(Game, id=game_id)
     leaderboard = game.leaderboards.first()
@@ -86,6 +89,7 @@ def leaderboard_view(request, game_id):
             "selected_region": region_param,
         },
     )
+
 
 def points_bar_chart(request, game_id):
     game = get_object_or_404(Game, id=game_id)
@@ -120,6 +124,7 @@ def points_bar_chart(request, game_id):
         "score_metric_name": score_metric_name,
     }
     return render(request, "leaderboards/bar_chart.html", context)
+
 
 def top_time_played_bar_chart(request, game_id):
     game = get_object_or_404(Game, id=game_id)
