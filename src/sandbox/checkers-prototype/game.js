@@ -871,8 +871,18 @@ function executeJumpChain(piece, jump) {
   var final = jump.path[jump.path.length - 1];
   piece.x = final.x;
   piece.y = final.y;
-  piece.sprite.x = margin + final.x * tile_size + tile_size / 2;
-  piece.sprite.y = margin + final.y * tile_size + tile_size / 2;
+
+  const newX = margin + final.x * tile_size + tile_size / 2;
+  const newY = margin + final.y * tile_size + tile_size / 2;
+
+  // Animate movement
+  checkers.scene.scenes[0].tweens.add({
+    targets: piece.sprite,
+    x: newX,
+    y: newY,
+    duration: 250,
+    ease: 'Power3',
+  });
 
   // move the king icon if applicable
   if (piece.isKing && piece.kingIcon) {
