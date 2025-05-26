@@ -582,7 +582,7 @@ function movePiece(piece, moveX, moveY) {
       }
     },
   });
- 
+
   // Play move sound effect
   piece.sprite.scene.sound.play('slide', { volume: volumeAmount });
   // Move king icon if applicable
