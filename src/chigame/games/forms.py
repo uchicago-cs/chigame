@@ -1,7 +1,7 @@
 from django import forms
 from django.core.validators import MaxValueValidator, MinValueValidator
 
-from .models import Game, Lobby, Review, Tournament
+from .models import Game, Lobby, Review, Tournament, InteractiveFictionGame
 
 
 class TournamentForm(forms.ModelForm):
