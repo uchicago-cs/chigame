@@ -277,7 +277,30 @@ function create() {
   });
 }
 
-function update() {}
+function update() {
+  if (gameOver) return;
+
+  // check at the start of each turn whether the current player can move
+  const moves = getLegalMoves(currentPlayer);
+  if (moves.length === 0) {
+    gameOver = true;
+
+    const prompts = document.getElementById('gameOverPrompts');
+    const message = document.getElementById('gameOverMessage');
+    prompts.classList.add('show');
+    // specific prompts for game ending on valid move
+    message.textContent =
+      `${currentPlayer === COLORS.red ? 'Red' : 'Black'} has no valid moves! ` +
+      `${currentPlayer === COLORS.red ? 'Black' : 'Red'} wins!`;
+    message.classList.add('show');
+
+    // same logic as regular game end
+    document.getElementById('playAgainPrompt').style.display = 'flex';
+    document.getElementById('drawBtn').style.display = 'none';
+    document.getElementById('forfeitBtn').style.display = 'none';
+  }
+}
+
 // ----------------------------------------------------------------------------
 
 // Draw the game board
@@ -563,6 +586,7 @@ function movePiece(piece, moveX, moveY) {
     y: newY,
     duration: 250, // I think best to have this in 200-300 ms range
     ease: 'Power3',
+
     // onComplete is needed so crown icon only loads after animation is over
     onComplete: () => {
       // Check for king promotion
@@ -729,9 +753,6 @@ function giveHint() {
     // in a normal checkers game, the player loses if there are no moves left
     alert('No valid moves.');
   }
-
-  // remove the highlight after a move is made
-  clearHighlightedTiles();
 }
 
 // helper function to highlight the valid moves for the selected piece
@@ -1274,12 +1295,35 @@ function resizeGame(percentage) {
 // Event listener for the resize slider
 document.addEventListener('DOMContentLoaded', () => {
   const resizeSlider = document.getElementById('resize-slider');
-  const resizeValue = document.getElementById('resize-value');
+  const resizeDisplay = document.getElementById('resize-display');
 
-  resizeSlider.addEventListener('input', () => {
+  function updateSize() {
     const percent = parseInt(resizeSlider.value, 10);
-    resizeValue.textContent = percent + '%';
     resizeGame(percent / 100);
+    resizeDisplay.textContent = `${resizeSlider.value}%`;
+
+    // math to align the slider
+    const thumbX = (resizeSlider.value - resizeSlider.min) /
+      (resizeSlider.max - resizeSlider.min) *
+      (resizeSlider.getBoundingClientRect().width -
+        parseFloat(window.getComputedStyle(resizeSlider).getPropertyValue('height'))) +
+      resizeSlider.offsetLeft;
+
+    resizeDisplay.style.left = `${thumbX}px`;
+    resizeDisplay.style.top = `${resizeSlider.offsetTop - 25}px`;
+    resizeDisplay.style.transform = `translate(-25%, 0)`;
+  }
+
+  resizeSlider.addEventListener("input", updateSize);
+  resizeSlider.addEventListener("mouseover", () => {
+    resizeDisplay.style.opacity = "100";
+    resizeDisplay.style.visibility = "visible";
+    updateSize();
+  });
+
+  resizeSlider.addEventListener("mouseout", () => {
+    resizeDisplay.style.opacity = "0";
+    resizeDisplay.style.visibility = "hidden";
   });
 });
 
