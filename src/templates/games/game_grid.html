@@ -215,6 +215,7 @@
   {% if user.is_staff %}
     <div class="container mt-4 mb-4">
       <a class="btn btn-outline-success" href="{% url 'game-create' %}">Create New Game</a>
+      <a class="btn btn-outline-primary" href="{% url 'interactive-fiction-create' %}">Create IF Game</a>
     </div>
   {% endif %}
   <div class="container mt-5 mb-3">
