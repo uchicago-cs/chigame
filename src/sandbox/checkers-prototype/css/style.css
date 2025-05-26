@@ -4,6 +4,9 @@ body {
     color: #3b2f2a;
     font-family: "Outfit", sans-serif;
     font-style: normal;
+    max-width: 100vw;
+    max-height: 100vh;
+    overflow: hidden;
 }
 
 canvas {
