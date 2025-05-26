@@ -251,7 +251,6 @@ class MatchCreateView(CreateView):
 
         lobby.invited_members.set(all_players)
 
-
         # Match creation
         match = form.save(commit=False)
         match.game = self.game
