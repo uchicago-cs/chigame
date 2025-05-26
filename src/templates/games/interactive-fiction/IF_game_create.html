@@ -399,7 +399,6 @@
   <form method="post"
         enctype="multipart/form-data"
         id="game_form"
-        action="{% url 'upload-file' pk=game.pk %}">
     {% csrf_token %}
     <div>
       <label for="id_name">Game Name:</label>
