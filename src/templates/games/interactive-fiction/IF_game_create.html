@@ -406,18 +406,18 @@
         action="{% url 'upload-file' pk=game.pk %}">
     {% csrf_token %}
     <div>
-        <label for="id_name">
-            Game Name:<span class="required-asterisk">*</span>
-        </label>
+      <label for="id_name">
+        Game Name:<span class="required-asterisk">*</span>
+      </label>
       <input type="text"
              id="id_name"
              value="{{ form.name.value|default_if_none:'' }}"
              required />
     </div>
     <div>
-        <label for="id_author">
-            Author Name:<span class="required-asterisk">*</span>
-        </label>
+      <label for="id_author">
+        Author Name:<span class="required-asterisk">*</span>
+      </label>
       <input type="text"
              name="author"
              id="id_author"
@@ -425,10 +425,10 @@
              required />
     </div>
     <div>
-        <label for="id_description">
-            Description:<span class="required-asterisk">*</span>
-          </label>
-          <textarea name="description" id="id_description" required>
+      <label for="id_description">
+        Description:<span class="required-asterisk">*</span>
+      </label>
+      <textarea name="description" id="id_description" required>
             {{ form.description.value }}
         </textarea>
     </div>
@@ -545,7 +545,9 @@
       </label>
     </div>
     <hr />
-    <h3>Upload Game Files<span class="required-asterisk">*</span></h3>
+    <h3>
+      Upload Game Files<span class="required-asterisk">*</span>
+    </h3>
     <div class="upload-zone" data-input-id="myFile">
       Drag &amp; drop a file here
       <br />
