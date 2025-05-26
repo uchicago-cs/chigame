@@ -344,8 +344,3 @@ canvas {
   flex-direction: column;
   align-items: flex-start;
 }
-
-#resize-slider {
-    width: 150px;
-    max-width: 100%;
-}
