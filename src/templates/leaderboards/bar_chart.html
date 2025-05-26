@@ -2,54 +2,53 @@
 
 {% block content %}
   <h1>{{ leaderboard.name }}</h1>
-
   <div style="margin-bottom: 20px;">
     <a href="{% url 'bar_chart' game.id %}"
        class="btn {% if 'Points' in score_metric_name %}btn-dark active{% else %}btn-outline-dark{% endif %}">
-       Points
+      Points
     </a>
     <a href="{% url 'top_time_played_bar_chart' game.id %}"
        class="btn {% if 'Time' in score_metric_name %}btn-dark active{% else %}btn-outline-dark{% endif %}">
-       Time Played
+      Time Played
     </a>
     <a href="{% url 'top_games_won_bar_chart' game.id %}"
        class="btn {% if 'Games Won' in score_metric_name %}btn-dark active{% else %}btn-outline-dark{% endif %}">
-       Games Won
+      Games Won
     </a>
   </div>
-
   {% if leaderboard_data %}
     <canvas id="leaderboardChart" width="800" height="400"></canvas>
-
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
       const leaderboardData = {
         labels: [{
-             %
-             for data in leaderboard_data %
-           }
-           '{{ data.player }}', {
-             % endfor %
-           }
-         ],
+            %
+            for data in leaderboard_data %
+          }
+          '{{ data.player }}', {
+            %
+            endfor %
+          }
+        ],
         datasets: [{
           label: '{{ score_metric_name }}',
           data: [{
-             %
-             for data in leaderboard_data %
-           } {
-             {
-               data.score
-             }
-           }, {
-             % endfor %
-           }],
+            %
+            for data in leaderboard_data %
+          } {
+            {
+              data.score
+            }
+          }, {
+            %
+            endfor %
+          }],
           backgroundColor: (context) => {
             const chart = context.chart;
             const {
-               ctx,
-               chartArea
-             } = chart;
+              ctx,
+              chartArea
+            } = chart;
             if (!chartArea) return 'rgb(128, 0, 0)';
             const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
             gradient.addColorStop(0, 'rgba(255, 99, 132, 0.8)');
