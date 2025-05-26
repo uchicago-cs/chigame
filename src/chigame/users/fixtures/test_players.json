@@ -132,10 +132,8 @@
     "pk": 101,
     "fields": {
       "user": 101,
-      "display_name": "Player 1",
       "bio": "Test player 1 for simulation",
-      "date_joined": "2025-04-26T14:40:00Z",
-      "friends": []
+      "date_joined": "2025-04-26T14:40:00Z"
     }
   },
   {
@@ -143,10 +141,8 @@
     "pk": 102,
     "fields": {
       "user": 102,
-      "display_name": "Player 2",
       "bio": "Test player 2 for simulation",
-      "date_joined": "2025-04-26T14:40:00Z",
-      "friends": []
+      "date_joined": "2025-04-26T14:40:00Z"
     }
   },
   {
@@ -154,10 +150,8 @@
     "pk": 103,
     "fields": {
       "user": 103,
-      "display_name": "Player 3",
       "bio": "Test player 3 for simulation",
-      "date_joined": "2025-04-26T14:40:00Z",
-      "friends": []
+      "date_joined": "2025-04-26T14:40:00Z"
     }
   },
   {
@@ -165,10 +159,8 @@
     "pk": 104,
     "fields": {
       "user": 104,
-      "display_name": "Player 4",
       "bio": "Test player 4 for simulation",
-      "date_joined": "2025-04-26T14:40:00Z",
-      "friends": []
+      "date_joined": "2025-04-26T14:40:00Z"
     }
   },
   {
@@ -176,10 +168,8 @@
     "pk": 105,
     "fields": {
       "user": 105,
-      "display_name": "Player 5",
       "bio": "Test player 5 for simulation",
-      "date_joined": "2025-04-26T14:40:00Z",
-      "friends": []
+      "date_joined": "2025-04-26T14:40:00Z"
     }
   },
   {
@@ -187,10 +177,8 @@
     "pk": 106,
     "fields": {
       "user": 106,
-      "display_name": "Player 6",
       "bio": "Test player 6 for simulation",
-      "date_joined": "2025-04-26T14:40:00Z",
-      "friends": []
+      "date_joined": "2025-04-26T14:40:00Z"
     }
   },
   {
@@ -198,10 +186,8 @@
     "pk": 107,
     "fields": {
       "user": 107,
-      "display_name": "Player 7",
       "bio": "Test player 7 for simulation",
-      "date_joined": "2025-04-26T14:40:00Z",
-      "friends": []
+      "date_joined": "2025-04-26T14:40:00Z"
     }
   },
   {
@@ -209,10 +195,8 @@
     "pk": 108,
     "fields": {
       "user": 108,
-      "display_name": "Player 8",
       "bio": "Test player 8 for simulation",
-      "date_joined": "2025-04-26T14:40:00Z",
-      "friends": []
+      "date_joined": "2025-04-26T14:40:00Z"
     }
   }
 ]

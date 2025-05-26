@@ -13,7 +13,7 @@
     Game
   </h1>
   <!-- Game Form -->
-  <form method="post" id="game_form">
+  <form method="post" enctype="multipart/form-data" id="game_form">
     {% csrf_token %}
     <!-- Manually render each form field so that we can put in the search BGG button-->
     {% for field in form %}

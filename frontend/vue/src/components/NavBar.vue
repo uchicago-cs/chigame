@@ -1,5 +1,5 @@
 <template>
-  <nav class="navbar">
+  <nav class="navbar" v-if="!isLoading">
     <div class="logo">
       <router-link to="/"><img src="/logo.png" alt="Logo" class="logo" /></router-link>
       <router-link to="/"class="chigame-text"><span>Chigame</span></router-link>
@@ -8,21 +8,45 @@
     <ul class="nav-links">
       <li><router-link to="/">Home</router-link></li>
       <li><router-link to="/about">About</router-link></li>
-      <li><router-link to="/forums">Forums</router-link></li>
-      <li><router-link to="/lobbies">Lobbies</router-link></li>
+      <li v-if="isAuth"><router-link to="/games">Games</router-link></li>
+      <li v-if="isAuth"><router-link to="/forums">Forums</router-link></li>
+      <li v-if="isAuth"><router-link to="/lobbies">Lobbies</router-link></li>
+      <li v-if="isAuth"><router-link to="/tournaments">Tournaments</router-link></li>
     </ul>
 
-    <div class="auth-btn">
-      <router-link to="/login" class="sign-in">Sign In</router-link>
-      <router-link to="/signup" class="sign-up">Sign Up</router-link>
+    <div class="search-bar"  v-if="isAuth">
+      <input type="text" placeholder="Search..." />
     </div>
+
+    <div class="auth-btn">
+      <router-link to="/login" class="sign-in" v-if="!isAuth">Sign In</router-link>
+      <router-link to="/signup" class="sign-up" v-if="!isAuth">Sign Up</router-link>
+      <button class="sign-out" v-if="isAuth" @click="signout">Sign Out</button>
+      <router-link to="/profile" v-if="isAuth">
+        <img src="./images/profile_logo2.jpeg" alt="Profile" class="profile-img" />
+      </router-link>
+    </div>
+
   </nav>
 </template>
 
-<script>
-export default {
-  name: 'NavBar',
-};
+<script setup>
+import { onMounted } from 'vue';
+import { useRouter } from 'vue-router'
+import { useAuth } from '../composables/auth';
+
+const router = useRouter()
+const { isAuth, isLoading, checkAuth, api } = useAuth()
+
+onMounted(() => {
+  checkAuth()
+})
+
+function signout() {
+  localStorage.removeItem('access-token')
+  isAuth.value = false
+  router.push('/')
+}
 </script>
 
 <style scoped>
@@ -88,6 +112,7 @@ export default {
   text-decoration: none;
   font-weight: 600;
 }
+
 .auth-btn .sign-up {
   background-color: #fff;
   color: #800000;
@@ -97,11 +122,49 @@ export default {
   text-decoration: none;
   font-weight: 600;
   margin-left: 0.5rem;
+  margin-right: 1.5rem;
+}
+
+.auth-btn .sign-out {
+  background-color: #fff;
+  color: #800000;
+  padding: 0.5rem 1rem;
+  border: 1px solid #800000;
+  border-radius: 4px;
+  text-decoration: none;
+  font-weight: 600;
+  margin-left: 0.5rem;
+  margin-right: 1.5rem;
 }
 
 .auth-btn .sign-up:hover {
   background-color: #800000;
   color: #fff;
+}
+
+.search-bar {
+  margin-left: 2rem;
+}
+
+.search-bar input {
+  padding: 0.4rem 0.75rem;
+  border: 1px solid #A6A6A6;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  background-color: #fff;
+}
+
+.profile-icon {
+  display: flex;
+  align-items: center;
+}
+
+.profile-img {
+  height: 28px;
+  width: 28px;
+  border-radius: 50%; /* Makes it circular if using a square image */
+  object-fit: cover;
+  cursor: pointer;
 }
 
 </style>

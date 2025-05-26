@@ -1,0 +1,42 @@
+[
+  {
+    "model": "account.emailaddress",
+    "pk": 1,
+    "fields": {
+      "user": 2,
+      "email": "alex@example.com",
+      "verified": true,
+      "primary": true
+    }
+  },
+  {
+    "model": "account.emailaddress",
+    "pk": 2,
+    "fields": {
+      "user": 3,
+      "email": "sam@example.com",
+      "verified": true,
+      "primary": true
+    }
+  },
+  {
+    "model": "account.emailaddress",
+    "pk": 3,
+    "fields": {
+      "user": 1,
+      "email": "admin@example.com",
+      "verified": true,
+      "primary": true
+    }
+  },
+  {
+    "model": "account.emailaddress",
+    "pk": 4,
+    "fields": {
+      "user": 4,
+      "email": "alice@example.com",
+      "verified": true,
+      "primary": true
+    }
+  }
+]

@@ -5,9 +5,9 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ChiGame - User Achievements</title>
+    <link rel="icon" href="../../static/images/logos/favicon.ico" />
     <meta name="description" content="ChiGame User Achievements" />
     <meta name="author" content="University of Chicago" />
-    <link rel="icon" href="{% static 'images/favicons/chigame.ico' %}" />
     <!-- Latest compiled and minified Bootstrap CSS -->
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/css/bootstrap.min.css"
@@ -53,6 +53,13 @@
         background-color: #eee;
         margin-right: 20px;
         overflow: hidden;
+        align-items: center;
+        justify-content: center;
+        display: flex;
+      }
+
+      .large-avatar {
+        font-size: 60px;
       }
 
       .user-stats {
@@ -139,16 +146,6 @@
         border-left: 3px solid var(--accent);
       }
 
-      .achievement.hidden .achievement-info h4,
-      .achievement.hidden .achievement-info p {
-        color: #6c757d;
-      }
-
-      .achievement.hidden .achievement-info p.achievement-desc {
-        color: #6c757d;
-        font-style: italic;
-      }
-
       .achievement-icon {
         width: 50px;
         height: 50px;
@@ -159,11 +156,15 @@
       }
 
       .achievement-info {
-        flex-grow: 1;
+        max-width: calc(100% - 40px);
+        overflow: hidden;
       }
 
       .achievement-info h4 {
         margin: 0 0 5px 0;
+        font-size: 1.1em;
+        max-width: calc(100% - 120px);
+        overflow-wrap: break-word;
       }
 
       .achievement-info p {
@@ -187,25 +188,16 @@
         border: 1px solid rgba(0, 0, 0, 0.125);
       }
 
-      .achievement.common .achievement-icon {
-        color: var(--common-color);
-      }
-
-      .achievement.uncommon .achievement-icon {
-        color: var(--uncommon-color);
-      }
-
-      .achievement.rare .achievement-icon {
-        color: var(--rare-color);
-      }
-
-      .achievement.precious .achievement-icon {
-        color: var(--precious-color);
-      }
-
       .achievement.not-unlocked .achievement-info h4,
       .achievement.not-unlocked .achievement-info p {
         color: #6c757d;
+      }
+
+      .achievement.hidden .achievement-info p.achievement-desc {
+        color: #6c757d;
+        font-style: italic;
+        max-width: 90%;
+        overflow-wrap: break-word;
       }
 
       .not-unlocked .trophy-icon img {
@@ -255,18 +247,6 @@
         display: block;
       }
 
-      .pin-button {
-        background-color: transparent;
-        border: none;
-        color: #888;
-        cursor: pointer;
-        margin-left: 10px;
-      }
-
-      .pin-button:hover {
-        color: var(--accent);
-      }
-
       /* Trophy icons based on rarity */
       .trophy-icon {
         display: flex;
@@ -284,18 +264,116 @@
 
       .achievement.hidden .trophy-icon img {
         filter: brightness(0);
-        /* 0% brightness (completely black) */
         opacity: 0.5;
       }
 
-      .achievement.hidden .achievement-info h4,
-      .achievement.hidden .achievement-info p {
-        color: #6c757d;
+      .achievement {
+        display: flex;
+        background-color: rgba(0, 0, 0, 0.03);
+        margin-bottom: 15px;
+        padding: 10px;
+        border-radius: 0.25rem;
+        position: relative;
+        border: 1px solid rgba(0, 0, 0, 0.125);
+        align-items: flex-start;
+        transition: all 0.3s ease;
+        min-height: 80px;
       }
 
-      .achievement.hidden .achievement-info p.achievement-desc {
-        color: #6c757d;
-        font-style: italic;
+      .achievement.expanded {
+        padding-bottom: 15px;
+      }
+
+      .achievement-icon {
+        width: 50px;
+        height: 50px;
+        margin-right: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+
+      /* Texts for expand and collapse */
+      .achievement-desc {
+        margin: 0;
+        font-size: 0.9em;
+        overflow: hidden;
+        max-width: 90%;
+        box-orient: vertical;
+        max-height: 3em;
+        overflow-wrap: break-word;
+      }
+
+      .achievement.expanded .achievement-desc {
+        max-height: none;
+        white-space: normal;
+        cursor: pointer;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+      }
+
+      .expand-button {
+        display: inline-block;
+        color: var(--accent);
+        background-color: rgba(13, 110, 253, 0.1);
+        padding: 2px 8px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.85em;
+        border: none;
+        position: absolute;
+        right: 10px;
+        margin-left: 12px;
+        top: 40px;
+      }
+
+      .expand-button.hidden {
+        display: none;
+      }
+
+      .expand-button:hover {
+        background-color: rgba(13, 110, 253, 0.2);
+      }
+
+      /* When expanded, show full text */
+      .expanded .achievement-desc {
+        white-space: normal;
+        overflow: visible;
+        max-height: none;
+      }
+
+      .pin-button {
+        background-color: transparent;
+        border: none;
+        color: #888;
+        cursor: pointer;
+        position: absolute;
+        /* Changed from margin-left */
+        right: 6px;
+        top: 5px;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .pin-button.active {
+        transform: rotate(-45deg);
+      }
+
+      /* Reposition the percentage badge */
+      .achievement-percent {
+        position: absolute;
+        right: 45px;
+        top: 10px;
+        font-size: 0.8em;
+        background-color: rgba(0, 0, 0, 0.05);
+        padding: 3px 8px;
+        border-radius: 10px;
+        border: 1px solid rgba(0, 0, 0, 0.125);
+        white-space: nowrap;
       }
 
       /* Responsive styles */
@@ -307,7 +385,57 @@
     </style>
   </head>
   <body>
+    <div class="mb-1">
+      <nav class="navbar navbar-expand-md navbar-light bg-light">
+        <div class="container-fluid">
+          <button class="navbar-toggler navbar-toggler-right"
+                  type="button"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#navbarSupportedContent"
+                  aria-controls="navbarSupportedContent"
+                  aria-expanded="false"
+                  aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <img class="navbar-logo img-fluid align-top"
+               src="../../static/images/logos/favicon.ico"
+               alt="ChiGame Logo" />
+          <a class="navbar-brand" href="{% url 'home' %}">ChiGame</a>
+          <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'home' %}">Home</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'about' %}">About</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{% 'forums' %}">Forums</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'lobbies' %}">Lobbies</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link active" href="{% url 'achievements' %}">Achievements <span class="visually-hidden">(current)</span></a>
+              </li>
+            </ul>
+            <div class="ms-auto">
+              <button class="btn btn-primary toggle-button">View Emma's Profile</button>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </div>
     <div class="container">
+      <div class="user-info">
+        <div class="user-avatar">
+          <span class="large-avatar">👩🏼‍🦰</span>
+        </div>
+        <div>
+          <h2>Emma's Achievements</h2>
+          <p>Member since January 2023</p>
+        </div>
+      </div>
       <div class="user-stats">
         <h3>Achievement Progress</h3>
         <p>Overall: 23 achievements unlocked out of 35</p>
@@ -339,7 +467,7 @@
                 </div>
               </div>
               <div class="achievements-list">
-                <div class="achievement common pinned">
+                <div class="achievement common">
                   <div class="achievement-icon">
                     <span class="trophy-icon">
                       <img src="common.png" alt="Common Achievement" />
@@ -388,8 +516,11 @@
                     </span>
                   </div>
                   <div class="achievement-info">
-                    <h4>Completionist</h4>
-                    <p class="achievement-desc">Complete all challenges in the game</p>
+                    <h4>Automatic Generated Expand Button</h4>
+                    <p class="achievement-desc">
+                      This is a LOOOOOOOOOOOOOOOOOOONG place holder to test the expand button
+                      function
+                    </p>
                     <p class="achievement-date">Unlocked on April 5, 2025</p>
                   </div>
                   <span class="achievement-percent">2% of players</span>
@@ -487,20 +618,7 @@
         <div id="pinned-achievements">
           <h3>Pinned Achievements</h3>
           <div class="achievements-list">
-            <div class="achievement common">
-              <div class="achievement-icon">
-                <span class="trophy-icon">
-                  <img src="common.png" alt="Common Achievement" />
-                </span>
-              </div>
-              <div class="achievement-info">
-                <h4>First Jump</h4>
-                <p class="achievement-desc">Capture your first piece in Checkers</p>
-                <p class="achievement-date">Unlocked on March 10, 2025</p>
-              </div>
-              <span class="achievement-percent">95% of players</span>
-              <button class="pin-button">📌</button>
-            </div>
+            <!-- Pinned achievements will be added here dynamically -->
           </div>
         </div>
       </div>
@@ -542,24 +660,243 @@
           document.getElementById(tabId).classList.add('active');
         });
       });
+      // Achievement description expansion
+      document.addEventListener(
+        'DOMContentLoaded',
+        function() {
+          setTimeout(function() {
+            const achievementDescs = document.querySelectorAll('.achievement-desc');
 
-      // Pin achievement functionality (simplified for demo)
-      const pinButtons = document.querySelectorAll('.pin-button');
+            achievementDescs.forEach((desc) => {
+              // Skip very short text completely (under 25 characters)
+              if (desc.textContent.trim().length < 25) {
+                return;
+              }
 
-      pinButtons.forEach((button) => {
-        button.addEventListener('click', function() {
-          const achievement = this.closest('.achievement');
-          achievement.classList.toggle('pinned');
+              // Check if text is actually clipped by comparing height
+              const lineHeight = parseFloat(window.getComputedStyle(desc).lineHeight);
+              const actualHeight = desc.scrollHeight;
+              const computedHeight = desc.clientHeight;
 
-          // This would normally update the pinned achievements tab as well
-          // but for demo purposes we're keeping it simple
-        });
-        document.addEventListener('DOMContentLoaded', function() {
-          const progressElements = document.querySelectorAll('[data-progress]');
-          progressElements.forEach(element => {
-            const progressValue = element.getAttribute('data-progress');
-            element.style.width = progressValue + '%';
+              // Only consider overflowing if actual content height exceeds display height by 25%
+              const hasOverflow = actualHeight > computedHeight * 1.25;
+
+              // Remove any existing expand elements
+              const existingButton = desc.parentNode.querySelector('.expand-button');
+              const existingEllipsis = desc.parentNode.querySelector('.ellipsis');
+
+              if (existingButton) existingButton.remove();
+              if (existingEllipsis) existingEllipsis.remove();
+
+              // Only add expand button if actually overflowing
+              if (hasOverflow) {
+                // Create an expand button element
+                const expandButton = document.createElement('span');
+                expandButton.className = 'expand-button';
+                expandButton.innerHTML = '↓';
+                expandButton.setAttribute('aria-label', 'Expand description');
+
+                // Create a span for ellipsis
+                const ellipsis = document.createElement('span');
+                ellipsis.className = 'ellipsis';
+                ellipsis.textContent = '...';
+
+                // Add ellipsis and button after the description
+                desc.parentNode.insertBefore(ellipsis, desc.nextSibling);
+                desc.parentNode.insertBefore(expandButton, ellipsis.nextSibling);
+
+                // Add click handler
+                expandButton.addEventListener('click', function(e) {
+                  e.stopPropagation();
+                  const achievement = this.closest('.achievement');
+                  achievement.classList.toggle('expanded');
+
+                  // Update button text
+                  this.innerHTML = achievement.classList.contains('expanded') ? '↑' : '↓';
+
+                  // Toggle ellipsis visibility
+                  ellipsis.style.display = achievement.classList.contains('expanded') ?
+                    'none' :
+                    'inline';
+                });
+              }
+            });
+          }, 150);
+
+          const achievementDescs = document.querySelectorAll('.achievement-desc');
+
+          achievementDescs.forEach((desc) => {
+            // First test: Check if text is short enough not to need expansion at all
+            if (desc.textContent.length < 30) {
+              // Don't add any expand buttons or ellipses for very short text
+              return;
+            }
+
+            // Temporarily remove any width constraints to measure actual content
+            const originalStyle = desc.getAttribute('style') || '';
+            desc.style.whiteSpace = 'nowrap';
+            desc.style.position = 'static';
+            desc.style.width = 'auto';
+            desc.style.visibility = 'hidden';
+
+            // Get the natural width and parent container width
+            const naturalWidth = desc.scrollWidth;
+            const containerWidth = desc.parentElement.clientWidth - 80; // buffer for padding
+
+            // Restore original styling
+            desc.setAttribute('style', originalStyle);
+            desc.style.visibility = 'visible';
+
+            // Only add expand functionality if text would be too long
+            const wouldOverflow = naturalWidth > containerWidth;
+
+            if (wouldOverflow) {
+              // Create an expand button element
+              const expandButton = document.createElement('span');
+              expandButton.className = 'expand-button';
+              expandButton.innerHTML = '↓';
+              expandButton.setAttribute('aria-label', 'Expand description');
+
+              // Create a span for ellipsis
+              const ellipsis = document.createElement('span');
+              ellipsis.className = 'ellipsis';
+              ellipsis.textContent = '...';
+
+              // Add ellipsis and button after the description
+              desc.parentNode.insertBefore(ellipsis, desc.nextSibling);
+              desc.parentNode.insertBefore(expandButton, ellipsis.nextSibling);
+
+              // Add click handler
+              expandButton.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const achievement = this.closest('.achievement');
+                achievement.classList.toggle('expanded');
+
+                // Update button text
+                this.innerHTML = achievement.classList.contains('expanded') ? '↑' : '↓';
+
+                // Toggle ellipsis visibility
+                ellipsis.style.display = achievement.classList.contains('expanded') ?
+                  'none' :
+                  'inline';
+              });
+            }
           });
+        },
+        100
+      );
+      // Pin achievement functionality (simplified for demo)
+      const style = document.createElement('style');
+      style.textContent = `
+        .pin-button.active {
+          color: #0d6efd;
+          background-color: rgba(13, 110, 253, 0.1);
+          border-radius: 50%;
+        }
+      `;
+      document.head.appendChild(style);
+
+      // Improved achievement pinning functionality
+      document.addEventListener('DOMContentLoaded', function() {
+        // Initialize progress bars
+        const progressElements = document.querySelectorAll('[data-progress]');
+        progressElements.forEach((element) => {
+          const progressValue = element.getAttribute('data-progress');
+          element.style.width = progressValue + '%';
+        });
+
+        // Get references
+        const pinnedContainer = document.querySelector('#pinned-achievements .achievements-list');
+        const pinButtons = document.querySelectorAll('.pin-button');
+
+        // Clear any hard-coded pinned achievements
+        pinnedContainer.innerHTML = '';
+
+        // Add event listeners to pin buttons
+        pinButtons.forEach((button) => {
+          button.addEventListener('click', function(e) {
+            e.stopPropagation(); // Prevent event bubbling
+
+            const achievement = this.closest('.achievement');
+            const isPinned = achievement.classList.toggle('pinned');
+            this.classList.toggle('active', isPinned); // Toggle blue highlight
+
+            if (isPinned) {
+              // Pin the achievement
+              const gameTitle =
+                achievement.closest('.game-card')?.querySelector('.game-title')?.textContent || '';
+              const clonedAchievement = achievement.cloneNode(true);
+
+              // If this achievement comes from a game card, add the game title to the description
+              const desc = clonedAchievement.querySelector('.achievement-desc');
+              if (gameTitle && desc) {
+                const originalText = desc.textContent;
+                if (!originalText.includes(gameTitle)) {
+                  desc.textContent = originalText + ' in ' + gameTitle;
+                }
+              }
+
+              // Add click handler to the pin button in the cloned achievement
+              const clonedPinButton = clonedAchievement.querySelector('.pin-button');
+              clonedPinButton.classList.add('active');
+              clonedPinButton.addEventListener('click', function() {
+                // When unpinning from the pinned tab, also unpin from original location
+                pinnedContainer.removeChild(clonedAchievement);
+                achievement.classList.remove('pinned');
+                button.classList.remove('active');
+
+                // Update empty state
+                updateEmptyPinnedState();
+              });
+
+              // Add to pinned achievements tab
+              pinnedContainer.appendChild(clonedAchievement);
+            } else {
+              // Unpin the achievement - remove from pinned tab
+              const achievementTitle =
+                achievement.querySelector('.achievement-info h4').textContent;
+              const pinnedAchievements = pinnedContainer.querySelectorAll('.achievement');
+
+              pinnedAchievements.forEach((pinnedAchievement) => {
+                const pinnedTitle =
+                  pinnedAchievement.querySelector('.achievement-info h4').textContent;
+                if (pinnedTitle === achievementTitle) {
+                  pinnedContainer.removeChild(pinnedAchievement);
+                }
+              });
+            }
+
+            // Update empty state
+            updateEmptyPinnedState();
+          });
+        });
+
+        // Function to check if pinned tab is empty and show a message if needed
+        function updateEmptyPinnedState() {
+          if (pinnedContainer.children.length === 0) {
+            const emptyMessage = document.createElement('div');
+            emptyMessage.className = 'empty-pinned-message';
+            emptyMessage.innerHTML =
+              '<p>No achievements pinned yet. Pin your favorite achievements to see them here!</p>';
+            pinnedContainer.appendChild(emptyMessage);
+          } else {
+            const emptyMessage = pinnedContainer.querySelector('.empty-pinned-message');
+            if (emptyMessage) {
+              pinnedContainer.removeChild(emptyMessage);
+            }
+          }
+        }
+
+        // Initialize empty state
+        updateEmptyPinnedState();
+
+        // Check for already pinned achievements in the original markup
+        document.querySelectorAll('.achievement.pinned').forEach((achievement) => {
+          // Find and trigger click on the pin button to properly initialize the pinned tab
+          const pinButton = achievement.querySelector('.pin-button');
+          if (pinButton) {
+            pinButton.click();
+          }
         });
       });
     </script>
