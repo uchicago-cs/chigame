@@ -12,19 +12,21 @@ from django.utils.translation import gettext_lazy as _
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_POST
 from django.views.generic import DetailView, RedirectView, UpdateView
+from django_tables2 import SingleTableView
 
-from chigame.games.models import Lobby, Player, Tournament
+from chigame.games.models import GameList, Lobby, Player, Tournament
 
 from .models import (
     FriendInvitation,
     FriendRequestNotification,
+    Group,
     GroupInvitationNotification,
     MatchInvitationNotification,
     Notification,
     NotificationLabel,
     UserProfile,
 )
-from .tables import UserTable
+from .tables import GroupTable, UserTable
 
 User = get_user_model()
 
@@ -53,6 +55,24 @@ class BaseUserUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
 
     def get_object(self):
         return self.request.user
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        try:
+            context["profile"] = self.request.user.userprofile
+        except UserProfile.DoesNotExist:
+            context["profile"] = None
+        return context
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        try:
+            profile = self.request.user.userprofile
+            profile.bio = self.request.POST.get("bio", profile.bio)
+            profile.save()
+        except UserProfile.DoesNotExist:
+            pass
+        return response
 
 
 class NameUpdateView(BaseUserUpdateView):
@@ -179,7 +199,8 @@ def user_profile_detail_view(request, pk):
     if request.user.is_authenticated and request.user.pk == pk:
         # if user is accessing their own profile, create a profile if it doesn't exist
         profile = UserProfile.get_or_create_profile(request.user)
-        return render(request, "users/userprofile_detail.html", {"profile": profile})
+        game_lists = GameList.objects.filter(created_by=request.user)
+        return render(request, "users/userprofile_detail.html", {"profile": profile, "game_lists": game_lists})
     else:
         # fetch another user's profile
         try:
@@ -247,6 +268,7 @@ def send_friend_invitation(request, pk):
             message=Notification.DEFAULT_MESSAGES[Notification.FRIEND_REQUEST],
             category="social",
         )
+
     # if the other user has already sent a friend request, return an error
     elif invitation.sender.pk == other_user.pk:
         messages.info(request, "You already have a pending friend invitation from this profile.")
@@ -518,9 +540,11 @@ def friend_list_view(request, pk):
     target_user = get_object_or_404(User, pk=pk)
     # fetch the target user's friends
     friends = target_user.friends.all()
+    context = {"friends": friends}
+
     # if the target user is the current user, render the friends list
     if pk == user.id:
-        return render(request, "users/user_friend_list.html", {"friends": friends})
+        return render(request, "users/user_friend_list.html", context)
     else:
         messages.error(request, "Not your friend list!")
         return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
@@ -783,3 +807,14 @@ def notifications_by_label(request, label_id):
         "notifications": notifications,
     }
     return render(request, "users/notifications_by_label.html", context)
+
+
+class GroupListView(SingleTableView):
+    model = Group
+    table_class = GroupTable
+    template_name = "users/group_list.html"
+
+
+class GroupDetailView(DetailView):
+    model = Group
+    template_name = "users/group_detail.html"
