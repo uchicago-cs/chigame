@@ -305,16 +305,9 @@
 
         // Update streak display in dev panel
         function updateStreakDisplay() {
-            // Get streaks from localStorage
-            const streaksData = localStorage.getItem("gameStreaks");
-            if (streaksData) {
-                const streaks = JSON.parse(streaksData);
-                document.getElementById('dev-solo-streak').textContent = streaks.soloStreak || 0;
-                document.getElementById('dev-daily-streak').textContent = streaks.dailyStreak || 0;
-            } else {
-                document.getElementById('dev-solo-streak').textContent = 0;
-                document.getElementById('dev-daily-streak').textContent = 0;
-            }
+            const streaks = getStreaks();
+            document.getElementById('dev-solo-streak').textContent = streaks.soloStreak || 0;
+            document.getElementById('dev-daily-streak').textContent = streaks.dailyStreak || 0;
         }
 
         // Streak Management Functions
