@@ -572,6 +572,7 @@ function movePiece(piece, moveX, moveY) {
     y: newY,
     duration: 250, // I think best to have this in 200-300 ms range
     ease: 'Power3',
+
     // onComplete is needed so crown icon only loads after animation is over
     onComplete: () => {
       // Check for king promotion
@@ -1245,12 +1246,35 @@ function resizeGame(percentage) {
 // Event listener for the resize slider
 document.addEventListener('DOMContentLoaded', () => {
   const resizeSlider = document.getElementById('resize-slider');
-  const resizeValue = document.getElementById('resize-value');
+  const resizeDisplay = document.getElementById('resize-display');
 
-  resizeSlider.addEventListener('input', () => {
+  function updateSize() {
     const percent = parseInt(resizeSlider.value, 10);
-    resizeValue.textContent = percent + '%';
     resizeGame(percent / 100);
+    resizeDisplay.textContent = `${resizeSlider.value}%`;
+
+    // math to align the slider
+    const thumbX = (resizeSlider.value - resizeSlider.min) /
+      (resizeSlider.max - resizeSlider.min) *
+      (resizeSlider.getBoundingClientRect().width -
+        parseFloat(window.getComputedStyle(resizeSlider).getPropertyValue('height'))) +
+      resizeSlider.offsetLeft;
+
+    resizeDisplay.style.left = `${thumbX}px`;
+    resizeDisplay.style.top = `${resizeSlider.offsetTop - 25}px`;
+    resizeDisplay.style.transform = `translate(-25%, 0)`;
+  }
+
+  resizeSlider.addEventListener("input", updateSize);
+  resizeSlider.addEventListener("mouseover", () => {
+    resizeDisplay.style.opacity = "100";
+    resizeDisplay.style.visibility = "visible";
+    updateSize();
+  });
+
+  resizeSlider.addEventListener("mouseout", () => {
+    resizeDisplay.style.opacity = "0";
+    resizeDisplay.style.visibility = "hidden";
   });
 });
 
