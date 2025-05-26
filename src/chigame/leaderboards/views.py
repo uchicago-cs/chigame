@@ -3,11 +3,9 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
 from chigame.games.models import Game
-
 from chigame.leaderboards.models import Leaderboard, LeaderboardEntry, LeaderboardPrivacySetting, Region
 
 from .forms import LeaderboardPrivacySettingForm
-
 
 
 def leaderboard_view(request, game_id):

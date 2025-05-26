@@ -82,7 +82,6 @@ class LeaderboardPrivacySetting(models.Model):
         else:
             return f"{self.user.user.name}'s global settings"
 
-
     @classmethod
     def get_user_setting(cls, user, game=None, leaderboard=None):
         """
