@@ -59,6 +59,18 @@
           <button id="toggle-colorblind" class="setting-btn">Toggle Colorblind Mode</button>
           <button id="toggle-coordinates" class="setting-btn">Toggle Coordinates</button>
           <button id="toggle-mute" class="setting-btn">Mute</button>
+          <!-- Volume Slider -->
+          <div class="setting-option">
+            <i class="fa fa-volume-up"></i>
+            <input type="range"
+                   id="volume-slider"
+                   min="0"
+                   max="300"
+                   value="100"
+                   step="5"
+                   title="volume slider" />
+            <div id="volume-display" class="value-display"></div>
+          </div>
           <!-- Board Scale Slider -->
           <div class="setting-option">
             <i class="fa-solid fa-maximize"></i>
@@ -82,5 +94,7 @@
         Black: 0
       </div>
     </div>
+    <div id="endScreenPiece" class="hidden"></div>
+    <div id="endScreenText" class="hidden">Red Wins!</div>
   </body>
 </html>
