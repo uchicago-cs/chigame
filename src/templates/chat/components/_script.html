@@ -1,4 +1,7 @@
 <script>
+  let replyToMessageId = null;
+  let replyToUsername = null;
+  let replyToContent = null;
   const protocol = window.location.protocol === "https:" ? "wss://" : "ws://";
   const chatId = "{{ chat.id }}";
   const chatSocket = new WebSocket(
@@ -14,6 +17,13 @@
   };
 
   document.querySelector("#id_message_send_input").focus();
+  document.getElementById("cancel-reply").addEventListener("click", () => {
+    replyToMessageId = null;
+    replyToUsername = null;
+    replyToContent = null;
+    document.getElementById('replying-to-preview').classList.add('d-none');
+  });
+
   document.querySelector("#id_message_send_input").onkeyup = function(e) {
     if (e.key === "Enter") {
       document.querySelector("#id_message_send_button").click();
@@ -21,22 +31,35 @@
   };
 
   document.querySelector("#id_message_send_button").onclick = function(e) {
-    var messageInput = document.querySelector("#id_message_send_input").value;
+    const inputElement = document.querySelector("#id_message_send_input");
+    const messageInput = inputElement.value;
     if (messageInput.trim() === "") return;
 
     chatSocket.send(
       JSON.stringify({
         message: messageInput,
         user_id: "{{ request.user.id }}",
-        reply_to: replyToMessageId
+        reply_to: replyToMessageId,
       })
     );
 
-    // Clear reply state
+    // ✅ Properly clear input and reset reply state
+    inputElement.value = "";
     replyToMessageId = null;
     replyToUsername = null;
     replyToContent = null;
+    document.getElementById("replying-to-preview").classList.add("d-none");
   };
+
+
+  function escapeHTML(str) {
+    if (typeof str !== "string") return "";
+    return str.replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
 
   /**
    * This function is called when a message is received from the server.
@@ -53,13 +76,27 @@
 
     // Create message container
     const messageContainer = document.createElement("div");
-    messageContainer.className = `mb-3 ${data.user_id === "{{ request.user.id }}" ? "align-self-end" : "align-self-start"}`;
+    messageContainer.className = `mb-3 ${
+      data.user_id === "{{ request.user.id }}"
+        ? "align-self-end"
+        : "align-self-start"
+    }`;
     messageContainer.setAttribute("data-message-id", data.message_id);
-    messageContainer.setAttribute("oncontextmenu", `showContextMenu(event, ${data.message_id}, '${data.username}', '${data.message}'); return false;`);
+    const escapedUsername = escapeHTML(data.username);
+    const escapedMessage = escapeHTML(data.message);
+    messageContainer.setAttribute("oncontextmenu", `showContextMenu(event, ${data.message_id}, '${escapedUsername}', '${escapedMessage}'); return false;`);
 
+    messageContainer.setAttribute(
+      "oncontextmenu",
+      `showContextMenu(event, ${data.message_id}, '${escapedUsername}', '${escapedMessage}'); return false;`
+    );
     // Create message bubble
     const messageBubble = document.createElement("div");
-    messageBubble.className = `${data.user_id === "{{ request.user.id }}" ? "bg-success-subtle" : "bg-white"} rounded p-2 shadow-sm`;
+    messageBubble.className = `${
+      data.user_id === "{{ request.user.id }}"
+        ? "bg-success-subtle"
+        : "bg-white"
+    } rounded p-2 shadow-sm`;
     messageBubble.style.maxWidth = "80%";
 
     // Add reply preview if this is a reply
@@ -94,8 +131,8 @@
     const timestamp = document.createElement("div");
     timestamp.className = "text-end text-muted small mt-1";
     timestamp.textContent = new Date().toLocaleTimeString([], {
-      hour: '2-digit',
-      minute: '2-digit'
+      hour: "2-digit",
+      minute: "2-digit",
     });
 
     // Assemble message
@@ -139,10 +176,20 @@
       // Show collapse button only in floating mode
       if (chatContainer.classList.contains("floating-chat")) {
         collapseButton.classList.remove("d-none");
+        collapseButton.classList.remove("d-none");
       } else {
         collapseButton.classList.add("d-none");
-        chatContainer.classList.remove("collapsed-chat");
+
+        if (collapseButton) {
+          collapseButton.classList.remove("d-none");
+        }
       }
+      if (collapseButton) {
+        collapseButton.classList.add("d-none");
+      }
+
+      chatContainer.classList.remove("collapsed-chat");
+
     });
   }
 </script>
