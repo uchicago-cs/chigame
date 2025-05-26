@@ -1651,6 +1651,7 @@ def play_embedded_game(request, pk):
 
     return render(request, "games/embedded_game.html", context)
 
+
 # Placeholder Game
 @login_required
 def coin_flip_game(request, pk):
@@ -1796,7 +1797,6 @@ def remove_from_gamelist(request, pk, list_pk):
     game_list = get_object_or_404(GameList, pk=list_pk, created_by=request.user)
     game_list.games.remove(game)
     return redirect("game-detail", pk=pk)
-
 
 
 # Tournament Feedback Views
