@@ -1,7 +1,6 @@
 from django.urls import path
 
 from . import views
-from .views import leaderboard_view
 
 urlpatterns = [
     path("", views.landing_page_view, name="leaderboards_landing"),
