@@ -27,6 +27,7 @@
             <button id="unlock-achievement">Unlock Achievement</button>
             <button id="lock-achievement">Lock Achievement</button>
             <button id="show-notification">Show Notification</button>
+            <button id="unlock-multiple">Unlock Multiple Achievements</button>
             <button id="clear-all">Clear All Achievements</button>
             <button id="unlock-all">Unlock All Achievements</button>
             <div>
@@ -230,10 +231,25 @@
             if (achievementId) {
                 const achievement = window.Achievements.achievements.find(a => a.id === achievementId);
                 if (achievement) {
-                    window.Achievements.showAchievementNotification(achievement);
+                    window.Achievements.queueAchievementNotification(achievement);
                 }
             } else {
                 alert('Please select an achievement first');
+            }
+        });
+
+        // Unlock multiple achievements
+        document.getElementById('unlock-multiple').addEventListener('click', function() {
+            if (confirm('This will unlock 3 achievements at once to test notification queue. Continue?')) {
+                // Unlock a set of predetermined achievements
+                const testAchievements = ['first_win', 'first_guess', 'clutch_guess'];
+
+                // Queue these achievements with small delays to simulate them being triggered in sequence
+                testAchievements.forEach((achievementId, index) => {
+                    window.Achievements.unlockAchievement(achievementId);
+                });
+
+                alert('Test complete - 3 achievements were queued for display');
             }
         });
 
