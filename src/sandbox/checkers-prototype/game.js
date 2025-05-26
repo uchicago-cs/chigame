@@ -557,6 +557,9 @@ function movePiece(piece, moveX, moveY) {
   if (Math.abs(dx) === 2 && Math.abs(dy) === 2) {
     const captured = getPiece(piece.x + dx / 2, piece.y + dy / 2);
     if (captured) {
+      if (captured.isKing && captured.kingIcon) {
+        captured.kingIcon.destroy();
+      }
       captured.sprite.destroy(); // delete the sprite (remove from display state)
       if (captured.kingIcon) captured.kingIcon.destroy(); // destroy the icon as well
       pieces = pieces.filter((p) => p !== captured); // remove it from the array (game state)
@@ -758,9 +761,7 @@ function giveHint() {
 // helper function to highlight the valid moves for the selected piece
 function highlightValidMoves(scene, piece) {
   clearHighlightedTiles(); // remove any previous highlights
-
   var jumpPaths = getJumpPaths(piece);
-
   if (jumpPaths.length > 0) {
     // Highlight all final landing squares of all jump paths
     for (var i = 0; i < jumpPaths.length; i++) {
@@ -837,11 +838,13 @@ function highlightValidMoves(scene, piece) {
 function executeJumpChain(piece, jump) {
   for (var i = 0; i < jump.captures.length; i++) {
     var captured = jump.captures[i];
+    if (captured.isKing && captured.kingIcon) {
+      captured.kingIcon.destroy();
+    }
     captured.sprite.destroy();
     pieces = pieces.filter(function (p) {
       return p !== captured;
     });
-
     if (currentPlayer === lightPiece) {
       redCaptured++;
     } else {
