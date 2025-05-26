@@ -147,6 +147,42 @@ def user_achievements(request, pk=None, status=AchievementType.ALL, game_id=None
         processed_achievements_for_game = []
 
         for achievement in achievements_for_game:
+            is_unlocked = False
+            progress = 0
+            pinned = False
+            date_earned = None
+
+            # Check if the user has this achievement in our lookup map
+            user_achievement = user_achievements_map.get(achievement.id)
+
+            if user_achievement:
+                # User has some record of this achievement
+                if achievement.threshold is None or achievement.threshold == 0:
+                    # For non-progress based achievements
+                    is_unlocked = user_achievement.date_earned is not None
+                else:
+                    # For progress-based achievements
+                    is_unlocked = (
+                        user_achievement.progress is not None and user_achievement.progress >= achievement.threshold
+                    )
+
+                progress = user_achievement.progress or 0
+                pinned = user_achievement.pinned
+                date_earned = user_achievement.date_earned
+
+            # Add template-specific attributes
+            achievement.is_unlocked_for_template = is_unlocked
+            achievement.progress_for_template = progress
+            achievement.pinned_for_template = pinned
+            achievement.date_earned_for_template = date_earned
+
+            # Add status for template
+            if is_unlocked:
+                achievement.status_for_template = "completed"
+            elif progress > 0:
+                achievement.status_for_template = "in_progress"
+            else:
+                achievement.status_for_template = "not_started"
             # Check if the user has this achievement in our lookup map
             user_achievement = user_achievements_map.get(achievement.id)
 
@@ -213,7 +249,7 @@ def user_achievements(request, pk=None, status=AchievementType.ALL, game_id=None
         # Add game data to the list
         games_with_achievements_data.append(
             {
-                "game": game_instance,  # game_instance already has total_achievements attribute set
+                "game": game_instance,
                 "achievements": processed_achievements_for_game,
                 "progress": game_progress_percentage,
                 "truly_unlocked_for_game": game_truly_unlocked_count,
