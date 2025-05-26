@@ -714,9 +714,7 @@ function giveHint() {
 // helper function to highlight the valid moves for the selected piece
 function highlightValidMoves(scene, piece) {
   clearHighlightedTiles(); // remove any previous highlights
-
   var jumpPaths = getJumpPaths(piece);
-
   if (jumpPaths.length > 0) {
     // Highlight all final landing squares of all jump paths
     for (var i = 0; i < jumpPaths.length; i++) {
@@ -793,7 +791,6 @@ function highlightValidMoves(scene, piece) {
 function executeJumpChain(piece, jump) {
   for (var i = 0; i < jump.captures.length; i++) {
     var captured = jump.captures[i];
-    
     if (captured.isKing && captured.kingIcon) {
       captured.kingIcon.destroy();
     }
@@ -801,7 +798,6 @@ function executeJumpChain(piece, jump) {
     pieces = pieces.filter(function (p) {
       return p !== captured;
     });
-
     if (currentPlayer === lightPiece) {
       redCaptured++;
     } else {
