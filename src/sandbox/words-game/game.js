@@ -5,44 +5,104 @@ window.addEventListener("load", async () => {
     const modalContent = document.querySelector('.modal-content');
     const overlay = document.getElementById('menu-overlay');
 
-    //restore settings
-    restoreSettings();
+    // Ensure modal is initially invisible with no transitions
+    document.documentElement.classList.add('theme-transition-disabled');
+    modal.classList.remove('visible');
+    modal.style.opacity = '0';
 
-    // Show the overlay on load for the word length modal - make it immediately visible
-    overlay.classList.add('visible');
-    overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
-
-    // Force a reflow to ensure the background change is applied immediately
-    overlay.offsetHeight;
-
-    // Stop propagation on modal content to prevent clicks from closing it
     if (modalContent) {
-        modalContent.addEventListener('click', (event) => {
-            event.stopPropagation();
-        });
-
-        // Set initial state for animation
         modalContent.style.transform = 'scale(0.95)';
         modalContent.style.opacity = '0';
     }
 
-    // Ensure modal content shows with animation - with a small delay
-    setTimeout(() => {
-        if (modal.classList.contains('visible')) {
-            modal.style.opacity = '1';
-            if (modalContent) {
-                modalContent.style.opacity = '1';
-                modalContent.style.transform = 'scale(1)';
-            }
+    // Restore settings first
+    restoreSettings();
+
+    // Check if there's a game in progress before showing the modal
+    if (await restoreGameState()) {
+        // If there's a saved game, don't show the modal
+        await loadWords();
+        createSquares();
+        setupKeyboard();
+
+        // Render guessed letters
+        guessedWords.forEach((wordArr, rowIndex) => {
+            const colors = calculateTileColors(wordArr, word);
+            wordArr.forEach((letter, letterIndex) => {
+                const index = rowIndex * wordLength + letterIndex + 1;
+                const square = document.getElementById(index);
+                const tileColor = colors[letterIndex];
+                square.textContent = letter.toUpperCase();
+                square.style.backgroundColor = tileColor;
+                square.style.borderColor = tileColor;
+                square.style.color = "white";
+
+                const keyButton = document.querySelector(`[data-key="${letter}"]`);
+                if (keyButton && keyButton.style.backgroundColor !== COLOR_CORRECT) {
+                    if (keyButton.style.backgroundColor !== COLOR_OFF || tileColor === COLOR_CORRECT) {
+                        keyButton.style.backgroundColor = tileColor;
+                        keyButton.style.borderColor = tileColor;
+                        keyButton.style.color = "white";
+                    }
+                }
+            });
+        });
+
+        // Handle game state saved at end of game
+        if (gameOver) {
+            showEndScreen(gameWon);
         }
-    }, ANIMATION_DELAY);
+
+        // Re-enable transitions after game state is restored
+        setTimeout(() => {
+            document.documentElement.classList.remove('theme-transition-disabled');
+        }, 50);
+    } else {
+        // Only show the modal if there's no game in progress
+
+        // Stop propagation on modal content to prevent clicks from closing it
+        if (modalContent) {
+            modalContent.addEventListener('click', (event) => {
+                event.stopPropagation();
+            });
+        }
+
+        // Show the modal with proper animation
+        setTimeout(() => {
+            // Re-enable transitions for the animation
+            document.documentElement.classList.remove('theme-transition-disabled');
+
+            // Show the overlay for the word length modal
+            overlay.classList.add('visible');
+            overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+
+            // Force a reflow to ensure the background change is applied immediately
+            overlay.offsetHeight;
+
+            // Now make the modal visible with animation
+            modal.classList.add('visible');
+            modal.style.opacity = '1';
+
+            // Ensure modal content shows with animation
+            setTimeout(() => {
+                if (modalContent) {
+                    modalContent.style.opacity = '1';
+                    modalContent.style.transform = 'scale(1)';
+                }
+            }, ANIMATION_DELAY);
+        }, 100); // Slight delay to ensure everything is ready
+    }
 
     startBtn.addEventListener("click", async () => {
-        if(restoreGameState() && !changeLengthToggle){
+        // Always close the modal first
+        closeModal(modal);
+
+        // Check if we're restoring a game that wasn't triggered by changing length
+        if(await restoreGameState() && !changeLengthToggle){
             return;
         }
-        // Reset game state if we're changing length in the middle of a game
-        // Reset game state
+
+        // Reset game state if we're changing length or starting a new game
         const key = mode === 'solo' ? 'soloGameState' : 'dailyGameState';
         localStorage.removeItem(key);
         guessedWords = [[]];
@@ -66,52 +126,12 @@ window.addEventListener("load", async () => {
 
         wordLength = parseInt(selector.value);
 
-        // Close with animation
-        closeModal(modal);
-
         await loadWords();
         createSquares();
         getNewWord();
         setupKeyboard();
         changeLengthToggle = false;
     });
-
-    //if there is a current game state then we should restore it on reload
-    if(restoreGameState()){
-        closeModal(modal);
-
-        //re set up board
-        await loadWords();
-        createSquares();
-        setupKeyboard();
-
-        // render guessed letters
-        guessedWords.forEach((wordArr, rowIndex) => {
-            const colors = calculateTileColors(wordArr, word);
-            wordArr.forEach((letter, letterIndex) => {
-                const index = rowIndex * wordLength + letterIndex + 1;
-                const square = document.getElementById(index);
-                const tileColor = colors[letterIndex];
-                square.textContent = letter.toUpperCase();
-                square.style.backgroundColor = tileColor;
-                square.style.borderColor = tileColor;
-                square.style.color = "white";
-
-                const keyButton = document.querySelector(`[data-key="${letter}"]`);
-                if (keyButton && keyButton.style.backgroundColor !== COLOR_CORRECT) {
-                    if (keyButton.style.backgroundColor !== COLOR_OFF || tileColor === COLOR_CORRECT) {
-                        keyButton.style.backgroundColor = tileColor;
-                        keyButton.style.borderColor = tileColor;
-                        keyButton.style.color = "white";
-                    }
-                }
-            });
-        });
-        //handle game state saved at end of game
-        if(gameOver){
-            showEndScreen(gameWon);
-        }
-    }
 
     // Attach the single physical keyboard handler once after DOM is loaded
     document.addEventListener('keydown', gameKeyDownHandler);
@@ -211,6 +231,14 @@ function openModal(modal) {
 
 // Function to close modal with animation
 function closeModal(modal) {
+    // Check if the modal is already closed or in the process of closing
+    if (!modal.classList.contains('visible') || modal.style.opacity === '0') {
+        return; // Prevent double-closing which can cause animation issues
+    }
+
+    // Ensure transitions are enabled
+    document.documentElement.classList.remove('theme-transition-disabled');
+
     // Fade out the overlay immediately if no other menu is open
     if (!howToPlayText.classList.contains('visible') &&
         !settingsScreen.classList.contains('visible')) {
@@ -232,13 +260,6 @@ function closeModal(modal) {
     const handleTransitionEnd = function() {
         // Remove visibility class after animation completes
         modal.classList.remove('visible');
-        modal.style.opacity = ''; // Reset for next time
-
-        // Reset content transform
-        if (content) {
-            content.style.transform = '';
-            content.style.opacity = '';
-        }
 
         // Only fully remove the overlay when the modal transition completes
         // and if no other menu is open
@@ -246,10 +267,8 @@ function closeModal(modal) {
             !settingsScreen.classList.contains('visible')) {
             // Just remove the visibility class, the fade out already started
             const overlay = document.getElementById('menu-overlay');
-            setTimeout(() => {
-                overlay.classList.remove('visible');
-                overlay.style.backgroundColor = '';
-            }, 50); // Small delay to ensure it's synchronized
+            overlay.classList.remove('visible');
+            overlay.style.backgroundColor = '';
         }
 
         // Remove the event listener
@@ -263,13 +282,6 @@ function closeModal(modal) {
     setTimeout(() => {
         if (modal.classList.contains('visible')) {
             modal.classList.remove('visible');
-            modal.style.opacity = ''; // Reset for next time
-
-            // Reset content transform
-            if (content) {
-                content.style.transform = '';
-                content.style.opacity = '';
-            }
 
             // Only fully remove the overlay if no other menu is open
             if (!howToPlayText.classList.contains('visible') &&
@@ -894,7 +906,7 @@ function saveGameState(){
     localStorage.setItem(key, JSON.stringify(gameState));
 }
 
-function restoreGameState(){
+async function restoreGameState(){
     const key = mode === 'solo' ? 'soloGameState' : 'dailyGameState';
     const gameStateJSON = localStorage.getItem(key);
     if(!gameStateJSON){
@@ -914,7 +926,6 @@ function restoreGameState(){
     return true;
 }
 
-//Function to save visual and audio settings
 function saveSettings(){
     const settings = {
         darkMode: document.getElementById("dark-mode-toggle").checked,
@@ -925,7 +936,6 @@ function saveSettings(){
     localStorage.setItem("gameSettings", JSON.stringify(settings));
 }
 
-//Function restores settings
 function restoreSettings() {
     const saved = localStorage.getItem("gameSettings");
     if (!saved){
