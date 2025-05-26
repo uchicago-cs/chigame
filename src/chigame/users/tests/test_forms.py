@@ -6,11 +6,13 @@ import pytest
 from django.forms import EmailField
 from django.test import RequestFactory
 from django.utils.translation import gettext_lazy as _
-from factory import Faker
+from faker import Faker
 
 from chigame.users.forms import UserAdminChangeForm, UserAdminCreationForm, UserSignupForm, generate_unique_username
 from chigame.users.models import User
 from chigame.users.tests.factories import UserFactory
+
+faker = Faker()
 
 
 class TestUserAdminCreationForm:
@@ -26,13 +28,16 @@ class TestUserAdminCreationForm:
             3) The desired error message is raised
         """
 
-        # The user already exists,
-        # hence cannot be created.
+        email = faker.unqiue.email()
+        password = faker.password(length=12)
+
+        UserFactory(email=email)
+
         form = UserAdminCreationForm(
             {
-                "email": user.email,
-                "password1": user.password,
-                "password2": user.password,
+                "email": email,
+                "password1": password,
+                "password2": password,
             }
         )
 
@@ -46,8 +51,8 @@ class TestUserAdminCreationForm:
         """
         Tests that the form is valid when email and matching passwords are provided.
         """
-        fake_email = Faker("email").generate({})
-        fake_password = Faker("password", length=12).generate({})
+        fake_email = faker.unique.email()
+        fake_password = faker.password(length=12)
         form = UserAdminCreationForm(
             {
                 "email": fake_email,
@@ -74,8 +79,8 @@ class TestUserSignupForm:
         """
         Ensure that a unique username is automatically generated during signup.
         """
-        fake_email = Faker("email").generate({})
-        fake_password = Faker("password", length=14).generate({})
+        fake_email = faker.unique.email()
+        fake_password = faker.password(length=12)
         form = UserSignupForm()
         form.cleaned_data = {
             "email": fake_email,
