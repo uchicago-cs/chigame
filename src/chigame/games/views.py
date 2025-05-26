@@ -24,7 +24,7 @@ from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.utils.timezone import now
 from django.views import View
-from django.views.generic import CreateView, DeleteView, DetailView, ListView, TemplateView, UpdateView
+from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 from django.views.generic.edit import FormMixin
 from rest_framework import status
 
@@ -35,7 +35,7 @@ from rest_framework.response import Response
 from chigame.users.models import User
 
 from .filters import LobbyFilter
-from .forms import GameForm, IFGameForm, LobbyForm, ReviewForm
+from .forms import GameForm, LobbyForm, ReviewForm
 from .models import (
     Chat,
     Checkers,
@@ -43,8 +43,8 @@ from .models import (
     CheckersTurn,
     Feedback,
     Game,
+    GameHistory,
     GameList,
-    InteractiveFictionGame,
     Lobby,
     Match,
     Player,
@@ -108,6 +108,9 @@ class GameDetailView(LoginRequiredMixin, FormMixin, DetailView):
     # for twine files, redirect to different IF view
     def dispatch(self, request, *args, **kwargs):
         self.object = self.get_object()
+        # Redirect to IF detail if this is a Twine file game
+        if self.object.twine_file and self.object.twine_file.name.endswith(".html"):
+            return redirect("interactive-fiction-detail", pk=self.object.pk)
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
@@ -198,6 +201,73 @@ class GameEditView(UserPassesTestMixin, UpdateView):
         context = super().get_context_data(**kwargs)
         context["is_create"] = False
         return context
+
+
+# =============== Game: Create and Join Matches  ===============
+class MatchCreateView(CreateView):
+    model = Match
+    template_name = "matches/match_create.html"
+    fields = [
+        "date_played",
+        "players",
+    ]
+
+    def dispatch(self, request, *args, **kwargs):
+        self.game = get_object_or_404(Game, pk=self.kwargs["pk"])
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        # remove the match creator from the players list
+        form.fields["players"].queryset = User.objects.exclude(pk=self.request.user.pk)
+        return form
+
+    def form_valid(self, form):
+        user = self.request.user
+        players = form.cleaned_data["players"]
+
+        # add match creator to the list of players automatically
+        all_players = list(players) + [user]
+
+        # min/max players rules
+        if len(all_players) < self.game.min_players:
+            messages.error(self.request, f"A match must have at least {self.game.min_players} players.")
+            return redirect("match-create", pk=self.game.pk)
+
+        if len(all_players) > self.game.max_players:
+            messages.error(self.request, f"A match cannot have more than {self.game.max_players} players.")
+            return redirect("match-create", pk=self.game.pk)
+
+        # Lobby creation
+        lobby = Lobby.objects.create(
+            match_status=Lobby.Lobbied,
+            name=f"{self.game.name} Lobby by {user.username}",
+            game=self.game,
+            game_mod_status=Lobby.Default_game,
+            created_by=user,
+            min_players=self.game.min_players,
+            max_players=self.game.max_players,
+        )
+        lobby.members.set(all_players)
+
+        # Match creation
+        match = form.save(commit=False)
+        match.game = self.game
+        match.lobby = lobby
+        match.save()
+        match.players.set(all_players)
+
+        self.object = match
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_success_url(self):
+        return reverse("match-code", kwargs={"pk": self.object.lobby.pk})
+
+
+class MatchCodeView(LoginRequiredMixin, DetailView):
+    model = Lobby
+    template_name = "matches/match_code.html"
+    context_object_name = "lobby"
 
 
 # =============== BGG Searching =================
@@ -561,8 +631,40 @@ def search_results(request):
 
 
 # =============== Interactive Fiction Views ===============
-class InteractiveFictionView(TemplateView):
+class InteractiveFictionDetailView(LoginRequiredMixin, FormMixin, DetailView):
+    model = Game
+    template_name = "games/interactive-fiction/IF_game_detail.html"
+    context_object_name = "game"
+    form_class = ReviewForm
+
+    def get_success_url(self):
+        return reverse("interactive-fiction-detail", kwargs={"pk": self.object.pk})
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["form"] = self.get_form()
+        context["reviews"] = Review.objects.filter(game=self.object)
+        if self.object.twine_file:
+            context["uploaded_file_url"] = self.object.twine_file.url
+        return context
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        form = self.get_form()
+        if form.is_valid():
+            review = form.save(commit=False)
+            review.user = request.user
+            review.game = self.object
+            review.save()
+            return HttpResponseRedirect(self.get_success_url())
+        return self.form_invalid(form)
+
+
+class IFGameCreateView(CreateView):
+    model = Game
+    form_class = GameForm
     template_name = "games/interactive-fiction/IF_game_create.html"
+    raise_exception = True  # if user is not staff member, raise exception
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -587,18 +689,17 @@ class InteractiveFictionView(TemplateView):
         return context
 
 
-class IFGameCreateView(UserPassesTestMixin, CreateView):
-    model = InteractiveFictionGame
-    form_class = IFGameForm
-    template_name = "games/interactive-fiction/IF_game_create.html"
+class GameDeleteView(DeleteView):
+    model = Game
+    template_name = "games/game_confirm_delete.html"
     success_url = reverse_lazy("game-list")
 
-    def test_func(self):
-        return self.request.user.is_staff
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        return context
+    def dispatch(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        # Only staff members can delete games
+        if not request.user.is_staff:
+            return HttpResponseForbidden("You don't have permission to delete this game.")
+        return super().dispatch(request, *args, **kwargs)
 
 
 class UploadFileView(LoginRequiredMixin, View):
@@ -742,8 +843,18 @@ class TournamentListView(ListView):
         # For unauthenticated users, show all non-archived tournaments
         return Tournament.objects.prefetch_related("matches").filter(archived=False)
 
+        # For non-staff users, show only tournaments they are part of
+        return (
+            Tournament.objects.prefetch_related("matches")
+            .filter(Q(players=self.request.user) | Q(created_by=self.request.user))
+            .distinct()
+        )
+
     def get(self, request, *args, **kwargs):
         super().get(request, *args, **kwargs)
+        print("get tournament list")
+        print(self.object_list)
+        print(self.get_queryset())
         for tournament in self.object_list:
             tournament.check_and_end_tournament()  # check if the tournament has ended
         return self.render_to_response(self.get_context_data())
@@ -891,6 +1002,16 @@ class TournamentDetailView(DetailView):
             context["simulation_data"] = simulator_data
 
         return self.render_to_response(context)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        tournament = self.get_object()
+
+        # Fetch the user's feedback for this tournament
+        user_feedback = Feedback.objects.filter(tournament=tournament, user=self.request.user).first()
+        context["user_feedback"] = user_feedback
+
+        return context
 
     def post(self, request, *args, **kwargs):
         tournament = Tournament.objects.get(id=request.POST.get("tournament_id"))
@@ -1212,11 +1333,15 @@ class TournamentDetailView(DetailView):
             elif success == 1:
                 messages.error(request, "You have not joined this tournament")
                 return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
-            elif success == 3:
-                messages.error(request, "The registration period for this tournament has ended")
+            elif request.POST.get("action") == "archive":
+                tournament.set_archive(True)
+                messages.success(request, "You have successfully archived this tournament")
                 return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
-            else:
-                raise Exception("Invalid return value")
+
+            elif request.POST.get("action") == "unarchive":
+                tournament.set_archive(False)
+                messages.success(request, "You have successfully unarchived this tournament")
+                return redirect(reverse_lazy("tournament-detail", kwargs={"pk": tournament.pk}))
 
         elif request.POST.get("action") == "join_match":
             # Get the user's current match in the tournament
@@ -1291,8 +1416,54 @@ class TournamentCreateView(CreateView):
         "rules",
         "draw_rules",
         "num_winner",
-        "players",  # This field should be removed in the production version. For testing only.
+        # We're not including "players" field here as we'll handle it differently
     ]
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        # Add a players field manually since we removed it from fields list
+        from django import forms
+
+        from chigame.users.models import User
+
+        form.fields["players"] = forms.ModelMultipleChoiceField(
+            queryset=User.objects.all(), required=False, widget=forms.SelectMultiple(attrs={"class": "form-control"})
+        )
+        return form
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Add empty recommendations list to context
+        context["recommendations"] = []
+        return context
+
+    def dispatch(self, request, *args, **kwargs):
+        # Handle AJAX requests for creating temporary tournaments for recommendations
+        if request.method == "POST" and request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            try:
+                # Create a temporary tournament object for recommendations
+                game_id = request.POST.get("game")
+                if not game_id:
+                    return JsonResponse({"error": "Game ID is required"}, status=400)
+
+                game = Game.objects.get(pk=game_id)
+                temp_tournament = Tournament(
+                    name="Temporary Tournament",
+                    game=game,
+                    registration_start_date=timezone.now(),
+                    registration_end_date=timezone.now() + timedelta(days=7),
+                    tournament_start_date=timezone.now() + timedelta(days=8),
+                    tournament_end_date=timezone.now() + timedelta(days=9),
+                    max_players=8,
+                    created_by=request.user,
+                )
+
+                # Don't save to database, just return the ID for frontend use
+                return JsonResponse({"tournament_id": temp_tournament.id})
+            except Exception as e:
+                return JsonResponse({"error": str(e)}, status=500)
+
+        return super().dispatch(request, *args, **kwargs)
 
     def form_invalid(self, form):
         # this is wo so we handle invalid form submission
@@ -1304,26 +1475,28 @@ class TournamentCreateView(CreateView):
     def form_valid(self, form):
         user = self.request.user
 
-        if form.cleaned_data["players"].count() > form.cleaned_data["max_players"]:
+        # Get selected players from the form
+        selected_players = form.cleaned_data.get("players", [])
+
+        if selected_players and len(selected_players) > form.cleaned_data["max_players"]:
             messages.error(self.request, "The number of players cannot exceed the maximum number of players")
             return redirect(reverse_lazy("tournament-create"))
 
         # Check if the user is not a staff member and has less than one token
-
         if not user.is_staff and user.tokens < 1:
             messages.error(self.request, "You do not have enough tokens to create a tournament.")
             return redirect("tournament-list")
 
         try:
             # Save the form instance but don't commit to the database yet
-
             tournament = form.save(commit=False)
             tournament.created_by = user
             tournament.full_clean()  # trigger the model's clean() method
             tournament.save()
 
-            players = form.cleaned_data["players"]
-            tournament.players.add(*players)
+            # Add selected players to the tournament
+            if selected_players:
+                tournament.players.add(*selected_players)
 
             # Auto-create a chat for this respective tournament
             chat = Chat(tournament=tournament)
@@ -1338,7 +1511,7 @@ class TournamentCreateView(CreateView):
             self.object = tournament
             return HttpResponseRedirect(self.get_success_url())
         except ValidationError as e:
-            # this w should handle validation errors from the model's clean() method?
+            # Handle validation errors from the model's clean() method
             for field, errors in e.message_dict.items():
                 for error in errors:
                     messages.error(self.request, f"{field}: {error}")
@@ -1505,125 +1678,6 @@ class TournamentArchivedListView(ListView):
         return self.request.user.is_staff
 
 
-# Tournament Feedback Views
-@login_required
-def tournament_feedback_list(request, tournament_id):
-    """
-    View to display all feedback for a specific tournament.
-    Only the owner of the tournament can access this view.
-    """
-    tournament = get_object_or_404(Tournament, id=tournament_id)
-
-    # Check if the requesting user is the owner of the tournament
-    if tournament.created_by != request.user:
-        # Redirect or show an error message if the user is not the owner
-        messages.error(request, "You are not authorized to view feedback for this tournament.")
-        return redirect("tournament-list")  # Redirect to the tournament list or another appropriate page
-
-    # Retrieve feedback for the tournament
-    feedback_list = Feedback.objects.filter(tournament=tournament).order_by("-created_at")
-    return render(
-        request,
-        "tournaments/tournament_feedback_list.html",
-        {"tournament": tournament, "feedback_list": feedback_list},
-    )
-
-
-@login_required
-def user_feedback_list(request):
-    """
-    View to display all feedback submitted by the logged-in user.
-    """
-    user_feedback = Feedback.objects.filter(user=request.user).order_by("-created_at")
-
-    # Get the first tournament associated with the user's feedback (if any)
-    tournament = user_feedback.first().tournament if user_feedback.exists() else None
-
-    return render(
-        request,
-        "tournaments/tournament_user_feedback.html",
-        {"user_feedback": user_feedback, "tournament": tournament},
-    )
-
-
-@login_required
-def submit_feedback(request, tournament_id):
-    tournament = get_object_or_404(Tournament, id=tournament_id)
-
-    if request.method == "POST":
-        comment = request.POST.get("content")  # Match the field name in the model
-        rating = request.POST.get("rating")
-
-        if not comment or not rating:
-            messages.error(request, "All fields are required.")
-            return redirect("tournament-detail", pk=tournament.id)
-
-        Feedback.objects.create(
-            tournament=tournament,
-            user=request.user,
-            comment=comment,  # Use 'comment' if that's the field name in the model
-            rating=rating,
-        )
-        print("Submitting feedback by user:", request.user)
-
-        messages.success(request, "Feedback submitted successfully!")
-        return redirect("tournament-detail", pk=tournament.id)
-
-    return render(request, "tournaments/tournament_submit_feedback.html", {"tournament": tournament})
-
-
-@login_required
-def update_feedback_view(request, feedback_id):
-    """
-    View to handle updating feedback.
-    Only the original author or an admin can update feedback.
-    """
-    feedback = get_object_or_404(Feedback, id=feedback_id)
-
-    # Check if the user is authorized to update the feedback
-    if feedback.user != request.user and not request.user.is_staff:
-        return HttpResponseForbidden("You are not authorized to update this feedback.")
-
-    if request.method == "POST":
-        new_comment = request.POST.get("content")
-        new_rating = request.POST.get("rating")
-
-        if not new_comment or not new_rating:
-            messages.error(request, "All fields are required.")
-            return redirect("update-feedback", feedback_id=feedback.id)
-
-        # Update feedback fields
-        feedback.comment = new_comment
-        feedback.rating = new_rating
-        feedback.save()
-
-        messages.success(request, "Feedback updated successfully!")
-        return redirect("user-feedback-list")
-
-    return render(request, "tournaments/tournament_update_feedback.html", {"feedback": feedback})
-
-
-@login_required
-def delete_feedback_view(request, feedback_id):
-    """
-    View to handle deleting feedback.
-    Only the original author or an admin can delete feedback.
-    """
-    feedback = get_object_or_404(Feedback, id=feedback_id)
-
-    # Check if the user is authorized to delete the feedback
-    if feedback.user != request.user and not request.user.is_staff:
-        return HttpResponseForbidden("You are not authorized to delete this feedback.")
-
-    if request.method == "POST":
-        # Delete the feedback
-        feedback.delete()
-        messages.success(request, "Feedback deleted successfully!")
-        return redirect("user-feedback-list")
-
-    return render(request, "tournaments/tournament_delete_feedback.html", {"feedback": feedback})
-
-
 # Placeholder Game
 @login_required
 def coin_flip_game(request, pk):
@@ -1771,6 +1825,157 @@ def remove_from_gamelist(request, pk, list_pk):
     return redirect("game-detail", pk=pk)
 
 
+# Tournament Feedback Views
+@login_required
+def tournament_feedback_list(request, tournament_id):
+    """
+    View to display all feedback for a specific tournament.
+    Only the owner of the tournament can access this view.
+    """
+    tournament = get_object_or_404(Tournament, id=tournament_id)
+
+    # Check if the requesting user is the owner of the tournament
+    if tournament.created_by != request.user:
+        # Redirect or show an error message if the user is not the owner
+        messages.error(request, "You are not authorized to view feedback for this tournament.")
+        return redirect("tournament-list")  # Redirect to the tournament list or another appropriate page
+
+    # Retrieve feedback for the tournament
+    feedback_list = Feedback.objects.filter(tournament=tournament).order_by("-created_at")
+    print("feedback list", feedback_list)
+    return render(
+        request,
+        "tournaments/tournament_feedback_list.html",
+        {"tournament": tournament, "feedback_list": feedback_list},
+    )
+
+
+@login_required
+def user_feedback_list(request):
+    """
+    View to display all feedback submitted by the logged-in user.
+    """
+    user_feedback = Feedback.objects.filter(user=request.user).order_by("-created_at")
+
+    # Get the first tournament associated with the user's feedback (if any)
+    tournament = user_feedback.first().tournament if user_feedback.exists() else None
+
+    return render(
+        request,
+        "tournaments/tournament_user_feedback.html",
+        {"user_feedback": user_feedback, "tournament": tournament},
+    )
+
+
+@login_required
+def submit_feedback(request, tournament_id):
+    tournament = get_object_or_404(Tournament, id=tournament_id)
+
+    if request.method == "POST":
+        comment = request.POST.get("content")  # Match the field name in the model
+        rating = request.POST.get("rating")
+
+        if not comment or not rating:
+            messages.error(request, "All fields are required.")
+            return redirect("tournament-detail", pk=tournament.id)
+
+        Feedback.objects.create(
+            tournament=tournament,
+            user=request.user,
+            comment=comment,  # Use 'comment' if that's the field name in the model
+            rating=rating,
+        )
+        print("Submitting feedback by user:", request.user)
+
+        messages.success(request, "Feedback submitted successfully!")
+        return redirect("tournament-detail", pk=tournament.id)
+
+    return render(request, "tournaments/tournament_submit_feedback.html", {"tournament": tournament})
+
+
+@login_required
+def update_feedback_view(request, feedback_id):
+    """
+    View to handle updating feedback.
+    Only the original author or an admin can update feedback.
+    """
+    feedback = get_object_or_404(Feedback, id=feedback_id)
+
+    # Check if the user is authorized to update the feedback
+    if feedback.user != request.user and not request.user.is_staff:
+        return HttpResponseForbidden("You are not authorized to update this feedback.")
+
+    if request.method == "POST":
+        new_comment = request.POST.get("content")
+        new_rating = request.POST.get("rating")
+
+        if not new_comment or not new_rating:
+            messages.error(request, "All fields are required.")
+            return redirect("update-feedback", feedback_id=feedback.id)
+
+        # Update feedback fields
+        feedback.comment = new_comment
+        feedback.rating = new_rating
+        feedback.save()
+
+        messages.success(request, "Feedback updated successfully!")
+        return redirect("user-feedback-list")
+
+    return render(request, "tournaments/tournament_update_feedback.html", {"feedback": feedback})
+
+
+@login_required
+def delete_feedback_view(request, feedback_id):
+    """
+    View to handle deleting feedback.
+    Only the original author or an admin can delete feedback.
+    """
+    feedback = get_object_or_404(Feedback, id=feedback_id)
+
+    # Check if the user is authorized to delete the feedback
+    if feedback.user != request.user and not request.user.is_staff:
+        return HttpResponseForbidden("You are not authorized to delete this feedback.")
+
+    if request.method == "POST":
+        # Delete the feedback
+        feedback.delete()
+        messages.success(request, "Feedback deleted successfully!")
+        return redirect("user-feedback-list")
+
+    return render(request, "tournaments/tournament_delete_feedback.html", {"feedback": feedback})
+
+
+# =============== Game History Views ===============
+@login_required
+def create_game_history_entry(user, match):
+    # Try to get the Player object if it exists
+    try:
+        player = Player.objects.get(user=user, match=match)
+        outcome = player.outcome
+    except Player.DoesNotExist:
+        outcome = None
+
+    GameHistory.objects.get_or_create(
+        user=user,
+        match=match,
+        defaults={
+            "is_completed": match.lobby.match_status == 3,  # Lobby.Finished
+            "result": outcome,
+        },
+    )
+
+
+@login_required
+def game_history_view(request, game_id):
+    game = get_object_or_404(Game, id=game_id)
+    entries = (
+        GameHistory.objects.filter(user=request.user, match__game=game)
+        .select_related("match")
+        .order_by("-date_played")
+    )
+    return render(request, "games/game_history.html", {"game": game, "entries": entries})
+
+
 class MatchStatsView(DetailView):
     model = Tournament
     template_name = "tournaments/tournament_match_stats.html"
@@ -1818,8 +2023,8 @@ def wordle_game_page(request):
     }
     token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
 
-    # GitHub Pages game URL + token
-    iframe_url = f"https://zhejiej.github.io/Words-Game//?token={token}"
+    # Local development server URL + token
+    iframe_url = f"http://localhost:3000/index.html?token={token}"
 
     return render(request, "games/wordle.html", {"iframe_url": iframe_url})
 
@@ -1899,6 +2104,95 @@ def checkers_game_get_board_state(request, board_id):
         return Response({"state": board.state})
     except CheckersBoard.DoesNotExist:
         return Response({"error": "Board not found"}, status=404)
+
+
+@api_view(["GET"])
+def get_tournament_player_recommendations(request, tournament_id):
+    """API endpoint to get recommended players for a tournament
+
+    Returns a list of recommended players with their scores and reasons
+    """
+    try:
+        game_id = request.GET.get("game_id")
+
+        response_data = []
+
+        if not game_id:
+            return Response(response_data)
+
+        from datetime import timedelta
+
+        from django.contrib.auth import get_user_model
+        from django.utils import timezone
+
+        from chigame.games.models import Game, Tournament
+
+        User = get_user_model()
+
+        try:
+            game = Game.objects.get(pk=game_id)
+
+            if request.user.is_authenticated:
+                creator = request.user
+            else:
+                # Use the first available user if not authenticated (for testing)
+                creator = User.objects.first()
+
+            # Create a temporary tournament that's not saved to the database
+            # This avoids issues with players list in the recommendation service
+            tournament = Tournament(
+                name="Temporary Tournament",
+                game=game,
+                registration_start_date=timezone.now(),
+                registration_end_date=timezone.now() + timedelta(days=7),
+                tournament_start_date=timezone.now() + timedelta(days=8),
+                tournament_end_date=timezone.now() + timedelta(days=9),
+                max_players=8,
+                created_by=creator,
+            )
+
+            # Import the recommendation service
+            from .recommendation import TournamentRecommendationService
+
+            # Create the service directly instead of using the helper function
+            service = TournamentRecommendationService(tournament)
+
+            # Get all users who are not already in the tournament
+            # Since this is a new tournament, this should be all users
+            all_users = User.objects.all()
+
+            # Calculate scores manually
+            recommendations = []
+            for user in all_users:
+                if user != creator:
+                    try:
+                        score, reasons = service._calculate_score(user)
+                        if score > 0:
+                            recommendations.append((user, score, reasons))
+                    except Exception:
+                        pass
+
+            recommendations.sort(key=lambda x: x[1], reverse=True)
+
+            for user, score, reasons in recommendations:
+                response_data.append(
+                    {"id": user.id, "name": user.username, "email": user.email, "score": score, "reasons": reasons}
+                )
+
+        except Exception as e:
+            # Log the error
+            import traceback
+
+            print(f"Error using recommendation service: {str(e)}")
+            print(traceback.format_exc())
+
+        return Response(response_data)
+    except Exception as e:
+        import traceback
+
+        print(f"Error in get_tournament_player_recommendations: {str(e)}")
+        print(traceback.format_exc())
+        return Response({"error": str(e)}, status=500)
 
 
 class GameListDetailView(LoginRequiredMixin, DetailView):
