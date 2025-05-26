@@ -49,7 +49,7 @@ urlpatterns = [
     path("tournaments/<int:pk>/update/", views.TournamentUpdateView.as_view(), name="tournament-update"),
     path("tournaments/<int:pk>/delete/", views.TournamentDeleteView.as_view(), name="tournament-delete"),
     path("tournaments/archived/", views.TournamentArchivedListView.as_view(), name="tournament-archived"),
-    # addedum
+    # an addedum
     path("tournaments/<int:pk>/match-stats/", views.MatchStatsView.as_view(), name="tournament-match-stats"),
     # placeholder game
     path("lobby/<int:pk>/coinflip", views.coin_flip_game, name="placeholder-game"),
