@@ -59,6 +59,24 @@ class BaseUserUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     def get_object(self):
         return self.request.user
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        try:
+            context["profile"] = self.request.user.userprofile
+        except UserProfile.DoesNotExist:
+            context["profile"] = None
+        return context
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        try:
+            profile = self.request.user.userprofile
+            profile.bio = self.request.POST.get("bio", profile.bio)
+            profile.save()
+        except UserProfile.DoesNotExist:
+            pass
+        return response
+
 
 class NameUpdateView(BaseUserUpdateView):
     fields = ["name"]
@@ -252,6 +270,7 @@ def send_friend_invitation(request, pk):
             message=Notification.DEFAULT_MESSAGES[Notification.FRIEND_REQUEST],
             category="social",
         )
+
     # if the other user has already sent a friend request, return an error
     elif invitation.sender.pk == other_user.pk:
         messages.info(request, "You already have a pending friend invitation from this profile.")
@@ -523,9 +542,11 @@ def friend_list_view(request, pk):
     target_user = get_object_or_404(User, pk=pk)
     # fetch the target user's friends
     friends = target_user.friends.all()
+    context = {"friends": friends}
+
     # if the target user is the current user, render the friends list
     if pk == user.id:
-        return render(request, "users/user_friend_list.html", {"friends": friends})
+        return render(request, "users/user_friend_list.html", context)
     else:
         messages.error(request, "Not your friend list!")
         return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
