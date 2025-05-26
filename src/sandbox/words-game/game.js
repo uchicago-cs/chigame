@@ -5,44 +5,107 @@ window.addEventListener("load", async () => {
     const modalContent = document.querySelector('.modal-content');
     const overlay = document.getElementById('menu-overlay');
 
-    //restore settings
-    restoreSettings();
+    // Ensure modal is initially invisible with no transitions
+    document.documentElement.classList.add('theme-transition-disabled');
+    modal.classList.remove('visible');
+    modal.style.opacity = '0';
 
-    // Show the overlay on load for the word length modal - make it immediately visible
-    overlay.classList.add('visible');
-    overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
-
-    // Force a reflow to ensure the background change is applied immediately
-    overlay.offsetHeight;
-
-    // Stop propagation on modal content to prevent clicks from closing it
     if (modalContent) {
-        modalContent.addEventListener('click', (event) => {
-            event.stopPropagation();
-        });
-
-        // Set initial state for animation
         modalContent.style.transform = 'scale(0.95)';
         modalContent.style.opacity = '0';
     }
 
-    // Ensure modal content shows with animation - with a small delay
-    setTimeout(() => {
-        if (modal.classList.contains('visible')) {
-            modal.style.opacity = '1';
-            if (modalContent) {
-                modalContent.style.opacity = '1';
-                modalContent.style.transform = 'scale(1)';
-            }
+    // Restore settings first
+    restoreSettings();
+
+    // Load streaks after settings are restored
+    loadStreaks();
+
+    // Check if there's a game in progress before showing the modal
+    if (await restoreGameState()) {
+        // If there's a saved game, don't show the modal
+        await loadWords();
+        createSquares();
+        setupKeyboard();
+
+        // Render guessed letters
+        guessedWords.forEach((wordArr, rowIndex) => {
+            const colors = calculateTileColors(wordArr, word);
+            wordArr.forEach((letter, letterIndex) => {
+                const index = rowIndex * wordLength + letterIndex + 1;
+                const square = document.getElementById(index);
+                const tileColor = colors[letterIndex];
+                square.textContent = letter.toUpperCase();
+                square.style.backgroundColor = tileColor;
+                square.style.borderColor = tileColor;
+                square.style.color = "white";
+
+                const keyButton = document.querySelector(`[data-key="${letter}"]`);
+                if (keyButton && keyButton.style.backgroundColor !== COLOR_CORRECT) {
+                    if (keyButton.style.backgroundColor !== COLOR_OFF || tileColor === COLOR_CORRECT) {
+                        keyButton.style.backgroundColor = tileColor;
+                        keyButton.style.borderColor = tileColor;
+                        keyButton.style.color = "white";
+                    }
+                }
+            });
+        });
+
+        // Handle game state saved at end of game
+        if (gameOver) {
+            showEndScreen(gameWon);
         }
-    }, ANIMATION_DELAY);
+
+        // Re-enable transitions after game state is restored
+        setTimeout(() => {
+            document.documentElement.classList.remove('theme-transition-disabled');
+        }, 50);
+    } else {
+        // Only show the modal if there's no game in progress
+
+        // Stop propagation on modal content to prevent clicks from closing it
+        if (modalContent) {
+            modalContent.addEventListener('click', (event) => {
+                event.stopPropagation();
+            });
+        }
+
+        // Show the modal with proper animation
+        setTimeout(() => {
+            // Re-enable transitions for the animation
+            document.documentElement.classList.remove('theme-transition-disabled');
+
+            // Show the overlay for the word length modal
+            overlay.classList.add('visible');
+            overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+
+            // Force a reflow to ensure the background change is applied immediately
+            overlay.offsetHeight;
+
+            // Now make the modal visible with animation
+            modal.classList.add('visible');
+            modal.style.opacity = '1';
+
+            // Ensure modal content shows with animation
+            setTimeout(() => {
+                if (modalContent) {
+                    modalContent.style.opacity = '1';
+                    modalContent.style.transform = 'scale(1)';
+                }
+            }, ANIMATION_DELAY);
+        }, 100); // Slight delay to ensure everything is ready
+    }
 
     startBtn.addEventListener("click", async () => {
-        if(restoreGameState() && !changeLengthToggle){
+        // Always close the modal first
+        closeModal(modal);
+
+        // Check if we're restoring a game that wasn't triggered by changing length
+        if(await restoreGameState() && !changeLengthToggle){
             return;
         }
-        // Reset game state if we're changing length in the middle of a game
-        // Reset game state
+
+        // Reset game state if we're changing length or starting a new game
         const key = mode === 'solo' ? 'soloGameState' : 'dailyGameState';
         localStorage.removeItem(key);
         guessedWords = [[]];
@@ -66,9 +129,6 @@ window.addEventListener("load", async () => {
 
         wordLength = parseInt(selector.value);
 
-        // Close with animation
-        closeModal(modal);
-
         await loadWords();
         createSquares();
         getNewWord();
@@ -76,45 +136,13 @@ window.addEventListener("load", async () => {
         changeLengthToggle = false;
     });
 
-    //if there is a current game state then we should restore it on reload
-    if(restoreGameState()){
-        closeModal(modal);
-
-        //re set up board
-        await loadWords();
-        createSquares();
-        setupKeyboard();
-
-        // render guessed letters
-        guessedWords.forEach((wordArr, rowIndex) => {
-            const colors = calculateTileColors(wordArr, word);
-            wordArr.forEach((letter, letterIndex) => {
-                const index = rowIndex * wordLength + letterIndex + 1;
-                const square = document.getElementById(index);
-                const tileColor = colors[letterIndex];
-                square.textContent = letter.toUpperCase();
-                square.style.backgroundColor = tileColor;
-                square.style.borderColor = tileColor;
-                square.style.color = "white";
-
-                const keyButton = document.querySelector(`[data-key="${letter}"]`);
-                if (keyButton && keyButton.style.backgroundColor !== COLOR_CORRECT) {
-                    if (keyButton.style.backgroundColor !== COLOR_OFF || tileColor === COLOR_CORRECT) {
-                        keyButton.style.backgroundColor = tileColor;
-                        keyButton.style.borderColor = tileColor;
-                        keyButton.style.color = "white";
-                    }
-                }
-            });
-        });
-        //handle game state saved at end of game
-        if(gameOver){
-            showEndScreen(gameWon);
-        }
-    }
-
     // Attach the single physical keyboard handler once after DOM is loaded
     document.addEventListener('keydown', gameKeyDownHandler);
+
+    // Start timing for freeze achievement
+    gameStartTime = new Date().getTime();
+    grayOnlyGame = true;
+    noGreenUntilEnd = true;
 });
 
 //Buttons (How To Play and Settings)!
@@ -211,6 +239,14 @@ function openModal(modal) {
 
 // Function to close modal with animation
 function closeModal(modal) {
+    // Check if the modal is already closed or in the process of closing
+    if (!modal.classList.contains('visible') || modal.style.opacity === '0') {
+        return; // Prevent double-closing which can cause animation issues
+    }
+
+    // Ensure transitions are enabled
+    document.documentElement.classList.remove('theme-transition-disabled');
+
     // Fade out the overlay immediately if no other menu is open
     if (!howToPlayText.classList.contains('visible') &&
         !settingsScreen.classList.contains('visible')) {
@@ -232,13 +268,6 @@ function closeModal(modal) {
     const handleTransitionEnd = function() {
         // Remove visibility class after animation completes
         modal.classList.remove('visible');
-        modal.style.opacity = ''; // Reset for next time
-
-        // Reset content transform
-        if (content) {
-            content.style.transform = '';
-            content.style.opacity = '';
-        }
 
         // Only fully remove the overlay when the modal transition completes
         // and if no other menu is open
@@ -246,10 +275,8 @@ function closeModal(modal) {
             !settingsScreen.classList.contains('visible')) {
             // Just remove the visibility class, the fade out already started
             const overlay = document.getElementById('menu-overlay');
-            setTimeout(() => {
-                overlay.classList.remove('visible');
-                overlay.style.backgroundColor = '';
-            }, 50); // Small delay to ensure it's synchronized
+            overlay.classList.remove('visible');
+            overlay.style.backgroundColor = '';
         }
 
         // Remove the event listener
@@ -263,13 +290,6 @@ function closeModal(modal) {
     setTimeout(() => {
         if (modal.classList.contains('visible')) {
             modal.classList.remove('visible');
-            modal.style.opacity = ''; // Reset for next time
-
-            // Reset content transform
-            if (content) {
-                content.style.transform = '';
-                content.style.opacity = '';
-            }
 
             // Only fully remove the overlay if no other menu is open
             if (!howToPlayText.classList.contains('visible') &&
@@ -482,6 +502,84 @@ const COLOR_CORRECT = "rgb(83, 141, 78)";
 const COLOR_OFF = "rgb(181, 159, 59)";
 const COLOR_WRONG = "rgb(40, 58, 60)";
 
+// Global streak variables
+let soloStreak = 0;
+let dailyStreak = 0;
+let lastDailyWins = {}; // Track daily wins by date and word length
+
+// Load streaks from localStorage
+function loadStreaks() {
+    const streaksData = localStorage.getItem("gameStreaks");
+    if (streaksData) {
+        const streaks = JSON.parse(streaksData);
+        soloStreak = streaks.soloStreak || 0;
+        dailyStreak = streaks.dailyStreak || 0;
+        lastDailyWins = streaks.lastDailyWins || {};
+    }
+    updateStreakDisplay();
+}
+
+// Save streaks to localStorage
+function saveStreaks() {
+    const streaks = {
+        soloStreak,
+        dailyStreak,
+        lastDailyWins
+    };
+    localStorage.setItem("gameStreaks", JSON.stringify(streaks));
+    updateStreakDisplay();
+}
+
+// Reset streaks
+function resetStreak(type) {
+    if (type === 'solo') {
+        soloStreak = 0;
+    } else if (type === 'daily') {
+        dailyStreak = 0;
+    }
+    saveStreaks();
+}
+
+// Update streak display
+function updateStreakDisplay() {
+    const streakElement = document.getElementById("streak");
+    if (mode === 'solo') {
+        streakElement.innerHTML = `<h3>Solo Streak: ${soloStreak}</h3>`;
+    } else {
+        streakElement.innerHTML = `<h3>Daily Streak: ${dailyStreak}</h3>`;
+    }
+}
+
+// Expose the streak update function to the window for dev tools
+window.updateStreakDisplay = updateStreakDisplay;
+
+// Update streak on win
+function updateStreak(won) {
+    if (!won) {
+        // Reset the streak for the current game mode on loss
+        resetStreak(mode);
+        return;
+    }
+
+    if (mode === 'solo') {
+        soloStreak += 1;
+    } else {
+        // For daily mode, check if this word length has been won today
+        const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+        if (!lastDailyWins[today]) {
+            lastDailyWins[today] = [];
+        }
+
+        // Only increment streak if this word length hasn't been solved today
+        if (!lastDailyWins[today].includes(wordLength)) {
+            lastDailyWins[today].push(wordLength);
+            dailyStreak += 1;
+        }
+    }
+
+    saveStreaks();
+}
+
 function loadWords() {
     return fetch(`${wordLength}WORDS.txt`)
         .then(response => response.text())
@@ -623,6 +721,239 @@ async function isValidWord(word) {
     }
 }
 
+// Game state tracking for achievements
+let gameStartTime = null;
+let firstGuessOfTheDay = null;
+let lastSixGuesses = [];
+let grayOnlyGame = true;
+let noGreenUntilEnd = true;
+
+// Check for achievements after game completion
+function checkAchievements() {
+    if (!window.Achievements) return;
+
+    // Create gameState object for achievements
+    const gameState = {
+        won: gameWon,
+        guessCount: guessedWordCount,
+        maxGuesses: 6,
+        firstGuess: guessedWords[0]?.join('') || '',
+        guessHistory: guessedWords.map((word, rowIndex) => {
+            const colors = calculateTileColors(word, word === word.length ? word : '');
+            return word.map((letter, index) => ({
+                letter,
+                state: colors[index] === COLOR_CORRECT ? 'correct' :
+                       colors[index] === COLOR_OFF ? 'present' : 'absent'
+            }));
+        }),
+        mode: mode,
+        wordLength: wordLength,
+        streak: mode === 'solo' ? soloStreak : dailyStreak
+    };
+
+    // First Win
+    if (gameWon) {
+        window.Achievements.unlockAchievement('first_win');
+    }
+
+    // First Try
+    if (gameWon && guessedWordCount === 1) {
+        window.Achievements.unlockAchievement('first_guess');
+    }
+
+    // Clutch Guess
+    if (gameWon && guessedWordCount === 6) {
+        window.Achievements.unlockAchievement('clutch_guess');
+    }
+
+    // Streak Achievements
+    const streakValue = mode === 'solo' ? soloStreak : dailyStreak;
+    if (streakValue >= 7) {
+        window.Achievements.unlockAchievement('one_week_streak');
+    }
+    if (streakValue >= 30) {
+        window.Achievements.unlockAchievement('one_month_streak');
+    }
+    if (streakValue >= 365) {
+        window.Achievements.unlockAchievement('one_year_streak');
+    }
+
+    // Comeback
+    if (gameWon && guessedWords.length >= 4) {
+        const firstThreeGuesses = guessedWords.slice(0, 3);
+        let allZeroCorrect = true;
+
+        for (let i = 0; i < 3; i++) {
+            if (i < firstThreeGuesses.length) {
+                const colors = calculateTileColors(firstThreeGuesses[i], word);
+                if (colors.some(color => color === COLOR_CORRECT || color === COLOR_OFF)) {
+                    allZeroCorrect = false;
+                    break;
+                }
+            }
+        }
+
+        if (allZeroCorrect) {
+            window.Achievements.unlockAchievement('comeback');
+        }
+    }
+
+    // Gambler (requires checking localStorage for historical first guesses)
+    checkGamblerAchievement();
+
+    // Freeze (check if game took over an hour)
+    if (gameStartTime && (new Date().getTime() - gameStartTime > 60 * 60 * 1000)) {
+        window.Achievements.unlockAchievement('freeze');
+    }
+
+    // Zero Green (no green tiles until final guess)
+    if (gameWon && noGreenUntilEnd) {
+        window.Achievements.unlockAchievement('zero_green');
+    }
+
+    // Sixth Sense (6 guesses, 6 days in a row)
+    checkSixthSenseAchievement();
+
+    // One and Done
+    checkOneAndDoneAchievement();
+
+    // Blacked Out
+    if (!gameWon && grayOnlyGame) {
+        window.Achievements.unlockAchievement('blacked_out');
+    }
+
+    // Call the achievement system's check function too
+    window.Achievements.checkForAchievements(gameState);
+}
+
+// Check for the Gambler achievement
+function checkGamblerAchievement() {
+    const today = new Date().toISOString().split('T')[0];
+
+    // Get stored first guesses
+    const firstGuessesData = localStorage.getItem("firstGuesses");
+    let firstGuesses = {};
+
+    if (firstGuessesData) {
+        firstGuesses = JSON.parse(firstGuessesData);
+    }
+
+    // Set today's first guess
+    if (guessedWords[0]?.join('') && !firstGuesses[today]) {
+        firstGuesses[today] = guessedWords[0].join('');
+
+        // Only keep recent days (last 30 days)
+        const oldestAllowedDate = new Date();
+        oldestAllowedDate.setDate(oldestAllowedDate.getDate() - 30);
+
+        // Remove old entries
+        for (const date in firstGuesses) {
+            if (new Date(date) < oldestAllowedDate) {
+                delete firstGuesses[date];
+            }
+        }
+
+        localStorage.setItem("firstGuesses", JSON.stringify(firstGuesses));
+    }
+
+    // Check for 7 consecutive days with same first guess
+    const dates = Object.keys(firstGuesses).sort();
+    if (dates.length >= 7) {
+        let streak = 1;
+        const lastGuess = firstGuesses[dates[dates.length - 1]];
+
+        for (let i = dates.length - 2; i >= 0; i--) {
+            const currentDate = new Date(dates[i]);
+            const nextDate = new Date(dates[i + 1]);
+
+            // Check if consecutive days and same guess
+            const diffDays = Math.floor((nextDate - currentDate) / (1000 * 60 * 60 * 24));
+
+            if (diffDays === 1 && firstGuesses[dates[i]] === lastGuess) {
+                streak++;
+                if (streak >= 7) {
+                    window.Achievements.unlockAchievement('gambler');
+                    break;
+                }
+            } else {
+                break;
+            }
+        }
+    }
+}
+
+// Check for the Sixth Sense achievement
+function checkSixthSenseAchievement() {
+    if (gameWon && guessedWordCount === 6) {
+        // Update the last 6 guesses
+        const today = new Date().toISOString().split('T')[0];
+
+        // Get stored last guesses
+        const sixthSenseData = localStorage.getItem("sixthSenseData");
+        let sixthSenseState = {
+            dates: [],
+            streak: 0
+        };
+
+        if (sixthSenseData) {
+            sixthSenseState = JSON.parse(sixthSenseData);
+        }
+
+        const lastDate = sixthSenseState.dates[sixthSenseState.dates.length - 1];
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+        // Check if this is a consecutive day
+        if (lastDate === yesterdayStr) {
+            sixthSenseState.streak++;
+            sixthSenseState.dates.push(today);
+
+            // Keep only the last 10 dates
+            if (sixthSenseState.dates.length > 10) {
+                sixthSenseState.dates.shift();
+            }
+
+            // Check if we've reached 6 days
+            if (sixthSenseState.streak >= 6) {
+                window.Achievements.unlockAchievement('sixth_sense');
+            }
+        } else {
+            // Reset streak but record today
+            sixthSenseState.streak = 1;
+            sixthSenseState.dates = [today];
+        }
+
+        localStorage.setItem("sixthSenseData", JSON.stringify(sixthSenseState));
+    }
+}
+
+// Check for the One and Done achievement
+function checkOneAndDoneAchievement() {
+    const today = new Date().toISOString().split('T')[0];
+
+    // Get stored one and done info
+    const oneAndDoneData = localStorage.getItem("oneAndDoneData");
+    let oneAndDoneInfo = {};
+
+    if (oneAndDoneData) {
+        oneAndDoneInfo = JSON.parse(oneAndDoneData);
+    }
+
+    // If we haven't recorded anything for today yet
+    if (!oneAndDoneInfo[today]) {
+        // If the player only made one guess
+        if (guessedWordCount === 1) {
+            // Award the achievement
+            window.Achievements.unlockAchievement('one_and_done');
+        }
+
+        // Record that the player has played today
+        oneAndDoneInfo[today] = true;
+        localStorage.setItem("oneAndDoneData", JSON.stringify(oneAndDoneInfo));
+    }
+}
+
 async function handleSubmitWord() {
     if (gameOver) {
         return;
@@ -668,7 +999,17 @@ async function handleSubmitWord() {
 
     // Calculate the colors using the Wordle algorithm
     const tileColors = calculateTileColors(currentWordArr, word);
-    tileColors.forEach((color, index) => {//add letters to colors array for hard mode
+
+    // Check for gray only and no green achievements
+    if (tileColors.some(color => color !== COLOR_WRONG)) {
+        grayOnlyGame = false;
+    }
+
+    if (tileColors.some(color => color === COLOR_CORRECT) && guessedWordCount < 5) {
+        noGreenUntilEnd = false;
+    }
+
+    tileColors.forEach((color, index) => {
         if (color === COLOR_CORRECT) {
             greenLetters[index] = currentWordArr[index];
         }
@@ -710,9 +1051,14 @@ async function handleSubmitWord() {
         playSound(yaySound);
         gameOver = true;
         gameWon = true;
+        updateStreak(true);
         saveGameState();
         setTimeout(() => {
             showEndScreen(true);
+            // Check achievements after the end screen is shown
+            setTimeout(() => {
+                checkAchievements();
+            }, 500);
         }, 1500);
         return;
     }
@@ -722,9 +1068,14 @@ async function handleSubmitWord() {
         playSound(loseSound);
         gameOver = true;
         gameWon = false;
+        updateStreak(false);
         saveGameState();
         setTimeout(() => {
             showEndScreen(false);
+            // Check achievements after the end screen is shown
+            setTimeout(() => {
+                checkAchievements();
+            }, 500);
         }, 1500);
         return;
     }
@@ -894,7 +1245,7 @@ function saveGameState(){
     localStorage.setItem(key, JSON.stringify(gameState));
 }
 
-function restoreGameState(){
+async function restoreGameState(){
     const key = mode === 'solo' ? 'soloGameState' : 'dailyGameState';
     const gameStateJSON = localStorage.getItem(key);
     if(!gameStateJSON){
@@ -914,7 +1265,6 @@ function restoreGameState(){
     return true;
 }
 
-//Function to save visual and audio settings
 function saveSettings(){
     const settings = {
         darkMode: document.getElementById("dark-mode-toggle").checked,
@@ -925,7 +1275,6 @@ function saveSettings(){
     localStorage.setItem("gameSettings", JSON.stringify(settings));
 }
 
-//Function restores settings
 function restoreSettings() {
     const saved = localStorage.getItem("gameSettings");
     if (!saved){
