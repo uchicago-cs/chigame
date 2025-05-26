@@ -1,3 +1,5 @@
+import time
+
 import django.db.models as models
 from django.contrib.auth.models import AbstractUser
 from django.contrib.contenttypes.fields import GenericForeignKey
@@ -16,7 +18,7 @@ def validate_username(value):
     """
     Validate that the username is not all numeric.
     """
-    if value.isdigit():
+    if value and isinstance(value, str) and value.isdigit():
         raise ValidationError(_("Username cannot be all numbers."), code="invalid_username")
 
 
@@ -47,6 +49,9 @@ class User(AbstractUser):
 
     # a moderator can manage/approve game guides in Knowledge Base
     moderator = models.BooleanField(default=False)
+
+    # a toggle to determine if the user wants profanity filter on
+    profanity_filter = models.BooleanField(default=True)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
@@ -90,10 +95,12 @@ class UserProfile(models.Model):
 
 class FriendInvitationManager(models.Manager):
     def get_by_users(self, user1, user2, **kwargs):
-        """Gets a friend invitation given two user, which can be a sender
+        """Gets an active friend invitation given two users, which can be a sender
         or a receiver"""
         return (
-            self.filter(Q(sender=user1, receiver=user2) | Q(sender=user2, receiver=user1), **kwargs)
+            self.filter(
+                Q(sender=user1, receiver=user2, is_deleted=False) | Q(sender=user2, receiver=user1, is_deleted=False)
+            )
             .order_by("-timestamp")
             .first()
         )
@@ -103,6 +110,14 @@ class FriendInvitation(models.Model):
     """
     An invitation from a User to another User, requesting that they become
     friends.
+
+    IMPORTANT NOTE TO DEVELOPERS BEFORE MODIFYING THIS MODEL:
+    -------------------------------------------------------------------
+    There is no uniqueness constraint on sender and receiver, because there
+    can be multiple deleted invitations! Use is_deleted=True to soft delete a
+    friend invitation, never hard delete them. In the view functions we enforce
+    that there can only be one active is_deleted=False invitation between two
+    users.
     """
 
     sender = models.ForeignKey(User, related_name="sent_friend_invitations", on_delete=models.CASCADE)
@@ -112,15 +127,13 @@ class FriendInvitation(models.Model):
     objects = FriendInvitationManager()
     is_deleted = models.BooleanField(default=False)
 
-    class Meta:
-        unique_together = ("sender", "receiver")
-
     def accept_invitation(self):
         """
         Accept a friend invitation.
         """
         sender = self.sender
         receiver = self.receiver
+
         # add the receiver to the sender's friends list (it is symmetrical)
         sender.friends.add(receiver)
         # set the invitation as accepted
@@ -141,10 +154,14 @@ class Group(models.Model):
     """
 
     name = models.TextField()
+    description = models.TextField(blank=True)
     members = models.ManyToManyField(User)
     created_by = models.ForeignKey(User, related_name="created_groups", on_delete=models.CASCADE)
-
     date_created = models.DateTimeField(auto_now_add=True)
+    group_admin_permissions = False
+
+    def __str__(self):
+        return self.name
 
 
 class GroupInvitation(models.Model):
@@ -266,20 +283,52 @@ class Notification(models.Model):
     FRIEND_REQUEST = 1
     REMINDER = 2
     UPCOMING_MATCH = 3
-    MATCH_PROPOSAL = 4
+    MATCH_INVITATION = 4
     GROUP_INVITATION = 5
     ACHIEVEMENT = 6
+    TOURNAMENT_INVITATION = 7
+    TOURNAMENT_INVITATION_ACCEPTED = 8
+    TOURNAMENT_STARTING = 9
+    TOURNAMENT_ROUND_COMPLETED = 10
+    TOURNAMENT_COMPLETED = 11
 
     NOTIFICATION_TYPES = (
         (FRIEND_REQUEST, "FRIEND_REQUEST"),
         (REMINDER, "REMINDER"),
         (UPCOMING_MATCH, "UPCOMING_MATCH"),
-        (MATCH_PROPOSAL, "MATCH_PROPOSAL"),
+        (MATCH_INVITATION, "MATCH_INVITATION"),
         (GROUP_INVITATION, "GROUP_INVITATION"),
         (ACHIEVEMENT, "ACHIEVEMENT"),
+        (TOURNAMENT_INVITATION, "TOURNAMENT_INVITATION"),
+        (TOURNAMENT_INVITATION_ACCEPTED, "TOURNAMENT_INVITATION_ACCEPTED"),
+        (TOURNAMENT_STARTING, "TOURNAMENT_STARTING"),
+        (TOURNAMENT_ROUND_COMPLETED, "TOURNAMENT_ROUND_COMPLETED"),
+        (TOURNAMENT_COMPLETED, "TOURNAMENT_COMPLETED"),
     )
 
-    DEFAULT_MESSAGES = {FRIEND_REQUEST: "You have a friend invitation"}
+    DEFAULT_MESSAGES = {
+        FRIEND_REQUEST: "You have a friend invitation",
+        REMINDER: "You have a reminder",
+        UPCOMING_MATCH: "You have an upcoming match",
+        MATCH_INVITATION: "You have a match invite",
+        GROUP_INVITATION: "You have a group invitation",
+        ACHIEVEMENT: "You have an achievement",
+    }
+
+    # Auto-categorization mapping for notification types
+    CATEGORY_MAPPING = {
+        FRIEND_REQUEST: "social",
+        GROUP_INVITATION: "social",
+        REMINDER: "updates",
+        UPCOMING_MATCH: "updates",
+        MATCH_INVITATION: "updates",
+        ACHIEVEMENT: "promotions",
+        TOURNAMENT_INVITATION: "social",
+        TOURNAMENT_INVITATION_ACCEPTED: "social",
+        TOURNAMENT_STARTING: "updates",
+        TOURNAMENT_ROUND_COMPLETED: "updates",
+        TOURNAMENT_COMPLETED: "updates",
+    }
 
     category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default="inbox")
     receiver = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -294,9 +343,16 @@ class Notification(models.Model):
     message = models.CharField(max_length=255, blank=True, null=True)
     objects = NotificationQuerySet.as_manager()
     bookmarked = models.BooleanField(default=False)
+    labels = models.ManyToManyField("NotificationLabel", blank=True, related_name="notifications")
 
     class Meta:
         unique_together = ["receiver", "actor_content_type", "actor_object_id", "type"]
+
+    def save(self, *args, **kwargs):
+        # Auto-categorize notification if category is still default "inbox"
+        if self.category == "inbox" and self.type in self.CATEGORY_MAPPING:
+            self.category = self.CATEGORY_MAPPING[self.type]
+        super().save(*args, **kwargs)
 
     def mark_as_read(self):
         if not self.read:
@@ -316,8 +372,87 @@ class Notification(models.Model):
             self.save()
 
     def renew_notification(self):
+        # Force last_sent to be at least 1 second later than first_sent
+        # by ensuring we're not using auto_now_add timestamps
+        time.sleep(0.001)  # Small sleep to ensure timestamp difference
         self.last_sent = timezone.now()
-        self.save()
+        self.save(update_fields=["last_sent"])
+
+    def get_style_key(self):
+        # For Mapping integer types to the stringsC SS expects
+        type_map = {
+            self.FRIEND_REQUEST: "friend",
+            self.REMINDER: "system",
+            self.UPCOMING_MATCH: "match",
+            self.MATCH_INVITATION: "match",
+            self.GROUP_INVITATION: "group",
+            self.ACHIEVEMENT: "achievement",
+        }
+        return type_map.get(self.type, "default")
+
+    def get_rich_message(self):
+        """
+        Returns a concise message that assumes the sender will be shown separately.
+        e.g., Instead of 'rain1 sent you a friend request', just 'sent you a friend request'.
+        """
+        actor = self.actor
+
+        # Safe fallback if actor is missing
+        default_message_for_type = self.DEFAULT_MESSAGES.get(self.type, "You have a new notification.")
+        fallback = self.message or default_message_for_type
+
+        try:
+            if self.type == self.FRIEND_REQUEST:
+                return "sent you a friend request"
+
+            elif self.type == self.GROUP_INVITATION:
+                if hasattr(actor, "friend_group") and actor.friend_group and hasattr(actor.friend_group, "name"):
+                    return f"invited you to join the group '{actor.friend_group.name}'"
+                return "invited you to a group"
+
+            elif self.type == self.UPCOMING_MATCH:
+                return "Your match is starting soon"
+
+            elif self.type == self.TOURNAMENT_INVITATION:
+                return "You’ve been invited to a tournament"
+
+            elif self.type == self.TOURNAMENT_STARTING:
+                return "A tournament is starting"
+
+            elif self.type == self.ACHIEVEMENT:
+                return "You unlocked an achievement"
+
+            elif self.type == self.REMINDER:
+                return "Reminder: check your notifications"
+
+            return fallback
+        except Exception:
+            return fallback
+
+    def get_icon_class(self):
+        if self.type == self.FRIEND_REQUEST:
+            return "bi-person-plus-fill"
+        elif self.type == self.GROUP_INVITATION:
+            return "bi-people-fill"
+        elif self.type == self.UPCOMING_MATCH:
+            return "bi-calendar-event-fill"
+        elif self.type == self.MATCH_INVITATION:
+            return "bi-joystick"
+        elif self.type == self.ACHIEVEMENT:
+            return "bi-star-fill"
+        elif self.type == self.REMINDER:
+            return "bi-info-circle-fill"
+        else:
+            return "bi-bell-fill"
+
+    def get_sender_display(self):
+        """
+        Returns a string representing the sender (if the actor has one),
+        otherwise falls back to 'System'.
+        """
+        if hasattr(self.actor, "sender") and self.actor.sender:
+            return getattr(self.actor.sender, "username", None) or getattr(self.actor.sender, "name", None) or "User"
+        return "System"
 
 
 class BaseNotificationHandler:
@@ -341,9 +476,9 @@ class FriendRequestNotification(BaseNotificationHandler):
         return reverse("users:user-profile", kwargs={"pk": self.notification.actor.sender.pk})
 
 
-class MatchProposalNotification(BaseNotificationHandler):
+class MatchInvitationNotification(BaseNotificationHandler):
     """
-    Handles redirection logic for match proposal notifications. Redirects the
+    Handles redirection logic for match invitation notifications. Redirects the
     user to the lobby of the match upon interaction.
     """
 
@@ -379,3 +514,74 @@ class UpcomingMatchNotification(BaseNotificationHandler):
 
     def get_redirect_str(self):
         return reverse("games:lobby-details", kwargs={"pk": self.notification.actor.lobby.pk})
+
+
+class AchievementNotification(BaseNotificationHandler):
+    """
+    Handles redirection logic for achievement notifications. Redirects the
+    user to the ___ page upon interaction.
+    """
+
+    def get_redirect_str(self):
+        raise NotImplementedError("Achievement notifications do not have a redirect URL")
+
+
+class TournamentInvitationNotification(BaseNotificationHandler):
+    """
+    Handles redirection logic for tournament invitation notifications. Redirects the
+    user to the ___ page upon interaction.
+    """
+
+    def get_redirect_str(self):
+        return reverse("tournaments:tournament-detail", kwargs={"pk": self.notification.actor.tournament.pk})
+
+
+class TournamentInvitationAcceptedNotification(BaseNotificationHandler):
+    """
+    Handles redirection logic for tournament invitation notifications. Redirects the
+    user to the ___ page upon interaction.
+    """
+
+    def get_redirect_str(self):
+        return reverse("tournaments:tournament-detail", kwargs={"pk": self.notification.actor.tournament.pk})
+
+
+class TournamentStartingNotification(BaseNotificationHandler):
+    """
+    Handles redirection logic for tournament starting notifications. Redirects the
+    user to the ___ page upon interaction.
+    """
+
+    def get_redirect_str(self):
+        return reverse("tournaments:tournament-detail", kwargs={"pk": self.notification.actor.tournament.pk})
+
+
+class TournamentRoundCompletedNotification(BaseNotificationHandler):
+    """
+    Handles redirection logic for tournament round completed notifications. Redirects the
+    user to the ___ page upon interaction.
+    """
+
+    def get_redirect_str(self):
+        return reverse("tournaments:tournament-detail", kwargs={"pk": self.notification.actor.tournament.pk})
+
+
+class TournamentCompletedNotification(BaseNotificationHandler):
+    """
+    Handles redirection logic for tournament completed notifications. Redirects the
+    user to the ___ page upon interaction.
+    """
+
+    def get_redirect_str(self):
+        return reverse("tournaments:tournament-detail", kwargs={"pk": self.notification.actor.tournament.pk})
+
+
+class NotificationLabel(models.Model):
+    name = models.CharField(max_length=50)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="notification_labels")
+
+    class Meta:
+        unique_together = ("name", "user")
+
+    def __str__(self):
+        return self.name

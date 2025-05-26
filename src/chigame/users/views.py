@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models import Q
-from django.http import Http404, HttpResponse, HttpResponseNotFound
+from django.http import Http404, HttpResponseNotFound
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
@@ -12,18 +12,21 @@ from django.utils.translation import gettext_lazy as _
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_POST
 from django.views.generic import DetailView, RedirectView, UpdateView
+from django_tables2 import SingleTableView
 
-from chigame.games.models import Lobby, Player, Tournament
+from chigame.games.models import GameList, Lobby, Player, Tournament
 
 from .models import (
     FriendInvitation,
     FriendRequestNotification,
+    Group,
     GroupInvitationNotification,
-    MatchProposalNotification,
+    MatchInvitationNotification,
     Notification,
+    NotificationLabel,
     UserProfile,
 )
-from .tables import FriendsTable, UserTable
+from .tables import GroupTable, UserTable
 
 User = get_user_model()
 
@@ -52,6 +55,24 @@ class BaseUserUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
 
     def get_object(self):
         return self.request.user
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        try:
+            context["profile"] = self.request.user.userprofile
+        except UserProfile.DoesNotExist:
+            context["profile"] = None
+        return context
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        try:
+            profile = self.request.user.userprofile
+            profile.bio = self.request.POST.get("bio", profile.bio)
+            profile.save()
+        except UserProfile.DoesNotExist:
+            pass
+        return response
 
 
 class NameUpdateView(BaseUserUpdateView):
@@ -157,6 +178,10 @@ def user_profile_detail_view(request, pk):
     pending friend requests between the current user and the user
     being viewed.
 
+    IMPORTANT NOTE TO DEVELOPERS: Profile url takes user pk, not profile pk.
+    It might not necessarily be the case that providing profile pk will get you
+    the profile of the user you want.
+
     Args:
         request (HttpRequest)
         pk (int): The primary key of the user whose profile is being viewed
@@ -174,7 +199,8 @@ def user_profile_detail_view(request, pk):
     if request.user.is_authenticated and request.user.pk == pk:
         # if user is accessing their own profile, create a profile if it doesn't exist
         profile = UserProfile.get_or_create_profile(request.user)
-        return render(request, "users/userprofile_detail.html", {"profile": profile})
+        game_lists = GameList.objects.filter(created_by=request.user)
+        return render(request, "users/userprofile_detail.html", {"profile": profile, "game_lists": game_lists})
     else:
         # fetch another user's profile
         try:
@@ -194,14 +220,7 @@ def user_profile_detail_view(request, pk):
         is_friend = target_user.friends.filter(pk=request.user.pk).exists()
         if not is_friend:
             curr_user = request.user
-            friendship_request = (
-                FriendInvitation.objects.filter(
-                    Q(sender=target_user, receiver=curr_user, is_deleted=False)
-                    | Q(sender=curr_user, receiver=target_user, is_deleted=False)
-                )
-                .order_by("-timestamp")
-                .first()
-            )
+            friendship_request = FriendInvitation.objects.get_by_users(curr_user, target_user)
 
     # provide frontend profile + friendship status
     context = {"profile": profile, "is_friend": is_friend, "friendship_request": friendship_request}
@@ -247,7 +266,9 @@ def send_friend_invitation(request, pk):
             receiver=other_user,
             type=Notification.FRIEND_REQUEST,
             message=Notification.DEFAULT_MESSAGES[Notification.FRIEND_REQUEST],
+            category="social",
         )
+
     # if the other user has already sent a friend request, return an error
     elif invitation.sender.pk == other_user.pk:
         messages.info(request, "You already have a pending friend invitation from this profile.")
@@ -259,7 +280,10 @@ def send_friend_invitation(request, pk):
             notification.renew_notification()
         except Notification.DoesNotExist:
             notification = Notification.objects.create(
-                actor=invitation, receiver=other_user, type=Notification.FRIEND_REQUEST
+                actor=invitation,
+                receiver=other_user,
+                type=Notification.FRIEND_REQUEST,
+                category="social",
             )
     return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
 
@@ -397,7 +421,7 @@ def user_search_results(request):
     context = {"found": False, "query_type": "Users"}
     if query_input:
         profiles_list = UserProfile.objects.filter(
-            Q(user__email__icontains=query_input) | Q(user__name__icontains=query_input)
+            Q(user__username__icontains=query_input) | Q(user__name__icontains=query_input)
         )
         if profiles_list.count() > 0:
             context["found"] = True
@@ -428,38 +452,39 @@ def notification_search_results(request):
 
 
 @login_required
-def user_inbox_view(request, pk):
+def user_inbox_view(request, pk, category="inbox"):
     """
     Displays a user's inbox containing notifications. The user can only access
     their own inbox.
-
-    Args:
-        request (HttpRequest)
-        pk (int): The primary key of the user
-
-    Returns:
-        HttpResponse: Rendered template with user inbox context including
-            - pk: The primary key of the user
-            - user: The user
-            - notifications: The notifications in the user's inbox
-            - default_notification_messages: The default notification messages
-            for each notification type
     """
+    if pk != request.user.pk:
+        messages.error(request, "Not your inbox")
+        return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
 
     user = request.user
-    notifications = Notification.objects.filter_by_receiver(user)
+
+    # Handle deleted notifications
+    if category == "deleted":
+        notifications = Notification.objects.filter_by_receiver(user, deleted=True)
+    elif category and category in dict(Notification.CATEGORY_CHOICES):
+        notifications = Notification.objects.filter_by_receiver(user).filter_by_category(category)
+    else:
+        notifications = Notification.objects.filter_by_receiver(user)
+
     default_notification_messages = Notification.DEFAULT_MESSAGES
+    user_labels = NotificationLabel.objects.filter(user=user)
+
     context = {
         "pk": pk,
         "user": user,
         "notifications": notifications,
         "default_notification_messages": default_notification_messages,
+        "labels": user_labels,
+        "active_category": category,
+        "category_choices": Notification.CATEGORY_CHOICES,
     }
-    if pk == user.id:
-        return render(request, "users/user_inbox.html", context)
-    else:
-        messages.error(request, "Not your inbox")
-        return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
+
+    return render(request, "users/user_inbox.html", context)
 
 
 @login_required
@@ -515,9 +540,8 @@ def friend_list_view(request, pk):
     target_user = get_object_or_404(User, pk=pk)
     # fetch the target user's friends
     friends = target_user.friends.all()
-    # render the friends table
-    table = FriendsTable(friends)
-    context = {"table": table}
+    context = {"friends": friends}
+
     # if the target user is the current user, render the friends list
     if pk == user.id:
         return render(request, "users/user_friend_list.html", context)
@@ -557,7 +581,7 @@ def deleted_notifications_view(request, pk):
 @login_required
 def notification_detail(request, pk):
     """
-    Redirect the user based on a specific notification's action type (e.g., friend request, match proposal).
+    Redirect the user based on a specific notification's action type (e.g., friend request, match invitation).
 
     Args:
         request (HttpRequest)
@@ -579,8 +603,8 @@ def notification_detail(request, pk):
         if notification.type == Notification.FRIEND_REQUEST:
             handler = FriendRequestNotification(notification)
             return redirect(handler.get_redirect_str())
-        elif notification.type == Notification.MATCH_PROPOSAL:
-            handler = MatchProposalNotification(notification)
+        elif notification.type == Notification.MATCH_INVITATION:
+            handler = MatchInvitationNotification(notification)
             return redirect(handler.get_redirect_str())
         elif notification.type == Notification.GROUP_INVITATION:
             handler = GroupInvitationNotification(notification)
@@ -595,22 +619,18 @@ def notification_detail(request, pk):
 def act_on_inbox_notification(request, pk, action):
     """
     Allow a user to perform actions (mark as read/unread, delete) on a notification in their inbox.
-
-    Args:
-        request (HttpRequest)
-        pk (int): The primary key of the notification
-        action (str): The action to perform on the notification
-
-    Returns:
-        HttpResponse: Redirects to the user's inbox
-        Error messages: When trying to perform actions on a non-existent notification or
-        when trying to perform actions on someone else's notifications
     """
+    # Get the category to return to, defaulting to 'inbox'
+    next_category = request.GET.get("next", "inbox")
+
     try:
         notification = Notification.objects.get(pk=pk)
         if notification.receiver.pk != request.user.pk:
             messages.error(request, "You can not perform actions on this notification")
-            return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
+            return redirect(
+                reverse("users:user-inbox-category", kwargs={"pk": request.user.pk, "category": next_category})
+            )
+
         if action == "mark_read":
             notification.mark_as_read()
         elif action == "mark_unread":
@@ -621,7 +641,8 @@ def act_on_inbox_notification(request, pk, action):
             notification.mark_as_unread()
     except Notification.DoesNotExist:
         messages.error(request, "Something went wrong. This notification does not exist")
-    return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
+
+    return redirect(reverse("users:user-inbox-category", kwargs={"pk": request.user.pk, "category": next_category}))
 
 
 @login_required
@@ -697,12 +718,103 @@ def upload_profile_photo(request):
 @require_POST
 def move_notification(request, pk):
     notification = get_object_or_404(Notification, pk=pk, receiver=request.user)
-    category = request.POST.get("category")
+    new_category = request.POST.get("category")
+    next_category = request.POST.get("next") or "inbox"  # fallback to inbox if not provided
 
-    valid_categories = dict(Notification.CATEGORY_CHOICES).keys()
-    if category in valid_categories:
-        notification.category = category
+    if new_category and new_category in dict(Notification.CATEGORY_CHOICES):
+        notification.category = new_category
         notification.save()
-        return HttpResponse(status=204)
+        messages.success(request, f"Notification moved to {new_category}.")
+        return redirect("users:user-inbox-category", pk=request.user.pk, category=next_category)
 
-    return HttpResponse(status=400)
+    label_id = request.POST.get("label_id")
+    if label_id:
+        try:
+            label = NotificationLabel.objects.get(pk=label_id, user=request.user)
+            notification.labels.add(label)
+            messages.success(request, "Label assigned to notification.")
+        except NotificationLabel.DoesNotExist:
+            messages.error(request, "Label not found or does not belong to you.")
+        return redirect("users:user-inbox-category", pk=request.user.pk, category=next_category)
+
+    messages.error(request, "Invalid category or label.")
+    return redirect("users:user-inbox-category", pk=request.user.pk, category=next_category)
+
+
+@login_required
+def create_notification_label(request):
+    """
+    Handles the creation of a new notification label for the logged-in user.
+
+    If the request method is POST and a label name is provided, it creates a new
+    NotificationLabel object associated with the user. If the label name is empty,
+    it displays an error message. Finally, it redirects the user back to their inbox.
+    """
+    if request.method == "POST":
+        label_name = request.POST.get("label_name")
+        if label_name:
+            NotificationLabel.objects.get_or_create(user=request.user, name=label_name)
+            messages.success(request, "Label created successfully.")
+        else:
+            messages.error(request, "Label name cannot be empty.")
+    return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
+
+
+@login_required
+def assign_label_to_notification(request, notification_id):
+    """
+    Assigns a selected notification label to a specific notification.
+
+    It retrieves the notification and the label based on their IDs and ensures
+    that both belong to the logged-in user. If the label is found, it's added
+    to the notification's labels. If the label doesn't exist or doesn't belong
+    to the user, an error message is displayed. The user is then redirected
+    back to their inbox.
+
+    Args:
+        notification_id (int): The ID of the notification to assign the label to.
+    """
+    notification = get_object_or_404(Notification, pk=notification_id, receiver=request.user)
+    label_id = request.POST.get("label_id")
+
+    try:
+        label = NotificationLabel.objects.get(pk=label_id, user=request.user)
+        notification.labels.add(label)
+        messages.success(request, "Label assigned to notification.")
+    except NotificationLabel.DoesNotExist:
+        messages.error(request, "Label not found or does not belong to you.")
+
+    return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
+
+
+@login_required
+def notifications_by_label(request, label_id):
+    """
+    Retrieves and displays all notifications associated with a specific label
+    belonging to the logged-in user.
+
+    It fetches the NotificationLabel object and then retrieves all notifications
+    that have been assigned this label. These are then passed to a template for
+    rendering.
+
+    Args:
+        label_id (int): The ID of the notification label to filter by.
+    """
+    label = get_object_or_404(NotificationLabel, pk=label_id, user=request.user)
+    notifications = label.notifications.all()
+    context = {
+        "label": label,
+        "notifications": notifications,
+    }
+    return render(request, "users/notifications_by_label.html", context)
+
+
+class GroupListView(SingleTableView):
+    model = Group
+    table_class = GroupTable
+    template_name = "users/group_list.html"
+
+
+class GroupDetailView(DetailView):
+    model = Group
+    template_name = "users/group_detail.html"

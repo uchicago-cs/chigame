@@ -1,0 +1,53 @@
+{% extends "knowledge-base/base.html" %}
+
+{% load static %}
+
+{% block page-content %}
+  <div class="container py-4">
+    <h1 class="mb-3">Review Guide</h1>
+    <div class="card mb-4">
+      <div class="card-body">
+        <h3 class="card-title mb-2">Guide for {{ guide.game_id.name }}</h3>
+        <p class="mb-1">
+          <strong>Author:</strong> {{ guide.author.username|default:guide.author.email }}
+        </p>
+        <p class="mb-1">
+          <strong>Date Uploaded:</strong> {{ guide.recent_upload|date:"Y-m-d H:i" }}
+        </p>
+        <p class="mb-2">
+          <strong>Categories:</strong>
+          {% with categories=guide.game_id.categories.all %}
+            {% if categories %}
+              {% for cat in categories|slice:":2" %}<span class="badge bg-secondary me-1">{{ cat }}</span>{% endfor %}
+              {% if categories|length > 2 %}<small class="text-muted">and {{ categories|length|add:"-2" }} more</small>{% endif %}
+            {% else %}
+              <span class="text-muted">N/A</span>
+            {% endif %}
+          {% endwith %}
+        </p>
+        <div class="mb-3">
+          <strong>Content:</strong>
+          <div class="border rounded p-3 bg-light mt-2 min-h-120">{{ html_content|safe }}</div>
+        </div>
+      </div>
+    </div>
+    <form method="post" class="mb-4">
+      {% csrf_token %}
+      <div class="mb-3">
+        <label for="feedback" class="form-label">
+          <strong>Feedback to Contributor:</strong>
+        </label>
+        <textarea name="feedback" id="feedback" class="form-control" rows="4">{{ feedback }}</textarea>
+      </div>
+      <div class="d-flex gap-2">
+        <button type="submit" name="action" value="accept" class="btn btn-success">Accept</button>
+        <button type="submit" name="action" value="reject" class="btn btn-danger">Reject</button>
+        <button type="submit"
+                name="action"
+                value="request_changes"
+                class="btn btn-warning text-dark">Request Changes</button>
+      </div>
+      {% if message %}<div class="alert alert-info mt-3">{{ message }}</div>{% endif %}
+    </form>
+  </div>
+{% endblock page-content %}

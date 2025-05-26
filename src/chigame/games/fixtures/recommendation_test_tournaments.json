@@ -1,0 +1,118 @@
+[
+    {
+      "model": "games.tournament",
+      "pk": 2001,
+      "fields": {
+        "name": "Past Tournament by User 101",
+        "game": 1,
+        "registration_start_date": "2025-01-01T00:00:00Z",
+        "registration_end_date": "2025-01-10T23:59:59Z",
+        "tournament_start_date": "2025-01-15T10:00:00Z",
+        "tournament_end_date": "2025-01-20T23:59:59Z",
+        "max_players": 8,
+        "description": "A past tournament created by User 101 for recommendation testing",
+        "rules": "Standard tournament rules apply.",
+        "draw_rules": "In case of a draw, the player with the higher seed will advance.",
+        "num_winner": 1,
+        "archived": true,
+        "created_by": 101,
+        "players": [202, 203, 204, 205],
+        "winners": [202],
+        "matches": [2001, 2002]
+      }
+    },
+    {
+      "model": "games.tournament",
+      "pk": 2002,
+      "fields": {
+        "name": "Another Past Tournament by User 101",
+        "game": 1,
+        "registration_start_date": "2025-02-01T00:00:00Z",
+        "registration_end_date": "2025-02-10T23:59:59Z",
+        "tournament_start_date": "2025-02-15T10:00:00Z",
+        "tournament_end_date": "2025-02-20T23:59:59Z",
+        "max_players": 8,
+        "description": "Another past tournament created by User 101 for recommendation testing",
+        "rules": "Standard tournament rules apply.",
+        "draw_rules": "In case of a draw, the player with the higher seed will advance.",
+        "num_winner": 1,
+        "archived": true,
+        "created_by": 101,
+        "players": [202, 203, 206],
+        "winners": [203],
+        "matches": [2003, 2004]
+      }
+    },
+    {
+      "model": "games.tournament",
+      "pk": 2003,
+      "fields": {
+        "name": "Past Tournament by User 201",
+        "game": 1,
+        "registration_start_date": "2025-03-01T00:00:00Z",
+        "registration_end_date": "2025-03-10T23:59:59Z",
+        "tournament_start_date": "2025-03-15T10:00:00Z",
+        "tournament_end_date": "2025-03-20T23:59:59Z",
+        "max_players": 8,
+        "description": "A past tournament created by User 201 for recommendation testing",
+        "rules": "Standard tournament rules apply.",
+        "draw_rules": "In case of a draw, the player with the higher seed will advance.",
+        "num_winner": 1,
+        "archived": true,
+        "created_by": 201,
+        "players": [203, 204, 205, 206],
+        "winners": [205],
+        "matches": [2005, 2006]
+      }
+    },
+    {
+      "model": "games.tournament",
+      "pk": 2004,
+      "fields": {
+        "name": "Active Tournament for Recommendation Testing",
+        "game": 1,
+        "registration_start_date": "2025-04-01T00:00:00Z",
+        "registration_end_date": "2025-05-20T23:59:59Z",
+        "tournament_start_date": "2025-05-24T10:00:00Z",
+        "tournament_end_date": "2025-05-31T23:59:59Z",
+        "max_players": 16,
+        "description": "This tournament is created for recommendation testing. It's currently in the registration period.",
+        "rules": "Standard tournament rules apply. This is a test tournament for recommendation system.",
+        "draw_rules": "In case of a draw, the player with the higher seed will advance.",
+        "num_winner": 1,
+        "archived": false,
+        "created_by": 101,
+        "players": [102, 103, 104],
+        "winners": [],
+        "matches": []
+      }
+    },
+    {
+      "model": "games.chat",
+      "pk": 2001,
+      "fields": {
+        "tournament": 2001
+      }
+    },
+    {
+      "model": "games.chat",
+      "pk": 2002,
+      "fields": {
+        "tournament": 2002
+      }
+    },
+    {
+      "model": "games.chat",
+      "pk": 2003,
+      "fields": {
+        "tournament": 2003
+      }
+    },
+    {
+      "model": "games.chat",
+      "pk": 2004,
+      "fields": {
+        "tournament": 2004
+      }
+    }
+]
