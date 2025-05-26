@@ -5,45 +5,79 @@
   <head>
     <meta charset="UTF-8" />
     <title>Chigame Checkers</title>
-    <!-- using a CDN for now -->
+    <!-- Phaser game engine -->
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
-    <!-- link css file -->
+    <!-- CSS Stylesheet -->
     <link rel="stylesheet"
           href="{% static 'checkers-prototype/css/style.css' %}" />
-    <!-- imported fonts -->
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap"
           rel="stylesheet" />
+    <!-- CSRF helper -->
     <script>
       function getCSRFToken() {
-        return document.cookie.split('; ')
-          .find(row => row.startsWith('csrftoken'))
-          ?.split('=')[1];
+        return document.cookie.split('; ').find(row => row.startsWith('csrftoken'))?.split('=')[1];
       }
     </script>
+    <!-- Game metadata injected by Django -->
     <script>
       const GAME_ID = Number("{{ game_id }}");
       const PLAYER_ID = Number("{{ player_id }}");
       let TURN_NUMBER = Number("{{ turn_number }}");
       const BOARD_ID = Number("{{ board_id }}");
     </script>
-    <!-- linking to game.js -->
+    <!-- Game script -->
     <script src="{% static 'checkers-prototype/game.js' %}"></script>
   </head>
   <body>
+    <!-- Navbar with buttons -->
     <nav class="navbar">
       <h1>CHIGAME</h1>
-      <!-- add buttons to this div -->
       <div class="nav-btns">
+        <button id="forfeitBtn" class="btn">Forfeit</button>
+        <button id="drawBtn" class="btn">Offer Draw</button>
+        <button id="declineDrawBtn" class="btn">Decline Draw</button>
         <button class="btn"
                 onclick="window.open('https://github.com/uchicago-cs/chigame/wiki/Adding-Games-~-Checkers-Rules', '_blank')">
           Read Rules
         </button>
       </div>
     </nav>
+    <!-- Game over + draw prompt -->
+    <div id="gameOverPrompts">
+      <div id="gameOverMessage" class="game-over-message"></div>
+      <div id="playAgainPrompt" class="play-again-prompt hidden">
+        <p>Play Again?</p>
+        <div class="play-again-btns">
+          <button id="playAgainYes" class="btn">Yes</button>
+          <button id="playAgainNo" class="btn">No</button>
+        </div>
+      </div>
+    </div>
+    <!-- Main canvas -->
     <div class="main-content">
       <div id="game"></div>
+    </div>
+    <!-- Settings -->
+    <div id="settings-container">
+      <div id="settings-menu">
+        <div id="settings-buttons">
+          <button id="toggle-colorblind" class="setting-btn">Toggle Colorblind Mode</button>
+          <button id="toggle-coordinates" class="setting-btn">Toggle Coordinates</button>
+        </div>
+      </div>
+      <div id="settings-tab">⚙️</div>
+    </div>
+    <button id="settings-button" class="settings-button">⚙️</button>
+    <!-- Captured pieces scoreboard -->
+    <div id="captured-pieces">
+      <div id="score">
+        Red: 0
+        <br />
+        Black: 0
+      </div>
     </div>
   </body>
 </html>
