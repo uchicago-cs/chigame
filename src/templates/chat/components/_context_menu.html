@@ -121,7 +121,18 @@
       if (response.ok) {
         const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
         if (messageElement) {
+          const wasPinned = messageElement.classList.contains("pinned-message") ||
+            messageElement.querySelector(".pinned-label");
+
           messageElement.remove();
+
+          if (wasPinned) {
+            const banner = document.getElementById("pinned-message-container");
+            if (banner) {
+              banner.innerHTML = "";
+              banner.style.display = "none";
+            }
+          }
         }
       } else {
         console.error('Failed to delete message');
