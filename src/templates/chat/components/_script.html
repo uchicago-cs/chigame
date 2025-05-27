@@ -1,10 +1,17 @@
 <script>
+  let replyToMessageId = null;
+  let replyToUsername = null;
+  let replyToContent = null;
   const protocol = window.location.protocol === "https:" ? "wss://" : "ws://";
   const chatId = "{{ chat.id }}";
   const chatSocket = new WebSocket(
     protocol + window.location.host + "/ws/chat/" + chatId + "/"
   );
 
+  function applyProfanityFilter(text) {
+    const regex = new RegExp(`\\b(${profanityWords.join("|")})\\b`, "gi");
+    return text.replace(regex, (match) => "*".repeat(match.length));
+  }
   chatSocket.onopen = function(e) {
     console.log("Connected to chat room:", chatId);
   };
@@ -28,7 +35,8 @@
   };
 
   document.querySelector("#id_message_send_button").onclick = function(e) {
-    var messageInput = document.querySelector("#id_message_send_input").value;
+    const inputElement = document.querySelector("#id_message_send_input");
+    const messageInput = inputElement.value;
     if (messageInput.trim() === "") return;
 
     chatSocket.send(
@@ -39,21 +47,23 @@
       })
     );
 
+    // ✅ Properly clear input and reset reply state
+    inputElement.value = "";
     replyToMessageId = null;
     replyToUsername = null;
     replyToContent = null;
-
-    messageInput = "";
     document.getElementById("replying-to-preview").classList.add("d-none");
   };
 
+
   function escapeHTML(str) {
-    return str
-      .replace(/&/g, "&amp;")
+    if (typeof str !== "string") return "";
+    return str.replace(/&/g, "&amp;")
       .replace(/</g, "&lt;").replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&#039;");
   }
+
 
   /**
    * This function is called when a message is received from the server.
@@ -63,6 +73,7 @@
    * @param {MessageEvent} e - The message event.
    */
   chatSocket.onmessage = function(e) {
+    console.log("WS message received:", e.data);
     const data = JSON.parse(e.data);
 
     // Target consistent message container using ID
@@ -79,21 +90,7 @@
     const escapedUsername = escapeHTML(data.username);
     const escapedMessage = escapeHTML(data.message);
     messageContainer.setAttribute("oncontextmenu", `showContextMenu(event, ${data.message_id}, '${escapedUsername}', '${escapedMessage}'); return false;`);
-    const escapeHtml = (str) =>
-      str.replace(
-        /[&<>'"]/g,
-        (char) =>
-        ({
-          "&": "&amp;",
-          "<": "&lt;",
-          ">": "&gt;",
-          "'": "&#39;",
-          '"': "&quot;",
-        } [char])
-      );
 
-    const escapedUsername = escapeHtml(data.username);
-    const escapedMessage = escapeHtml(data.message);
     messageContainer.setAttribute(
       "oncontextmenu",
       `showContextMenu(event, ${data.message_id}, '${escapedUsername}', '${escapedMessage}'); return false;`
@@ -133,7 +130,9 @@
     // Create message content
     const content = document.createElement("div");
     content.className = "mt-1";
-    content.textContent = data.message;
+    const rawMessage = data.message;
+    const filteredMessage = profanityEnabled ? applyProfanityFilter(rawMessage) : rawMessage;
+    content.textContent = filteredMessage;
 
     // Create message timestamp
     const timestamp = document.createElement("div");
@@ -142,12 +141,16 @@
       hour: "2-digit",
       minute: "2-digit",
     });
+    const reactionsContainer = document.createElement("div");
+    reactionsContainer.id = `reactions-${data.message_id}`;
+    reactionsContainer.className = "mt-1 d-flex flex-wrap gap-1";
 
     // Assemble message
     messageBubble.appendChild(sender);
     messageBubble.appendChild(content);
     messageBubble.appendChild(timestamp);
     messageContainer.appendChild(messageBubble);
+    messageBubble.appendChild(reactionsContainer);
 
     // Add message to container and clear input
     messageList.appendChild(messageContainer);
