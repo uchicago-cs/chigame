@@ -12,16 +12,14 @@ class LiveChat(models.Model):
 
     name = models.TextField(null=False)
     users: models.ManyToManyField = models.ManyToManyField(User, through="LiveChatUser", related_name="live_chats")
-<<<<<<< HEAD
     background_image = models.ImageField(upload_to="chat_backrounds/", null=True, blank=True)
-=======
+
     pinned_message = models.ForeignKey(
         "LiveChatMessage", null=True, blank=True, on_delete=models.SET_NULL, related_name="pinned_message"
     )
     public = models.BooleanField(default=False)  # defined for global chats
     description = models.TextField(null=True, blank=True)
     profanity_allowed = models.BooleanField(default=False)
->>>>>>> 66e2a46cd1e612d9b8831aa62e70ac453c940b4d
 
     def __str__(self):
         return f"LiveChat with name:'{self.name}'"
