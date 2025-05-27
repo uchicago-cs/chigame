@@ -6,7 +6,7 @@ import django.utils.timezone
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("users", "0016_add_last_seen_field"),
+        ("users", "0013_recommendationpreferences"),
     ]
 
     operations = [
