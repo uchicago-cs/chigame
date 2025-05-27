@@ -98,9 +98,7 @@
     // Create message bubble
     const messageBubble = document.createElement("div");
     messageBubble.className = `${
-      data.user_id === "{{ request.user.id }}"
-        ? "bg-success-subtle"
-        : "bg-white"
+      data.user_id === currentUserId ? "bg-success-subtle" : "bg-white"
     } rounded p-2 shadow-sm`;
     messageBubble.style.maxWidth = "80%";
 
