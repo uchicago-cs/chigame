@@ -40,6 +40,7 @@ const COLORS = {
   black: 0x000000,
   red: 0xff0000,
   white: 0xffffff,
+  orange: 0xffa500,
   colorblind_blue: 0x1e88e5,
   colorblind_orange: 0xffc107,
   strRed: '#ff0000', // string needed b/c hex cannot be used to change css
@@ -66,6 +67,7 @@ let highlightedTiles = [];
 let gameOver = false;
 let drawOffered = false;
 let drawOfferedBy = null;
+let lastMoveHighlights = [];
 // Initial time for each player
 let redTime = 300;
 let blackTime = 300;
@@ -399,6 +401,9 @@ function createPiece(x, y, color, scene) {
     }
   });
 
+  // so the pieces will be above the highlights
+  piece.sprite.setDepth(1);
+
   // push to array
   pieces.push(piece);
 }
@@ -579,6 +584,18 @@ function movePiece(piece, moveX, moveY) {
     }
   }
 
+  clearLastMoveHighlights();
+  // highlight the original tile
+  const originHighlight = checkers.scene.scenes[0].add.rectangle(
+    MARGIN + piece.x * TILE_SIZE + TILE_SIZE / 2,
+    MARGIN + piece.y * TILE_SIZE + TILE_SIZE / 2,
+    TILE_SIZE,
+    TILE_SIZE,
+    COLORS.orange,
+    0.3
+  );
+  lastMoveHighlights.push(originHighlight);
+
   // Move the piece
   piece.x = moveX;
   piece.y = moveY;
@@ -623,6 +640,18 @@ function movePiece(piece, moveX, moveY) {
     });
   }
 
+  // Highlight destination tile
+  const destHighlight = checkers.scene.scenes[0].add.rectangle(
+    MARGIN + moveX * TILE_SIZE + TILE_SIZE / 2,
+    MARGIN + moveY * TILE_SIZE + TILE_SIZE / 2,
+    TILE_SIZE,
+    TILE_SIZE,
+    COLORS.orange,
+    0.3
+  );
+  lastMoveHighlights.push(destHighlight);
+  // Play move sound effect
+  piece.sprite.scene.sound.play('slide');
   //console.log('Current board state:', getBoardState());
   piece.sprite.scene.sound.play('slide');
 }
@@ -1345,6 +1374,13 @@ document.addEventListener('DOMContentLoaded', () => {
     resizeDisplay.style.visibility = "hidden";
   });
 });
+
+
+function clearLastMoveHighlights() {
+  while (lastMoveHighlights.length > 0) {
+    lastMoveHighlights.pop().destroy();
+  }
+}
 
 // functions for the timers
 function startPlayerTimer() {
