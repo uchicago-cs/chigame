@@ -6,4 +6,4 @@ from .models import LiveChat
 class LiveChatForm(forms.ModelForm):
     class Meta:
         model = LiveChat
-        fields = ["name", "description", "public"]
+        fields = ["name", "description", "public", "profanity_allowed"]

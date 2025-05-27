@@ -1,3 +1,5 @@
+import random
+
 import factory
 from factory import Sequence, SubFactory
 from factory.django import DjangoModelFactory
@@ -19,7 +21,7 @@ class AchievementFactory(DjangoModelFactory):
     threshold = factory.Faker("random_number", digits=2)  # Random number for threshold
 
 
-class UserAchievementFactory(DjangoModelFactory):
+class CompletedUserAchievementFactory(DjangoModelFactory):
     class Meta:
         model = UserAchievement
 
@@ -27,7 +29,19 @@ class UserAchievementFactory(DjangoModelFactory):
     achievement = factory.SubFactory(AchievementFactory)
     pinned = factory.Faker("boolean")
     date_earned = factory.Faker("date_time_this_year")
-    progress = factory.Faker("random_number", digits=2)  # Random number for progress
+    last_updated = factory.LazyAttribute(lambda obj: obj.date_earned)
+    progress = factory.LazyAttribute(lambda obj: obj.achievement.threshold)
+
+
+class UncompletedUserAchievementFactory(DjangoModelFactory):
+    class Meta:
+        model = UserAchievement
+
+    user = factory.SubFactory(UserFactory)
+    achievement = factory.SubFactory(AchievementFactory)
+    pinned = factory.Faker("boolean")
+    last_updated = factory.Faker("date_time_this_year")
+    progress = factory.LazyAttribute(lambda obj: obj.achievement.threshold * random.random())
 
 
 class MatchFactory(DjangoModelFactory):

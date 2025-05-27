@@ -174,6 +174,7 @@ class ContributorManageGuide(LoginRequiredMixin, ListView):
 
         # for sorting
         sort = self.request.GET.get("sort")
+
         if sort == "old":
             guides = guides.order_by("recent_upload")
         elif sort == "newest":
