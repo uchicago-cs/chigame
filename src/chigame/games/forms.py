@@ -57,13 +57,14 @@ class IFGameForm(forms.ModelForm):
     def save(self, commit=True):
         instance = super().save(commit=False)
         # Set min/max players fields automatically
-        instance.min_players = 1  
+        instance.min_players = 1
         instance.max_players = 1
 
         if commit:
             instance.save()
             self.save_m2m()
         return instance
+
 
 class LobbyForm(forms.ModelForm):
     class Meta:
