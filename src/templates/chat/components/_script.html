@@ -8,6 +8,10 @@
     protocol + window.location.host + "/ws/chat/" + chatId + "/"
   );
 
+  function applyProfanityFilter(text) {
+    const regex = new RegExp(`\\b(${profanityWords.join("|")})\\b`, "gi");
+    return text.replace(regex, (match) => "*".repeat(match.length));
+  }
   chatSocket.onopen = function(e) {
     console.log("Connected to chat room:", chatId);
   };
@@ -125,7 +129,9 @@
     // Create message content
     const content = document.createElement("div");
     content.className = "mt-1";
-    content.textContent = data.message;
+    const rawMessage = data.message;
+    const filteredMessage = profanityEnabled ? applyProfanityFilter(rawMessage) : rawMessage;
+    content.textContent = filteredMessage;
 
     // Create message timestamp
     const timestamp = document.createElement("div");

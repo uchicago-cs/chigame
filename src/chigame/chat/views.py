@@ -8,18 +8,31 @@ from django.views.decorators.http import require_POST
 
 from .forms import LiveChatForm
 from .models import LiveChat, LiveChatMessage, LiveChatMessageReaction, LiveChatUser
+from .utils import get_profanity_list_json
 
 
 def chat(request, chat_id):
     chat = get_object_or_404(LiveChat, id=chat_id)
     messages = LiveChatMessage.objects.filter(live_chat=chat).order_by("sent_at")
     chat_user = LiveChatUser.objects.filter(live_chat=chat, user=request.user).first()
+    profanity_enabled = not chat.profanity_allowed or (chat_user and chat_user.profanity)
+    profanity_words = get_profanity_list_json()
     # if the chat is public, add the request user to the chat
     if request.user.is_authenticated and chat.public and not chat.users.filter(id=request.user.id).exists():
         chat.users.add(request.user)
     if request.user.is_authenticated and not chat.users.filter(id=request.user.id).exists():
         chat.users.add(request.user)
-    return render(request, "chat/index.html", {"chat": chat, "messages": messages, "chat_user": chat_user})
+    return render(
+        request,
+        "chat/index.html",
+        {
+            "chat": chat,
+            "messages": messages,
+            "chat_user": chat_user,
+            "profanity_enabled": profanity_enabled,
+            "profanity_words": profanity_words,
+        },
+    )
 
 
 def live_chat_list(request):

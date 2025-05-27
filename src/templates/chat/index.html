@@ -1,6 +1,18 @@
 {% extends "base.html" %}
 
 {% block content %}
+  <script>
+    const profanityEnabled = {
+      {
+        profanity_enabled | yesno: "true,false"
+      }
+    };
+    const profanityWords = {
+      {
+        profanity_words | safe
+      }
+    };
+  </script>
   <style>
     /* Base layout for chat container */
     .chat-container {
