@@ -281,6 +281,9 @@
                     <a href="{% url 'users:recommendation-preferences' profile.user.pk %}"
                        class="btn btn-maroon">Recommendation Preferences</a>
                   </div>
+                  <div class="d-flex justify-content-center align-items-center mt-1">
+                    <a href="{% url 'users:blocked-users-list' %}" class="btn btn-maroon">Blocked Users</a>
+                  </div>
                   <div class="d-flex justify-content-center align-items-center mt-4">
                     <form method="post"
                           action="{% url 'users:toggle-profanity' profile.user.pk %}">
@@ -416,32 +419,6 @@
           </div>
         </div>
       </div>
-      {% if profile.user == request.user %}
-        <div class="card mt-4">
-          <div class="card-header">
-            <h3>My Game Lists</h3>
-          </div>
-          <div class="card-body">
-            {% if game_lists %}
-              <ul class="list-group list-group-flush">
-                {% for game_list in game_lists %}
-                  <li class="list-group-item">
-                    <a href="{% url 'gamelist-detail' game_list.pk %}"
-                       class="btn-outline-block">
-                      <span>{{ game_list.name }}</span>
-                      <span class="badge rounded-pill">{{ game_list.games.count }} game{{ game_list.games.count|pluralize }}</span>
-                    </a>
-                  </li>
-                {% endfor %}
-              </ul>
-            {% else %}
-              <p class="text-muted">
-                You don't have any game lists yet. <a href="{% url 'game-list' %}">Browse games</a> to create some!
-              </p>
-            {% endif %}
-          </div>
-        </div>
-      {% endif %}
     </div>
   </div>
 {% endblock content %}
