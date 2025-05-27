@@ -587,10 +587,10 @@ function movePiece(piece, moveX, moveY) {
   clearLastMoveHighlights();
   // highlight the original tile
   const originHighlight = checkers.scene.scenes[0].add.rectangle(
-    MARGIN + piece.x * TILE_SIZE + TILE_SIZE / 2,
-    MARGIN + piece.y * TILE_SIZE + TILE_SIZE / 2,
-    TILE_SIZE,
-    TILE_SIZE,
+    margin + piece.x * tile_size + tile_size / 2,
+    margin + piece.y * tile_size + tile_size / 2,
+    tile_size,
+    tile_size,
     COLORS.orange,
     0.3
   );
@@ -642,10 +642,10 @@ function movePiece(piece, moveX, moveY) {
 
   // Highlight destination tile
   const destHighlight = checkers.scene.scenes[0].add.rectangle(
-    MARGIN + moveX * TILE_SIZE + TILE_SIZE / 2,
-    MARGIN + moveY * TILE_SIZE + TILE_SIZE / 2,
-    TILE_SIZE,
-    TILE_SIZE,
+    margin + moveX * tile_size + tile_size / 2,
+    margin + moveY * tile_size + tile_size / 2,
+    tile_size,
+    tile_size,
     COLORS.orange,
     0.3
   );
@@ -716,27 +716,6 @@ function endTurn(scene) {
     turn.textContent = 'Black';
     dot.style.backgroundColor = colorblindMode ? COLORS.strBlue: COLORS.strBlack;
   }
-
-  // reset draw offer if it was made by the current player
-  if (drawOffered && drawOfferedBy === currentPlayer) {
-    const gameOverPrompts = document.getElementById('gameOverPrompts');
-    const gameOverMessage = document.getElementById('gameOverMessage');
-    const drawBtn = document.getElementById('drawBtn');
-    const declineDrawBtn = document.getElementById('declineDrawBtn');
-    drawOffered = false;
-    drawOfferedBy = null;
-    gameOverMessage.textContent = '';
-    gameOverMessage.classList.remove('show');
-    gameOverPrompts.classList.remove('show');
-    drawBtn.textContent = 'Offer Draw';
-    declineDrawBtn.style.display = 'none';
-  }
-
-  //if black and bot is on, schedule bot move
-  if (vsEasyBot && currentPlayer === darkPiece){
-    //delay so user has time to process bot move after their own
-    scene.time.delayedCall(300, easyBot, [scene], scene);
-  }
 }
 
 // helper function to clear all the highlighted tiles
@@ -787,6 +766,27 @@ function giveHint() {
   } else {
     // in a normal checkers game, the player loses if there are no moves left
     alert('No valid moves.');
+  }
+
+  // reset draw offer if it was made by the current player
+  if (drawOffered && drawOfferedBy === currentPlayer) {
+    const gameOverPrompts = document.getElementById('gameOverPrompts');
+    const gameOverMessage = document.getElementById('gameOverMessage');
+    const drawBtn = document.getElementById('drawBtn');
+    const declineDrawBtn = document.getElementById('declineDrawBtn');
+    drawOffered = false;
+    drawOfferedBy = null;
+    gameOverMessage.textContent = '';
+    gameOverMessage.classList.remove('show');
+    gameOverPrompts.classList.remove('show');
+    drawBtn.textContent = 'Offer Draw';
+    declineDrawBtn.style.display = 'none';
+  }
+
+  //if black and bot is on, schedule bot move
+  if (vsEasyBot && currentPlayer === darkPiece){
+    //delay so user has time to process bot move after their own
+    scene.time.delayedCall(300, easyBot, [scene], scene);
   }
 }
 
