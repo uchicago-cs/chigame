@@ -1269,18 +1269,19 @@ function resizeGame(percentage) {
       if (piece.kingIcon) {
         piece.kingIcon.destroy();
       }
-    } else {
-      // remove coordinates
-      coordElements.forEach((el) => document.body.removeChild(el));
-      coordElements.length = 0;
+      else {
+        // remove coordinates
+        coordElements.forEach((el) => document.body.removeChild(el));
+        coordElements.length = 0;
 
-      // create a new crown icon with the updated position and size
-      piece.kingIcon = checkers.scene.scenes[0].add.image(
-        margin + piece.x * tile_size + tile_size / 2,
-        margin + piece.y * tile_size + tile_size / 2,
-        'crown'
-      );
-      piece.kingIcon.setDisplaySize(tile_size, tile_size);
+        // create a new crown icon with the updated position and size
+        piece.kingIcon = checkers.scene.scenes[0].add.image(
+          margin + piece.x * tile_size + tile_size / 2,
+          margin + piece.y * tile_size + tile_size / 2,
+          'crown'
+        );
+        piece.kingIcon.setDisplaySize(tile_size, tile_size);
+      }
     }
 
     // add onclick functionality to the new sprite
