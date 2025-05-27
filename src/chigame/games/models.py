@@ -36,6 +36,7 @@ class Game(models.Model):
     min_players = models.PositiveIntegerField()
     max_players = models.PositiveIntegerField()
 
+    game_url = models.URLField(blank=True, null=True, help_text="URL for embedded games (e.g., external web games)")
     # interactive fiction  - twine file
     twine_file = models.FileField(upload_to="twine_games/", null=True, blank=True)
 
@@ -221,7 +222,7 @@ class Lobby(models.Model):
         # generate unique join code if it doesn't exist
         if not self.join_code:
             self.join_code = self.generate_unique_code()
-        # Calls full_clean to run all validations before saving
+
         self.full_clean()
         creating = self._state.adding
         old_status = None
