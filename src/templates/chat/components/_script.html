@@ -73,6 +73,7 @@
    * @param {MessageEvent} e - The message event.
    */
   chatSocket.onmessage = function(e) {
+    console.log("WS message received:", e.data);
     const data = JSON.parse(e.data);
 
     // Target consistent message container using ID
