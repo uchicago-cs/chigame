@@ -1,23 +1,24 @@
 <div id="contextMenu" class="context-menu">
   <div class="small text-muted mb-1" id="replyPreview"></div>
-  <button class="btn btn-sm btn-light w-100" onclick="pinningMessage()">Pinning Messages</button>
   <button class="btn btn-sm btn-light w-100" onclick="replyToMessage()">Reply</button>
-  <button class="btn btn-sm btn-light w-100" onclick="editMessage()">Edit Message</button>
-  <button class="btn btn-sm btn-light w-100" onclick="reactToMessage()">React to Message</button>
-  <button class="btn btn-sm btnlight w-100" onclick="reactToMessage('❤️')">Add Reactions</button>
+  <button class="btn btn-sm btn-light w-100"
+          onclick="editMessage(replyToMessageId, replyToContent)">Edit Message</button>
+  <button class="btn btn-sm btn-light w-100" onclick="pinMessage()">Pin Message</button>
+  <button class="btn btn-sm btn-light w-100" onclick="reactToMessage('❤️')">React to Message ❤️</button>
   <button class="btn btn-sm btn-danger w-100"
           onclick="deleteMessage()"
           title="Delete Message">Delete Message</button>
 </div>
 {% csrf_token %}
 <script>
-  let replyToMessageId = null;
-  let replyToUsername = null;
-  let replyToContent = null;
-
   function showContextMenu(event, messageId, username, content) {
     const contextMenu = document.getElementById('contextMenu');
     const replyPreview = document.getElementById('replyPreview');
+    // Prevent default context menu
+    event.preventDefault();
+
+    // Clear previous listener if it exists
+    document.removeEventListener('click', hideContextMenu);
 
     // Store reply information
     replyToMessageId = messageId;
@@ -43,15 +44,23 @@
     document.removeEventListener('click', hideContextMenu);
   }
 
-  function editMessage() {
-    const messageId = replyToMessageId;
+  function editMessage(messageId, content) {
+    // 🧹 Clear accidental reply state
+    replyToMessageId = null;
+    replyToUsername = null;
+    replyToContent = null;
+    document.getElementById("replying-to-preview").classList.add("d-none");
+
+    const inputElement = document.getElementById("id_message_send_input");
+    inputElement.value = content || "";
+    inputElement.focus();
+
     const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
     const contentElement = messageElement?.querySelector(".mt-1");
     const oldContent = contentElement?.innerText || "";
 
-    const newContent = prompt("Edit your message: ", oldContent);
+    const newContent = prompt("Edit your message:", oldContent);
     if (!newContent) return;
-
 
     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
@@ -70,22 +79,17 @@
             contentElement.innerText = newContent;
           }
 
-
           const existingTag = messageElement.querySelector(".edited-tag");
-          if (existingTag) {
-            existingTag.remove();
-          }
+          if (existingTag) existingTag.remove();
 
           const editedTag = document.createElement("div");
           editedTag.className = "text-end text-muted small mt-1 edited-tag fst-italic";
           editedTag.innerText = "(edited)";
           messageElement.appendChild(editedTag);
-
-
-
         } else {
           console.error('Failed to edit message');
         }
+        inputElement.value = "";
       })
       .catch(error => {
         console.error('Error editing message:', error);
@@ -93,6 +97,7 @@
 
     hideContextMenu();
   }
+
 
   /**
    * Focuses on the message input field and hides the context menu.
@@ -104,8 +109,9 @@
     hideContextMenu();
 
     document.getElementById('replying-to-preview').classList.remove('d-none');
-    document.getElementById('preview-username').textContent = replyToUsername;
-    document.getElementById('preview-content').textContent = replyToContent;
+    document.getElementById("replying-to-username").textContent = replyToUsername;
+    document.getElementById("replying-to-content").textContent = replyToContent;
+
   }
 
   /**
@@ -120,7 +126,18 @@
       if (response.ok) {
         const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
         if (messageElement) {
+          const wasPinned = messageElement.classList.contains("pinned-message") ||
+            messageElement.querySelector(".pinned-label");
+
           messageElement.remove();
+
+          if (wasPinned) {
+            const banner = document.getElementById("pinned-message-container");
+            if (banner) {
+              banner.innerHTML = "";
+              banner.style.display = "none";
+            }
+          }
         }
       } else {
         console.error('Failed to delete message');
@@ -131,10 +148,26 @@
   /**
    * Reacts to a message on the frontend.
    */
-  function reactToMessage(content = "❤️") {
+  function reactToMessage(content = "❤️", messageId = null) {
+    if (!messageId) {
+      messageId = replyToMessageId;
+    }
+
+    if (!messageId) {
+      console.error("No messageId available for reaction.");
+      return;
+    }
+    replyToMessageId = null;
+    replyToUsername = null;
+    replyToContent = null;
+    const inputElement = document.getElementById("id_message_send_input");
+    inputElement.value = "";
+
+    inputElement.focus();
+    document.getElementById("replying-to-preview").classList.add("d-none");
     console.log("reacting to message");
     try {
-      const messageId = replyToMessageId;
+
       fetch(`/chat/message/${messageId}/react`, {
           method: 'POST',
           headers: {
@@ -156,6 +189,67 @@
     hideContextMenu();
   }
 
+  function pinMessage() {
+    const id = replyToMessageId;
+    const token = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    fetch(`/chat/message/${id}/pin`, {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': token
+        }
+      })
+      .then(res => res.json())
+      .then(data => {
+        const pm = data.pinned_message;
+
+        const banner = document.getElementById('pinned-message-container');
+        if (pm.is_pinned) {
+          banner.innerHTML = `📌 <strong>${pm.username}</strong>: ${pm.content}`;
+          banner.style.display = 'block'; // ← this is KEY!
+        } else {
+          banner.innerHTML = '';
+          banner.style.display = 'none';
+        }
+        document.querySelectorAll('.pinned-label').forEach(el => el.remove());
+
+        if (pm.is_pinned) {
+          const messageEl = document.querySelector(
+            `[data-message-id="${pm.id}"]`
+          );
+
+          // check for .message-meta
+          let meta = messageEl?.querySelector('.message-meta');
+
+          if (!meta) {
+            // create it if missing
+            meta = document.createElement('div');
+            meta.className = 'message-meta text-end text-muted small mt-1';
+
+
+
+            messageEl?.querySelector('.rounded')?.appendChild(meta);
+          }
+          meta.insertAdjacentHTML(
+            'beforeend',
+            `<span class="text-warning small ms-1 pinned-label">📌 Pinned</span>`
+          );
+        }
+      })
+      .catch(err => console.error('Pin failed:', err));
+    replyToMessageId = null;
+    replyToUsername = null;
+    replyToContent = null;
+    document.getElementById("replying-to-preview").classList.add("d-none");
+
+
+    hideContextMenu();
+  }
+
+
+
+
+
   function addReactionToMessage(messageId, content) {
     const container = document.getElementById(`reactions-${messageId}`);
     if (!container) return;
@@ -171,10 +265,13 @@
       span.dataset.reaction = content;
       span.dataset.messageId = messageId;
       span.innerHTML = `${content} <span class="reaction-count">1</span>`;
-      span.onclick = () => reactToMessage(content);
+      span.onclick = () => reactToMessage(content, messageId);
       container.appendChild(span);
     }
   }
+
+
+
 
   function removeReactionFromMessage(messageId, content) {
     const container = document.getElementById(`reactions-${messageId}`);
@@ -190,20 +287,5 @@
         existing.remove();
       }
     }
-  }
-
-  function pinningMessage() {
-    hideContextMenu();
-
-  }
-
-  function editMessage() {
-    hideContextMenu();
-
-  }
-
-  function reactToMessage() {
-    hideContextMenu();
-
   }
 </script>
