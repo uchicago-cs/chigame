@@ -107,6 +107,64 @@
       background-color: #600000;
     }
 
+    .favorite-games-section {
+      margin-top: 30px;
+      padding: 20px;
+      background-color: #f8f9fa;
+      border-radius: 12px;
+      border: 1px solid #ddd;
+    }
+
+    .favorite-games-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 15px;
+      margin-top: 15px;
+    }
+
+    .favorite-game-card {
+      text-align: center;
+      background-color: white;
+      border-radius: 8px;
+      padding: 10px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      transition: transform 0.2s;
+    }
+
+    .favorite-game-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .favorite-game-image {
+      width: 100%;
+      height: 100px;
+      object-fit: cover;
+      border-radius: 6px;
+      margin-bottom: 8px;
+    }
+
+    .favorite-game-name {
+      font-size: 12px;
+      font-weight: bold;
+      color: #333;
+      text-decoration: none;
+      display: block;
+      line-height: 1.2;
+    }
+
+    .favorite-game-name:hover {
+      color: #800000;
+      text-decoration: none;
+    }
+
+    .no-favorites {
+      text-align: center;
+      color: #666;
+      font-style: italic;
+      margin-top: 15px;
+    }
+
     .btn-secondary {
       background-color: #6c757d;
       border-color: #6c757d;
@@ -260,6 +318,52 @@
                   {% endif %}
                 {% else %}
                   <p>{{ profile.bio }}</p>
+                {% endif %}
+              </div>
+              <!-- Favorite Games Section -->
+              <div class="favorite-games-section">
+                <h4>
+                  {% if profile.user == request.user %}
+                    My Favorite Games
+                  {% else %}
+                    {{ profile.user.name }}'s Favorite Games
+                  {% endif %}
+                </h4>
+                {% if favorite_games %}
+                  <div class="favorite-games-grid">
+                    {% for game in favorite_games %}
+                      <div class="favorite-game-card">
+                        <a href="{% url 'game-detail' game.pk %}">
+                          {% if game.image %}
+                            <img src="{{ game.image }}"
+                                 alt="{{ game.name }}"
+                                 class="favorite-game-image" />
+                          {% else %}
+                            <img src="{% static 'images/no_picture_available.png' %}"
+                                 alt="{{ game.name }}"
+                                 class="favorite-game-image" />
+                          {% endif %}
+                          <span class="favorite-game-name">{{ game.name }}</span>
+                        </a>
+                      </div>
+                    {% endfor %}
+                  </div>
+                  {% if profile.user == request.user %}
+                    <div class="favorites-view-all-container">
+                      <a href="{% url 'favorite-list' %}"
+                         class="btn btn-sm"
+                         class="favorites-view-all-btn">View All Favorites</a>
+                    </div>
+                  {% endif %}
+                {% else %}
+                  <div class="no-favorites">
+                    {% if profile.user == request.user %}
+                      You haven't added any favorite games yet.
+                      <a href="{% url 'game-list' %}" class="favorites-browse-link">Browse games</a> to add some!
+                    {% else %}
+                      {{ profile.user.name }} hasn't added any favorite games yet.
+                    {% endif %}
+                  </div>
                 {% endif %}
               </div>
             </div>

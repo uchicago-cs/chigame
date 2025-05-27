@@ -163,6 +163,7 @@ class UserProfile(models.Model):
     bio = models.TextField(blank=True, max_length=500)
     date_joined = models.DateTimeField(auto_now_add=True)
     profile_photo = models.ImageField(upload_to="profile_photos/", blank=True, null=True)
+    favorite_games = models.ManyToManyField("games.Game", blank=True, related_name="favorited_by")
 
     @classmethod
     def get_or_create_profile(cls, user: User) -> "UserProfile":
