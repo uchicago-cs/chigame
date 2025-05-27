@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("users", "0013_recommendationpreferences"),
+        ("users", "0011_alter_friendinvitation_unique_together_and_more"),
     ]
 
     operations = [
