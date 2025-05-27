@@ -27,7 +27,7 @@
   },
   {
     "model": "games.game",
-    "pk": 1,
+    "pk": 2,
     "fields": {
       "name": "Checkers",
       "description": "A classic strategy board game",
@@ -43,7 +43,7 @@
     "fields": {
       "match_status": 1,
       "name": "Checkers Lobby 1",
-      "game": 1,
+      "game": 2,
       "game_mod_status": 1,
       "created_by": 1,
       "min_players": 2,
@@ -60,7 +60,7 @@
     "model": "games.match",
     "pk": 1,
     "fields": {
-      "game": 1,
+      "game": 2,
       "lobby": 1,
       "date_played": "2025-05-06T12:00:00Z"
     }
@@ -87,7 +87,7 @@
   },
   {
     "model": "games.checkers",
-    "pk": 1,
+    "pk": 2,
     "fields": {
       "player_1": 1,
       "player_2": 2,
@@ -103,36 +103,6 @@
       "state": [
         [
           0,
-          2,
-          0,
-          2,
-          0,
-          2,
-          0,
-          2
-        ],
-        [
-          2,
-          0,
-          2,
-          0,
-          2,
-          0,
-          2,
-          0
-        ],
-        [
-          0,
-          2,
-          0,
-          2,
-          0,
-          2,
-          0,
-          2
-        ],
-        [
-          0,
           0,
           0,
           0,
@@ -152,33 +122,63 @@
           0
         ],
         [
-          1,
           0,
-          1,
           0,
-          1,
           0,
-          1,
+          2,
+          0,
+          0,
+          0,
           0
         ],
         [
           0,
-          1,
           0,
           1,
           0,
-          1,
           0,
-          1
+          0,
+          0,
+          0
         ],
         [
-          1,
           0,
-          1,
           0,
-          1,
           0,
-          1,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
           0
         ]
       ],
@@ -189,9 +189,9 @@
     "model": "games.checkersturn",
     "pk": 1,
     "fields": {
-      "game": 1,
+      "game": 2,
       "board": 1,
-      "turn_number": 0,
+      "turn_number": 12,
       "player": 1
     }
   }
