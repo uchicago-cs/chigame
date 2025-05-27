@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h1>Leave Group</h1>
+  <form method="post" action="{% url 'users:group-leave' group.id %}">
+    {% csrf_token %}
+    <p>Are you sure you want to leave the group "{{ group.name }}"?</p>
+    <button type="submit" class="btn btn-danger">Leave Group</button>
+    <a href="{% url 'users:group-detail' group.id %}"
+       class="btn btn-secondary">Cancel</a>
+  </form>
+{% endblock content %}
