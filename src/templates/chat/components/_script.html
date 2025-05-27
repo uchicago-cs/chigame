@@ -92,7 +92,6 @@
     messageContainer.setAttribute("data-message-id", data.message_id);
     const escapedUsername = escapeHTML(data.username);
     const escapedMessage = escapeHTML(data.message);
-    messageContainer.setAttribute("oncontextmenu", `showContextMenu(event, ${data.message_id}, '${escapedUsername}', '${escapedMessage}'); return false;`);
 
     messageContainer.setAttribute(
       "oncontextmenu",
