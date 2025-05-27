@@ -222,7 +222,7 @@ class Lobby(models.Model):
         # generate unique join code if it doesn't exist
         if not self.join_code:
             self.join_code = self.generate_unique_code()
-        # Calls full_clean to run all validations before saving
+
         self.full_clean()
         creating = self._state.adding
         old_status = None
