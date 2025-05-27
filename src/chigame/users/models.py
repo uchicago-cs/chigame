@@ -159,11 +159,31 @@ class UserProfile(models.Model):
     that don't need a profile on the website (e.g., API-only users)
     """
 
+    VISIBILITY_CHOICES = [
+        ("public", "Public"),
+        ("friends", "Friends Only"),
+        ("private", "Private"),
+    ]
+
+    FRIEND_REQUEST_CHOICES = [
+        ("everyone", "Everyone"),
+        ("friends_of_friends", "Friends of Friends"),
+        ("nobody", "Nobody"),
+    ]
+
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     bio = models.TextField(blank=True, max_length=500)
     date_joined = models.DateTimeField(auto_now_add=True)
     profile_photo = models.ImageField(upload_to="profile_photos/", blank=True, null=True)
     favorite_games = models.ManyToManyField("games.Game", blank=True, related_name="favorited_by")
+
+    profile_visibility = models.CharField(
+        max_length=10, choices=VISIBILITY_CHOICES, default="public", help_text="Who can view your profile"
+    )
+    friend_request_permission = models.CharField(
+        max_length=20, choices=FRIEND_REQUEST_CHOICES, default="everyone", help_text="Who can send you friend requests"
+    )
+    searchable_by_strangers = models.BooleanField(default=True, help_text="Allow strangers to find you in search")
 
     @classmethod
     def get_or_create_profile(cls, user: User) -> "UserProfile":

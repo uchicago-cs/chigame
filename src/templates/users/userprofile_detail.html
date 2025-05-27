@@ -275,6 +275,7 @@
                      class="btn btn-maroon">Friend List</a>
                   <a href="{% url 'users:user-history' profile.user.pk %}"
                      class="btn btn-maroon">Stats</a>
+                  <a href="{% url 'users:privacy-settings' %}" class="btn btn-maroon">Privacy Settings</a>
                   <a href="{% url 'users:edit-profile' profile.user.pk %}"
                      class="btn btn-maroon">Edit Profile</a>
                   <div class="d-flex justify-content-center align-items-center mt-1">
@@ -310,6 +311,9 @@
                      class="btn btn-maroon">Stats</a>
                 {% elif is_blocked %}
                   <p>User not available.</p>
+                {% elif can_send_friend_request %}
+                  <a href="{% url 'users:add-friend' profile.user.pk %}"
+                     class="btn btn-maroon">Add Friend</a>
                 {% else %}
                   {% if not friendship_request %}
                     <a href="{% url 'users:add-friend' profile.user.pk %}"
@@ -416,32 +420,6 @@
           </div>
         </div>
       </div>
-      {% if profile.user == request.user %}
-        <div class="card mt-4">
-          <div class="card-header">
-            <h3>My Game Lists</h3>
-          </div>
-          <div class="card-body">
-            {% if game_lists %}
-              <ul class="list-group list-group-flush">
-                {% for game_list in game_lists %}
-                  <li class="list-group-item">
-                    <a href="{% url 'gamelist-detail' game_list.pk %}"
-                       class="btn-outline-block">
-                      <span>{{ game_list.name }}</span>
-                      <span class="badge rounded-pill">{{ game_list.games.count }} game{{ game_list.games.count|pluralize }}</span>
-                    </a>
-                  </li>
-                {% endfor %}
-              </ul>
-            {% else %}
-              <p class="text-muted">
-                You don't have any game lists yet. <a href="{% url 'game-list' %}">Browse games</a> to create some!
-              </p>
-            {% endif %}
-          </div>
-        </div>
-      {% endif %}
     </div>
   </div>
 {% endblock content %}

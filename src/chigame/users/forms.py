@@ -90,6 +90,19 @@ def generate_unique_username():
             return username
 
 
+class PrivacySettingsForm(forms.ModelForm):
+    """Form for managing user privacy settings."""
+
+    class Meta:
+        model = UserProfile
+        fields = ["profile_visibility", "friend_request_permission", "searchable_by_strangers"]
+        widgets = {
+            "profile_visibility": forms.Select(attrs={"class": "form-control"}),
+            "friend_request_permission": forms.Select(attrs={"class": "form-control"}),
+            "searchable_by_strangers": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+        }
+
+
 class UserProfileForm(ModelForm):
     """
     Form for editing user profile information.
