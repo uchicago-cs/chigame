@@ -221,6 +221,11 @@
         }
       })
       .catch(err => console.error('Pin failed:', err));
+    replyToMessageId = null;
+    replyToUsername = null;
+    replyToContent = null;
+    document.getElementById("replying-to-preview").classList.add("d-none");
+
 
     hideContextMenu();
   }
