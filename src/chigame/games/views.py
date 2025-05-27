@@ -1998,7 +1998,6 @@ def create_game_history_entry(user, match):
     )
 
 
-
 @login_required
 def game_history_view(request, game_id):
     game = get_object_or_404(Game, id=game_id)
