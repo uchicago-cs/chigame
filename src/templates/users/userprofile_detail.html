@@ -8,6 +8,10 @@
 {% endblock title %}
 {% block content %}
   <style>
+    .full-container {
+      margin-bottom: 30px;
+    }
+
     .custom-list {
       list-style-type: none;
       padding: 0;
@@ -106,8 +110,32 @@
     .photo-upload-form label:hover {
       background-color: #600000;
     }
+
+    .btn-outline-block {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      border: 2px solid #800000;
+      /* maroon */
+      color: #800000;
+      background-color: white;
+      padding: 1rem;
+      border-radius: 0.5rem;
+      text-decoration: none;
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
+    .btn-outline-block:hover {
+      background-color: #800000;
+      color: white;
+    }
+
+    .btn-outline-block .badge {
+      background-color: #6c757d;
+    }
   </style>
-  <div class="container mt-5">
+  <div class="container mt-5 full-container">
     <div class="row">
       <div class="col-md-6 offset-md-3">
         <div class="card">
@@ -225,8 +253,11 @@
                 <ul class="list-group list-group-flush">
                   {% for game_list in game_lists %}
                     <li class="list-group-item">
-                      <a href="{% url 'gamelist-detail' game_list.pk %}">{{ game_list.name }}</a>
-                      <span class="badge bg-secondary rounded-pill float-end">{{ game_list.games.count }} game{{ game_list.games.count|pluralize }}</span>
+                      <a href="{% url 'gamelist-detail' game_list.pk %}"
+                         class="btn-outline-block">
+                        <span>{{ game_list.name }}</span>
+                        <span class="badge rounded-pill">{{ game_list.games.count }} game{{ game_list.games.count|pluralize }}</span>
+                      </a>
                     </li>
                   {% endfor %}
                 </ul>
