@@ -26,7 +26,7 @@
       const leaderboardData = {
         labels: [
           {% for data in leaderboard_data %}
-            '{{ data.player }}',
+            '{{ data.tier_badge }} #{{ forloop.counter }}. {{ data.player }}',
           {% endfor %}
         ],
         datasets: [
