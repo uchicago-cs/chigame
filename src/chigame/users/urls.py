@@ -1,5 +1,6 @@
 from django.urls import path
 
+from chigame.achievements.views import user_achievements
 from chigame.api.views import UserGroupsView
 from chigame.users.views import (
     accept_friend_invitation,
@@ -8,6 +9,7 @@ from chigame.users.views import (
     bulk_inbox,
     cancel_friend_invitation,
     decline_friend_invitation,
+    edit_profile,
     friend_list_view,
     name_update_view,
     notification_detail,
@@ -63,4 +65,35 @@ urlpatterns = [
     path("labels/<int:label_id>/notifications/", views.notifications_by_label, name="notifications-by-label"),
     path("inbox/<int:pk>/<str:category>/", views.user_inbox_view, name="user-inbox-category"),
     path("user/<int:pk>/toggle-profanity/", views.toggle_profanity, name="toggle-profanity"),
+    path("profile/<int:pk>/edit/", edit_profile, name="edit-profile"),
+    path("labels/manage/", views.manage_labels_page_view, name="manage-labels-page"),
+    path(
+        "notifications/<int:notification_id>/assign-label/",
+        views.assign_label_to_notification,
+        name="assign-label-to-notification",
+    ),
+    path(
+        "notification/<int:notification_id>/unassign-label/<int:label_id>/",
+        views.unassign_label_from_notification,
+        name="unassign-label-from-notification",
+    ),
+    path("labels/<int:label_id>/delete/", views.delete_notification_label, name="delete-notification-label"),
+    path("<int:pk>/recommendation-preferences/", views.recommendation_preferences, name="recommendation-preferences"),
+    path("achievements", user_achievements, name="user-achievements"),
+    path("achievements/<int:game_id>", user_achievements, name="user-achievements-game"),
+    path("achievements/all/<int:status>", user_achievements, name="user-achievements-status"),
+    path("achievements/<int:game_id>/<int:status>", user_achievements, name="user-achievements-game-status"),
+    path("<int:pk>/achievements", user_achievements, name="other-user-achievements"),
+    path("<int:pk>/achievements/<int:game_id>", user_achievements, name="other-user-achievements-game"),
+    path("<int:pk>/achievements/all/<int:status>", user_achievements, name="other-user-achievements-status"),
+    path(
+        "<int:pk>/achievements/<int:game_id>/<int:status>",
+        user_achievements,
+        name="other-user-achievements-game-status",
+    ),
+    # Group paths
+    path("groups/", views.GroupListView.as_view(), name="group-list"),
+    path("groups/<int:pk>/", views.GroupDetailView.as_view(), name="group-detail"),
+    path("groups/create/", views.GroupCreateView.as_view(), name="group-create"),
+    path("groups/<int:pk>/delete/", views.GroupDeleteView.as_view(), name="group-delete"),
 ]

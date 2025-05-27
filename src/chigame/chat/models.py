@@ -17,6 +17,7 @@ class LiveChat(models.Model):
     )
     public = models.BooleanField(default=False)  # defined for global chats
     description = models.TextField(null=True, blank=True)
+    profanity_allowed = models.BooleanField(default=False)
 
     def __str__(self):
         return f"LiveChat with name:'{self.name}'"

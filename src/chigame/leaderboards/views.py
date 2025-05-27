@@ -1,7 +1,11 @@
-from django.shortcuts import get_object_or_404, render
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 
 from chigame.games.models import Game
-from chigame.leaderboards.models import LeaderboardEntry, Region
+from chigame.leaderboards.models import Leaderboard, LeaderboardEntry, LeaderboardPrivacySetting, Region
+
+from .forms import LeaderboardPrivacySettingForm
 
 
 def leaderboard_view(request, game_id):
@@ -32,6 +36,33 @@ def leaderboard_view(request, game_id):
             "selected_region": region_param,
         },
     )
+
+
+def bar_chart(request, game_id):
+    game = get_object_or_404(Game, id=game_id)
+    leaderboard = game.leaderboards.first()
+
+    if not leaderboard:
+        return render(request, "leaderboards/empty.html", {"game": game})
+
+    entries = LeaderboardEntry.objects.filter(leaderboard=leaderboard).select_related("user")
+
+    score_metric_name = f"{game.name} Points"
+
+    leaderboard_data = []
+    for entry in entries:
+        metric_score = entry.metric_scores.filter(metric__name=score_metric_name).first()
+        if metric_score:
+            leaderboard_data.append({"player": entry.user.user.name, "score": metric_score.score})
+        leaderboard_data.sort(key=lambda item: item["score"], reverse=True)
+
+    context = {
+        "game": game,
+        "leaderboard": leaderboard,
+        "leaderboard_data": leaderboard_data,
+        "score_metric_name": score_metric_name,
+    }
+    return render(request, "leaderboards/bar_chart.html", context)
 
 
 def landing_page_view(request):
@@ -67,5 +98,91 @@ def landing_page_view(request):
     )
 
 
-def bar_chart(request, game_id):
-    return render(request, "leaderboards/bar_chart.html")
+@login_required
+def privacy_setting_list(request):
+    """
+    Show all settings for the current user.
+    """
+    # Getting user and their settings
+    userprofile = request.user.userprofile
+    settings = LeaderboardPrivacySetting.objects.filter(user=userprofile)
+
+    available_games = []
+    available_leaderboards = []
+
+    # for the display when the user does not have any settings
+    if not settings.exists():
+        # Get games that don't have privacy settings yet
+        games_with_settings = settings.values_list("game_id", flat=True).distinct()
+        available_games = Game.objects.exclude(id__in=games_with_settings)
+
+        # Get 10 sample leaderboards
+        available_leaderboards = Leaderboard.objects.all()[:10]
+
+    context = {
+        "settings": settings,
+        "available_games": available_games,
+        "available_leaderboards": available_leaderboards,
+    }
+
+    return render(request, "leaderboards/privacy_setting_list.html", context)
+
+
+@login_required
+def privacy_setting_manage(request, game_id=None, leaderboard_id=None):
+    """
+    A way to create or update a privacy setting.
+    """
+    userprofile = request.user.userprofile
+
+    # Finding the scope of the setting
+    game = None
+    if game_id:
+        game = get_object_or_404(Game, id=game_id)
+
+    leaderboard = None
+    if leaderboard_id:
+        leaderboard = get_object_or_404(Leaderboard, id=leaderboard_id, game=game)
+
+    # Get the setting if it exists
+    setting = LeaderboardPrivacySetting.objects.filter(user=userprofile, game=game, leaderboard=leaderboard).first()
+
+    if request.method == "POST":
+        form = LeaderboardPrivacySettingForm(request.POST, instance=setting)
+        if form.is_valid():
+            form = form.save(commit=False)
+            form.user = userprofile
+            form.game = game
+            form.leaderboard = leaderboard
+            form.save()
+            return redirect(request.path)
+    else:
+        form = LeaderboardPrivacySettingForm(instance=setting)
+
+    # better titles
+    if leaderboard:
+        scope = f"Leaderboard: {leaderboard.name}"
+    elif game:
+        scope = f"Game: {game.name}"
+    else:
+        scope = "Global"
+
+    context = {"form": form, "scope": scope}
+
+    return render(request, "leaderboards/privacy_setting_form.html", context)
+
+
+@login_required
+def privacy_setting_delete(request, pk):
+    """
+    delete a privacy setting.
+    """
+    userprofile = request.user.userprofile
+    setting = get_object_or_404(LeaderboardPrivacySetting, pk=pk, user=userprofile)
+    if request.method == "POST":
+        setting.delete()
+        return redirect(reverse("privacy-list"))
+
+    context = {"setting": setting}
+
+    return render(request, "leaderboards/privacy_setting_confirm_delete.html", context)
