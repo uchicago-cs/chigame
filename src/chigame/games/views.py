@@ -1367,6 +1367,10 @@ class TournamentCreateView(CreateView):
         "rules",
         "draw_rules",
         "num_winner",
+        "prize_description",
+        "first_place_prize",
+        "second_place_prize",
+        "third_place_prize",
         # We're not including "players" field here as we'll handle it differently
     ]
 
@@ -1488,6 +1492,10 @@ class TournamentUpdateView(UpdateView):
         "rules",
         "draw_rules",
         "num_winner",
+        "prize_description",
+        "first_place_prize",
+        "second_place_prize",
+        "third_place_prize",
         "players",
     ]
 

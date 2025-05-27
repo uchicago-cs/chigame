@@ -19,8 +19,8 @@ urlpatterns = [
     path("tournaments/<int:pk>/chat/", views.TournamentChatDetailView, name="tournament-chat"),
     # Games favorites
     path("favorites/", views.FavoriteListView.as_view(), name="favorite-list"),
-    path("<int:pk>/favorite/", views.add_to_favorites, name="add-to-favorites"),
-    path("<int:pk>/unfavorite/", views.remove_from_favorites, name="remove-from-favorites"),
+    path("favorite-games/add/<int:game_id>/", views.add_to_favorites, name="add-to-favorites"),
+    path("favorite-games/remove/<int:game_id>/", views.remove_from_favorites, name="remove-from-favorites"),
     # custom game list handling
     path("gamelists/<int:pk>/", views.GameListDetailView.as_view(), name="gamelist-detail"),
     path("<int:pk>/gamelists/<int:list_pk>/add/", views.add_to_gamelist, name="add-to-gamelist"),
