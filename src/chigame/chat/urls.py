@@ -12,4 +12,5 @@ urlpatterns = [
     path("message/<int:message_id>/edit", views.edit_message, name="edit-message"),
     path("message/<int:message_id>/react", views.react_to_message, name="react-to-message"),
     path("api/live-chat-preview/", views.live_chat_preview_api, name="live-chat-preview-api"),
+    path("toggle-profanity/", views.toggle_profanity, name="toggle-profanity"),
 ]
