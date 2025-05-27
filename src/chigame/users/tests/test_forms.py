@@ -1,50 +1,98 @@
 """
 Module for all Form Tests.
 """
-
 import pytest
 from django.forms import EmailField
 from django.test import RequestFactory
-from django.utils.translation import gettext_lazy as _
+from django.utils import timezone
 from faker import Faker
 
-from chigame.users.forms import UserAdminChangeForm, UserAdminCreationForm, UserSignupForm, generate_unique_username
-from chigame.users.models import User
+from chigame.users.forms import (
+    UserAdminChangeForm,
+    UserAdminCreationForm,
+    UserProfileForm,
+    UserSignupForm,
+    generate_unique_username,
+)
+from chigame.users.models import User, UserProfile
 from chigame.users.tests.factories import UserFactory
 
 faker = Faker()
 
+pytestmark = pytest.mark.django_db
 
-class TestUserAdminCreationForm:
+
+class TestUserAdminChangeForm:
     """
-    Test class for all tests related to the UserAdminCreationForm
+    Test class for UserAdminChangeForm
     """
 
-    def test_username_validation_error_msg(self, user: User):
+    def test_email_validation_error_msg(self, user: User):
         """
-        Tests UserAdminCreation Form's unique validator functions correctly by testing:
-            1) A new user with an existing username cannot be added.
-            2) Only 1 error is raised by the UserCreation Form
-            3) The desired error message is raised
+        Tests UserAdminChangeForm's unique email validation error message
         """
-
-        email = faker.unique.email()
-        password = faker.password(length=12)
-
-        UserFactory(email=email)
-
-        form = UserAdminCreationForm(
-            {
-                "email": email,
-                "password1": password,
-                "password2": password,
-            }
+        form = UserAdminChangeForm(
+            {"email": user.email, "date_joined": "2024-01-01", "tokens": 0, "last_seen": timezone.now()}
         )
 
         assert not form.is_valid()
         assert len(form.errors) == 1
         assert "email" in form.errors
-        assert form.errors["email"][0] == _("This email has already been taken.")
+        assert form.errors["email"][0] == "User with this Email address already exists."
+
+    def test_email_field_present(self):
+        """
+        Ensure the admin change form includes the email field and it's of the right type.
+        """
+        form = UserAdminChangeForm()
+        assert "email" in form.fields
+        assert isinstance(form.fields["email"], EmailField)
+
+
+class TestUserProfileForm:
+    """
+    Test class for UserProfileForm
+    """
+
+    def test_valid_bio(self, user: User):
+        """
+        Tests that a valid bio (under 500 characters) is accepted
+        """
+        profile = UserProfile.objects.create(user=user, bio="")
+        form = UserProfileForm({"bio": "This is a valid bio that is under 500 characters."}, instance=profile)
+
+        assert form.is_valid()
+
+    def test_bio_character_limit(self, user: User):
+        """
+        Tests that bio over 500 characters is rejected
+        """
+        profile = UserProfile.objects.create(user=user, bio="")
+        long_bio = "a" * 501  # 501 characters
+        form = UserProfileForm({"bio": long_bio}, instance=profile)
+
+        assert not form.is_valid()
+        assert "bio" in form.errors
+        assert "Ensure this value has at most 500 characters" in form.errors["bio"][0]
+
+    def test_bio_exactly_500_characters(self, user: User):
+        """
+        Tests that bio with exactly 500 characters is accepted
+        """
+        profile = UserProfile.objects.create(user=user, bio="")
+        bio_500_chars = "a" * 500  # Exactly 500 characters
+        form = UserProfileForm({"bio": bio_500_chars}, instance=profile)
+
+        assert form.is_valid()
+
+    def test_empty_bio(self, user: User):
+        """
+        Tests that empty bio is valid
+        """
+        profile = UserProfile.objects.create(user=user, bio="")
+        form = UserProfileForm({"bio": ""}, instance=profile)
+
+        assert form.is_valid()
 
     @pytest.mark.django_db
     def test_valid_creation_form(self):
@@ -61,16 +109,6 @@ class TestUserAdminCreationForm:
             }
         )
         assert form.is_valid()
-
-
-class TestUserAdminChangeForm:
-    def test_email_field_present(self):
-        """
-        Ensure the admin change form includes the email field and it's of the right type.
-        """
-        form = UserAdminChangeForm()
-        assert "email" in form.fields
-        assert isinstance(form.fields["email"], EmailField)
 
 
 class TestUserSignupForm:

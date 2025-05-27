@@ -19,7 +19,7 @@ from django_tables2 import SingleTableView
 
 from chigame.games.models import GameList, Lobby, Player, Tournament
 
-from .forms import FriendInvitationForm
+from .forms import FriendInvitationForm, UserProfileForm
 from .models import (
     FriendInvitation,
     FriendRequestNotification,
@@ -858,6 +858,34 @@ def notifications_by_label(request, label_id):
         "pk": request.user.pk,
     }
     return render(request, "users/notifications_by_label.html", context)
+
+
+@login_required
+def edit_profile(request, pk):
+    """
+    View for editing user profile information including bio.
+    """
+    if request.user.pk != pk:
+        messages.error(request, "You can only edit your own profile.")
+        return redirect("users:user-profile", pk=request.user.pk)
+
+    profile = UserProfile.get_or_create_profile(request.user)
+
+    if request.method == "POST":
+        form = UserProfileForm(request.POST, instance=profile)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Profile updated successfully!")
+            return redirect("users:user-profile", pk=request.user.pk)
+    else:
+        form = UserProfileForm(instance=profile)
+
+    context = {
+        "form": form,
+        "profile": profile,
+    }
+
+    return render(request, "users/edit_profile.html", context)
 
 
 @login_required
