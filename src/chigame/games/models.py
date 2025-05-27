@@ -1,9 +1,14 @@
 import random
+import secrets
+import string
+from datetime import timedelta
 
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
-from django.db import models
+from django.db import models, transaction
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from django.utils import timezone
 
 from chigame.users.models import Group, Notification, User
@@ -31,8 +36,26 @@ class Game(models.Model):
     min_players = models.PositiveIntegerField()
     max_players = models.PositiveIntegerField()
 
+    game_url = models.URLField(blank=True, null=True, help_text="URL for embedded games (e.g., external web games)")
     # interactive fiction  - twine file
     twine_file = models.FileField(upload_to="twine_games/", null=True, blank=True)
+    GENRE_CHOICES = [
+        ("fantasy", "Fantasy"),
+        ("sci-fi", "Sci-Fi"),
+        ("horror", "Horror"),
+        ("romance", "Romance"),
+        ("mystery", "Mystery"),
+        ("comedy", "Comedy"),
+        ("drama", "Drama"),
+    ]
+    genre = models.CharField(max_length=50, choices=GENRE_CHOICES, default="drama")
+
+    CONTENT_SENSITIVITY_CHOICES = [
+        ("everyone", "Everyone"),
+        ("teen", "Teen"),
+        ("mature", "Mature"),
+    ]
+    content_sensitivity = models.CharField(max_length=20, choices=CONTENT_SENSITIVITY_CHOICES, default="everyone")
 
     suggested_age = models.PositiveSmallIntegerField(
         null=True, blank=True
@@ -180,22 +203,74 @@ class Lobby(models.Model):
     game = models.ForeignKey(Game, on_delete=models.CASCADE)
     game_mod_status = models.PositiveSmallIntegerField(choices=MODS, default=1)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    invited_members = models.ManyToManyField(User, related_name="invited_lobbies", blank=True)
     members = models.ManyToManyField(User, related_name="lobbies")
     min_players = models.PositiveIntegerField()
     max_players = models.PositiveIntegerField()
     time_constraint = models.PositiveIntegerField(default=300)
     lobby_created = models.DateTimeField(default=timezone.now)
+    # implementation of match functionality: join lobby by code
+    join_code = models.CharField(max_length=6, unique=True, blank=True, null=True)
 
-    # ================ VALIDATION ================
+    # ================ VALIDATON ================
+    def generate_unique_code(self, length=6):
+        """
+        Generates a unique code for users to enter lobby associated with a specific match.
+        """
+        characters = string.ascii_uppercase + string.digits
+        while True:
+            code = "".join(secrets.choice(characters) for _ in range(length))
+            if not Lobby.objects.filter(join_code=code).exists():
+                return code
+
     def clean(self):
         # Ensures min_players is not greater than max_players
         if self.min_players > self.max_players:
             raise ValidationError({"min_players": "min_players cannot be greater than max_players"})
 
+    # Adding a class method to check the old version of the instacnce from the model
+    @classmethod
+    def from_db(cls, db, field_names, values):
+        instance = super().from_db(db, field_names, values)
+        instance._loaded_values = dict(zip(field_names, values))
+        return instance
+
     def save(self, *args, **kwargs):
-        # Calls full_clean to run all validations before saving
+        # generate unique join code if it doesn't exist
+        if not self.join_code:
+            self.join_code = self.generate_unique_code()
+
         self.full_clean()
+        creating = self._state.adding
+        old_status = None
+
+        if not creating and hasattr(self, "_loaded_values"):
+            old_status = self._loaded_values.get("match_status")
+
         super().save(*args, **kwargs)
+
+        match = getattr(self, "match", None)
+        if not match:
+            return
+
+        players = match.players.all()
+
+        # When the match status changes from Lobbied to In-Progress
+        if old_status != 2 and self.match_status == 2:
+            # Create GameHistory objects for all players in the match
+            for user in players:
+                GameHistory.objects.get_or_create(
+                    user=user, match=match, defaults={"is_completed": False, "result": None}
+                )
+
+        # When the match status changes from In-Progress to Finished
+        if old_status == 2 and self.match_status == 3:
+            for user in players:
+                try:
+                    player = Player.objects.get(user=user, match=match)
+                    GameHistory.objects.filter(user=user, match=match).update(is_completed=True, result=player.outcome)
+                except Player.DoesNotExist:
+                    continue
 
 
 class Match(models.Model):
@@ -207,6 +282,11 @@ class Match(models.Model):
     lobby = models.OneToOneField(Lobby, on_delete=models.CASCADE)
     date_played = models.DateTimeField()
     players = models.ManyToManyField(User, through="Player")
+    # a
+    start_time = models.DateTimeField(null=True, blank=True)
+    end_time = models.DateTimeField(null=True, blank=True)
+    duration = models.DurationField(null=True, blank=True)
+    average_rating = models.DecimalField(max_digits=3, decimal_places=2, null=True, blank=True)
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
@@ -214,6 +294,35 @@ class Match(models.Model):
         for player in self.players.all():
             self.game.users.add(player)
         self.game.save()
+
+    # a
+    def calculate_duration(self):
+        """duration of the match if start and end times are set"""
+        if self.start_time and self.end_time:
+            self.duration = self.end_time - self.start_time
+            self.save()
+
+    @classmethod
+    def get_fastest_match(cls):
+        """fastest completed match"""
+        return cls.objects.exclude(duration=None).order_by("duration").first()
+
+    @classmethod
+    def get_slowest_match(cls):
+        """slowest completed match"""
+        return cls.objects.exclude(duration=None).order_by("-duration").first()
+
+    @classmethod
+    def get_average_match_duration(cls):
+        """average duration of all completed matches"""
+        matches = cls.objects.exclude(duration=None)
+        if matches:
+            total_duration = sum(match.duration for match in matches)
+            return total_duration / matches.count()
+        return None
+
+
+# a
 
 
 class Player(models.Model):
@@ -239,6 +348,8 @@ class Player(models.Model):
     role = models.TextField(blank=True, null=True)
     outcome = models.PositiveSmallIntegerField(choices=OUTCOMES, blank=True, null=True)
     victory_type = models.TextField(blank=True, null=True)
+    # Addedum player performance
+    rating = models.DecimalField(max_digits=3, decimal_places=2, null=True, blank=True)
 
 
 class MatchProposal(models.Model):
@@ -280,9 +391,16 @@ class Tournament(models.Model):
     num_winner = models.PositiveIntegerField(default=1)  # number of possible winners for the tournament
     archived = models.BooleanField(default=False)  # whether the tournament is archived by the admin
 
+    # Prize fields
+    prize_description = models.TextField(blank=True, null=True)  # description of the prizes offered
+    first_place_prize = models.CharField(max_length=255, blank=True, null=True)  # prize for the first place winner
+    second_place_prize = models.CharField(max_length=255, blank=True, null=True)  # prize for the second place winner
+    third_place_prize = models.CharField(max_length=255, blank=True, null=True)  # prize for the third place winner
+
     matches = models.ManyToManyField(Match, related_name="tournament", blank=True)
     winners = models.ManyToManyField(User, related_name="won_tournaments", blank=True)  # allow multiple winners
     players = models.ManyToManyField(User, related_name="joined_tournaments", blank=True)
+    waitlist = models.ManyToManyField(User, related_name="waitlisted_tournaments", blank=True)  # users on the waitlist
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="created_tournaments")
 
     @property
@@ -345,15 +463,16 @@ class Tournament(models.Model):
         # when the tournament is created and would not be checked when the tournament is updated (
         # the date cannot be changed after the tournament is created)
         if self.pk is None:  # the tournament is being created
-            if self.registration_start_date < timezone.now():
-                raise ValidationError("The registration start date should be in the future.")
-            if self.registration_end_date < timezone.now():
-                raise ValidationError("The registration end date should be in the future.")
-            if self.tournament_start_date < timezone.now():
-                raise ValidationError("The tournament start date should be in the future.")
-            if self.tournament_end_date < timezone.now():
-                raise ValidationError("The tournament end date should be in the future.")
-
+            # addedum
+            min_time_delta = timezone.timedelta(minutes=5)  # minimum 5 minutes in advance
+            if self.registration_start_date < timezone.now() + min_time_delta:
+                raise ValidationError("The registration start date should be at least 5 minutes in the future.")
+            if self.registration_end_date < timezone.now() + min_time_delta:
+                raise ValidationError("The registration end date should be at least 5 minutes in the future.")
+            if self.tournament_start_date < timezone.now() + min_time_delta:
+                raise ValidationError("The tournament start date should be at least 5 minutes in the future.")
+            if self.tournament_end_date < timezone.now() + min_time_delta:
+                raise ValidationError("The tournament end date should be at least 5 minutes in the future.")
         # the registration start date should be earlier than the registration end date
         if self.registration_start_date >= self.registration_end_date:
             raise ValidationError("The registration start date should be earlier than the registration end date.")
@@ -405,7 +524,15 @@ class Tournament(models.Model):
             for bracket in brackets:
                 assert isinstance(bracket, Match)
                 bracket_users = bracket.players.all()
-                bracket_players = [Player.objects.get(user=user, match=bracket) for user in bracket_users]
+
+                # a Get all players for each user in the bracket
+                bracket_players = []
+                for user in bracket_users:
+                    players = Player.objects.filter(user=user, match=bracket)
+                    if players.exists():
+                        # Use the most recent player record if multiple exist
+                        bracket_players.append(players.latest("id"))
+                # a
                 bracket_with_outcome = any(player.outcome is not None for player in bracket_players)
                 if not bracket_with_outcome:  # the match has not finished
                     for player in bracket_players:
@@ -531,7 +658,15 @@ class Tournament(models.Model):
             # get the winners of the previous round
             assert isinstance(bracket, Match)
             bracket_users = bracket.players.all()
-            bracket_players = [Player.objects.get(user=user, match=bracket) for user in bracket_users]
+            # bracket_players = [Player.objects.get(user=user, match=bracket) for user in bracket_users]
+            # a Get all players for each user in the bracket
+            bracket_players = []
+            for user in bracket_users:
+                players = Player.objects.filter(user=user, match=bracket)
+                if players.exists():
+                    # Use the most recent player record if multiple exist
+                    bracket_players.append(players.latest("id"))
+            # a
             bracket_winners = [
                 player.user for player in bracket_players if player.outcome == Player.WIN
             ]  # allow multiple winners
@@ -540,35 +675,71 @@ class Tournament(models.Model):
                 winners.append(winner)
 
         self.winners.set(winners)
-        self.matches.clear()
+        # a self.matches.clear()
         self.save()
 
-        # Note: we don't delete the tournament because we want to keep it in the database
+    def promote_from_waitlist(self) -> list[User]:
+        """
+        Promotes users from the waitlist to the tournament if spots are available
+        and the registration is open. Users are promoted based on the order they appear
+        in the waitlist query (typically insertion order for ManyToMany, but not guaranteed).
+
+        Returns:
+            list[User]: List of users who were promoted.
+        """
+        promoted_users = []
+        if self.status != "registration open":
+            return promoted_users  # Can only promote during registration
+
+        available_spots = self.max_players - self.players.count()
+        if available_spots <= 0:
+            return promoted_users  # No spots available
+
+        # Get waitlisted users (order might vary based on DB backend)
+        # Convert to list to avoid modifying queryset while iterating if needed later
+        waitlisted_users = list(self.waitlist.all())
+
+        users_to_promote = waitlisted_users[:available_spots]
+
+        if users_to_promote:
+            for user in users_to_promote:
+                self.players.add(user)
+                self.waitlist.remove(user)
+                promoted_users.append(user)
+            self.save()  # Save once after promoting all possible users
+
+        return promoted_users
 
     def tournament_sign_up(self, user: User) -> int:
         """
         Signs up a user for a tournament. If the user has already joined the
-        tournament, nothing happens.
+        tournament or is on the waitlist, nothing happens. If the tournament is full,
+        the user is added to the waitlist.
 
         Args:
             user: the user
 
         Returns:
             int: 0 if the user has successfully signed up for the tournament,
-            1 if the user has already joined the tournament,
-            2 if the tournament is full,
-            3 if the registration period of tournament has already ended
+                 1 if the user has already joined the tournament or is on the waitlist,
+                 2 if the user was added to the waitlist,
+                 3 if the registration period of tournament has already ended.
         """
         if self.status != "registration open":
-            # The registration period has ended (the join and withdraw buttons only appear
-            # during the registration period)
+            # The registration period has ended
             return 3
-        if user in self.players.all():
-            # The user has already joined the tournament
+
+        if user in self.players.all() or user in self.waitlist.all():
+            # The user has already joined the tournament or is on the waitlist
             return 1
+
         if self.players.count() >= self.max_players:
-            # The tournament is full
+            # The tournament is full, add to waitlist
+            self.waitlist.add(user)
+            self.save()  # Save after adding to waitlist
             return 2
+
+        # Add user to players if there is space
         self.players.add(user)
         self.save()
         return 0
@@ -578,27 +749,116 @@ class Tournament(models.Model):
         user: User,
     ) -> int:
         """
-        Withdraws a user from a tournament. If the user has not joined the
-        tournament, nothing happens.
+        Withdraws a user from a tournament or its waitlist.
+        If the user has not joined either, nothing happens.
+        When a player withdraws during the registration period,
+        users from the waitlist are automatically promoted if spots become available.
 
         Args:
             user: the user
 
         Returns:
-            int: 0 if the user has successfully withdrawn from the tournament,
-            1 if the user has not joined the tournament
-            3 if the registration period of tournament has already ended
+            int: 0 if the user has successfully withdrawn,
+                 1 if the user was not found in players or waitlist,
+                 3 if the withdrawal attempt is outside the registration period.
         """
         if self.status != "registration open":
-            # The registration period has ended (the join and withdraw buttons only appear
-            # during the registration period)
+            # Can only withdraw during registration period
             return 3
-        if user not in self.players.all():
-            # The user has not joined the tournament
+
+        withdrew_from_players = False
+        if user in self.players.all():
+            # User is a player, remove them
+            self.players.remove(user)
+            # Don't save yet, promotion might modify players/waitlist again
+            withdrew_from_players = True
+        elif user in self.waitlist.all():
+            # User is on waitlist, remove them
+            self.waitlist.remove(user)
+            self.save()  # Save after removing from waitlist
+            return 0  # Successful withdrawal from waitlist
+        else:
+            # The user was not found in players or waitlist
             return 1
-        self.players.remove(user)
-        self.save()
-        return 0
+
+        # If a player withdrew, attempt promotion and save
+        if withdrew_from_players:
+            self.promote_from_waitlist()  # This method saves if promotions occur
+            # Need to save here in case no promotion occurred but player was removed
+            if not self.promote_from_waitlist():  # Check if promote_from_waitlist saved
+                self.save()
+            return 0  # Successful withdrawal from players
+
+        # Fallback case, should not be reached if logic above is correct
+        return 1
+
+    # a
+    def get_tournament_statistics(self):
+        """
+        Calculate and return various statistics about the tournament.
+        Returns a dictionary containing:
+        - average_duration: Average duration of all completed matches
+        - fastest_match: The match with the shortest duration
+        - slowest_match: The match with the longest duration
+        - average_rating: Average rating of all completed matches
+        - total_matches: Total number of matches in the tournament
+        - completed_matches: Number of completed matches
+        """
+        matches = self.matches.all()
+
+        # Calculate average duration
+        completed_matches = [m for m in matches if m.duration is not None]
+        avg_duration = None
+        if completed_matches:
+            try:
+                # Convert all durations to seconds first
+                total_seconds = sum(m.duration.total_seconds() for m in completed_matches)
+                avg_seconds = total_seconds / len(completed_matches)
+                avg_duration = timedelta(seconds=avg_seconds)
+            except (AttributeError, TypeError):
+                avg_duration = None
+
+        # Get fastest and slowest matches
+        fastest_match = None
+        slowest_match = None
+        if completed_matches:
+            try:
+                fastest_match = min(completed_matches, key=lambda x: x.duration.total_seconds())
+                slowest_match = max(completed_matches, key=lambda x: x.duration.total_seconds())
+            except (AttributeError, TypeError):
+                pass
+
+        # Calculate average rating based on completed matches
+        avg_rating = None
+        if completed_matches:
+            try:
+                total_rating = 0
+                total_ratings_count = 0
+                for match in completed_matches:
+                    # Get all players in the match
+                    players = Player.objects.filter(match=match)
+                    # Sum up all non-None ratings
+                    match_ratings = [p.rating for p in players if p.rating is not None]
+                    if match_ratings:
+                        total_rating += sum(match_ratings)
+                        total_ratings_count += len(match_ratings)
+
+                if total_ratings_count > 0:
+                    avg_rating = total_rating / total_ratings_count
+            except (TypeError, ValueError):
+                avg_rating = None
+
+        return {
+            "average_duration": avg_duration,
+            "fastest_match": fastest_match,
+            "slowest_match": slowest_match,
+            "average_rating": avg_rating,
+            "total_matches": matches.count(),
+            "completed_matches": len(completed_matches),
+        }
+
+
+# a
 
 
 class Feedback(models.Model):
@@ -705,6 +965,7 @@ class Message(models.Model):
 
 class Review(models.Model):
     "Represents a game review"
+
     title = models.TextField(blank=True, null=True)
     review = models.TextField(blank=True, null=True)
     rating = models.DecimalField(
@@ -740,4 +1001,227 @@ class GameList(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.name} ({self.created_by})"
+        return self.name
+
+
+class GameData(models.Model):
+    """
+    A key-value store for games to store user progress and statistics.
+    This allows for persistence between sessions and tracking achievements for any game.
+    """
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="game_data")
+    game = models.ForeignKey(Game, on_delete=models.CASCADE, related_name="game_data")
+    key = models.CharField(max_length=255)  # identifies the type of data being stored
+    value = models.TextField()  # stores the actual data as JSON or string
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ["user", "game", "key"]  # ensure each key is unique per user and game
+
+    def __str__(self):
+        return f"{self.user.username} - {self.game.name}: {self.key}"
+
+
+class GameHistory(models.Model):
+    """
+    Used to store the history of completed or in-progress matches.
+    Matches in unstarted lobbies are not included.
+    """
+
+    WIN = 0
+    DRAW = 1
+    LOSE = 2
+    INCOMPLETE = 3
+
+    OUTCOMES = (
+        (WIN, "win"),
+        (DRAW, "draw"),
+        (LOSE, "lose"),
+        (INCOMPLETE, "incomplete"),
+    )
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="game_history_entries")
+    match = models.ForeignKey(Match, on_delete=models.CASCADE, related_name="game_history_entries")
+    date_played = models.DateTimeField(auto_now_add=True)
+    is_completed = models.BooleanField()
+    result = models.PositiveSmallIntegerField(choices=OUTCOMES, blank=True, null=True)
+
+    class Meta:
+        unique_together = ("user", "match")
+        verbose_name_plural = "Game History"
+
+    def __str__(self):
+        return f"History: Match {self.match.id} played by {self.user} completed {self.is_completed}"
+
+
+@receiver(post_save, sender=Lobby)
+def update_match_timing(sender, instance, **kwargs):
+    try:
+        match = Match.objects.get(lobby=instance)
+        if instance.match_status == Lobby.Viewable and not match.start_time:
+            # Match is starting
+            match.start_time = timezone.now()
+            match.save()
+        elif instance.match_status == Lobby.Finished and not match.end_time:
+            # Match is ending
+            match.end_time = timezone.now()
+            match.save()
+            match.calculate_duration()
+    except Match.DoesNotExist:
+        pass  # No match exists yet for this lobby
+
+
+# ================ CHECKERS =================
+
+
+class Checkers(models.Model):
+    """
+    A game of Checkers stores:
+      - the players and bots
+      - a timestamp of when the game begins and ends
+    """
+
+    player_1 = models.ForeignKey(Player, on_delete=models.CASCADE)
+    player_2 = models.ForeignKey(
+        Player, on_delete=models.CASCADE, null=True, blank=True, related_name="checkers_player_2"
+    )
+    # bot
+    winner = models.ForeignKey(
+        Player, on_delete=models.SET_NULL, null=True, blank=True, related_name="checkers_winner"
+    )
+    start_time = models.DateTimeField()
+    end_time = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"Player 1 {self.player_1} in Checkers {self.id}"
+
+
+class CheckersBoard(models.Model):
+    """
+    The Checkers board stores the game state using a list of bits
+    """
+
+    state = models.JSONField()  # store positions/pieces as a 2D array
+    current_turn_player = models.ForeignKey(
+        "games.Player", on_delete=models.CASCADE, null=True, blank=True, related_name="current_turn_boards"
+    )
+    # state_bits = models.IntegerField() # stores positions as bits
+
+    def __str__(self):
+        return f"Board {self.id}"
+
+
+class CheckersTurn(models.Model):
+    """
+    Tracks a Checkers game's board state, the current turn, and the player making
+    the turn
+    """
+
+    game = models.ForeignKey(Checkers, on_delete=models.CASCADE, related_name="turns")
+    board = models.ForeignKey(CheckersBoard, on_delete=models.CASCADE)
+    turn_number = models.PositiveIntegerField()
+    player = models.ForeignKey(Player, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ("game", "turn_number")
+
+    def __str__(self):
+        return f"Turn {self.turn_number} of Checkers Game {self.game.id}"
+
+
+class GameQueue(models.Model):
+    """
+    A queue of games to be played by the user.
+    """
+
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="game_queue")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username}'s Queue"
+
+    def add_game(self, game):
+        """
+        Add a game to the end of this user's queue.
+        """
+        max_pos = self.entries.aggregate(models.Max("position"))["position__max"] or 0
+        return GameQueueEntry.objects.create(queue=self, game=game, position=max_pos + 1)
+
+    def remove_game(self, game):
+        """
+        Remove a game from the queue and re-order the remaining entries.
+        """
+        entry = self.entries.filter(game=game).first()
+        if entry:
+            entry.delete()
+            for i, e in enumerate(self.entries.order_by("position"), start=1):
+                e.position = i
+                e.save()
+
+    def get_next_game(self):
+        """
+        Return the next game in queue (or None if the queue is empty).
+        """
+        entry = self.entries.order_by("position").first()
+        return entry.game if entry else None
+
+    def _reindex_range(self, start, end, delta):
+        """
+        Helper function to shift all entries within [start, end] by delta.
+        """
+        self.entries.filter(position__gte=start, position__lte=end).update(position=models.F("position") + delta)
+
+    def move_game(self, game, new_position):
+        """
+        Move the given game to new_position
+        """
+        entry = self.entries.get(game=game)
+        old_position = entry.position
+        max_pos = self.entries.aggregate(max=models.Max("position"))["max"] or 0
+
+        new_position = max(1, min(new_position, max_pos))
+
+        if new_position == old_position:
+            return entry
+
+        with transaction.atomic():
+            if new_position < old_position:
+                self._reindex_range(new_position, old_position - 1, +1)
+            else:
+                self._reindex_range(old_position + 1, new_position, -1)
+
+            entry.position = new_position
+            entry.save()
+
+        return entry
+
+    def duplicate_game(self, game):
+        """
+        Insert a duplicate of `game` immediately after the original.
+        """
+        entry = self.entries.get(game=game)
+        insert_at = entry.position + 1
+
+        with transaction.atomic():
+            self._reindex_range(insert_at, self.entries.aggregate(max=models.Max("position"))["max"], +1)
+            dup = GameQueueEntry.objects.create(queue=self, game=game, position=insert_at)
+
+        return dup
+
+
+class GameQueueEntry(models.Model):
+    """
+    Represents a single entry in a GameQueue, keeping track of order.
+    """
+
+    queue = models.ForeignKey(GameQueue, on_delete=models.CASCADE, related_name="entries")
+    game = models.ForeignKey(Game, on_delete=models.CASCADE)
+    position = models.PositiveIntegerField()
+
+    class Meta:
+        ordering = ["position"]
+
+    def __str__(self):
+        return f"{self.game.name} (pos {self.position})"

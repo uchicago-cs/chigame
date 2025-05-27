@@ -12,6 +12,7 @@
   .chat-history__container {
     height: 100%;
     overflow-y: auto;
+    max-width: 900px;
     padding: 15px;
     flex: 1;
     display: flex;
@@ -22,12 +23,12 @@
     margin-bottom: 12px;
     padding: 10px;
     border-radius: 8px;
-    max-width: 80%;
+    max-width: 35ch;
     word-break: break-word;
   }
 
   .chat-message--mine {
-    background-color: #dcf8c6;
+    background-color: #ffffff !important;
     margin-left: auto;
     margin-right: 10px;
     align-self: flex-end;
@@ -67,17 +68,127 @@
     padding: 20px;
     font-style: italic;
   }
+
+  .message-reply {
+    background-color: rgba(0, 0, 0, 0.05);
+    border-left: 3px solid #800000;
+    padding: 8px;
+    margin-bottom: 8px;
+    border-radius: 4px;
+    font-size: 0.9em;
+  }
+
+  .message-reply__sender {
+    color: #800000;
+    font-weight: bold;
+  }
+
+  .message-reply__content {
+    color: #666;
+  }
+
+
+  .highlight-reply {
+    animation: highlightFlash 1.0s ease-in-out;
+    background-color: #eaeaea !important;
+  }
+
+  @keyframes highlightFlash {
+    from {
+      background-color: #eaeaea;
+    }
+
+    to {
+      background-color: inherit;
+    }
+  }
+
+  .context-menu {
+    position: fixed;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    padding: 8px;
+    z-index: 1000;
+    display: none;
+  }
+
+  .message-reactions {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+    font-size: 1.1em;
+  }
+
+  .reaction-pill {
+    display: inline-block;
+    background-color: #ffe6ea;
+    color: #b30000;
+    border-radius: 12px;
+    padding: 2px 8px;
+    margin-right: 6px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: background-color 0.2s ease;
+  }
+
+  .reaction-pill:hover {
+    background-color: #ffccd5;
+  }
+
+  .reaction-count {
+    margin-left: 4px;
+    font-weight: bold;
+  }
 </style>
-<div class="bg-light flex-grow-1 overflow-auto border border-light p-3">
+{% load profanity_tags %}
+
+<div id="message-container"
+     class="chat-messages-scroll flex-grow-1 overflow-auto p-3 bg-light d-flex flex-column">
   <div class="d-flex flex-column h-100">
     {% if messages %}
       {% for message in messages %}
-        <div class="mb-3 {% if message.user == request.user %}align-self-end{% else %}align-self-start{% endif %}">
-          <div class="{% if message.user == request.user %}bg-success-subtle{% else %}bg-white{% endif %} rounded p-2 shadow-sm">
+        <div class="mb-3 {% if message.user.id == request.user.id %}align-self-end{% else %}align-self-start{% endif %}"
+             data-message-id="{{ message.id }}"
+             oncontextmenu="showContextMenu(event, '{{ message.id }}', '{{ message.user.username }}', '{{ message.content }}'); return false;">
+          <div class="chat-message {% if message.user.id == request.user.id %}chat-message--mine{% else %}chat-message--other{% endif %} rounded p-2 shadow-sm">
+            {% if message.reply_to %}
+              <div class="message-reply" data-scroll-target="{{ message.reply_to.id }}">
+                <div class="message-reply__sender">{{ message.reply_to.user.username }}</div>
+                <div class="message-reply__content">{{ message.reply_to.content }}</div>
+              </div>
+            {% endif %}
             <div class="fw-bold small text-danger">{{ message.user.username }}</div>
-            <div class="mt-1">{{ message.content }}</div>
-            <div class="text-end text-muted small mt-1">{{ message.created_at|date:"g:i A" }}</div>
+            <div class="mt-1">
+              {% if not chat.profanity_allowed or chat_user.profanity %}
+                {{ message.content|profanity_filter }}
+              {% else %}
+                {{ message.content }}
+              {% endif %}
+            </div>
+            <div class="message-meta text-end text-muted small mt-1">
+              {% if message.id == chat.pinned_message.id %}
+                <span class="text-warning small ms-1 pinned-label">📌 Pinned</span>
+              {% endif %}
+            </div>
+            <div class="text-end text-muted small mt-1">{{ message.sent_at|date:"g:i A" }}</div>
+            <div class="message-reactions mt-1"
+                 id="reactions-{{ message.id }}"
+                 data-message-id="{{ message.id }}">
+              {% for reaction in message.reaction_summary %}
+                <span class="reaction-pill"
+                      data-reaction="{{ reaction.content }}"
+                      data-message-id="{{ message.id }}"
+                      title="Click to react/unreact">
+                  {{ reaction.content }}
+                  <span class="reaction-count">{{ reaction.count }}</span>
+                </span>
+              {% endfor %}
+            </div>
           </div>
+          {% if message.edited %}<div class="text-end text-muted small mt-1 fst-italic">(edited)</div>{% endif %}
         </div>
       {% endfor %}
     {% else %}
@@ -85,3 +196,4 @@
     {% endif %}
   </div>
 </div>
+{% include "chat/components/_context_menu.html" %}

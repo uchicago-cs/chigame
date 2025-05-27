@@ -1,0 +1,198 @@
+[
+  {
+    "model": "users.user",
+    "pk": 1,
+    "fields": {
+      "email": "red@example.com",
+      "username": "red_user",
+      "name": "Red Player",
+      "password": "pbkdf2_sha256$260000$fake$fake",
+      "is_active": true,
+      "is_staff": false,
+      "is_superuser": false
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 2,
+    "fields": {
+      "email": "black@example.com",
+      "username": "black_user",
+      "name": "Black Player",
+      "password": "pbkdf2_sha256$260000$fake$fake",
+      "is_active": true,
+      "is_staff": false,
+      "is_superuser": false
+    }
+  },
+  {
+    "model": "games.game",
+    "pk": 2,
+    "fields": {
+      "name": "Checkers",
+      "description": "A classic strategy board game",
+      "min_players": 2,
+      "max_players": 2,
+      "year_published": 1880,
+      "complexity": "1.50"
+    }
+  },
+  {
+    "model": "games.lobby",
+    "pk": 1,
+    "fields": {
+      "match_status": 1,
+      "name": "Checkers Lobby 1",
+      "game": 2,
+      "game_mod_status": 1,
+      "created_by": 1,
+      "min_players": 2,
+      "max_players": 2,
+      "time_constraint": 300,
+      "lobby_created": "2025-05-06T12:00:00Z",
+      "members": [
+        1,
+        2
+      ]
+    }
+  },
+  {
+    "model": "games.match",
+    "pk": 1,
+    "fields": {
+      "game": 2,
+      "lobby": 1,
+      "date_played": "2025-05-06T12:00:00Z"
+    }
+  },
+  {
+    "model": "games.player",
+    "pk": 1,
+    "fields": {
+      "user": 1,
+      "match": 1,
+      "team": "Red",
+      "role": "Player"
+    }
+  },
+  {
+    "model": "games.player",
+    "pk": 2,
+    "fields": {
+      "user": 2,
+      "match": 1,
+      "team": "Black",
+      "role": "Player"
+    }
+  },
+  {
+    "model": "games.checkers",
+    "pk": 2,
+    "fields": {
+      "player_1": 1,
+      "player_2": 2,
+      "winner": null,
+      "start_time": "2025-05-06T12:00:00Z",
+      "end_time": null
+    }
+  },
+  {
+    "model": "games.checkersboard",
+    "pk": 1,
+    "fields": {
+      "state": [
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          2,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "current_turn_player": 1
+    }
+  },
+  {
+    "model": "games.checkersturn",
+    "pk": 1,
+    "fields": {
+      "game": 2,
+      "board": 1,
+      "turn_number": 12,
+      "player": 1
+    }
+  }
+]

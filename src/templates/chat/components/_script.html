@@ -43,4 +43,236 @@
       input.value = '';
     };
   })();
+  let replyToMessageId = null;
+  let replyToUsername = null;
+  let replyToContent = null;
+  const contextEl = document.getElementById("chat-context");
+  const currentUserId = parseInt(contextEl.dataset.userId, 10);
+
+  const protocol = window.location.protocol === "https:" ? "wss://" : "ws://";
+  const chatId = "{{ chat.id }}";
+  const chatSocket = new WebSocket(
+    protocol + window.location.host + "/ws/chat/" + chatId + "/"
+  );
+
+  function applyProfanityFilter(text) {
+    const regex = new RegExp(`\\b(${profanityWords.join("|")})\\b`, "gi");
+    return text.replace(regex, (match) => "*".repeat(match.length));
+  }
+  chatSocket.onopen = function(e) {
+    console.log("Connected to chat room:", chatId);
+  };
+
+  chatSocket.onclose = function(e) {
+    console.log("Disconnected from chat room:", chatId);
+  };
+
+  document.querySelector("#id_message_send_input").focus();
+  document.getElementById("cancel-reply").addEventListener("click", () => {
+    replyToMessageId = null;
+    replyToUsername = null;
+    replyToContent = null;
+    document.getElementById('replying-to-preview').classList.add('d-none');
+  });
+
+  document.querySelector("#id_message_send_input").onkeyup = function(e) {
+    if (e.key === "Enter") {
+      document.querySelector("#id_message_send_button").click();
+    }
+  };
+
+  document.querySelector("#id_message_send_button").onclick = function(e) {
+    const inputElement = document.querySelector("#id_message_send_input");
+    const messageInput = inputElement.value;
+    if (messageInput.trim() === "") return;
+
+    chatSocket.send(
+      JSON.stringify({
+        message: messageInput,
+        user_id: "{{ request.user.id }}",
+        reply_to: replyToMessageId,
+      })
+    );
+
+    // ✅ Properly clear input and reset reply state
+    inputElement.value = "";
+    replyToMessageId = null;
+    replyToUsername = null;
+    replyToContent = null;
+    document.getElementById("replying-to-preview").classList.add("d-none");
+  };
+
+
+  function escapeHTML(str) {
+    if (typeof str !== "string") return "";
+    return str.replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+
+  /**
+   * This function is called when a message is received from the server.
+   * It creates a new div element with the message and appends it to the chat container.
+   * It also scrolls to the bottom of the chat container.
+   *
+   * @param {MessageEvent} e - The message event.
+   */
+  chatSocket.onmessage = function(e) {
+    console.log("WS message received:", e.data);
+    const data = JSON.parse(e.data);
+
+    // Target consistent message container using ID
+    const messageList = document.querySelector("#message-container");
+
+    // Create message container
+    const messageContainer = document.createElement("div");
+    messageContainer.className = `mb-3 ${
+      data.user_id === "{{ request.user.id }}"
+        ? "align-self-end"
+        : "align-self-start"
+    }`;
+    messageContainer.setAttribute("data-message-id", data.message_id);
+    const escapedUsername = escapeHTML(data.username);
+    const escapedMessage = escapeHTML(data.message);
+
+    // Create message bubble
+    const isMine = data.user_id === currentUserId;
+    const messageBubble = document.createElement("div");
+    messageBubble.className = `chat-message ${isMine ? "chat-message--mine" : "chat-message--other"}`;
+
+    messageBubble.setAttribute(
+      "oncontextmenu",
+      `showContextMenu(event, ${data.message_id}, '${escapedUsername}', '${escapedMessage}'); return false;`
+    );
+
+    // Add reply preview if this is a reply
+    if (data.reply_to) {
+      const replyPreview = document.createElement("div");
+      replyPreview.className = "message-reply";
+
+      const replySender = document.createElement("div");
+      replySender.className = "message-reply__sender";
+      replySender.textContent = data.reply_to_username;
+
+      const replyContent = document.createElement("div");
+      replyContent.className = "message-reply__content";
+      replyContent.textContent = data.reply_to_content;
+
+      replyPreview.appendChild(replySender);
+      replyPreview.appendChild(replyContent);
+      messageBubble.appendChild(replyPreview);
+    }
+
+    // Create message sender
+    const sender = document.createElement("div");
+    sender.className = "fw-bold small text-danger";
+    sender.textContent = data.username;
+
+    // Create message content
+    const content = document.createElement("div");
+    content.className = "mt-1";
+    const rawMessage = data.message;
+    const filteredMessage = profanityEnabled ? applyProfanityFilter(rawMessage) : rawMessage;
+    content.textContent = filteredMessage;
+
+    // Create message timestamp
+    const timestamp = document.createElement("div");
+    timestamp.className = "text-end text-muted small mt-1";
+    timestamp.textContent = new Date().toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+    const reactionsContainer = document.createElement("div");
+    reactionsContainer.id = `reactions-${data.message_id}`;
+    reactionsContainer.className = "mt-1 d-flex flex-wrap gap-1";
+
+    // Assemble message
+    messageBubble.appendChild(sender);
+    messageBubble.appendChild(content);
+    messageBubble.appendChild(timestamp);
+    messageContainer.appendChild(messageBubble);
+    messageBubble.appendChild(reactionsContainer);
+
+    // Add message to container and clear input
+    messageList.appendChild(messageContainer);
+    document.querySelector("#id_message_send_input").value = "";
+
+    // Scroll to bottom of chat - using requestAnimationFrame to ensure DOM updates first
+    requestAnimationFrame(() => {
+      messageList.scrollTop = messageList.scrollHeight;
+    });
+  };
+  // Toggle between centered and floating chat mode
+  const chatContainer = document.getElementById("chatContainer");
+  const toggleButton = document.getElementById("toggle-chat-mode");
+  const collapseButton = document.getElementById("collapse-chat");
+
+  if (collapseButton) {
+    collapseButton.addEventListener("click", () => {
+      chatContainer.classList.toggle("collapsed-chat");
+
+      // Flip arrow direction
+      const icon = collapseButton.querySelector("i");
+      if (icon) {
+        icon.classList.toggle("bi-chevron-down");
+        icon.classList.toggle("bi-chevron-up");
+      }
+    });
+  }
+
+  if (chatContainer && toggleButton) {
+    toggleButton.addEventListener("click", () => {
+      chatContainer.classList.toggle("floating-chat");
+      chatContainer.classList.toggle("centered-chat");
+
+      // Show collapse button only in floating mode
+      if (chatContainer.classList.contains("floating-chat")) {
+        collapseButton.classList.remove("d-none");
+        collapseButton.classList.remove("d-none");
+      } else {
+        collapseButton.classList.add("d-none");
+
+        if (collapseButton) {
+          collapseButton.classList.remove("d-none");
+        }
+      }
+      if (collapseButton) {
+        collapseButton.classList.add("d-none");
+      }
+
+      chatContainer.classList.remove("collapsed-chat");
+
+    });
+  }
+
+  // Smooth scroll and highlight when a quoted message is clicked
+  document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll(".message-reply").forEach((replyBox) => {
+      replyBox.addEventListener("click", () => {
+        const replyId = replyBox.dataset.scrollTarget;
+        if (!replyId) return;
+
+        const original = document.querySelector(`[data-message-id="${replyId}"]`);
+        if (original) {
+          original.scrollIntoView({
+            behavior: "smooth",
+            block: "center"
+          });
+          const innerBox = original.querySelector(".chat-message, .bg-white, .bg-success-subtle");
+          if (innerBox) {
+            innerBox.classList.add("highlight-reply");
+            setTimeout(() => innerBox.classList.remove("highlight-reply"), 1000);
+          }
+        }
+      });
+    });
+
+    // Dismiss context menu on outside click
+    document.addEventListener("click", () => {
+      const menu = document.getElementById("context-menu");
+      if (menu) menu.style.display = "none";
+    });
+  });
 </script>

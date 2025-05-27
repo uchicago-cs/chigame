@@ -1,13 +1,25 @@
 from django import forms
 from django.core.validators import MaxValueValidator, MinValueValidator
 
-from .models import Game, InteractiveFictionGame, Lobby, Review
+from .models import Game, InteractiveFictionGame, Lobby, Review, Tournament
+
+
+class TournamentForm(forms.ModelForm):
+    class Meta:
+        model = Tournament
+        fields = "__all__"
+        widgets = {
+            "description": forms.Textarea(attrs={"maxlength": 1000}),
+            "rules": forms.Textarea(attrs={"maxlength": 1000}),
+            "draw_rules": forms.Textarea(attrs={"maxlength": 1000}),
+        }
 
 
 class GameForm(forms.ModelForm):
     class Meta:
         model = Game
         fields = "__all__"
+        exclude = ["twine_file"]  # remove the twine upload field
         labels = {
             "complexity": "Complexity (1-5 scale)",
             "expected_playtime": "Expected playtime (minutes)",
@@ -24,11 +36,11 @@ class GameForm(forms.ModelForm):
 class IFGameForm(forms.ModelForm):
     class Meta:
         model = InteractiveFictionGame
-        fields = ["name", "description", "image", "categories", "suggested_age", "rules", "year_published"]
+        fields = ["name", "description", "image", "categories", "genre", "suggested_age", "rules", "year_published"]
 
     image = forms.CharField(
         widget=forms.TextInput(attrs={"placeholder": "Enter Image URL"}),
-        required=False,  # If the image URL is optional
+        required=False,
     )
 
     suggested_age = forms.IntegerField(
@@ -42,6 +54,17 @@ class IFGameForm(forms.ModelForm):
     year_published = forms.IntegerField(
         required=False, widget=forms.NumberInput(attrs={"placeholder": "Year Published"})
     )
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        # Set min/max players fields automatically
+        instance.min_players = 1
+        instance.max_players = 1
+
+        if commit:
+            instance.save()
+            self.save_m2m()
+        return instance
 
 
 class LobbyForm(forms.ModelForm):

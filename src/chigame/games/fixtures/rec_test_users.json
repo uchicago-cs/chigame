@@ -1,0 +1,292 @@
+[
+  {
+    "model": "users.user",
+    "pk": 201,
+    "fields": {
+      "password": "pbkdf2_sha256$600000$XQGxrqSBQGBQwXmMFDHHCa$Dj9QQPEwJWdQpWTDQSH+cGKI6EzYaW+EG9hE5JZt0Ck=",
+      "last_login": null,
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2025-01-01T10:00:00Z",
+      "name": "rec_user1",
+      "email": "rec_user1@example.com",
+      "groups": [],
+      "user_permissions": [],
+      "tokens": 1,
+      "moderator": false,
+      "friends": [101, 202, 203]
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 202,
+    "fields": {
+      "password": "pbkdf2_sha256$600000$XQGxrqSBQGBQwXmMFDHHCa$Dj9QQPEwJWdQpWTDQSH+cGKI6EzYaW+EG9hE5JZt0Ck=",
+      "last_login": null,
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2025-01-02T10:00:00Z",
+      "name": "rec_user2",
+      "email": "rec_user2@example.com",
+      "groups": [],
+      "user_permissions": [],
+      "tokens": 1,
+      "moderator": false,
+      "friends": [201, 203, 204]
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 203,
+    "fields": {
+      "password": "pbkdf2_sha256$600000$XQGxrqSBQGBQwXmMFDHHCa$Dj9QQPEwJWdQpWTDQSH+cGKI6EzYaW+EG9hE5JZt0Ck=",
+      "last_login": null,
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2025-01-03T10:00:00Z",
+      "name": "rec_user3",
+      "email": "rec_user3@example.com",
+      "groups": [],
+      "user_permissions": [],
+      "tokens": 1,
+      "moderator": false,
+      "friends": [201, 202]
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 204,
+    "fields": {
+      "password": "pbkdf2_sha256$600000$XQGxrqSBQGBQwXmMFDHHCa$Dj9QQPEwJWdQpWTDQSH+cGKI6EzYaW+EG9hE5JZt0Ck=",
+      "last_login": null,
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2025-01-04T10:00:00Z",
+      "name": "rec_user4",
+      "email": "rec_user4@example.com",
+      "groups": [],
+      "user_permissions": [],
+      "tokens": 1,
+      "moderator": false,
+      "friends": [202, 205]
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 205,
+    "fields": {
+      "password": "pbkdf2_sha256$600000$XQGxrqSBQGBQwXmMFDHHCa$Dj9QQPEwJWdQpWTDQSH+cGKI6EzYaW+EG9hE5JZt0Ck=",
+      "last_login": null,
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2025-01-05T10:00:00Z",
+      "name": "rec_user5",
+      "email": "rec_user5@example.com",
+      "groups": [],
+      "user_permissions": [],
+      "tokens": 1,
+      "moderator": false,
+      "friends": [204]
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 206,
+    "fields": {
+      "password": "pbkdf2_sha256$600000$XQGxrqSBQGBQwXmMFDHHCa$Dj9QQPEwJWdQpWTDQSH+cGKI6EzYaW+EG9hE5JZt0Ck=",
+      "last_login": null,
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2025-01-06T10:00:00Z",
+      "name": "rec_user6",
+      "email": "rec_user6@example.com",
+      "groups": [],
+      "user_permissions": [],
+      "tokens": 1,
+      "moderator": false,
+      "friends": []
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 207,
+    "fields": {
+      "password": "pbkdf2_sha256$600000$XQGxrqSBQGBQwXmMFDHHCa$Dj9QQPEwJWdQpWTDQSH+cGKI6EzYaW+EG9hE5JZt0Ck=",
+      "last_login": null,
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2025-01-07T10:00:00Z",
+      "name": "rec_user7",
+      "email": "rec_user7@example.com",
+      "groups": [],
+      "user_permissions": [],
+      "tokens": 1,
+      "moderator": false,
+      "friends": []
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 208,
+    "fields": {
+      "password": "pbkdf2_sha256$600000$XQGxrqSBQGBQwXmMFDHHCa$Dj9QQPEwJWdQpWTDQSH+cGKI6EzYaW+EG9hE5JZt0Ck=",
+      "last_login": null,
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2025-01-08T10:00:00Z",
+      "name": "rec_user8",
+      "email": "rec_user8@example.com",
+      "groups": [],
+      "user_permissions": [],
+      "tokens": 1,
+      "moderator": false,
+      "friends": []
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 209,
+    "fields": {
+      "password": "pbkdf2_sha256$600000$XQGxrqSBQGBQwXmMFDHHCa$Dj9QQPEwJWdQpWTDQSH+cGKI6EzYaW+EG9hE5JZt0Ck=",
+      "last_login": null,
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2025-01-09T10:00:00Z",
+      "name": "rec_user9",
+      "email": "rec_user9@example.com",
+      "groups": [],
+      "user_permissions": [],
+      "tokens": 1,
+      "moderator": false,
+      "friends": []
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 210,
+    "fields": {
+      "password": "pbkdf2_sha256$600000$XQGxrqSBQGBQwXmMFDHHCa$Dj9QQPEwJWdQpWTDQSH+cGKI6EzYaW+EG9hE5JZt0Ck=",
+      "last_login": null,
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2025-01-10T10:00:00Z",
+      "name": "rec_user10",
+      "email": "rec_user10@example.com",
+      "groups": [],
+      "user_permissions": [],
+      "tokens": 1,
+      "moderator": false,
+      "friends": []
+    }
+  },
+  {
+    "model": "users.userprofile",
+    "pk": 201,
+    "fields": {
+      "user": 201,
+      "bio": "Recommendation test user 1",
+      "date_joined": "2025-01-01T10:00:00Z",
+      "profile_photo": ""
+    }
+  },
+  {
+    "model": "users.userprofile",
+    "pk": 202,
+    "fields": {
+      "user": 202,
+      "bio": "Recommendation test user 2",
+      "date_joined": "2025-01-02T10:00:00Z",
+      "profile_photo": ""
+    }
+  },
+  {
+    "model": "users.userprofile",
+    "pk": 203,
+    "fields": {
+      "user": 203,
+      "bio": "Recommendation test user 3",
+      "date_joined": "2025-01-03T10:00:00Z",
+      "profile_photo": ""
+    }
+  },
+  {
+    "model": "users.userprofile",
+    "pk": 204,
+    "fields": {
+      "user": 204,
+      "bio": "Recommendation test user 4",
+      "date_joined": "2025-01-04T10:00:00Z",
+      "profile_photo": ""
+    }
+  },
+  {
+    "model": "users.userprofile",
+    "pk": 205,
+    "fields": {
+      "user": 205,
+      "bio": "Recommendation test user 5",
+      "date_joined": "2025-01-05T10:00:00Z",
+      "profile_photo": ""
+    }
+  },
+  {
+    "model": "users.userprofile",
+    "pk": 206,
+    "fields": {
+      "user": 206,
+      "bio": "Recommendation test user 6",
+      "date_joined": "2025-01-06T10:00:00Z",
+      "profile_photo": ""
+    }
+  },
+  {
+    "model": "users.userprofile",
+    "pk": 207,
+    "fields": {
+      "user": 207,
+      "bio": "Recommendation test user 7",
+      "date_joined": "2025-01-07T10:00:00Z",
+      "profile_photo": ""
+    }
+  },
+  {
+    "model": "users.userprofile",
+    "pk": 208,
+    "fields": {
+      "user": 208,
+      "bio": "Recommendation test user 8",
+      "date_joined": "2025-01-08T10:00:00Z",
+      "profile_photo": ""
+    }
+  },
+  {
+    "model": "users.userprofile",
+    "pk": 209,
+    "fields": {
+      "user": 209,
+      "bio": "Recommendation test user 9",
+      "date_joined": "2025-01-09T10:00:00Z",
+      "profile_photo": ""
+    }
+  },
+  {
+    "model": "users.userprofile",
+    "pk": 210,
+    "fields": {
+      "user": 210,
+      "bio": "Recommendation test user 10",
+      "date_joined": "2025-01-10T10:00:00Z",
+      "profile_photo": ""
+    }
+  }
+]

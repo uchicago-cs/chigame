@@ -9,10 +9,13 @@
     "is_staff": true,
     "is_active": true,
     "date_joined": "2023-10-30T03:15:43.052Z",
-    "name": "",
+    "name": "Admin User",
     "email": "admin@example.com",
+    "username": "admin",
     "groups": [],
-    "user_permissions": []
+    "user_permissions": [],
+    "tokens": 3,
+    "moderator": true
   }
 },
 {
@@ -25,10 +28,13 @@
     "is_staff": false,
     "is_active": true,
     "date_joined": "2023-10-30T03:21:40.210Z",
-    "name": "user1",
-    "email": "user1@example.com",
+    "name": "Holly",
+    "email": "holly@example.com",
+    "username": "holly_gamer",
     "groups": [],
-    "user_permissions": []
+    "user_permissions": [],
+    "tokens": 2,
+    "moderator": false
   }
 },
 {
@@ -41,10 +47,13 @@
     "is_staff": false,
     "is_active": true,
     "date_joined": "2023-10-30T03:22:35.172Z",
-    "name": "user2",
-    "email": "user2@example.com",
+    "name": "David",
+    "email": "david@example.com",
+    "username": "david_chess",
     "groups": [],
-    "user_permissions": []
+    "user_permissions": [],
+    "tokens": 1,
+    "moderator": false
   }
 },
 {
@@ -57,10 +66,13 @@
     "is_staff": false,
     "is_active": true,
     "date_joined": "2023-10-30T03:23:55.014Z",
-    "name": "user3",
-    "email": "user3@example.com",
+    "name": "Rain",
+    "email": "rain@example.com",
+    "username": "rain_player",
     "groups": [],
-    "user_permissions": []
+    "user_permissions": [],
+    "tokens": 2,
+    "moderator": false
   }
 },
 {
@@ -73,10 +85,13 @@
     "is_staff": false,
     "is_active": true,
     "date_joined": "2023-10-30T03:24:56.552Z",
-    "name": "user4",
-    "email": "user4@example.com",
+    "name": "Jonathan",
+    "email": "jonathan@example.com",
+    "username": "jonathan_pro",
     "groups": [],
-    "user_permissions": []
+    "user_permissions": [],
+    "tokens": 3,
+    "moderator": false
   }
 },
 {
@@ -88,65 +103,51 @@
     "is_superuser": false,
     "is_staff": false,
     "is_active": true,
-    "date_joined": "2023-10-30T03:25:12.627Z",
-    "name": "user5",
-    "email": "user5@example.com",
+    "date_joined": "2023-10-30T03:25:56.552Z",
+    "name": "Harriet",
+    "email": "harriet@example.com",
+    "username": "harriet_fisher",
     "groups": [],
-    "user_permissions": []
-  }
-},
-{
-  "model": "users.user",
-  "pk": 7,
-  "fields": {
-    "password": "foo",
-    "last_login": null,
-    "is_superuser": false,
-    "is_staff": false,
-    "is_active": true,
-    "date_joined": "2023-10-26T13:42:31.123Z",
-    "name": "user7",
-    "email": "user7@example.com",
-    "groups": [],
-    "user_permissions": []
+    "user_permissions": [],
+    "tokens": 2,
+    "moderator": false
   }
 },
 {
   "model": "users.user",
   "pk": 8,
   "fields": {
-    "password": "foo",
+    "password": "argon2$argon2id$v=19$m=102400,t=2,p=8$Zzk2ZjFCTXl4RlJmOW1VU1JHa3QxZA$tiaFDXObRmwzYoVytjyCGFVfJnoqp1uYUOvCVUsUHpY",
     "last_login": null,
     "is_superuser": false,
     "is_staff": false,
     "is_active": true,
     "date_joined": "2023-10-26T13:53:08.045Z",
-    "name": "user8",
+    "name": "Test User",
     "email": "user8@example.com",
+    "username": "test_user8",
     "groups": [],
-    "user_permissions": []
+    "user_permissions": [],
+    "tokens": 1,
+    "moderator": false
   }
 },
 {
-    "model": "users.userprofile",
-    "pk": 1,
-    "fields": {
-      "user": 1,
-      "display_name": "Default Display Name",
-      "bio": "A brief bio for the superuser",
-      "date_joined": "2023-10-30T03:31:56.761Z",
-      "friends": []
-    }
-  },
+  "model": "users.userprofile",
+  "pk": 1,
+  "fields": {
+    "user": 1,
+    "bio": "Game enthusiast and moderator with years of experience",
+    "date_joined": "2023-10-30T03:31:56.761Z"
+  }
+},
 {
   "model": "users.userprofile",
   "pk": 2,
   "fields": {
     "user": 2,
-    "display_name": "user1",
-    "bio": "A brief bio about User One",
-    "date_joined": "2023-10-30T03:21:40.213Z",
-    "friends": []
+    "bio": "Casual gamer who loves strategy games and puzzles",
+    "date_joined": "2023-10-30T03:21:40.213Z"
   }
 },
 {
@@ -154,10 +155,8 @@
   "pk": 3,
   "fields": {
     "user": 3,
-    "display_name": "user2",
-    "bio": "A brief bio about User Two",
-    "date_joined": "2023-10-30T03:22:35.174Z",
-    "friends": []
+    "bio": "Chess enthusiast and competitive player",
+    "date_joined": "2023-10-30T03:22:35.174Z"
   }
 },
 {
@@ -165,10 +164,8 @@
   "pk": 4,
   "fields": {
     "user": 4,
-    "display_name": "user3",
-    "bio": "A brief bio about User Three",
-    "date_joined": "2023-10-30T03:24:37.723Z",
-    "friends": []
+    "bio": "Beginner-friendly player who enjoys learning new games",
+    "date_joined": "2023-10-30T03:24:37.723Z"
   }
 },
 {
@@ -176,10 +173,8 @@
   "pk": 5,
   "fields": {
     "user": 5,
-    "display_name": "user4",
-    "bio": "A brief bio about User Four",
-    "date_joined": "2023-10-30T03:24:56.555Z",
-    "friends": []
+    "bio": "Pro gamer with expertise in multiple game genres",
+    "date_joined": "2023-10-30T03:24:56.555Z"
   }
 },
 {
@@ -187,21 +182,8 @@
   "pk": 6,
   "fields": {
     "user": 6,
-    "display_name": "user5",
-    "bio": "A brief bio about User Five",
-    "date_joined": "2023-10-30T03:25:12.630Z",
-    "friends": []
-  }
-},
-{
-  "model": "users.userprofile",
-  "pk": 7,
-  "fields": {
-    "user": 7,
-    "display_name": "Default Display Name",
-    "bio": "A brief bio about User Seven",
-    "date_joined": "2023-10-26T13:42:31.123Z",
-    "friends": []
+    "bio": "Game developer and avid player of indie games",
+    "date_joined": "2023-10-30T03:25:12.630Z"
   }
 },
 {
@@ -209,10 +191,129 @@
   "pk": 8,
   "fields": {
     "user": 8,
-    "display_name": "Default Display Name",
-    "bio": "A brief bio about User Eight",
-    "date_joined": "2023-10-26T13:53:08.045Z",
-    "friends": []
+    "bio": "Test user for development and testing purposes",
+    "date_joined": "2023-10-26T13:53:08.045Z"
+  }
+},
+{
+  "model": "users.friendinvitation",
+  "pk": 1,
+  "fields": {
+    "sender": 2,
+    "receiver": 3,
+    "accepted": true,
+    "timestamp": "2023-10-30T04:01:00.000Z",
+    "is_deleted": false
+  }
+},
+{
+  "model": "users.friendinvitation",
+  "pk": 2,
+  "fields": {
+    "sender": 2,
+    "receiver": 4,
+    "accepted": true,
+    "timestamp": "2023-10-30T04:02:00.000Z",
+    "is_deleted": false
+  }
+},
+{
+  "model": "users.friendinvitation",
+  "pk": 3,
+  "fields": {
+    "sender": 3,
+    "receiver": 5,
+    "accepted": true,
+    "timestamp": "2023-10-30T04:03:00.000Z",
+    "is_deleted": false
+  }
+},
+{
+  "model": "users.friendinvitation",
+  "pk": 4,
+  "fields": {
+    "sender": 4,
+    "receiver": 5,
+    "accepted": false,
+    "timestamp": "2023-10-30T04:04:00.000Z",
+    "is_deleted": false
+  }
+},
+{
+  "model": "users.friendinvitation",
+  "pk": 5,
+  "fields": {
+    "sender": 4,
+    "receiver": 6,
+    "accepted": true,
+    "timestamp": "2023-10-30T04:05:00.000Z",
+    "is_deleted": false
+  }
+},
+{
+  "model": "users.group",
+  "pk": 1,
+  "fields": {
+    "name": "Chess Masters",
+    "description": "Elite chess players and strategy enthusiasts",
+    "members": [1, 2, 3],
+    "created_by": 1,
+    "date_created": "2023-10-30T03:30:00.000Z"
+  }
+},
+{
+  "model": "users.group",
+  "pk": 2,
+  "fields": {
+    "name": "Beginner's Club",
+    "description": "Welcoming space for new players to learn and grow",
+    "members": [4, 5, 6],
+    "created_by": 4,
+    "date_created": "2023-10-30T03:35:00.000Z"
+  }
+},
+{
+  "model": "users.group",
+  "pk": 3,
+  "fields": {
+    "name": "Adventure Gamers",
+    "description": "Group for people who love adventure and exploration games",
+    "created_by": 1,
+    "date_created": "2023-10-30T03:31:56.761Z"
+  }
+},
+{
+  "model": "users.group",
+  "pk": 4,
+  "fields": {
+    "name": "Word Game Lovers",
+    "description": "Community for word puzzle and vocabulary game enthusiasts",
+    "created_by": 1,
+    "date_created": "2023-10-30T03:31:56.761Z"
+  }
+},
+{
+  "model": "users.groupinvitation",
+  "pk": 1,
+  "fields": {
+    "friend_group": 1,
+    "sender": 1,
+    "receiver": 5,
+    "accepted": false,
+    "timestamp": "2023-10-30T03:31:00.000Z",
+    "is_deleted": false
+  }
+},
+{
+  "model": "users.groupinvitation",
+  "pk": 2,
+  "fields": {
+    "friend_group": 2,
+    "sender": 4,
+    "receiver": 1,
+    "accepted": false,
+    "timestamp": "2023-10-30T03:36:00.000Z",
+    "is_deleted": false
   }
 }
 ]

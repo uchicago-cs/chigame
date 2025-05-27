@@ -5,7 +5,9 @@ from django.utils import timezone
 from factory import Faker, Iterator, LazyAttribute, LazyFunction, Sequence, SubFactory, post_generation
 from factory.django import DjangoModelFactory
 
-from chigame.games.models import Category, Chat, Game, Lobby, Mechanic, Tournament
+from chigame.achievements.models import Achievement, UserAchievement
+from chigame.chat.models import LiveChat, LiveChatUser
+from chigame.games.models import Category, Chat, Feedback, Game, Lobby, Match, Mechanic, Review, Tournament
 from chigame.users.models import User
 
 
@@ -80,11 +82,12 @@ class GameFactory(DjangoModelFactory):
 class UserFactory(DjangoModelFactory):
     class Meta:
         model = User
+        django_get_or_create = ["email"]
 
     name = Faker("name")
     email = Faker("email")
     password = Faker("password")
-    username = Faker("user_name")
+    username = factory.Sequence(lambda n: f"user{n}")
 
 
 class TournamentFactory(DjangoModelFactory):
@@ -102,6 +105,10 @@ class TournamentFactory(DjangoModelFactory):
     rules = Faker("text")
     draw_rules = Faker("text")
     num_winner = Faker("pyint", min_value=1, max_value=1000)
+    prize_description = Faker("text", max_nb_chars=200)
+    first_place_prize = Faker("sentence", nb_words=5)
+    second_place_prize = Faker("sentence", nb_words=4)
+    third_place_prize = Faker("sentence", nb_words=3)
 
 
 class ChatFactory(DjangoModelFactory):
@@ -142,3 +149,82 @@ class LobbyFactory(DjangoModelFactory):
             # we add random users to the members field
             for members in range(random.randint(self.min_players, self.max_players)):
                 self.members.add(UserFactory())
+
+
+class MatchFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Match
+
+    game = factory.SubFactory(GameFactory)
+    lobby = factory.SubFactory(LobbyFactory)
+    date_played = factory.LazyFunction(timezone.now)
+
+    @factory.post_generation
+    def players(self, create, extracted, **kwargs):
+        if not create:
+            return
+        # default to two distinct users
+        users = extracted or UserFactory.create_batch(2)
+        for u in users:
+            self.players.add(u)
+
+
+class FeedbackFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Feedback
+
+    tournament = factory.SubFactory(TournamentFactory)
+    user = factory.SubFactory(UserFactory)
+    rating = 4
+    comment = "This is a test comment"
+
+
+class ReviewFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Review
+
+    title = factory.Faker("sentence", nb_words=4)
+    review = factory.Faker("text", max_nb_chars=200)
+    rating = factory.Faker("pydecimal", left_digits=1, right_digits=1, min_value=1, max_value=5)
+    is_public = True
+    user = factory.SubFactory(UserFactory)
+    game = factory.SubFactory(GameFactory)
+
+
+class AchievementFactory(DjangoModelFactory):
+    class Meta:
+        model = Achievement
+
+    name = Sequence(lambda n: f"Achievement {n}")
+    spoiler = Faker("boolean")
+    description = Faker("text", max_nb_chars=200)
+    rarity = Faker("pyint", min_value=1, max_value=4)
+    threshold = Faker("pydecimal", left_digits=1, right_digits=1, min_value=1)
+    game = SubFactory(GameFactory)
+
+
+class UserAchievementFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = UserAchievement
+
+    user = SubFactory(UserFactory)
+    achievement = SubFactory(AchievementFactory)
+    pinned = Faker("boolean")
+    progress = Faker("pydecimal", left_digits=1, right_digits=1, min_value=1)
+    date_earned = Faker("date_time_this_year")
+    last_updated = Faker("date_time_this_year")
+
+
+class LiveChatFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = LiveChat
+
+    name = factory.Sequence(lambda n: f"LiveChat {n}")
+
+    @factory.post_generation
+    def users(self, create, extracted, **kwargs):
+        if not create:
+            return
+        if extracted:
+            for user in extracted:
+                LiveChatUser.objects.create(user=user, live_chat=self)

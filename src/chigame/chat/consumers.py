@@ -1,12 +1,20 @@
+import asyncio
 import json
 import re
 
 from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
+from django.core.cache import cache
 
 from chigame.users.models import User
 
-from .models import LiveChat, LiveChatMessage
+from .models import LiveChat, LiveChatMessage, LiveChatUser
+from .utils import ProfanityFilter
+
+# Rate limiting constants
+MESSAGES_PER_SECOND = 1  # Maximum messages allowed per second
+RATE_LIMIT_WINDOW_SECONDS = 1  # Time window for rate limiting in seconds
+RATE_LIMIT_KEY_PREFIX = "chat_rate_limit:"
 
 
 class ChatConsumer(AsyncWebsocketConsumer):
@@ -36,9 +44,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
             self.room_group_name,
             {
                 "type": "sendMessage",
-                "message": message,
+                "message": filtered_message,
                 "user_id": user_id,
                 "username": username,
+                "message_id": message_id,
+                "reply_to": reply_to_id,
+                "reply_to_username": reply_to_username,
+                "reply_to_content": reply_to_content,
             },
         )
 

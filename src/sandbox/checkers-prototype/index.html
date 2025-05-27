@@ -8,44 +8,126 @@
     <!-- link css file -->
     <link rel="stylesheet" href="css/style.css" />
     <!-- imported fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnectgit" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap"
           rel="stylesheet" />
+    <!-- imported icons -->
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
   </head>
   <body>
     <!-- linking to game.js -->
     <script src="game.js"></script>
     <nav class="navbar">
       <h1>CHIGAME</h1>
+      <!-- turn indicator -->
+      <div class="turn-indicator">
+        <span class="dot"></span>
+        <p id="player-turn">Red</p>
+      </div>
       <!-- add buttons to this div -->
       <div class="nav-btns">
+        <button id="forfeitBtn" class="btn">Forfeit</button>
+        <button id="drawBtn" class="btn">Offer Draw</button>
+        <button id="declineDrawBtn" class="btn">Decline Draw</button>
+        <button id="toggle-bot" class="btn">Bot: OFF</button>
         <button class="btn"
                 onclick="window.open('https://github.com/uchicago-cs/chigame/wiki/Adding-Games-~-Checkers-Rules', '_blank')">
           Read Rules
         </button>
-        <button id="forfeitBtn" class="btn">Forfeit</button>
-        <button id="drawBtn" class="btn">Offer Draw</button>
-        <button id="declineDrawBtn" class="btn">Decline Draw</button>
-        <div id="gameOverMessage" class="game-over-message"></div>
-        <div id="playAgainPrompt" class="play-again-prompt hidden">
-          <p>Play Again?</p>
-          <div class="play-again-btns">
-            <button id="playAgainYes" class="btn">Yes</button>
-            <button id="playAgainNo" class="btn">No</button>
-          </div>
-        </div>
       </div>
     </nav>
+    <div id="gameOverPrompts">
+      <div id="gameOverMessage" class="game-over-message"></div>
+      <div id="playAgainPrompt" class="play-again-prompt hidden">
+        <p>Play Again?</p>
+        <div class="play-again-btns">
+          <button id="playAgainYes" class="btn">Yes</button>
+          <button id="playAgainNo" class="btn">No</button>
+        </div>
+      </div>
+    </div>
     <div class="main-content">
       <div id="game"></div>
     </div>
-    <!-- settings menu -->
-    <div id="settings-menu" class="settings-menu hidden">
-      <h2>Settings</h2>
-      <!-- Add settings options here -->
-      <button id="toggle-colorblind" class="settings-option">Toggle Colorblind Mode</button>
+    <div id="settings-container">
+      <!-- settings menu -->
+      <div id="settings-menu">
+        <div id="settings-buttons">
+          <!-- Add settings options here -->
+          <button id="toggle-colorblind" class="setting-btn">Toggle Colorblind Mode</button>
+          <button id="toggle-coordinates" class="setting-btn">Toggle Coordinates</button>
+          <button id="toggle-mute" class="setting-btn">Mute</button>
+          <!-- Volume Slider -->
+          <div class="setting-option">
+            <i class="fa fa-volume-up"></i>
+            <input type="range"
+                   id="volume-slider"
+                   min="0"
+                   max="300"
+                   value="100"
+                   step="5"
+                   title="volume slider" />
+            <div id="volume-display" class="value-display"></div>
+          </div>
+          <!-- Board Scale Slider -->
+          <div class="setting-option">
+            <i class="fa-solid fa-maximize"></i>
+            <input type="range"
+                   id="resize-slider"
+                   min="50"
+                   max="120"
+                   value="100"
+                   step="5"
+                   title="resize slider" />
+            <div id="resize-display" class="value-display"></div>
+          </div>
+        </div>
+      </div>
+      <div id="settings-tab">⚙️</div>
     </div>
     <button id="settings-button" class="settings-button">⚙️</button>
+    <!-- game information menu -->
+    <div id="game-information">
+      <div id="red-info">
+        <h3>Red</h3>
+        <p>
+          Time Left: <span id="red-timer" class="info"></span>
+        </p>
+        <p>
+          Score: <span id="red-score" class="info">0</span>
+        </p>
+      </div>
+      <br />
+      <hr />
+      <br />
+      <div id="black-info">
+        <h3>Black</h3>
+        <p>
+          Time Left: <span id="black-timer" class="info"></span>
+        </p>
+        <p>
+          Score: <span id="black-score" class="info">0</span>
+        </p>
+      </div>
+    </div>
+    <div id="endScreenPiece" class="hidden"></div>
+    <div id="endScreenText" class="hidden">Red Wins!</div>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const settingsContainer = document.getElementById('settings-container');
+        settingsContainer.addEventListener('mouseover', () => {
+          settingsContainer.classList.add('show');
+        });
+        settingsContainer.addEventListener('mouseout', () => {
+          settingsContainer.classList.remove('show');
+        });
+        const settingsButton = document.getElementById('settings-button');
+        settingsButton.addEventListener('click', () => {
+          settingsContainer.classList.toggle('show');
+        });
+      });
+    </script>
   </body>
 </html>
