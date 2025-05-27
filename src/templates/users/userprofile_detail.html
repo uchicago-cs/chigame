@@ -185,22 +185,6 @@
                   <a href="{% url 'users:user-history' profile.user.pk %}"
                      class="btn btn-primary">Stats</a>
                 {% elif friendship_request %}
-                  {% if friendship_request.sender_id == request.user.pk %}
-                    <a href="{% url 'users:cancel-friend-invitation' profile.user.id %}"
-                       class="btn btn-primary">Cancel Friendship Request</a>
-                  {% else %}
-                    <a href="{% url 'users:accept-friend-invitation' friendship_request.id %}"
-                       class="btn btn-primary">Accept Friendship Request</a>
-                    <a href="{% url 'users:decline-friend-invitation' friendship_request.id %}"
-                       class="btn btn-primary">Decline Friendship Request</a>
-                    {% if friend_request_message %}
-                      <div class="alert alert-info mt-3 friend-request-message">
-                        <strong>{{ profile.user.name }} sent you a friend request:</strong>
-                        <br />
-                        "{{ friend_request_message }}"
-                      </div>
-                    {% endif %}
-                  {% endif %}
                   <a href="{% url 'users:user-history' profile.user.pk %}"
                      class="btn btn-primary">Stats</a>
                 {% else %}
@@ -221,16 +205,22 @@
                       </div>
                     </div>
                   {% else %}
-                    <div class="d-flex gap-2 align-items-center">
-                      <div class="flex-grow-1">
+                    <div class="d-flex flex-column">
+                      <div class="d-flex justify-content-between align-items-center mb-2">
                         <h4 class="mb-0">Friendship Request</h4>
+                        <div class="d-flex gap-2">
+                          <a href="{% url 'users:accept-friend-invitation' friendship_request.id %}"
+                             class="btn btn-base btn-outline-success">Accept</a>
+                          <a href="{% url 'users:decline-friend-invitation' friendship_request.id %}"
+                             class="btn btn-base btn-outline-danger">Decline</a>
+                        </div>
                       </div>
-                      <div class="d-flex gap-2">
-                        <a href="{% url 'users:accept-friend-invitation' friendship_request.id %}"
-                           class="btn btn-base btn-outline-success">Accept</a>
-                        <a href="{% url 'users:decline-friend-invitation' friendship_request.id %}"
-                           class="btn btn-base btn-outline-danger">Decline</a>
-                      </div>
+                      {% if friend_request_message %}
+                        <div class="p-2 bg-light rounded">
+                          <small class="text-muted">{{ profile.user.name }} sent you a message:</small>
+                          <div class="mt-1">"{{ friend_request_message }}"</div>
+                        </div>
+                      {% endif %}
                     </div>
                   {% endif %}
                 </div>
