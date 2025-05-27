@@ -51,6 +51,14 @@
       {% include "chat/components/_messages.html" %}
       {% include "chat/components/_input.html" %}
     </div>
+    <div id="profanity-config"
+         data-enabled="{{ profanity_enabled|yesno:"true,false" }}"
+         data-words='{{ profanity_words|safe }}'></div>
+    <script>
+      const configElement = document.getElementById("profanity-config");
+      const profanityEnabled = configElement.dataset.enabled === "true";
+      const profanityWords = JSON.parse(configElement.dataset.words || "[]");
+    </script>
     {% include "chat/components/_script.html" %}
   </div>
 {% endblock content %}

@@ -1,3 +1,4 @@
+from django import forms
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
@@ -13,7 +14,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_POST
-from django.views.generic import DetailView, RedirectView, UpdateView
+from django.views.generic import DetailView, RedirectView, UpdateView, View
 from django.views.generic.edit import CreateView, DeleteView
 from django_tables2 import SingleTableView
 
@@ -981,6 +982,16 @@ def notifications_by_label(request, label_id):
 
 
 @login_required
+def toggle_profanity(request, pk):
+    """
+    Toggle the profanity filter for a user profile.
+    """
+    user = get_object_or_404(User, pk=pk)
+    user.profanity_filter = not user.profanity_filter
+    user.save()
+    return redirect(reverse("users:user-profile", kwargs={"pk": pk}))
+
+
 @require_POST
 def add_favorite_game(request, game_id):
     """
@@ -1227,3 +1238,75 @@ class GroupDeleteView(LoginRequiredMixin, DeleteView):
         if obj.created_by != request.user:
             raise PermissionDenied
         return super().dispatch(request, *args, **kwargs)
+
+
+class GroupJoinView(LoginRequiredMixin, View):
+    template_name = "users/group_join.html"
+
+    def get(self, request, *args, **kwargs):
+        group = get_object_or_404(Group, pk=kwargs["pk"])
+        if request.user in group.members.all():
+            messages.error(request, "You are already a member of this group.")
+            return redirect(reverse("users:group-detail", kwargs={"pk": group.pk}))
+        return render(request, self.template_name, {"group": group})
+
+    def post(self, request, *args, **kwargs):
+        group = get_object_or_404(Group, pk=kwargs["pk"])
+        if request.user in group.members.all():
+            messages.error(request, "You are already a member of this group.")
+        else:
+            group.members.add(request.user)
+            messages.success(request, "You have successfully joined the group.")
+        return redirect(reverse("users:group-detail", kwargs={"pk": group.pk}))
+
+
+class GroupLeaveView(LoginRequiredMixin, View):
+    template_name = "users/group_leave.html"
+
+    def get(self, request, *args, **kwargs):
+        group = get_object_or_404(Group, pk=kwargs["pk"])
+        if request.user not in group.members.all():
+            messages.error(request, "You are not a member of this group.")
+            return redirect(reverse("users:group-detail", kwargs={"pk": group.pk}))
+        return render(request, self.template_name, {"group": group})
+
+    def post(self, request, *args, **kwargs):
+        group = get_object_or_404(Group, pk=kwargs["pk"])
+        if request.user not in group.members.all():
+            messages.error(request, "You are not a member of this group.")
+        else:
+            group.members.remove(request.user)
+            messages.success(request, "You have successfully left the group.")
+        return redirect(reverse("users:group-detail", kwargs={"pk": group.pk}))
+
+
+class GroupForm(forms.ModelForm):
+    class Meta:
+        model = Group
+        fields = ["name", "description", "members"]
+        widgets = {
+            "members": forms.CheckboxSelectMultiple(),
+        }
+
+
+class GroupUpdateView(LoginRequiredMixin, UpdateView):
+    model = Group
+    form_class = GroupForm
+    template_name = "users/group_update.html"
+
+    def get_success_url(self):
+        return reverse("users:group-detail", kwargs={"pk": self.object.pk})
+
+    def dispatch(self, request, *args, **kwargs):
+        group = self.get_object()
+        if request.user not in group.members.all():
+            messages.error(request, "You do not have permission to edit this group.")
+            return redirect(reverse("users:group-detail", kwargs={"pk": group.pk}))
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        if self.request.user != self.get_object().created_by:
+            form.fields.pop("name", None)
+            form.fields.pop("description", None)
+        return form
