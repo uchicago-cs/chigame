@@ -70,11 +70,12 @@
       <div id="description-list" class="list-group">
         <a class="list-group-item list-group-item-action" href="#description">Description</a>
         <a class="list-group-item list-group-item-action"
-           href="#player-description">Players</a>
-        <a class="list-group-item list-group-item-action"
            href="#playtime-description">Playtime</a>
         <a class="list-group-item list-group-item-action"
            href="#rule-description">Rules</a>
+        <a class="list-group-item list-group-item-action"
+           href="#content-warning">Content Warning</a>
+        <a class="list-group-item list-group-item-action" href="#new-review">Write a Review</a>
       </div>
     </div>
     <div class="col-9">
@@ -106,9 +107,22 @@
             <strong>Expected:</strong> {{ game.expected_playtime }} minutes
           </p>
         {% endif %}
+        <h3 id="rule-description">Rules</h3>
+        {% if game.rules %}
+          <p>{{ game.rules|linebreaksbr }}</p>
+        {% else %}
+          <p class="text-muted">No rules provided.</p>
+        {% endif %}
+        <h3 id="content-warning">Content Warning</h3>
+        {% if game.content_warning %}
+          <p>{{ game.content_warning|linebreaksbr }}</p>
+        {% else %}
+          <p class="text-muted">None</p>
+        {% endif %}
         <div class="mb-4">
           <h3 id="new-review">Write a Review</h3>
-          <form method="post" action="{% url 'game-detail' pk=game.pk %}">
+          <form method="post"
+                action="{% url 'interactive-fiction-detail' pk=game.pk %}">
             {% csrf_token %}
             {{ form.as_p }}
             <button type="submit" class="btn btn-primary">Submit Review</button>
