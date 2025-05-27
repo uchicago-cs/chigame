@@ -982,6 +982,17 @@ def notifications_by_label(request, label_id):
 
 
 @login_required
+def toggle_profanity(request, pk):
+    """
+    Toggle the profanity filter for a user profile.
+    """
+    user = get_object_or_404(User, pk=pk)
+    user.profanity_filter = not user.profanity_filter
+    user.save()
+    return redirect(reverse("users:user-profile", kwargs={"pk": pk}))
+
+
+@login_required
 @require_POST
 def add_favorite_game(request, game_id):
     """
