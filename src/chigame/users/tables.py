@@ -1,19 +1,56 @@
 import django_tables2 as tables
+from django.utils.html import format_html
 
 from .models import User
 
 
 class FriendsTable(tables.Table):
-    email = tables.Column(
-        verbose_name="Email",
-        accessor="email",  # Access display_name through the User relationship
+    """
+    Table to display a user's friends in user_friend_list.html
+    """
+
+    username = tables.Column(
+        verbose_name="",  # Empty string to hide the column header because it's not needed
+        accessor="username",
         linkify=("users:user-profile", {"pk": tables.A("pk")}),
     )
 
+    online_status = tables.Column(
+        verbose_name="Status",
+        accessor="get_online_status",
+        orderable=False,
+    )
+
+    last_seen = tables.Column(
+        verbose_name="Last Seen",
+        accessor="get_last_seen_display",
+        orderable=False,
+    )
+
+    def render_online_status(self, value):
+        if value == "online":
+            return format_html('<span class="badge bg-success">Online</span>')
+        elif value == "recently_active":
+            return format_html('<span class="badge bg-warning">Recently Active</span>')
+        else:
+            return format_html('<span class="badge bg-secondary">Offline</span>')
+
     class Meta:
-        model = User  # Referencing the UserProfile model
+        model = User
         template_name = "django_tables2/bootstrap.html"
-        fields = ["email"]  # Adjust fields to show relevant information from the UserProfile model
+        fields = [
+            "email",
+            "online_status",
+            "last_seen",
+            "username",
+        ]  # Adjust fields to show relevant information from the UserProfile model
+
+        attrs = {
+            "class": "table",
+            "thead": {
+                "class": "d-none"
+            },  # This hides the entire header row because it's not needed since it is self-explanatory
+        }
 
 
 class UserTable(tables.Table):

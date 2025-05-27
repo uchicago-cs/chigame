@@ -1,3 +1,5 @@
+import time
+
 import django.db.models as models
 from django.contrib.auth.models import AbstractUser
 from django.contrib.contenttypes.fields import GenericForeignKey
@@ -43,6 +45,8 @@ class User(AbstractUser):
     )
     # friends is a symmetrical relationship, so it is a many-to-many field
     friends = models.ManyToManyField("self", symmetrical=True, blank=True)
+    # blocked_users is a non-symmetrical relationship for user blocking
+    blocked_users = models.ManyToManyField("self", symmetrical=False, blank=True, related_name="blocked_by")
     tokens = models.PositiveSmallIntegerField(validators=[MaxValueValidator(3)], default=1)
 
     # a moderator can manage/approve game guides in Knowledge Base
@@ -50,6 +54,8 @@ class User(AbstractUser):
 
     # a toggle to determine if the user wants profanity filter on
     profanity_filter = models.BooleanField(default=True)
+
+    last_seen = models.DateTimeField(default=timezone.now)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
@@ -71,6 +77,79 @@ class User(AbstractUser):
 
         super().save(*args, **kwargs)
 
+    def update_last_seen(self):
+        self.last_seen = timezone.now()
+        self.save(update_fields=["last_seen"])
+
+    def get_online_status(self):
+        """
+        Get the user's online status.
+
+        Returns:
+            str: "online" (within 5 minutes), "recently_active" (within 1 hour), or "offline"
+        """
+        if not self.last_seen:
+            return "offline"
+
+        now = timezone.now()
+        time_diff = now - self.last_seen
+
+        if time_diff <= timezone.timedelta(minutes=5):
+            return "online"
+        elif time_diff <= timezone.timedelta(hours=1):
+            return "recently_active"
+        else:
+            return "offline"
+
+    def is_online(self, threshold_minutes=5):
+        """
+        Check if user is online within the specified threshold.
+
+        Args:
+            threshold_minutes (int): Minutes threshold for considering user online
+
+        Returns:
+            bool: True if user was active within threshold_minutes, False otherwise
+        """
+        if not self.last_seen:
+            return False
+        threshold = timezone.now() - timezone.timedelta(minutes=threshold_minutes)
+        return self.last_seen >= threshold
+
+    @property
+    def is_currently_online(self):
+        """
+        Property for checking if user is currently online (within 5 minutes).
+        Uses the same logic as get_online_status for consistency.
+
+        Returns:
+            bool: True if user status is "online", False otherwise
+        """
+        return self.get_online_status() == "online"
+
+    def get_last_seen_display(self):
+        if not self.last_seen:
+            return "Never"
+
+        now = timezone.now()
+        time_diff = now - self.last_seen
+
+        if time_diff <= timezone.timedelta(minutes=1):
+            return "Just now"
+        elif time_diff <= timezone.timedelta(minutes=5):
+            return "A few minutes ago"
+        elif time_diff <= timezone.timedelta(hours=1):
+            minutes = int(time_diff.total_seconds() / 60)
+            return f"{minutes} minutes ago"
+        elif time_diff <= timezone.timedelta(days=1):
+            hours = int(time_diff.total_seconds() / 3600)
+            return f'{hours} hour{"s" if hours != 1 else ""} ago'
+        elif time_diff <= timezone.timedelta(days=7):
+            days = time_diff.days
+            return f'{days} day{"s" if days != 1 else ""} ago'
+        else:
+            return self.last_seen.strftime("%B %d, %Y")
+
 
 class UserProfile(models.Model):
     """
@@ -81,9 +160,10 @@ class UserProfile(models.Model):
     """
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    bio = models.TextField(blank=True)
+    bio = models.TextField(blank=True, max_length=500)
     date_joined = models.DateTimeField(auto_now_add=True)
     profile_photo = models.ImageField(upload_to="profile_photos/", blank=True, null=True)
+    favorite_games = models.ManyToManyField("games.Game", blank=True, related_name="favorited_by")
 
     @classmethod
     def get_or_create_profile(cls, user: User) -> "UserProfile":
@@ -122,6 +202,9 @@ class FriendInvitation(models.Model):
     receiver = models.ForeignKey(User, related_name="received_friend_invitations", on_delete=models.CASCADE)
     accepted = models.BooleanField(default=False)
     timestamp = models.DateTimeField(auto_now_add=True)
+    message = models.TextField(
+        max_length=500, blank=True, help_text="Optional personal message with the friend request"
+    )
     objects = FriendInvitationManager()
     is_deleted = models.BooleanField(default=False)
 
@@ -131,6 +214,7 @@ class FriendInvitation(models.Model):
         """
         sender = self.sender
         receiver = self.receiver
+
         # add the receiver to the sender's friends list (it is symmetrical)
         sender.friends.add(receiver)
         # set the invitation as accepted
@@ -306,7 +390,29 @@ class Notification(models.Model):
         (TOURNAMENT_COMPLETED, "TOURNAMENT_COMPLETED"),
     )
 
-    DEFAULT_MESSAGES = {FRIEND_REQUEST: "You have a friend invitation"}
+    DEFAULT_MESSAGES = {
+        FRIEND_REQUEST: "You have a friend invitation",
+        REMINDER: "You have a reminder",
+        UPCOMING_MATCH: "You have an upcoming match",
+        MATCH_INVITATION: "You have a match invite",
+        GROUP_INVITATION: "You have a group invitation",
+        ACHIEVEMENT: "You have an achievement",
+    }
+
+    # Auto-categorization mapping for notification types
+    CATEGORY_MAPPING = {
+        FRIEND_REQUEST: "social",
+        GROUP_INVITATION: "social",
+        REMINDER: "updates",
+        UPCOMING_MATCH: "updates",
+        MATCH_INVITATION: "updates",
+        ACHIEVEMENT: "promotions",
+        TOURNAMENT_INVITATION: "social",
+        TOURNAMENT_INVITATION_ACCEPTED: "social",
+        TOURNAMENT_STARTING: "updates",
+        TOURNAMENT_ROUND_COMPLETED: "updates",
+        TOURNAMENT_COMPLETED: "updates",
+    }
 
     category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default="inbox")
     receiver = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -326,6 +432,12 @@ class Notification(models.Model):
     class Meta:
         unique_together = ["receiver", "actor_content_type", "actor_object_id", "type"]
 
+    def save(self, *args, **kwargs):
+        # Auto-categorize notification if category is still default "inbox"
+        if self.category == "inbox" and self.type in self.CATEGORY_MAPPING:
+            self.category = self.CATEGORY_MAPPING[self.type]
+        super().save(*args, **kwargs)
+
     def mark_as_read(self):
         if not self.read:
             self.read = True
@@ -344,8 +456,11 @@ class Notification(models.Model):
             self.save()
 
     def renew_notification(self):
+        # Force last_sent to be at least 1 second later than first_sent
+        # by ensuring we're not using auto_now_add timestamps
+        time.sleep(0.001)  # Small sleep to ensure timestamp difference
         self.last_sent = timezone.now()
-        self.save()
+        self.save(update_fields=["last_sent"])
 
     def get_style_key(self):
         # For Mapping integer types to the stringsC SS expects
@@ -360,45 +475,43 @@ class Notification(models.Model):
         return type_map.get(self.type, "default")
 
     def get_rich_message(self):
+        """
+        Returns a concise message that assumes the sender will be shown separately.
+        e.g., Instead of 'rain1 sent you a friend request', just 'sent you a friend request'.
+        """
         actor = self.actor
 
-        # Default message: Use pre-set message, then type-specific default, then generic default
+        # Safe fallback if actor is missing
         default_message_for_type = self.DEFAULT_MESSAGES.get(self.type, "You have a new notification.")
-        final_fallback_message = self.message or default_message_for_type
-
-        if not actor:
-            return final_fallback_message
+        fallback = self.message or default_message_for_type
 
         try:
             if self.type == self.FRIEND_REQUEST:
-                if hasattr(actor, "sender") and actor.sender:
-                    # Try to get username, fallback to name, then to "Someone"
-                    sender_name = (
-                        getattr(actor.sender, "username", None) or getattr(actor.sender, "name", None) or "Someone"
-                    )
-                    return f"{sender_name} sent you a friend request."
-                return default_message_for_type
+                return "sent you a friend request"
 
             elif self.type == self.GROUP_INVITATION:
-                if (
-                    hasattr(actor, "sender")
-                    and actor.sender
-                    and hasattr(actor, "friend_group")
-                    and actor.friend_group
-                    and hasattr(actor.friend_group, "name")
-                ):
-                    sender_name = (
-                        getattr(actor.sender, "username", None) or getattr(actor.sender, "name", None) or "Someone"
-                    )
-                    group_name = actor.friend_group.name
-                    return f"{sender_name} invited you to join the group '{group_name}'."
-                return self.message or "You have a group invitation."
+                if hasattr(actor, "friend_group") and actor.friend_group and hasattr(actor.friend_group, "name"):
+                    return f"invited you to join the group '{actor.friend_group.name}'"
+                return "invited you to a group"
 
-            # For all other notification types, use the existing message or the type-specific default
-            return final_fallback_message
+            elif self.type == self.UPCOMING_MATCH:
+                return "Your match is starting soon"
 
-        except AttributeError:
-            return final_fallback_message  # Safe fallback in case of unexpected errors
+            elif self.type == self.TOURNAMENT_INVITATION:
+                return "You’ve been invited to a tournament"
+
+            elif self.type == self.TOURNAMENT_STARTING:
+                return "A tournament is starting"
+
+            elif self.type == self.ACHIEVEMENT:
+                return "You unlocked an achievement"
+
+            elif self.type == self.REMINDER:
+                return "Reminder: check your notifications"
+
+            return fallback
+        except Exception:
+            return fallback
 
     def get_icon_class(self):
         if self.type == self.FRIEND_REQUEST:
@@ -415,6 +528,15 @@ class Notification(models.Model):
             return "bi-info-circle-fill"
         else:
             return "bi-bell-fill"
+
+    def get_sender_display(self):
+        """
+        Returns a string representing the sender (if the actor has one),
+        otherwise falls back to 'System'.
+        """
+        if hasattr(self.actor, "sender") and self.actor.sender:
+            return getattr(self.actor.sender, "username", None) or getattr(self.actor.sender, "name", None) or "User"
+        return "System"
 
 
 class BaseNotificationHandler:
@@ -547,3 +669,22 @@ class NotificationLabel(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class RecommendationPreferences(models.Model):
+    """
+    Stores a user's recommendation preferences for personalized game recommendations.
+    Each preference is a weight (0-100) indicating importance of the factor.
+    """
+
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="recommendation_preferences")
+    category_weight = models.IntegerField(default=40, help_text="Weight for game categories (0-100)")
+    mechanics_weight = models.IntegerField(default=30, help_text="Weight for game mechanics (0-100)")
+    designers_weight = models.IntegerField(default=15, help_text="Weight for game designers/artists (0-100)")
+    complexity_weight = models.IntegerField(default=10, help_text="Weight for game complexity (0-100)")
+    playtime_weight = models.IntegerField(default=5, help_text="Weight for game playtime (0-100)")
+
+    @classmethod
+    def get_or_create_preferences(cls, user: User) -> "RecommendationPreferences":
+        preferences, created = cls.objects.get_or_create(user=user)
+        return preferences
