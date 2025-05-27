@@ -9,6 +9,7 @@ from chigame.users.views import (
     bulk_inbox,
     cancel_friend_invitation,
     decline_friend_invitation,
+    edit_profile,
     friend_list_view,
     name_update_view,
     notification_detail,
@@ -63,6 +64,7 @@ urlpatterns = [
     path("labels/create/", views.create_notification_label, name="create-notification-label"),
     path("labels/<int:label_id>/notifications/", views.notifications_by_label, name="notifications-by-label"),
     path("inbox/<int:pk>/<str:category>/", views.user_inbox_view, name="user-inbox-category"),
+    path("profile/<int:pk>/edit/", edit_profile, name="edit-profile"),
     path("labels/manage/", views.manage_labels_page_view, name="manage-labels-page"),
     path(
         "notifications/<int:notification_id>/assign-label/",
@@ -75,6 +77,7 @@ urlpatterns = [
         name="unassign-label-from-notification",
     ),
     path("labels/<int:label_id>/delete/", views.delete_notification_label, name="delete-notification-label"),
+    path("<int:pk>/recommendation-preferences/", views.recommendation_preferences, name="recommendation-preferences"),
     path("achievements", user_achievements, name="user-achievements"),
     path("achievements/<int:game_id>", user_achievements, name="user-achievements-game"),
     path("achievements/all/<int:status>", user_achievements, name="user-achievements-status"),
@@ -90,4 +93,6 @@ urlpatterns = [
     # Group paths
     path("groups/", views.GroupListView.as_view(), name="group-list"),
     path("groups/<int:pk>/", views.GroupDetailView.as_view(), name="group-detail"),
+    path("groups/create/", views.GroupCreateView.as_view(), name="group-create"),
+    path("groups/<int:pk>/delete/", views.GroupDeleteView.as_view(), name="group-delete"),
 ]
