@@ -78,18 +78,21 @@ def live_chat_list(request):
     )
 
 
+@login_required
 def create_live_chat(request):
     if request.method == "POST":
         form = LiveChatForm(request.POST)
 
         if form.is_valid():
-            form.save()
+            chat = form.save()
+            LiveChatUser.objects.create(user=request.user, live_chat=chat)
             return redirect("live-chat-list")
     else:
         form = LiveChatForm()
     return render(request, "chat/create-live-chat.html", {"form": form})
 
 
+@login_required
 def leave_chat(request, chat_id):
     chat = get_object_or_404(LiveChat, id=chat_id)
 
