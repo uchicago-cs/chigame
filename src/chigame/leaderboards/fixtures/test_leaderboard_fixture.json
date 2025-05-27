@@ -30,15 +30,6 @@
   }
 },
 {
-  "model": "leaderboards.region",
-  "pk": 1,
-  "fields": {
-    "continent": "North America",
-    "country": "United States",
-    "region": "Midwest"
-  }
-},
-{
   "model": "users.user",
   "pk": 1,
   "fields": {
@@ -446,8 +437,7 @@
   "fields": {
     "leaderboard": 1,
     "user": 1,
-    "rank": 1,
-    "region": 1
+    "rank": 1
   }
 },
 {
@@ -456,8 +446,7 @@
   "fields": {
     "leaderboard": 1,
     "user": 2,
-    "rank": 2,
-    "region": 1
+    "rank": 2
   }
 },
 {
@@ -466,8 +455,7 @@
   "fields": {
     "leaderboard": 1,
     "user": 3,
-    "rank": 3,
-    "region": 1
+    "rank": 3
   }
 },
 {
@@ -476,8 +464,7 @@
   "fields": {
     "leaderboard": 2,
     "user": 1,
-    "rank": 2,
-    "region": 1
+    "rank": 2
   }
 },
 {
@@ -486,8 +473,7 @@
   "fields": {
     "leaderboard": 2,
     "user": 2,
-    "rank": 3,
-    "region": 1
+    "rank": 3
   }
 },
 {
@@ -496,8 +482,7 @@
   "fields": {
     "leaderboard": 2,
     "user": 3,
-    "rank": 1,
-    "region": 1
+    "rank": 1
   }
 },
 {
@@ -506,8 +491,7 @@
   "fields": {
     "leaderboard": 3,
     "user": 1,
-    "rank": 3,
-    "region": 1
+    "rank": 3
   }
 },
 {
@@ -516,8 +500,7 @@
   "fields": {
     "leaderboard": 3,
     "user": 2,
-    "rank": 1,
-    "region": 1
+    "rank": 1
   }
 },
 {
@@ -526,8 +509,7 @@
   "fields": {
     "leaderboard": 3,
     "user": 3,
-    "rank": 2,
-    "region": 1
+    "rank": 2
   }
 },
 {
@@ -536,8 +518,7 @@
   "fields": {
     "leaderboard": 4,
     "user": 1,
-    "rank": 3,
-    "region": 1
+    "rank": 3
   }
 },
 {
@@ -546,8 +527,7 @@
   "fields": {
     "leaderboard": 4,
     "user": 2,
-    "rank": 1,
-    "region": 1
+    "rank": 1
   }
 },
 {
@@ -556,8 +536,7 @@
   "fields": {
     "leaderboard": 4,
     "user": 3,
-    "rank": 2,
-    "region": 1
+    "rank": 2
   }
 },
 {
@@ -566,8 +545,7 @@
   "fields": {
     "leaderboard": 5,
     "user": 1,
-    "rank": 2,
-    "region": 1
+    "rank": 2
   }
 },
 {
@@ -576,8 +554,7 @@
   "fields": {
     "leaderboard": 5,
     "user": 2,
-    "rank": 3,
-    "region": 1
+    "rank": 3
   }
 },
 {
@@ -586,8 +563,7 @@
   "fields": {
     "leaderboard": 5,
     "user": 3,
-    "rank": 1,
-    "region": 1
+    "rank": 1
   }
 },
 {
@@ -596,8 +572,7 @@
   "fields": {
     "leaderboard": 6,
     "user": 1,
-    "rank": 1,
-    "region": 1
+    "rank": 1
   }
 },
 {
@@ -606,8 +581,7 @@
   "fields": {
     "leaderboard": 6,
     "user": 2,
-    "rank": 2,
-    "region": 1
+    "rank": 2
   }
 },
 {
@@ -616,8 +590,7 @@
   "fields": {
     "leaderboard": 6,
     "user": 3,
-    "rank": 3,
-    "region": 1
+    "rank": 3
   }
 },
 {
@@ -626,8 +599,7 @@
   "fields": {
     "leaderboard": 7,
     "user": 1,
-    "rank": 1,
-    "region": 1
+    "rank": 1
   }
 },
 {
@@ -636,8 +608,7 @@
   "fields": {
     "leaderboard": 7,
     "user": 2,
-    "rank": 3,
-    "region": 1
+    "rank": 3
   }
 },
 {
@@ -646,8 +617,7 @@
   "fields": {
     "leaderboard": 7,
     "user": 3,
-    "rank": 2,
-    "region": 1
+    "rank": 2
   }
 },
 {
@@ -656,8 +626,7 @@
   "fields": {
     "leaderboard": 8,
     "user": 1,
-    "rank": 2,
-    "region": 1
+    "rank": 2
   }
 },
 {
@@ -666,8 +635,7 @@
   "fields": {
     "leaderboard": 8,
     "user": 2,
-    "rank": 1,
-    "region": 1
+    "rank": 1
   }
 },
 {
@@ -676,8 +644,7 @@
   "fields": {
     "leaderboard": 8,
     "user": 3,
-    "rank": 3,
-    "region": 1
+    "rank": 3
   }
 },
 {
@@ -686,8 +653,7 @@
   "fields": {
     "leaderboard": 9,
     "user": 1,
-    "rank": 3,
-    "region": 1
+    "rank": 3
   }
 },
 {
@@ -696,8 +662,7 @@
   "fields": {
     "leaderboard": 9,
     "user": 2,
-    "rank": 2,
-    "region": 1
+    "rank": 2
   }
 },
 {
@@ -706,8 +671,7 @@
   "fields": {
     "leaderboard": 9,
     "user": 3,
-    "rank": 1,
-    "region": 1
+    "rank": 1
   }
 },
 {
