@@ -3,20 +3,20 @@
 {% load static %}
 
 {% block title %}
-  My Details:
+  User Details: {{ object.username }}
 {% endblock title %}
 {% block content %}
-  <div class="container">
-    <div class="row">
-      <div class="col-sm-12">
-        <h2>My Account:</h2>
-      </div>
-    </div>
+  <style>
+    .full-container {
+      margin-bottom: 30px;
+    }
+  </style>
+  <div class="container full-container">
     {% if object == request.user %}
       <!-- Action buttons -->
       <style>
         .list-item {
-          margin-bottom: 25px;
+          margin-bottom: 5px;
           list-style-type: none;
         }
 
@@ -57,6 +57,7 @@
           margin-left: 10px;
         }
       </style>
+      <h1>My Account</h1>
       <div class="row">
         <div class="col-sm-12">
           <ul>
@@ -107,18 +108,20 @@
             {% if object.is_staff %}
               <li class="list-item">
                 Users:
-                <a class="btn btn-primary"
+                <a class="btn btn-primary btn-sm update-button"
                    href="{% url 'users:user-list' %}"
                    role="button">List of Users</a>
               </li>
             {% endif %}
           </ul>
         </div>
+        <h1>My Password</h1>
+        <a href="{% url 'account_change_password' %}"
+           class="btn btn-primary btn-sm slim-btn">Change Password</a>
       </div>
     {% else %}
       <!-- Display a message or take a different action -->
       <p>This account does not belong to you. Access is forbidden.</p>
     {% endif %}
-    <!-- End Action buttons -->
   </div>
 {% endblock content %}
