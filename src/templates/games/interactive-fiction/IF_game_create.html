@@ -14,6 +14,10 @@
       padding: 0 1rem;
     }
 
+    .required-asterisk {
+      color: red;
+    }
+
     h1,
     h3 {
       text-align: left;
@@ -399,14 +403,18 @@
   <form method="post" enctype="multipart/form-data" id="game_form">
     {% csrf_token %}
     <div>
-      <label for="id_name">Game Name:</label>
+      <label for="id_name">
+        Game Name:<span class="required-asterisk">*</span>
+      </label>
       <input type="text"
              id="id_name"
              value="{{ form.name.value|default_if_none:'' }}"
              required />
     </div>
     <div>
-      <label for="id_author">Author Name:</label>
+      <label for="id_author">
+        Author Name:<span class="required-asterisk">*</span>
+      </label>
       <input type="text"
              name="author"
              id="id_author"
@@ -414,8 +422,12 @@
              required />
     </div>
     <div>
-      <label for="id_description">Description:</label>
-      <textarea name="description" id="id_description" required>{{ form.description.value|default_if_none:'' }}</textarea>
+      <label for="id_description">
+        Description:<span class="required-asterisk">*</span>
+      </label>
+      <textarea name="description" id="id_description" required>
+            {{ form.description.value }}
+        </textarea>
     </div>
     <div>
       <label for="id_genre">Genre:</label>
@@ -530,7 +542,9 @@
       </label>
     </div>
     <hr />
-    <h3>Upload Game Files</h3>
+    <h3>
+      Upload Game Files<span class="required-asterisk">*</span>
+    </h3>
     <div class="upload-zone" data-input-id="myFile">
       Drag &amp; drop a file here
       <br />
