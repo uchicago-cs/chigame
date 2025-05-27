@@ -595,10 +595,10 @@ function movePiece(piece, moveX, moveY) {
   clearLastMoveHighlights();
   // highlight the original tile
   const originHighlight = checkers.scene.scenes[0].add.rectangle(
-    MARGIN + piece.x * TILE_SIZE + TILE_SIZE / 2,
-    MARGIN + piece.y * TILE_SIZE + TILE_SIZE / 2,
-    TILE_SIZE,
-    TILE_SIZE,
+    margin + piece.x * tile_size + tile_size / 2,
+    margin + piece.y * tile_size + tile_size / 2,
+    tile_size,
+    tile_size,
     COLORS.orange,
     0.3
   );
@@ -650,10 +650,10 @@ function movePiece(piece, moveX, moveY) {
 
   // Highlight destination tile
   const destHighlight = checkers.scene.scenes[0].add.rectangle(
-    MARGIN + moveX * TILE_SIZE + TILE_SIZE / 2,
-    MARGIN + moveY * TILE_SIZE + TILE_SIZE / 2,
-    TILE_SIZE,
-    TILE_SIZE,
+    margin + moveX * tile_size + tile_size / 2,
+    margin + moveY * tile_size + tile_size / 2,
+    tile_size,
+    tile_size,
     COLORS.orange,
     0.3
   );
@@ -731,7 +731,7 @@ function endTurn(scene) {
     turn.textContent = 'Black';
     dot.style.backgroundColor = colorblindMode ? COLORS.strBlue: COLORS.strBlack;
   }
-}
+
 
   // reset draw offer if it was made by the current player
   if (drawOffered && drawOfferedBy === currentPlayer) {
@@ -746,7 +746,7 @@ function endTurn(scene) {
     gameOverPrompts.classList.remove('show');
     drawBtn.textContent = 'Offer Draw';
     declineDrawBtn.style.display = 'none';
-  }
+  }}
 
 // helper function to clear all the highlighted tiles
 function clearHighlightedTiles() {
@@ -905,7 +905,7 @@ function executeJumpChain(piece, jump) {
     gameOverMessage.classList.remove('show');
     gameOverPrompts.classList.remove('show');
     drawBtn.textContent = 'Offer Draw';
-    declineDrawBtn.style.display = 'none';
+    declineDrawBtn.style.display = 'none';}
   updateScore();
   checkGameOver();
 
@@ -1601,5 +1601,4 @@ function endGameOnTimeout(winnerColor) {
   document.getElementById('playAgainPrompt').style.display = 'block';
   document.getElementById('drawBtn').style.display = 'none';
   document.getElementById('forfeitBtn').style.display = 'none';
-}
 }
