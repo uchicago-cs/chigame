@@ -4,8 +4,7 @@
   <button class="btn btn-sm btn-light w-100" onclick="replyToMessage()">Reply</button>
   <button class="btn btn-sm btn-light w-100"
           onclick="editMessage(replyToMessageId, replyToContent)">Edit Message</button>
-  <button class="btn btn-sm btn-light w-100" onclick="reactToMessage()">React to Message</button>
-  <button class="btn btn-sm btnlight w-100" onclick="reactToMessage('❤️')">Add Reactions</button>
+  <button class="btn btn-sm btn-light w-100" onclick="reactToMessage('❤️')">❤️ React to Message</button>
   <button class="btn btn-sm btn-danger w-100"
           onclick="deleteMessage()"
           title="Delete Message">Delete Message</button>
@@ -131,8 +130,15 @@
   /**
    * Reacts to a message on the frontend.
    */
-  function reactToMessage(content = "❤️") {
-    const messageId = replyToMessageId;
+  function reactToMessage(content = "❤️", messageId = null) {
+    if (!messageId) {
+      messageId = replyToMessageId;
+    }
+
+    if (!messageId) {
+      console.error("No messageId available for reaction.");
+      return;
+    }
     replyToMessageId = null;
     replyToUsername = null;
     replyToContent = null;
@@ -258,10 +264,5 @@
         existing.remove();
       }
     }
-  }
-
-  function pinningMessage() {
-    hideContextMenu();
-
   }
 </script>
