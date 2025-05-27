@@ -14,6 +14,33 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
+  // Achievement description expansion
+  document.querySelectorAll('.achievement-desc').forEach(function (desc) {
+    if (desc.textContent.trim().length < 25) return;
+    const actualHeight = desc.scrollHeight;
+    const computedHeight = desc.clientHeight;
+    const hasOverflow = actualHeight > computedHeight * 1.25;
+
+    if (hasOverflow) {
+      const ellipsis = document.createElement('span');
+      const expandButton = document.createElement('span');
+      expandButton.className = 'expand-button';
+      expandButton.innerHTML = '↓';
+      expandButton.setAttribute('aria-label', 'Expand description');
+
+      desc.parentNode.insertBefore(ellipsis, desc.nextSibling);
+      desc.parentNode.insertBefore(expandButton, ellipsis.nextSibling);
+
+      expandButton.addEventListener('click', function (e) {
+        e.stopPropagation();
+        const achievement = this.closest('.achievement');
+        const isExpanded = achievement.classList.toggle('expanded');
+        this.innerHTML = isExpanded ? '↑' : '↓';
+        ellipsis.style.display = isExpanded ? 'none' : 'inline';
+      });
+    }
+  });
+
   // Direct and simple tab switching implementation
   document.querySelectorAll('.nav-tabs li').forEach(function (tab) {
     tab.addEventListener('click', function (event) {
@@ -53,6 +80,73 @@ document.addEventListener('DOMContentLoaded', function () {
       element.style.width = progressValue + '%';
     }
   });
+
+  // Enhanced Search and Filter Functionality
+  const searchBox = document.getElementById('searchBox');
+  const statusFilter = document.getElementById('statusFilter'); // Get the new dropdown
+
+  function applyAchievementFilters() {
+    const searchText = searchBox.value.toLowerCase();
+    const selectedStatus = statusFilter.value; // Will be 'all', 'completed', 'in-progress', or 'not-started'
+    const gameCards = document.querySelectorAll('.game-card');
+
+    gameCards.forEach(function (card) {
+      let hasVisibleAchievementsInThisCard = false;
+      const achievementsInCard = card.querySelectorAll('.achievement');
+
+      achievementsInCard.forEach(function (achievementDiv) {
+        const titleElement = achievementDiv.querySelector('.achievement-info h4');
+        const descElement = achievementDiv.querySelector('.achievement-info .achievement-desc');
+
+        // Get the game name for this card
+        const gameNameElement = card.querySelector('.game-title');
+        const gameNameText = gameNameElement ? gameNameElement.textContent.toLowerCase() : '';
+
+        // Get text content, accounting for "???" spoilers
+        const titleText = titleElement ? titleElement.textContent.toLowerCase() : '';
+        const descText = descElement ? descElement.textContent.toLowerCase() : '';
+
+        // Check text match
+        let textSearchSucceeded = true; // Assume true if search box is empty
+        if (searchText !== '') {
+          textSearchSucceeded = titleText.includes(searchText) ||
+                     descText.includes(searchText) ||
+                     gameNameText.includes(searchText);
+        }
+        let statusFilterSucceeded = false;
+        if (selectedStatus === 'all') {
+          statusFilterSucceeded = true;
+        } else if (selectedStatus === 'completed') {
+          statusFilterSucceeded = achievementDiv.classList.contains('completed');
+        } else if (selectedStatus === 'in-progress') {
+          statusFilterSucceeded = achievementDiv.classList.contains('in-progress');
+        } else if (selectedStatus === 'not-started') {
+          statusFilterSucceeded = achievementDiv.classList.contains('not-started');
+        }
+
+        // Show/hide achievement based on both criteria
+        if (textSearchSucceeded && statusFilterSucceeded) {
+          achievementDiv.style.display = 'flex'; // Default display for .achievement is flex
+          hasVisibleAchievementsInThisCard = true;
+        } else {
+          achievementDiv.style.display = 'none';
+        }
+      });
+
+      // Show/hide the entire game card based on whether it has any visible achievements
+      if (hasVisibleAchievementsInThisCard) {
+        card.style.display = 'block';
+      } else {
+        card.style.display = 'none';
+      }
+    });
+  }
+
+  // Add event listeners to both search box and status filter
+  if (searchBox && statusFilter) {
+    searchBox.addEventListener('input', applyAchievementFilters);
+    statusFilter.addEventListener('change', applyAchievementFilters);
+  }
 
   // Pin button functionality
   const pinButtons = document.querySelectorAll('.pin-button');
@@ -190,7 +284,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     <p class="achievement-date">
                     ${
                       unlockedDate && unlockedDate !== 'Not yet unlocked'
-                        ? 'Unlocked on ' + unlockedDate : 'Not yet unlocked'
+                        ? 'Unlocked on ' + unlockedDate
+                        : 'Not yet unlocked'
                     }
                     </p>
                   </div>

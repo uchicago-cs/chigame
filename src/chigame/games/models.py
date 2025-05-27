@@ -1,9 +1,14 @@
 import random
+import secrets
+import string
+from datetime import timedelta
 
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models, transaction
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from django.utils import timezone
 
 from chigame.users.models import Group, Notification, User
@@ -31,6 +36,7 @@ class Game(models.Model):
     min_players = models.PositiveIntegerField()
     max_players = models.PositiveIntegerField()
 
+    game_url = models.URLField(blank=True, null=True, help_text="URL for embedded games (e.g., external web games)")
     # interactive fiction  - twine file
     twine_file = models.FileField(upload_to="twine_games/", null=True, blank=True)
 
@@ -180,22 +186,74 @@ class Lobby(models.Model):
     game = models.ForeignKey(Game, on_delete=models.CASCADE)
     game_mod_status = models.PositiveSmallIntegerField(choices=MODS, default=1)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    invited_members = models.ManyToManyField(User, related_name="invited_lobbies", blank=True)
     members = models.ManyToManyField(User, related_name="lobbies")
     min_players = models.PositiveIntegerField()
     max_players = models.PositiveIntegerField()
     time_constraint = models.PositiveIntegerField(default=300)
     lobby_created = models.DateTimeField(default=timezone.now)
+    # implementation of match functionality: join lobby by code
+    join_code = models.CharField(max_length=6, unique=True, blank=True, null=True)
 
-    # ================ VALIDATION ================
+    # ================ VALIDATON ================
+    def generate_unique_code(self, length=6):
+        """
+        Generates a unique code for users to enter lobby associated with a specific match.
+        """
+        characters = string.ascii_uppercase + string.digits
+        while True:
+            code = "".join(secrets.choice(characters) for _ in range(length))
+            if not Lobby.objects.filter(join_code=code).exists():
+                return code
+
     def clean(self):
         # Ensures min_players is not greater than max_players
         if self.min_players > self.max_players:
             raise ValidationError({"min_players": "min_players cannot be greater than max_players"})
 
+    # Adding a class method to check the old version of the instacnce from the model
+    @classmethod
+    def from_db(cls, db, field_names, values):
+        instance = super().from_db(db, field_names, values)
+        instance._loaded_values = dict(zip(field_names, values))
+        return instance
+
     def save(self, *args, **kwargs):
-        # Calls full_clean to run all validations before saving
+        # generate unique join code if it doesn't exist
+        if not self.join_code:
+            self.join_code = self.generate_unique_code()
+
         self.full_clean()
+        creating = self._state.adding
+        old_status = None
+
+        if not creating and hasattr(self, "_loaded_values"):
+            old_status = self._loaded_values.get("match_status")
+
         super().save(*args, **kwargs)
+
+        match = getattr(self, "match", None)
+        if not match:
+            return
+
+        players = match.players.all()
+
+        # When the match status changes from Lobbied to In-Progress
+        if old_status != 2 and self.match_status == 2:
+            # Create GameHistory objects for all players in the match
+            for user in players:
+                GameHistory.objects.get_or_create(
+                    user=user, match=match, defaults={"is_completed": False, "result": None}
+                )
+
+        # When the match status changes from In-Progress to Finished
+        if old_status == 2 and self.match_status == 3:
+            for user in players:
+                try:
+                    player = Player.objects.get(user=user, match=match)
+                    GameHistory.objects.filter(user=user, match=match).update(is_completed=True, result=player.outcome)
+                except Player.DoesNotExist:
+                    continue
 
 
 class Match(models.Model):
@@ -207,6 +265,11 @@ class Match(models.Model):
     lobby = models.OneToOneField(Lobby, on_delete=models.CASCADE)
     date_played = models.DateTimeField()
     players = models.ManyToManyField(User, through="Player")
+    # a
+    start_time = models.DateTimeField(null=True, blank=True)
+    end_time = models.DateTimeField(null=True, blank=True)
+    duration = models.DurationField(null=True, blank=True)
+    average_rating = models.DecimalField(max_digits=3, decimal_places=2, null=True, blank=True)
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
@@ -214,6 +277,35 @@ class Match(models.Model):
         for player in self.players.all():
             self.game.users.add(player)
         self.game.save()
+
+    # a
+    def calculate_duration(self):
+        """duration of the match if start and end times are set"""
+        if self.start_time and self.end_time:
+            self.duration = self.end_time - self.start_time
+            self.save()
+
+    @classmethod
+    def get_fastest_match(cls):
+        """fastest completed match"""
+        return cls.objects.exclude(duration=None).order_by("duration").first()
+
+    @classmethod
+    def get_slowest_match(cls):
+        """slowest completed match"""
+        return cls.objects.exclude(duration=None).order_by("-duration").first()
+
+    @classmethod
+    def get_average_match_duration(cls):
+        """average duration of all completed matches"""
+        matches = cls.objects.exclude(duration=None)
+        if matches:
+            total_duration = sum(match.duration for match in matches)
+            return total_duration / matches.count()
+        return None
+
+
+# a
 
 
 class Player(models.Model):
@@ -239,6 +331,8 @@ class Player(models.Model):
     role = models.TextField(blank=True, null=True)
     outcome = models.PositiveSmallIntegerField(choices=OUTCOMES, blank=True, null=True)
     victory_type = models.TextField(blank=True, null=True)
+    # Addedum player performance
+    rating = models.DecimalField(max_digits=3, decimal_places=2, null=True, blank=True)
 
 
 class MatchProposal(models.Model):
@@ -412,7 +506,15 @@ class Tournament(models.Model):
             for bracket in brackets:
                 assert isinstance(bracket, Match)
                 bracket_users = bracket.players.all()
-                bracket_players = [Player.objects.get(user=user, match=bracket) for user in bracket_users]
+
+                # a Get all players for each user in the bracket
+                bracket_players = []
+                for user in bracket_users:
+                    players = Player.objects.filter(user=user, match=bracket)
+                    if players.exists():
+                        # Use the most recent player record if multiple exist
+                        bracket_players.append(players.latest("id"))
+                # a
                 bracket_with_outcome = any(player.outcome is not None for player in bracket_players)
                 if not bracket_with_outcome:  # the match has not finished
                     for player in bracket_players:
@@ -538,7 +640,15 @@ class Tournament(models.Model):
             # get the winners of the previous round
             assert isinstance(bracket, Match)
             bracket_users = bracket.players.all()
-            bracket_players = [Player.objects.get(user=user, match=bracket) for user in bracket_users]
+            # bracket_players = [Player.objects.get(user=user, match=bracket) for user in bracket_users]
+            # a Get all players for each user in the bracket
+            bracket_players = []
+            for user in bracket_users:
+                players = Player.objects.filter(user=user, match=bracket)
+                if players.exists():
+                    # Use the most recent player record if multiple exist
+                    bracket_players.append(players.latest("id"))
+            # a
             bracket_winners = [
                 player.user for player in bracket_players if player.outcome == Player.WIN
             ]  # allow multiple winners
@@ -547,10 +657,8 @@ class Tournament(models.Model):
                 winners.append(winner)
 
         self.winners.set(winners)
-        self.matches.clear()
+        # a self.matches.clear()
         self.save()
-
-        # Note: we don't delete the tournament because we want to keep it in the database
 
     def tournament_sign_up(self, user: User) -> int:
         """
@@ -606,6 +714,74 @@ class Tournament(models.Model):
         self.players.remove(user)
         self.save()
         return 0
+
+    # a
+    def get_tournament_statistics(self):
+        """
+        Calculate and return various statistics about the tournament.
+        Returns a dictionary containing:
+        - average_duration: Average duration of all completed matches
+        - fastest_match: The match with the shortest duration
+        - slowest_match: The match with the longest duration
+        - average_rating: Average rating of all completed matches
+        - total_matches: Total number of matches in the tournament
+        - completed_matches: Number of completed matches
+        """
+        matches = self.matches.all()
+
+        # Calculate average duration
+        completed_matches = [m for m in matches if m.duration is not None]
+        avg_duration = None
+        if completed_matches:
+            try:
+                # Convert all durations to seconds first
+                total_seconds = sum(m.duration.total_seconds() for m in completed_matches)
+                avg_seconds = total_seconds / len(completed_matches)
+                avg_duration = timedelta(seconds=avg_seconds)
+            except (AttributeError, TypeError):
+                avg_duration = None
+
+        # Get fastest and slowest matches
+        fastest_match = None
+        slowest_match = None
+        if completed_matches:
+            try:
+                fastest_match = min(completed_matches, key=lambda x: x.duration.total_seconds())
+                slowest_match = max(completed_matches, key=lambda x: x.duration.total_seconds())
+            except (AttributeError, TypeError):
+                pass
+
+        # Calculate average rating based on completed matches
+        avg_rating = None
+        if completed_matches:
+            try:
+                total_rating = 0
+                total_ratings_count = 0
+                for match in completed_matches:
+                    # Get all players in the match
+                    players = Player.objects.filter(match=match)
+                    # Sum up all non-None ratings
+                    match_ratings = [p.rating for p in players if p.rating is not None]
+                    if match_ratings:
+                        total_rating += sum(match_ratings)
+                        total_ratings_count += len(match_ratings)
+
+                if total_ratings_count > 0:
+                    avg_rating = total_rating / total_ratings_count
+            except (TypeError, ValueError):
+                avg_rating = None
+
+        return {
+            "average_duration": avg_duration,
+            "fastest_match": fastest_match,
+            "slowest_match": slowest_match,
+            "average_rating": avg_rating,
+            "total_matches": matches.count(),
+            "completed_matches": len(completed_matches),
+        }
+
+
+# a
 
 
 class Feedback(models.Model):
@@ -712,6 +888,7 @@ class Message(models.Model):
 
 class Review(models.Model):
     "Represents a game review"
+
     title = models.TextField(blank=True, null=True)
     review = models.TextField(blank=True, null=True)
     rating = models.DecimalField(
@@ -768,6 +945,55 @@ class GameData(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.game.name}: {self.key}"
+
+
+class GameHistory(models.Model):
+    """
+    Used to store the history of completed or in-progress matches.
+    Matches in unstarted lobbies are not included.
+    """
+
+    WIN = 0
+    DRAW = 1
+    LOSE = 2
+    INCOMPLETE = 3
+
+    OUTCOMES = (
+        (WIN, "win"),
+        (DRAW, "draw"),
+        (LOSE, "lose"),
+        (INCOMPLETE, "incomplete"),
+    )
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="game_history_entries")
+    match = models.ForeignKey(Match, on_delete=models.CASCADE, related_name="game_history_entries")
+    date_played = models.DateTimeField(auto_now_add=True)
+    is_completed = models.BooleanField()
+    result = models.PositiveSmallIntegerField(choices=OUTCOMES, blank=True, null=True)
+
+    class Meta:
+        unique_together = ("user", "match")
+        verbose_name_plural = "Game History"
+
+    def __str__(self):
+        return f"History: Match {self.match.id} played by {self.user} completed {self.is_completed}"
+
+
+@receiver(post_save, sender=Lobby)
+def update_match_timing(sender, instance, **kwargs):
+    try:
+        match = Match.objects.get(lobby=instance)
+        if instance.match_status == Lobby.Viewable and not match.start_time:
+            # Match is starting
+            match.start_time = timezone.now()
+            match.save()
+        elif instance.match_status == Lobby.Finished and not match.end_time:
+            # Match is ending
+            match.end_time = timezone.now()
+            match.save()
+            match.calculate_duration()
+    except Match.DoesNotExist:
+        pass  # No match exists yet for this lobby
 
 
 # ================ CHECKERS =================
