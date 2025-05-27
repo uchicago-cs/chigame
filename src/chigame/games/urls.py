@@ -42,6 +42,7 @@ urlpatterns = [
     # interactive fiction
     path("interactive-fiction/", views.IFGameCreateView.as_view(), name="interactive-fiction-create"),
     path("<int:pk>/upload/", UploadFileView.as_view(), name="upload-file"),
+    path("upload/", UploadFileView.as_view(), name="user-game-upload"),
     path("if-game/<int:pk>/", InteractiveFictionDetailView.as_view(), name="interactive-fiction-detail"),
     # tournaments
     path("tournaments/", views.TournamentListView.as_view(), name="tournament-list"),
@@ -55,6 +56,7 @@ urlpatterns = [
     # placeholder game
     path("lobby/<int:pk>/coinflip", views.coin_flip_game, name="placeholder-game"),
     path("<int:pk>/", views.GameDetailView.as_view(), name="game-detail"),
+    path("<int:pk>/play-twine/", views.play_twine_game, name="play-twine-game"),
     # tournament feedback
     path("tournaments/<int:tournament_id>/feedback/", views.tournament_feedback_list, name="tournament-feedback-list"),
     path("tournaments/<int:tournament_id>/feedback/submit/", views.submit_feedback, name="submit-feedback"),
