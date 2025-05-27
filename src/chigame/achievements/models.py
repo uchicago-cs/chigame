@@ -1,5 +1,6 @@
 import copy
 
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 
@@ -121,12 +122,30 @@ class UserAchievement(models.Model):
     achievement = models.ForeignKey(Achievement, on_delete=models.CASCADE)
     pinned = models.BooleanField(default=False)
     date_earned = models.DateTimeField(null=True, blank=True)
-    last_updated = models.DateTimeField(auto_now_add=True)
+    last_updated = models.DateTimeField(null=True, blank=True)
     progress = models.FloatField(null=True, blank=True, default=1)
     # progress can be updated if achievement has a threshold
 
     def __str__(self):
         return f"{self.user} - {self.achievement}"
+
+    def clean(self):
+        if self.date_earned and (self.last_updated is None or self.date_earned > self.last_updated):
+            # If the date earned is added, that constitutes an update that should be reflected in last_updated
+            self.last_updated = self.date_earned
+        elif self.date_earned and self.date_earned < self.last_updated:
+            # It's not clear how this scenario would come about
+            raise ValidationError({"self.date_earned": "date_earned cannot be before last_updated"})
+        elif self.last_updated is None:
+            # If last_updated is not set, we set it to now
+            self.last_updated = timezone.now()
+        if self.progress < 0:
+            raise ValidationError({"self.progress": "progress must be positive"})
+
+    def save(self, *args, **kwargs):
+        # This approach was borrowed from games/models.py
+        self.full_clean()
+        super().save(*args, **kwargs)
 
     class Meta:
         unique_together = ("user", "achievement")
