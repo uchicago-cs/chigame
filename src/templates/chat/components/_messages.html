@@ -86,6 +86,22 @@
     color: #666;
   }
 
+
+  .highlight-reply {
+    animation: highlightFlash 1.0s ease-in-out;
+    background-color: #eaeaea !important;
+  }
+
+  @keyframes highlightFlash {
+    from {
+      background-color: #eaeaea;
+    }
+
+    to {
+      background-color: inherit;
+    }
+  }
+
   .context-menu {
     position: fixed;
     background-color: white;
@@ -138,7 +154,7 @@
              oncontextmenu="showContextMenu(event, '{{ message.id }}', '{{ message.user.username }}', '{{ message.content }}'); return false;">
           <div class="chat-message {% if message.user.id == request.user.id %}chat-message--mine{% else %}chat-message--other{% endif %} rounded p-2 shadow-sm">
             {% if message.reply_to %}
-              <div class="message-reply">
+              <div class="message-reply" data-scroll-target="{{ message.reply_to.id }}">
                 <div class="message-reply__sender">{{ message.reply_to.user.username }}</div>
                 <div class="message-reply__content">{{ message.reply_to.content }}</div>
               </div>

@@ -204,4 +204,33 @@
 
     });
   }
+
+  // Smooth scroll and highlight when a quoted message is clicked
+  document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll(".message-reply").forEach((replyBox) => {
+      replyBox.addEventListener("click", () => {
+        const replyId = replyBox.dataset.scrollTarget;
+        if (!replyId) return;
+
+        const original = document.querySelector(`[data-message-id="${replyId}"]`);
+        if (original) {
+          original.scrollIntoView({
+            behavior: "smooth",
+            block: "center"
+          });
+          const innerBox = original.querySelector(".chat-message, .bg-white, .bg-success-subtle");
+          if (innerBox) {
+            innerBox.classList.add("highlight-reply");
+            setTimeout(() => innerBox.classList.remove("highlight-reply"), 1000);
+          }
+        }
+      });
+    });
+
+    // Dismiss context menu on outside click
+    document.addEventListener("click", () => {
+      const menu = document.getElementById("context-menu");
+      if (menu) menu.style.display = "none";
+    });
+  });
 </script>
