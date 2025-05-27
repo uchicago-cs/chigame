@@ -223,18 +223,20 @@
   </div>
   <!-- Fourth row of homepage -->
   <div class="d-flex flex-row justify-content-between">
-    <!-- Live Chat -->
-    <div class="homepage-block live-chat flex-grow-1">
-      <div class="d-flex flex-row justify-content-between">
-        <span>Live Chat</span>
-        <span class="d-flex flex-column justify-content-around">
-          <span class="see-more-link">
-            <a class="nav-link" href="{% url 'live-chat-list' %}">>> See all</a>
+    {% if user.is_authenticated %}
+      <!-- Live Chat -->
+      <div class="homepage-block live-chat flex-grow-1">
+        <div class="d-flex flex-row justify-content-between">
+          <span>Live Chat</span>
+          <span class="d-flex flex-column justify-content-around">
+            <span class="see-more-link">
+              <a class="nav-link" href="{% url 'live-chat-list' %}">>> See all</a>
+            </span>
           </span>
-        </span>
+        </div>
+        <div id="chatPreviewList" class="live-chat-block d-flex flex-column gap-2"></div>
       </div>
-      <div id="chatPreviewList" class="live-chat-block d-flex flex-column gap-2"></div>
-    </div>
+    {% endif %}
     <!-- Forum -->
     <div class="homepage-block forum">
       <div class="d-flex flex-row justify-content-between">
