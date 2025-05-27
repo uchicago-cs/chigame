@@ -93,14 +93,15 @@
     const escapedUsername = escapeHTML(data.username);
     const escapedMessage = escapeHTML(data.message);
 
-    messageContainer.setAttribute(
-      "oncontextmenu",
-      `showContextMenu(event, ${data.message_id}, '${escapedUsername}', '${escapedMessage}'); return false;`
-    );
     // Create message bubble
     const isMine = data.user_id === currentUserId;
     const messageBubble = document.createElement("div");
     messageBubble.className = `chat-message ${isMine ? "chat-message--mine" : "chat-message--other"}`;
+
+    messageBubble.setAttribute(
+      "oncontextmenu",
+      `showContextMenu(event, ${data.message_id}, '${escapedUsername}', '${escapedMessage}'); return false;`
+    );
 
     // Add reply preview if this is a reply
     if (data.reply_to) {
