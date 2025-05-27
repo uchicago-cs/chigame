@@ -17,7 +17,7 @@ from django.views.generic import DetailView, RedirectView, UpdateView
 from django.views.generic.edit import CreateView, DeleteView
 from django_tables2 import SingleTableView
 
-from chigame.games.models import GameList, Lobby, Player, Tournament
+from chigame.games.models import Game, GameList, Lobby, Player, Tournament
 
 from .forms import FriendInvitationForm, UserProfileForm
 from .models import (
@@ -204,8 +204,15 @@ def user_profile_detail_view(request, pk):
     if request.user.is_authenticated and request.user.pk == pk:
         # if user is accessing their own profile, create a profile if it doesn't exist
         profile = UserProfile.get_or_create_profile(request.user)
-        game_lists = GameList.objects.filter(created_by=request.user)
-        return render(request, "users/userprofile_detail.html", {"profile": profile, "game_lists": game_lists})
+        # Get favorite games from GameList system
+        favorites_list, _ = GameList.objects.get_or_create(name="Favorites", created_by=request.user)
+        favorite_games = favorites_list.games.all()
+        available_games = Game.objects.exclude(id__in=favorite_games.values_list("id", flat=True))
+        return render(
+            request,
+            "users/userprofile_detail.html",
+            {"profile": profile, "available_games": available_games, "favorite_games": favorite_games},
+        )
     else:
         # fetch another user's profile
         try:
@@ -216,14 +223,24 @@ def user_profile_detail_view(request, pk):
             else:
                 raise Http404("The user you are trying to access does not exist.")
 
+    # Get favorite games for the profile user (for viewing other users' profiles)
+    try:
+        favorites_list = GameList.objects.get(name="Favorites", created_by=profile.user)
+        favorite_games = favorites_list.games.all()
+    except GameList.DoesNotExist:
+        favorite_games = []
+
     # for checking friendship and pending friend request status
     is_friend = None
     friendship_request = None
+    is_blocked = False
     friend_request_message = None
     target_user = get_object_or_404(User, pk=pk)
     if request.user.is_authenticated:
         # check friendship or pending invitation with the target user
         is_friend = target_user.friends.filter(pk=request.user.pk).exists()
+        # check if current user has blocked the target user
+        is_blocked = request.user.blocked_users.filter(pk=target_user.pk).exists()
         if not is_friend:
             curr_user = request.user
             friendship_request = FriendInvitation.objects.get_by_users(curr_user, target_user)
@@ -236,6 +253,8 @@ def user_profile_detail_view(request, pk):
         "profile": profile,
         "is_friend": is_friend,
         "friendship_request": friendship_request,
+        "favorite_games": favorite_games,
+        "is_blocked": is_blocked,
         "friend_request_message": friend_request_message,
     }
     return render(request, "users/userprofile_detail.html", context=context)
@@ -259,6 +278,14 @@ def send_friend_invitation(request, pk):
     # fetch the current user and the target user
     curr_user = User.objects.get(pk=request.user.id)
     other_user = User.objects.get(pk=pk)
+
+    # Check if either user has blocked the other
+    if curr_user.blocked_users.filter(pk=other_user.pk).exists():
+        messages.error(request, "You have blocked this user.")
+        return redirect(reverse("users:user-profile", kwargs={"pk": pk}))
+    if other_user.blocked_users.filter(pk=curr_user.pk).exists():
+        messages.error(request, "User not found.")
+        return redirect(reverse("users:user-profile", kwargs={"pk": pk}))
 
     # if the current user and the target user are already friends, return an error
     if curr_user.friends.filter(pk=other_user.pk).exists():
@@ -874,6 +901,98 @@ def notifications_by_label(request, label_id):
         "pk": request.user.pk,
     }
     return render(request, "users/notifications_by_label.html", context)
+
+
+@login_required
+@require_POST
+def add_favorite_game(request, game_id):
+    """
+    Add a game to the user's favorite games list.
+
+    Args:
+        request (HttpRequest): The HTTP request
+        game_id (int): The ID of the game to add
+
+    Returns:
+        Redirects back to the user's profile
+    """
+    try:
+        game = Game.objects.get(id=game_id)
+        favorites_list, _ = GameList.objects.get_or_create(name="Favorites", created_by=request.user)
+        favorites_list.games.add(game)
+        messages.success(request, f"{game.name} added to your favorite games.")
+    except Game.DoesNotExist:
+        messages.error(request, "Game not found.")
+    except Exception as e:
+        messages.error(request, f"Error adding game to favorites: {str(e)}")
+
+    return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
+
+
+@login_required
+@require_POST
+def remove_favorite_game(request, game_id):
+    """
+    Remove a game from the user's favorite games list.
+
+    Args:
+        request (HttpRequest): The HTTP request
+        game_id (int): The ID of the game to remove
+
+    Returns:
+        Redirects back to the user's profile
+    """
+    try:
+        game = Game.objects.get(id=game_id)
+        favorites_list, _ = GameList.objects.get_or_create(name="Favorites", created_by=request.user)
+        favorites_list.games.remove(game)
+        messages.success(request, f"{game.name} removed from your favorite games.")
+    except Game.DoesNotExist:
+        messages.error(request, "Game not found.")
+    except Exception as e:
+        messages.error(request, f"Error removing game from favorites: {str(e)}")
+
+    return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
+
+
+@login_required
+def block_user(request, pk):
+    """
+    Block a user to prevent them from sending friend invitations.
+
+    Args:
+        request (HttpRequest)
+        pk (int): The primary key of the user to block
+
+    Returns:
+        HttpResponse: Redirects to the user's profile
+    """
+    try:
+        user_to_block = User.objects.get(pk=pk)
+        current_user = request.user
+
+        if user_to_block == current_user:
+            messages.error(request, "You cannot block yourself.")
+            return redirect(reverse("users:user-profile", kwargs={"pk": current_user.pk}))
+
+        # Remove friendship if they are friends
+        if current_user.friends.filter(pk=user_to_block.pk).exists():
+            current_user.friends.remove(user_to_block)
+
+        # Cancel any pending friend invitations between them
+        FriendInvitation.objects.filter(
+            Q(sender=current_user, receiver=user_to_block, is_deleted=False)
+            | Q(sender=user_to_block, receiver=current_user, is_deleted=False)
+        ).update(is_deleted=True)
+
+        # Block the user
+        current_user.blocked_users.add(user_to_block)
+        messages.success(request, f"You have blocked {user_to_block.name or user_to_block.email}.")
+
+    except User.DoesNotExist:
+        messages.error(request, "User not found.")
+
+    return redirect(reverse("users:user-profile", kwargs={"pk": pk}))
 
 
 @login_required
