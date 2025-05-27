@@ -2005,62 +2005,63 @@ def create_game_history_entry(user, match):
     )
 
 
-@login_required
-def game_history_view(request, game_id):
-    game = get_object_or_404(Game, id=game_id)
-    period = request.GET.get("period", "all")  # Default to "all" if no period is specified
+@method_decorator(login_required, name="dispatch")
+class GameHistoryView(View):
+    def get(self, request, game_id):
+        game = get_object_or_404(Game, id=game_id)
+        period = request.GET.get("period", "all")  # Default to "all" if no period is specified
 
-    entries = GameHistory.objects.filter(user=request.user, match__game=game)
+        entries = GameHistory.objects.filter(user=request.user, match__game=game)
 
-    if period != "all":
-        today = timezone.now().date()
-        if period == "7days":
-            start_date = today - timedelta(days=7)
-        elif period == "30days":
-            start_date = today - timedelta(days=30)
-        elif period == "3months":
-            start_date = today - timedelta(days=90)
-        elif period == "6months":
-            start_date = today - timedelta(days=180)
-        elif period == "12months":
-            start_date = today - timedelta(days=365)
-        else:  # Default to all if period is unknown
-            start_date = None
+        if period != "all":
+            today = timezone.now().date()
+            if period == "7days":
+                start_date = today - timedelta(days=7)
+            elif period == "30days":
+                start_date = today - timedelta(days=30)
+            elif period == "3months":
+                start_date = today - timedelta(days=90)
+            elif period == "6months":
+                start_date = today - timedelta(days=180)
+            elif period == "12months":
+                start_date = today - timedelta(days=365)
+            else:  # Default to all if period is unknown
+                start_date = None
 
-        if start_date:
-            entries = entries.filter(date_played__gte=start_date)
+            if start_date:
+                entries = entries.filter(date_played__gte=start_date)
 
-    entries = entries.select_related("match").order_by("-date_played")
+        entries = entries.select_related("match").order_by("-date_played")
 
-    # Calculate statistics
-    total_played = entries.count()
-    wins = entries.filter(result=GameHistory.WIN).count()
-    losses = entries.filter(result=GameHistory.LOSE).count()
-    draws = entries.filter(result=GameHistory.DRAW).count()
-    incomplete = entries.filter(result=GameHistory.INCOMPLETE).count()
+        # Calculate statistics
+        total_played = entries.count()
+        wins = entries.filter(result=GameHistory.WIN).count()
+        losses = entries.filter(result=GameHistory.LOSE).count()
+        draws = entries.filter(result=GameHistory.DRAW).count()
+        incomplete = entries.filter(result=GameHistory.INCOMPLETE).count()
 
-    win_rate = (wins / total_played) * 100 if total_played > 0 else 0
+        win_rate = (wins / total_played) * 100 if total_played > 0 else 0
 
-    context = {
-        "game": game,
-        "entries": entries,
-        "selected_period": period,
-        "total_played": total_played,
-        "wins": wins,
-        "losses": losses,
-        "draws": draws,
-        "incomplete": incomplete,
-        "win_rate": win_rate,
-        "period_options": [
-            {"value": "all", "label": "All Time"},
-            {"value": "7days", "label": "Last 7 Days"},
-            {"value": "30days", "label": "Last 30 Days"},
-            {"value": "3months", "label": "Last 3 Months"},
-            {"value": "6months", "label": "Last 6 Months"},
-            {"value": "12months", "label": "Last 12 Months"},
-        ],
-    }
-    return render(request, "games/game_history.html", context)
+        context = {
+            "game": game,
+            "entries": entries,
+            "selected_period": period,
+            "total_played": total_played,
+            "wins": wins,
+            "losses": losses,
+            "draws": draws,
+            "incomplete": incomplete,
+            "win_rate": win_rate,
+            "period_options": [
+                {"value": "all", "label": "All Time"},
+                {"value": "7days", "label": "Last 7 Days"},
+                {"value": "30days", "label": "Last 30 Days"},
+                {"value": "3months", "label": "Last 3 Months"},
+                {"value": "6months", "label": "Last 6 Months"},
+                {"value": "12months", "label": "Last 12 Months"},
+            ],
+        }
+        return render(request, "games/game_history.html", context)
 
 
 class MatchStatsView(DetailView):
