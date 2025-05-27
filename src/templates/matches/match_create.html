@@ -1,38 +1,58 @@
 {% extends "base.html" %}
 
 {% load static %}
+{% load widget_tweaks %}
 
 {% block content %}
-  <div class="container my-5">
-    <h1 class="mb-4">Create Match</h1>
-    <form method="post" class="needs-validation" novalidate>
-      {% csrf_token %}
-      <div class="row g-3">
-        <!-- Date Played -->
-        <div class="col-md-6 mb-3">
-          <label for="{{ form.date_played.id_for_label }}" class="form-label">Date Played</label>
-          {{ form.date_played }}
-          {% if form.date_played.errors %}<div class="text-danger">{{ form.date_played.errors }}</div>{% endif %}
-        </div>
-        <!-- Players selection -->
-        <div class="col-12 mb-3">
-          <label for="{{ form.players.id_for_label }}" class="form-label">Players</label>
-          {{ form.players }}
-          {% if form.players.errors %}<div class="text-danger">{{ form.players.errors }}</div>{% endif %}
-          <small class="text-muted">Hold Ctrl/Cmd to select multiple players</small>
-        </div>
-        <!-- Submit button -->
-        <div class="col-12 mt-4">
-          <button type="submit" class="btn btn-primary">Save</button>
-        </div>
+  <style>
+    .maroon-header {
+      background-color: #800000;
+      color: white;
+      font-weight: bold;
+      font-size: 1.75rem;
+    }
+
+    .maroon-btn {
+      background-color: #800000;
+      color: white;
+      border: none;
+    }
+
+    .maroon-btn:hover {
+      background-color: #660000;
+    }
+  </style>
+  <div class="container py-5">
+    <div class="card shadow-sm col-md-6 mx-auto">
+      <div class="card-header text-center maroon-header">
+        <h2 class="text-white mb-0">Create a New Match</h2>
       </div>
-    </form>
+      <div class="card-body px-4">
+        <form method="post" novalidate>
+          {% csrf_token %}
+          <div class="mb-4">
+            <label for="{{ form.date_played.id_for_label }}" class="form-label">Date Played</label>
+            {{ form.date_played|add_class:"form-control"|attr:"type:date" }}
+            {% if form.date_played.errors %}<div class="text-danger mt-1">{{ form.date_played.errors }}</div>{% endif %}
+          </div>
+          <div class="mb-4">
+            <label for="{{ form.players.id_for_label }}" class="form-label">Select Players</label>
+            {{ form.players|add_class:"form-control" }}
+            {% if form.players.errors %}<div class="text-danger mt-1">{{ form.players.errors }}</div>{% endif %}
+            <div class="form-text">Hold Ctrl (Windows) or ⌘ (Mac) to select multiple players</div>
+          </div>
+          <div class="d-grid">
+            <button type="submit" class="btn maroon-btn w-100 mt-3">Create Match</button>
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
-  {% block extra_css %}
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-          rel="stylesheet" />
-  {% endblock extra_css %}
-  {% block extra_js %}
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  {% endblock extra_js %}
 {% endblock content %}
+{% block extra_css %}
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+        rel="stylesheet" />
+{% endblock extra_css %}
+{% block extra_js %}
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+{% endblock extra_js %}
