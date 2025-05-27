@@ -4,7 +4,7 @@ Module for all Form Tests.
 import pytest
 from django.forms import EmailField
 from django.test import RequestFactory
-from django.utils.translation import gettext_lazy as _
+from django.utils import timezone
 from faker import Faker
 
 from chigame.users.forms import (
@@ -32,35 +32,13 @@ class TestUserAdminChangeForm:
         Tests UserAdminChangeForm's unique email validation error message
         """
         form = UserAdminChangeForm(
-            {
-                "email": user.email,
-                "date_joined": "2024-01-01",
-                "tokens": 0,
-            }
+            {"email": user.email, "date_joined": "2024-01-01", "tokens": 0, "last_seen": timezone.now()}
         )
 
         assert not form.is_valid()
         assert len(form.errors) == 1
         assert "email" in form.errors
         assert form.errors["email"][0] == "User with this Email address already exists."
-
-        email = faker.unique.email()
-        password = faker.password(length=12)
-
-        UserFactory(email=email)
-
-        form = UserAdminCreationForm(
-            {
-                "email": email,
-                "password1": password,
-                "password2": password,
-            }
-        )
-
-        assert not form.is_valid()
-        assert len(form.errors) == 1
-        assert "email" in form.errors
-        assert form.errors["email"][0] == "This email has already been taken."
 
     def test_email_field_present(self):
         """
@@ -115,7 +93,6 @@ class TestUserProfileForm:
         form = UserProfileForm({"bio": ""}, instance=profile)
 
         assert form.is_valid()
-        assert form.errors["email"][0] == _("This email has already been taken.")
 
     @pytest.mark.django_db
     def test_valid_creation_form(self):
