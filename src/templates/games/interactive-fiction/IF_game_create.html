@@ -90,6 +90,10 @@
       margin-top: 0;
     }
 
+    .spacer-block {
+      margin-bottom: 70px;
+    }
+
     .upload-zone {
       border: 2px dashed #bbb;
       border-radius: 4px;
@@ -618,6 +622,7 @@
         Game Name:<span class="required-asterisk">*</span>
       </label>
       <input type="text"
+             name="name"
              id="id_name"
              value="{{ form.name.value }}"
              required
@@ -839,4 +844,5 @@
       </div>
     </div>
   </div>
+  <div class="spacer-block"></div>
 {% endblock content %}
