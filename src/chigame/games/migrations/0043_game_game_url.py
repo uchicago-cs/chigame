@@ -9,11 +9,12 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AddField(
-            model_name="game",
-            name="game_url",
-            field=models.URLField(
-                blank=True, help_text="URL for embedded games (e.g., external web games)", null=True
-            ),
-        ),
+        # Field already added in 0042_game_game_url - removing duplicate
+        # migrations.AddField(
+        #     model_name="game",
+        #     name="game_url",
+        #     field=models.URLField(
+        #         blank=True, help_text="URL for embedded games (e.g., external web games)", null=True
+        #     ),
+        # ),
     ]
