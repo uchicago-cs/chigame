@@ -1,9 +1,7 @@
-from django.conf import settings
-from django.conf.urls.static import static
 from django.urls import path
 
 from . import views
-from .views import InteractiveFictionView, LobbyCreateView, UploadFileView
+from .views import InteractiveFictionDetailView, LobbyCreateView, UploadFileView
 
 urlpatterns = [
     # lobbies
@@ -21,8 +19,8 @@ urlpatterns = [
     path("tournaments/<int:pk>/chat/", views.TournamentChatDetailView, name="tournament-chat"),
     # Games favorites
     path("favorites/", views.FavoriteListView.as_view(), name="favorite-list"),
-    path("<int:pk>/favorite/", views.add_to_favorites, name="add-to-favorites"),
-    path("<int:pk>/unfavorite/", views.remove_from_favorites, name="remove-from-favorites"),
+    path("favorite-games/add/<int:game_id>/", views.add_to_favorites, name="add-to-favorites"),
+    path("favorite-games/remove/<int:game_id>/", views.remove_from_favorites, name="remove-from-favorites"),
     # custom game list handling
     path("gamelists/<int:pk>/", views.GameListDetailView.as_view(), name="gamelist-detail"),
     path("<int:pk>/gamelists/<int:list_pk>/add/", views.add_to_gamelist, name="add-to-gamelist"),
@@ -30,15 +28,21 @@ urlpatterns = [
     # games
     path("", views.GameListView.as_view(), name="game-list"),
     path("create/", views.GameCreateView.as_view(), name="game-create"),
+    path("<int:pk>/delete/", views.GameDeleteView.as_view(), name="game-delete"),
     path("<int:pk>/edit", views.GameEditView.as_view(), name="game-edit"),
     path("bgg_search_by_name/", views.bgg_search_by_name, name="bgg_search_by_name"),
     path("search/", views.search_results, name="game-search-results"),
     path("<int:pk>/reviews/", views.ReviewListView.as_view(), name="game-review-list"),
     path("games/<int:pk>/review/", views.add_review, name="add-review"),
+    # matches
+    path("<int:pk>/match/create/", views.MatchCreateView.as_view(), name="match-create"),
+    path("<int:pk>/match/join/", views.join_match, name="match-join"),
+    path("games/<int:game_id>/history/", views.game_history_view, name="game_history"),
+    path("lobby/<int:pk>/code/", views.MatchCodeView.as_view(), name="match-code"),
     # interactive fiction
-    path("interactive-fiction/", views.InteractiveFictionView.as_view(), name="interactive-fiction"),
+    path("interactive-fiction/", views.IFGameCreateView.as_view(), name="interactive-fiction-create"),
     path("<int:pk>/upload/", UploadFileView.as_view(), name="upload-file"),
-    path("if-game/<int:pk>/", InteractiveFictionView.as_view(), name="interactive-fiction-detail"),
+    path("if-game/<int:pk>/", InteractiveFictionDetailView.as_view(), name="interactive-fiction-detail"),
     # tournaments
     path("tournaments/", views.TournamentListView.as_view(), name="tournament-list"),
     path("tournaments/<int:pk>/", views.TournamentDetailView.as_view(), name="tournament-detail"),
@@ -46,6 +50,8 @@ urlpatterns = [
     path("tournaments/<int:pk>/update/", views.TournamentUpdateView.as_view(), name="tournament-update"),
     path("tournaments/<int:pk>/delete/", views.TournamentDeleteView.as_view(), name="tournament-delete"),
     path("tournaments/archived/", views.TournamentArchivedListView.as_view(), name="tournament-archived"),
+    # an addedum
+    path("tournaments/<int:pk>/match-stats/", views.MatchStatsView.as_view(), name="tournament-match-stats"),
     # placeholder game
     path("lobby/<int:pk>/coinflip", views.coin_flip_game, name="placeholder-game"),
     path("<int:pk>/", views.GameDetailView.as_view(), name="game-detail"),
@@ -67,7 +73,14 @@ urlpatterns = [
     path("checkers/<int:pk>/", views.checkers_game_view, name="checkers-game"),
     path("checkers/<int:board_id>/update/", views.checkers_game_update_board_state, name="update_board_state"),
     path("checkers/<int:board_id>/state/", views.checkers_game_get_board_state, name="checkers-get-state"),
+    # tournament feedback
+    path("tournaments/<int:tournament_id>/feedback/", views.tournament_feedback_list, name="tournament-feedback-list"),
+    path("tournaments/<int:tournament_id>/feedback/submit/", views.submit_feedback, name="submit-feedback"),
+    path("<int:pk>/play/", views.play_embedded_game, name="play-embedded-game"),
+    # tournament recommendations
+    path(
+        "tournaments/<int:tournament_id>/recommendations/",
+        views.get_tournament_player_recommendations,
+        name="tournament-recommendations",
+    ),
 ]
-# for an uploaded twine file this makes the files accessible at a url
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
