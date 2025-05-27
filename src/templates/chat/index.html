@@ -58,12 +58,8 @@
       const configElement = document.getElementById("profanity-config");
       const profanityEnabled = configElement.dataset.enabled === "true";
       const profanityWords = JSON.parse(configElement.dataset.words || "[]");
-      const currentUserId = {
-        {
-          request.user.id
-        }
-      };
     </script>
+    <div id="chat-context" data-user-id="{{ request.user.id }}"></div>
     {% include "chat/components/_script.html" %}
   </div>
 {% endblock content %}

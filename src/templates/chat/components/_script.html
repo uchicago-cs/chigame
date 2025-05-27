@@ -2,6 +2,9 @@
   let replyToMessageId = null;
   let replyToUsername = null;
   let replyToContent = null;
+  const contextEl = document.getElementById("chat-context");
+  const currentUserId = parseInt(contextEl.dataset.userId, 10);
+
   const protocol = window.location.protocol === "https:" ? "wss://" : "ws://";
   const chatId = "{{ chat.id }}";
   const chatSocket = new WebSocket(
