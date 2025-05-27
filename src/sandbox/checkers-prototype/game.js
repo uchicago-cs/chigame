@@ -659,9 +659,9 @@ function movePiece(piece, moveX, moveY) {
   );
   lastMoveHighlights.push(destHighlight);
   // Play move sound effect
-  piece.sprite.scene.sound.play('slide');
+  piece.sprite.scene.sound.play('slide', { volume: volumeAmount });
   //console.log('Current board state:', getBoardState());
-  piece.sprite.scene.sound.play('slide');
+  piece.sprite.scene.sound.play('slide', { volume: volumeAmount });
 }
 
 // Check if the game is over due to all pieces of one color being captured
@@ -949,7 +949,7 @@ function executeJumpChain(piece, jump) {
     }
   }
 
-  piece.sprite.scene.sound.play('slide');
+  piece.sprite.scene.sound.play('slide', { volume: volumeAmount });
 }
 
 // Retrieves a 2D array representation of the board state where 0 are unoccupied
