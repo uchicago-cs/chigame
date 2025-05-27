@@ -1,24 +1,83 @@
 {% extends "base.html" %}
 
 {% block content %}
-  <div class="container">
-    <h1>Live Chats</h1>
-    <div class="search-container mb-3">
-      <input type="text"
-             id="search-input"
-             class="form-control"
-             placeholder="Search public chats..."
-             value="{{ request.GET.q|default:'' }}" />
+  <div class="container mt-4 pb-5">
+    <div class="container mt-4">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="mb-4">Chats</h1>
+        <a href="{% url 'create-live-chat' %}" class="btn btn-primary">+ Create new chat</a>
+      </div>
     </div>
-    <ul class="list-group">
-      {% for chat in chats %}
-        <li class="list-group-item">
-          <a href="{% url 'chat-page' chat.id %}">{{ chat.name }}</a>
-        </li>
-      {% endfor %}
+    <!-- Nav Tabs -->
+    <ul class="nav nav-tabs" id="chatTabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active"
+                id="public-tab"
+                data-bs-toggle="tab"
+                data-bs-target="#public"
+                type="button"
+                role="tab">Public</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link"
+                id="private-tab"
+                data-bs-toggle="tab"
+                data-bs-target="#private"
+                type="button"
+                role="tab">Private</button>
+      </li>
     </ul>
+    <!-- Tab Content -->
+    <div class="tab-content mt-3">
+      <!-- Public Chats -->
+      <div class="tab-pane fade show active" id="public" role="tabpanel">
+        <div class="search-container mb-3">
+          <input type="text"
+                 id="search-input"
+                 class="form-control"
+                 placeholder="Search public chats..."
+                 value="{{ request.GET.q|default:'' }}" />
+        </div>
+        {% include "chat/components/_chat_list.html" with chats=public_chats %}
+      </div>
+      <!-- Private Chats -->
+      <div class="tab-pane fade" id="private" role="tabpanel">
+        {% include "chat/components/_chat_list.html" with chats=private_chats %}
+      </div>
+    </div>
+    <!-- Leave Chat Confirmation Modal -->
+    <div class="modal fade"
+         id="confirmLeaveModal"
+         tabindex="-1"
+         aria-labelledby="confirmLeaveModalLabel"
+         aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Leave Chat</h5>
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="modal"
+                    aria-label="Close"></button>
+          </div>
+          <div class="modal-body">Are you sure you want to leave this chat?</div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-danger" id="confirmLeaveBtn">Leave</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
   <script>
+    let selectedChatId = null;
+
+    function confirmLeaveChat(element) {
+      selectedChatId = element.dataset.chatId;
+      const modal = new bootstrap.Modal(document.getElementById('confirmLeaveModal'));
+      modal.show();
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
       const searchInput = document.getElementById('search-input');
 
@@ -40,20 +99,63 @@
           currentUrl.searchParams.delete('q');
         }
 
-        window.history.pushState({}, '', currentUrl);
 
-        // Filter the chat list
-        const chatItems = document.querySelectorAll('.list-group-item');
+        window.history.pushState({}, '', currentUrl);
+        const chatItems = document.querySelectorAll('#public .list-group-item');
         chatItems.forEach(item => {
-          const chatName = item.textContent.toLowerCase();
-          if (chatName.includes(searchQuery.toLowerCase())) {
-            item.style.display = '';
+          const nameEl = item.querySelector('h5');
+          const chatName = nameEl?.textContent.trim().toLowerCase() || '';
+          const match = chatName.includes(searchQuery.toLowerCase());
+
+          if (match) {
+            item.classList.remove('d-none');
           } else {
-            item.style.display = 'none';
+            item.classList.add('d-none');
           }
         });
       });
       searchInput.addEventListener('input', handleSearchInput);
+
+      const leaveBtn = document.getElementById("confirmLeaveBtn");
+      if (leaveBtn) {
+        leaveBtn.addEventListener("click", function() {
+          if (selectedChatId) {
+            window.location.href = `/chat/live-chat-list/leave/${selectedChatId}/`;
+          }
+        });
+      }
+    });
+    document.getElementById("profanityToggleBtn").addEventListener("click", function() {
+      fetch("{% url 'toggle-profanity' %}", {
+          method: "POST",
+          headers: {
+            "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value,
+            "X-Requested-With": "XMLHttpRequest"
+          }
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            // Reload the page so the chat view is re-rendered
+            location.reload();
+          }
+        });
+    });
+    document.getElementById("profanityToggleBtn").addEventListener("click", function() {
+      fetch("{% url 'toggle-profanity' %}", {
+          method: "POST",
+          headers: {
+            "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value,
+            "X-Requested-With": "XMLHttpRequest"
+          }
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            // Reload the page so the chat view is re-rendered
+            location.reload();
+          }
+        });
     });
   </script>
 {% endblock content %}
