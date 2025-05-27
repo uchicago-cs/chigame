@@ -108,6 +108,13 @@
       display: none;
     }
 
+    .char-counter {
+      font-size: 0.85rem;
+      color: #555;
+      text-align: right;
+      margin-top: 0.25rem;
+    }
+
     .label-add-wrapper {
       margin-top: 0.75rem;
       display: flex;
@@ -486,6 +493,24 @@
         });
       });
 
+      // Character counter logic
+      const counters = document.querySelectorAll('[data-maxlength]');
+      counters.forEach(input => {
+        const max = input.getAttribute('maxlength');
+        const counter = document.createElement('div');
+        counter.className = 'char-counter';
+        input.parentNode.appendChild(counter);
+
+        const updateCounter = () => {
+          const len = input.value.length;
+          const percent = (len / max) * 100;
+          counter.textContent = `${len}/${max} characters`;
+          counter.style.color = percent >= 90 ? 'red' : '#555';
+        };
+
+        input.addEventListener('input', updateCounter);
+        updateCounter();
+      });
       // Confirmation modal logic
       const realSubmitBtn = document.getElementById('real_submit_btn');
       const modal = document.getElementById('confirmation_modal');
@@ -582,8 +607,10 @@
       </label>
       <input type="text"
              id="id_name"
-             value="{{ form.name.value|default_if_none:'' }}"
-             required />
+             value="{{ form.name.value }}"
+             required
+             maxlength="50"
+             data-maxlength />
     </div>
     <div>
       <label for="id_author">
@@ -593,15 +620,19 @@
              name="author"
              id="id_author"
              value="{{ form.author.value|default_if_none:'' }}"
-             required />
+             required
+             maxlength="50"
+             data-maxlength />
     </div>
     <div>
       <label for="id_description">
         Description:<span class="required-asterisk">*</span>
       </label>
-      <textarea name="description" id="id_description" required>
-            {{ form.description.value }}
-        </textarea>
+      <textarea name="description"
+                id="id_description"
+                required
+                maxlength="500"
+                data-maxlength>{{ form.description.value }}</textarea>
     </div>
     <div>
       <label for="id_genre">Genre:</label>
@@ -613,6 +644,13 @@
       </select>
     </div>
     <div>
+      <label for="id_content_warnings">Content Warnings</label>
+      <input type="text"
+             name="content_warnings"
+             id="id_content_warnings"
+             value="{{ form.content_warnings.value }}"
+             maxlength="250"
+             data-maxlength />
       <label for="id_labels">Game Labels:</label>
       <select id="id_labels" name="labels" multiple>
         <optgroup label="Tone & Mood">
@@ -674,7 +712,12 @@
     </div>
     <div>
       <label for="id_rules">Rules:</label>
-      <textarea name="rules" id="id_rules" placeholder="Enter the rules" rows="4">{{ form.rules.value|default_if_none:'' }}</textarea>
+      <textarea name="rules"
+                id="id_rules"
+                placeholder="Enter the rules"
+                rows="4"
+                maxlength="500"
+                data-maxlength>{{ form.rules.value }}</textarea>
     </div>
     <div>
       <label for="id_year_published">Year Published:</label>
@@ -686,7 +729,11 @@
     </div>
     <div>
       <label for="id_content_warning">Content Warning (optional):</label>
-      <textarea name="content_warning" id="id_content_warning" rows="3">{{ form.content_warning.value|default_if_none:'' }}</textarea>
+      <textarea name="content_warning"
+                id="id_content_warning"
+                rows="3"
+                maxlength="250"
+                data-maxlength>{{ form.content_warning.value }}</textarea>
     </div>
     <div>
       <label for="id_image">Cover Image</label>
