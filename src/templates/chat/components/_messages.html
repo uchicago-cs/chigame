@@ -157,7 +157,19 @@
               {% endif %}
             </div>
             <div class="text-end text-muted small mt-1">{{ message.sent_at|date:"g:i A" }}</div>
-            <div class="message-reactions mt-1" id="reactions-{{ message.id }}"></div>
+            <div class="message-reactions mt-1"
+                 id="reactions-{{ message.id }}"
+                 data-message-id="{{ message.id }}">
+              {% for reaction in message.reaction_summary %}
+                <span class="reaction-pill"
+                      data-reaction="{{ reaction.content }}"
+                      data-message-id="{{ message.id }}"
+                      title="Click to react/unreact">
+                  {{ reaction.content }}
+                  <span class="reaction-count">{{ reaction.count }}</span>
+                </span>
+              {% endfor %}
+            </div>
           </div>
           {% if message.edited %}<div class="text-end text-muted small mt-1 fst-italic">(edited)</div>{% endif %}
         </div>
