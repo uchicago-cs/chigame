@@ -86,6 +86,10 @@
       margin-top: 0;
     }
 
+    .spacer-block {
+         margin-bottom: 70px;
+    }
+
     .upload-zone {
       border: 2px dashed #bbb;
       border-radius: 4px;
@@ -393,6 +397,7 @@
     <div>
       <label for="id_name">Game Name:</label>
       <input type="text"
+                name = "name"
              id="id_name"
              value="{{ form.name.value|default_if_none:'' }}"
              required />
@@ -549,4 +554,5 @@
       </div>
     </div>
   </div>
+  <div class="spacer-block"></div>
 {% endblock content %}
