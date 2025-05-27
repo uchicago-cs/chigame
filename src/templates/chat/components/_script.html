@@ -2,6 +2,9 @@
   let replyToMessageId = null;
   let replyToUsername = null;
   let replyToContent = null;
+  const contextEl = document.getElementById("chat-context");
+  const currentUserId = parseInt(contextEl.dataset.userId, 10);
+
   const protocol = window.location.protocol === "https:" ? "wss://" : "ws://";
   const chatId = "{{ chat.id }}";
   const chatSocket = new WebSocket(
@@ -89,20 +92,16 @@
     messageContainer.setAttribute("data-message-id", data.message_id);
     const escapedUsername = escapeHTML(data.username);
     const escapedMessage = escapeHTML(data.message);
-    messageContainer.setAttribute("oncontextmenu", `showContextMenu(event, ${data.message_id}, '${escapedUsername}', '${escapedMessage}'); return false;`);
 
-    messageContainer.setAttribute(
+    // Create message bubble
+    const isMine = data.user_id === currentUserId;
+    const messageBubble = document.createElement("div");
+    messageBubble.className = `chat-message ${isMine ? "chat-message--mine" : "chat-message--other"}`;
+
+    messageBubble.setAttribute(
       "oncontextmenu",
       `showContextMenu(event, ${data.message_id}, '${escapedUsername}', '${escapedMessage}'); return false;`
     );
-    // Create message bubble
-    const messageBubble = document.createElement("div");
-    messageBubble.className = `${
-      data.user_id === "{{ request.user.id }}"
-        ? "bg-success-subtle"
-        : "bg-white"
-    } rounded p-2 shadow-sm`;
-    messageBubble.style.maxWidth = "80%";
 
     // Add reply preview if this is a reply
     if (data.reply_to) {
@@ -203,4 +202,33 @@
 
     });
   }
+
+  // Smooth scroll and highlight when a quoted message is clicked
+  document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll(".message-reply").forEach((replyBox) => {
+      replyBox.addEventListener("click", () => {
+        const replyId = replyBox.dataset.scrollTarget;
+        if (!replyId) return;
+
+        const original = document.querySelector(`[data-message-id="${replyId}"]`);
+        if (original) {
+          original.scrollIntoView({
+            behavior: "smooth",
+            block: "center"
+          });
+          const innerBox = original.querySelector(".chat-message, .bg-white, .bg-success-subtle");
+          if (innerBox) {
+            innerBox.classList.add("highlight-reply");
+            setTimeout(() => innerBox.classList.remove("highlight-reply"), 1000);
+          }
+        }
+      });
+    });
+
+    // Dismiss context menu on outside click
+    document.addEventListener("click", () => {
+      const menu = document.getElementById("context-menu");
+      if (menu) menu.style.display = "none";
+    });
+  });
 </script>
