@@ -63,6 +63,18 @@ urlpatterns = [
     path("labels/create/", views.create_notification_label, name="create-notification-label"),
     path("labels/<int:label_id>/notifications/", views.notifications_by_label, name="notifications-by-label"),
     path("inbox/<int:pk>/<str:category>/", views.user_inbox_view, name="user-inbox-category"),
+    path("labels/manage/", views.manage_labels_page_view, name="manage-labels-page"),
+    path(
+        "notifications/<int:notification_id>/assign-label/",
+        views.assign_label_to_notification,
+        name="assign-label-to-notification",
+    ),
+    path(
+        "notification/<int:notification_id>/unassign-label/<int:label_id>/",
+        views.unassign_label_from_notification,
+        name="unassign-label-from-notification",
+    ),
+    path("labels/<int:label_id>/delete/", views.delete_notification_label, name="delete-notification-label"),
     path("<int:pk>/recommendation-preferences/", views.recommendation_preferences, name="recommendation-preferences"),
     path("achievements", user_achievements, name="user-achievements"),
     path("achievements/<int:game_id>", user_achievements, name="user-achievements-game"),
