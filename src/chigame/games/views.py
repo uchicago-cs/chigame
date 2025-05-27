@@ -1817,18 +1817,18 @@ def add_review(request, pk):
 
 
 @login_required
-def add_to_favorites(request, pk):
+def add_to_favorites(request, game_id):
     """Add a game to the current user's 'Favorites' list."""
-    game = get_object_or_404(Game, pk=pk)
+    game = get_object_or_404(Game, pk=game_id)
     favorites_list, _ = GameList.objects.get_or_create(name="Favorites", created_by=request.user)
     favorites_list.games.add(game)
     return redirect("favorite-list")
 
 
 @login_required
-def remove_from_favorites(request, pk):
+def remove_from_favorites(request, game_id):
     """Remove a game from the current user's 'Favorites' list."""
-    game = get_object_or_404(Game, pk=pk)
+    game = get_object_or_404(Game, pk=game_id)
     try:
         favorites_list = GameList.objects.get(name="Favorites", created_by=request.user)
         favorites_list.games.remove(game)
