@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block title %}
+  Group Details
+{% endblock title %}
+{% block content %}
+  <div class="container">
+    <div class="row">
+      <div class="col-sm-12">
+        <h2>Group Details:</h2>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-sm-12">
+        <h3>{{ object.name }}</h3>
+        <p>Group ID: {{ object.id }}</p>
+        <p>Description: {{ object.description }}</p>
+        <p>Created on: {{ object.created_at }}</p>
+        <p>Members:</p>
+        <ul>
+          {% for member in object.members.all %}<li>{{ member.username }}</li>{% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+{% endblock content %}

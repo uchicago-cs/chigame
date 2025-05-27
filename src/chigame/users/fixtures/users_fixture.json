@@ -117,11 +117,20 @@
   }
 },
 {
+    "model": "users.userprofile",
+    "pk": 1,
+    "fields": {
+      "user": 1,
+      "bio": "A brief bio for the superuser",
+      "date_joined": "2023-10-30T03:31:56.761Z"
+    }
+  },
+{
   "model": "users.userprofile",
   "pk": 2,
   "fields": {
     "user": 2,
-    "bio": "Casual gamer and friend",
+    "bio": "A brief bio about User One",
     "date_joined": "2023-10-30T03:21:40.213Z"
   }
 },
@@ -130,7 +139,7 @@
   "pk": 3,
   "fields": {
     "user": 3,
-    "bio": "Competitive player",
+    "bio": "A brief bio about User Two",
     "date_joined": "2023-10-30T03:22:35.174Z"
   }
 },
@@ -139,7 +148,7 @@
   "pk": 4,
   "fields": {
     "user": 4,
-    "bio": "New to gaming but loving it",
+    "bio": "A brief bio about User Three",
     "date_joined": "2023-10-30T03:24:37.723Z"
   }
 },
@@ -148,7 +157,7 @@
   "pk": 5,
   "fields": {
     "user": 5,
-    "bio": "Veteran gamer and strategist",
+    "bio": "A brief bio about User Four",
     "date_joined": "2023-10-30T03:24:56.555Z"
   }
 },
@@ -157,8 +166,8 @@
   "pk": 6,
   "fields": {
     "user": 6,
-    "bio": "Gaming enthusiast and community member",
-    "date_joined": "2023-10-30T03:25:56.555Z"
+    "bio": "A brief bio about User Five",
+    "date_joined": "2023-10-30T03:25:12.630Z"
   }
 },
 {
@@ -258,6 +267,36 @@
     "accepted": false,
     "timestamp": "2023-10-30T03:36:00.000Z",
     "is_deleted": false
+  }
+},
+{
+  "model": "users.group",
+  "pk": 1,
+  "fields": {
+    "name": "Default Group",
+    "description": "This is a default group for users.",
+    "created_by": 1,
+    "date_created": "2023-10-30T03:31:56.761Z"
+  }
+},
+{
+  "model": "users.group",
+  "pk": 2,
+  "fields": {
+    "name": "Adventure Gamers",
+    "description": "This is a group for people that love adventure games.",
+    "created_by": 1,
+    "date_created": "2023-10-30T03:31:56.761Z"
+  }
+},
+{
+  "model": "users.group",
+  "pk": 3,
+  "fields": {
+    "name": "Generic Word Game Lovers",
+    "description": "This is a group for people that love generic word game.",
+    "created_by": 1,
+    "date_created": "2023-10-30T03:31:56.761Z"
   }
 }
 ]
