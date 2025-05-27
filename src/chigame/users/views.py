@@ -146,10 +146,14 @@ def user_history(request, pk):
             - tournament_wins: The number of tournaments the user has won
 
     Raises:
-        Http404: If the requested user profile does not exist
+        Http404: If the requested user profile does not exist or if the requesting user is blocked
     """
     try:
         user = User.objects.get(pk=pk)
+
+        # Check if the target user has blocked the requesting user
+        if request.user.is_authenticated and user.blocked_users.filter(pk=request.user.pk).exists():
+            raise Http404("The user you are trying to access does not exist.")
 
         match_count = Lobby.objects.filter(match_status=3, members__in=[user]).count()
         match_wins = Player.objects.filter(Q(user=user, outcome=Player.WIN) | Q(team=user, outcome=Player.WIN)).count()
@@ -200,7 +204,7 @@ def user_profile_detail_view(request, pk):
               to current user or current user to target user)
 
     Raises:
-        Http404: If the requested user profile does not exist
+        Http404: If the requested user profile does not exist or if the requesting user is blocked
     """
     if request.user.is_authenticated and request.user.pk == pk:
         # if user is accessing their own profile, create a profile if it doesn't exist
@@ -224,6 +228,11 @@ def user_profile_detail_view(request, pk):
             else:
                 raise Http404("The user you are trying to access does not exist.")
 
+    # Check if the target user has blocked the requesting user
+    target_user = get_object_or_404(User, pk=pk)
+    if request.user.is_authenticated and target_user.blocked_users.filter(pk=request.user.pk).exists():
+        raise Http404("The user you are trying to access does not exist.")
+
     # Get favorite games for the profile user (for viewing other users' profiles)
     try:
         favorites_list = GameList.objects.get(name="Favorites", created_by=profile.user)
@@ -236,7 +245,6 @@ def user_profile_detail_view(request, pk):
     friendship_request = None
     is_blocked = False
     friend_request_message = None
-    target_user = get_object_or_404(User, pk=pk)
     if request.user.is_authenticated:
         # check friendship or pending invitation with the target user
         is_friend = target_user.friends.filter(pk=request.user.pk).exists()

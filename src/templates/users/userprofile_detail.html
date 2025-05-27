@@ -281,6 +281,9 @@
                     <a href="{% url 'users:recommendation-preferences' profile.user.pk %}"
                        class="btn btn-maroon">Recommendation Preferences</a>
                   </div>
+                  <div class="d-flex justify-content-center align-items-center mt-1">
+                    <a href="{% url 'users:blocked-users-list' %}" class="btn btn-maroon">Blocked Users</a>
+                  </div>
                   <div class="d-flex justify-content-center align-items-center mt-4">
                     <form method="post"
                           action="{% url 'users:toggle-profanity' profile.user.pk %}">
