@@ -344,6 +344,7 @@ REST_FRAMEWORK = {
     "PAGE_SIZE": 10,
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
     ],
 }
 
@@ -405,14 +406,12 @@ MACHINA_DEFAULT_AUTHENTICATED_USER_FORUM_PERMISSIONS = [
     "can_download_file",
 ]
 
-# Updated project to allow media uploads such as for
-# background images in chat
-
-MEDIA_URL = "/media/"
-
-MEDIA_ROOT = Path.home() / "Downloads"
-
 # CHANNELS
 # ------------------------------------------------------------------------------
 # https://channels.readthedocs.io/en/stable/topics/channel_layers.html
 CHANNEL_LAYERS = {"default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}}
+
+
+# for interactive fiction -  game hosting media url
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
