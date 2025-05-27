@@ -1042,6 +1042,7 @@ def toggle_profanity(request, pk):
     return redirect(reverse("users:user-profile", kwargs={"pk": pk}))
 
 
+@login_required
 @require_POST
 def add_favorite_game(request, game_id):
     """
