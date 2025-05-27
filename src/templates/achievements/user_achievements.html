@@ -55,23 +55,57 @@
              data-progress="{{ overall_stats.progress|floatformat:1 }}"></div>
       </div>
     </div>
-    <div class="recent-achievements-tab">Recent Achievements</div>
-    <div class="recent-achievements-box">
-      <div class="recent-achievements-content">
-        {% for user_achievement in recent_achievements %}
-          <div class="recent-achievement-item">
-            <div>
-              <span class="recent-achievement-name">{{ user_achievement.achievement.name }}</span>
-              <span class="recent-achievement-game">in {{ user_achievement.achievement.game.name }}</span>
+    <div class="filter-bar">
+      <input type="text"
+             id="searchBox"
+             class="search-box search-input"
+             placeholder="Search games or achievements..." />
+      <div class="status-filter-container">
+        <label for="statusFilter" class="status-filter-label">Status:</label>
+        <select id="statusFilter" class="form-select status-filter-select">
+          <option value="all">All</option>
+          <option value="completed">Completed</option>
+          <option value="in-progress">In Progress</option>
+          <option value="not-started">Not Started</option>
+        </select>
+      </div>
+      <div class="recent-achievements-tab">Recent Achievements</div>
+      <div class="recent-achievements-box">
+        <div class="recent-achievements-content">
+          {% for user_achievement in recent_achievements %}
+            <div class="recent-achievement-item">
+              <div>
+                <span class="recent-achievement-name">{{ user_achievement.achievement.name }}</span>
+                <span class="recent-achievement-game">in {{ user_achievement.achievement.game.name }}</span>
+              </div>
+              <span class="recent-achievement-time"
+                    title="{{ user_achievement.date_earned|date:"F j, Y, g:i a" }}">
+                {{ user_achievement.date_earned|timesince }} ago
+              </span>
             </div>
-            <span class="recent-achievement-time"
-                  title="{{ user_achievement.date_earned|date:"F j, Y, g:i a" }}">
-              {{ user_achievement.date_earned|timesince }} ago
-            </span>
-          </div>
-        {% empty %}
-          <p>No recent achievements found.</p>
-        {% endfor %}
+          {% empty %}
+            <p>No recent achievements found.</p>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="recent-achievements-tab">Recent Achievements</div>
+      <div class="recent-achievements-box">
+        <div class="recent-achievements-content">
+          {% for user_achievement in recent_achievements %}
+            <div class="recent-achievement-item">
+              <div>
+                <span class="recent-achievement-name">{{ user_achievement.achievement.name }}</span>
+                <span class="recent-achievement-game">in {{ user_achievement.achievement.game.name }}</span>
+              </div>
+              <span class="recent-achievement-time"
+                    title="{{ user_achievement.date_earned|date:"F j, Y, g:i a" }}">
+                {{ user_achievement.date_earned|timesince }} ago
+              </span>
+            </div>
+          {% empty %}
+            <p>No recent achievements found.</p>
+          {% endfor %}
+        </div>
       </div>
     </div>
     <ul class="nav-tabs">
@@ -97,7 +131,7 @@
               </div>
               <div class="achievements-list">
                 {% for achievement in game_data.achievements %}
-                  <div class="achievement {% if achievement.rarity == 1 %}common{% endif %} {% if achievement.rarity == 2 %}uncommon{% endif %} {% if achievement.rarity == 3 %}rare{% endif %} {% if achievement.rarity == 4 %}precious{% endif %} {% if not achievement.is_unlocked_for_template %}not-unlocked{% endif %} {% if achievement.spoiler and not achievement.is_unlocked_for_template %}hidden{% endif %} {% if achievement.pinned_for_template %}pinned{% endif %}"
+                  <div class="achievement {% if achievement.rarity == 1 %}common{% endif %} {% if achievement.rarity == 2 %}uncommon{% endif %} {% if achievement.rarity == 3 %}rare{% endif %} {% if achievement.rarity == 4 %}precious{% endif %} {% if achievement.status_for_template == 'not_started' %}not-started{% endif %} {% if achievement.status_for_template == 'in_progress' %}in-progress{% endif %} {% if achievement.status_for_template == 'completed' %}completed{% endif %} {% if achievement.spoiler and achievement.status_for_template != 'completed' %}hidden{% endif %} {% if achievement.pinned_for_template %}pinned{% endif %}"
                        data-achievement-id="{{ achievement.id }}">
                     <div class="achievement-icon">
                       <span class="trophy-icon">
@@ -106,13 +140,14 @@
                       </span>
                     </div>
                     <div class="achievement-info">
-                      <h4>
+                      <h4 class="achievement-title">
                         {% if achievement.spoiler and not achievement.is_unlocked_for_template %}
                           ??? Secret achievement
                         {% else %}
                           {{ achievement.name }}
                         {% endif %}
                       </h4>
+                      <span class="achievement-percent">{{ achievement.percent_of_players }}% of players</span>
                       <p class="achievement-desc">
                         {% if achievement.spoiler and not achievement.is_unlocked_for_template %}
                           ??? Secret achievement
@@ -133,7 +168,6 @@
                         {% endif %}
                       </p>
                     </div>
-                    <span class="achievement-percent">{{ achievement.percent_of_players }}% of players</span>
                     <button class="pin-button {% if achievement.pinned_for_template %}active{% endif %}"
                             data-achievement-id="{{ achievement.id }}">📌</button>
                     {% if achievement.threshold and achievement.progress_for_template %}
@@ -153,7 +187,7 @@
           {% endfor %}
         </div>
       </div>
-      <!-- Second tab content -->
+      <!-- Second tab content: Pinned -->
       <div id="pinned-achievements">
         <h3>Pinned Achievements</h3>
         <div class="achievements-list">
@@ -167,7 +201,7 @@
                 </span>
               </div>
               <div class="achievement-info">
-                <h4>{{ user_achievement.achievement.name }}</h4>
+                <h5>{{ user_achievement.achievement.name }}</h5>
                 <p class="achievement-desc">
                   {{ user_achievement.achievement.description }} in {{ user_achievement.achievement.game.name }}
                 </p>
