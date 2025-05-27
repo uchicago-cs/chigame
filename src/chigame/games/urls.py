@@ -37,13 +37,11 @@ urlpatterns = [
     path("queue/", views.QueueListView.as_view(), name="queue-list"),
     path("queue/add/<int:game_id>/", views.add_to_queue, name="add-to-queue"),
     path("queue/remove/<int:game_id>/", views.remove_from_queue, name="remove-from-queue"),
-
     # matches
     path("<int:pk>/match/create/", views.MatchCreateView.as_view(), name="match-create"),
     path("<int:pk>/match/join/", views.join_match, name="match-join"),
     path("games/<int:game_id>/history/", views.game_history_view, name="game_history"),
     path("lobby/<int:pk>/code/", views.MatchCodeView.as_view(), name="match-code"),
-
     # interactive fiction
     path("interactive-fiction/", views.IFGameCreateView.as_view(), name="interactive-fiction-create"),
     path("if-game/<int:pk>/", InteractiveFictionDetailView.as_view(), name="interactive-fiction-detail"),
