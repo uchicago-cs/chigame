@@ -6,6 +6,8 @@ urlpatterns = [
     path("", views.landing_page_view, name="leaderboards_landing"),
     path("<int:game_id>/", views.leaderboard_view, name="leaderboard_view"),
     path("bar-chart/<int:game_id>/", views.bar_chart, name="bar_chart"),
+    path("bar-chart/time-played/<int:game_id>/", views.top_time_played_bar_chart, name="top_time_played_bar_chart"),
+    path("bar-chart/games-won/<int:game_id>/", views.top_games_won_bar_chart, name="top_games_won_bar_chart"),
     # ======== Privacy Settings ========
     # list all privacy settings for the current user
     path("privacy/", views.privacy_setting_list, name="privacy-list"),
