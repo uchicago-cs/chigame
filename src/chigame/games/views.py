@@ -23,8 +23,7 @@ from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.utils.timezone import now
-from django.views import View
-from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
+from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView, View
 from django.views.generic.edit import FormMixin
 from rest_framework import status
 from rest_framework.decorators import api_view
@@ -169,7 +168,7 @@ class GameCreateView(UserPassesTestMixin, CreateView):
     # Ensure the uploaded Twine .html file is saved to the Game model
     def form_valid(self, form):
         self.object = form.save(commit=False)
-        # ✅ Manually assign uploaded file
+        # Manually assign uploaded file
         if self.request.FILES.get("twine_file"):
             self.object.twine_file = self.request.FILES["twine_file"]
         self.object.save()
@@ -790,7 +789,7 @@ class UploadFileView(View):
             return redirect("game-list")
 
         messages.error(request, "No file selected.")
-        return redirect("interactive-fiction")
+        return redirect("game-list")
 
 
 # =============== Tournaments Views ===============
@@ -1402,6 +1401,10 @@ class TournamentCreateView(CreateView):
         "rules",
         "draw_rules",
         "num_winner",
+        "prize_description",
+        "first_place_prize",
+        "second_place_prize",
+        "third_place_prize",
         # We're not including "players" field here as we'll handle it differently
     ]
 
@@ -1523,6 +1526,10 @@ class TournamentUpdateView(UpdateView):
         "rules",
         "draw_rules",
         "num_winner",
+        "prize_description",
+        "first_place_prize",
+        "second_place_prize",
+        "third_place_prize",
         "players",
     ]
 

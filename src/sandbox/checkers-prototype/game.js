@@ -77,7 +77,7 @@ let activeTimer = null;
 let colorblindMode = false;
 
 //BOT SETTINGS
-let vsEasyBot = true;
+let botMode = 'none'; //OFF -> EASY -> MEDIUM ->HARD
 
 // track mute state outside of phaser game
 let muted = false;
@@ -122,7 +122,7 @@ function create() {
   const playAgainPrompt = document.getElementById('playAgainPrompt');
   const playAgainYes = document.getElementById('playAgainYes');
   const playAgainNo = document.getElementById('playAgainNo');
-  const easyBot = document.getElementById('toggle-bot');
+  const botToggle = document.getElementById('toggle-bot');
 
   // Score display
   const redScore = document.getElementById('red-score');
@@ -270,14 +270,22 @@ function create() {
     }
   });
 
+  botToggle.textContent = 'Bot: OFF';
+  botToggle.addEventListener('click', () => {
+    if (botMode === 'none'){botMode = 'easy';}
+    else if (botMode === 'easy'){botMode = 'medium';}
+    else if(botMode === 'medium'){botMode = 'hard';}
+    else {botMode = 'none';}
+    const labels = { none: 'OFF', easy: 'Easy', medium: 'Medium', hard: 'Hard' };
+    botToggle.textContent = `Bot: ${labels[botMode]}`;
+    if (currentPlayer === COLORS.black && botMode !== 'none'){
+        const func = botMode === 'easy' ? easyBot
+        : botMode === 'medium' ? mediumBot
+        : hardBot;
+        scene.time.delayedCall(300, func, [scene], scene)
+    }
   updateTimerDisplay(); // initial display
   startPlayerTimer(); // red starts first
-
-
-  easyBot.textContent = `Easy Bot: ${vsEasyBot ? 'ON' : 'OFF'}`;
-  easyBot.addEventListener('click', () => {
-    vsEasyBot = !vsEasyBot;
-    easyBot.textContent = `Easy Bot: ${vsEasyBot ? 'ON' : 'OFF'}`;
   });
 }
 
@@ -587,10 +595,10 @@ function movePiece(piece, moveX, moveY) {
   clearLastMoveHighlights();
   // highlight the original tile
   const originHighlight = checkers.scene.scenes[0].add.rectangle(
-    MARGIN + piece.x * TILE_SIZE + TILE_SIZE / 2,
-    MARGIN + piece.y * TILE_SIZE + TILE_SIZE / 2,
-    TILE_SIZE,
-    TILE_SIZE,
+    margin + piece.x * tile_size + tile_size / 2,
+    margin + piece.y * tile_size + tile_size / 2,
+    tile_size,
+    tile_size,
     COLORS.orange,
     0.3
   );
@@ -642,18 +650,18 @@ function movePiece(piece, moveX, moveY) {
 
   // Highlight destination tile
   const destHighlight = checkers.scene.scenes[0].add.rectangle(
-    MARGIN + moveX * TILE_SIZE + TILE_SIZE / 2,
-    MARGIN + moveY * TILE_SIZE + TILE_SIZE / 2,
-    TILE_SIZE,
-    TILE_SIZE,
+    margin + moveX * tile_size + tile_size / 2,
+    margin + moveY * tile_size + tile_size / 2,
+    tile_size,
+    tile_size,
     COLORS.orange,
     0.3
   );
   lastMoveHighlights.push(destHighlight);
   // Play move sound effect
-  piece.sprite.scene.sound.play('slide');
+  piece.sprite.scene.sound.play('slide', { volume: volumeAmount });
   //console.log('Current board state:', getBoardState());
-  piece.sprite.scene.sound.play('slide');
+  piece.sprite.scene.sound.play('slide', { volume: volumeAmount });
 }
 
 // Check if the game is over due to all pieces of one color being captured
@@ -701,7 +709,14 @@ function endTurn(scene) {
   selectedPiece = null;
 
   // switch between red and black player turn
-  currentPlayer = currentPlayer === lightPiece ? darkPiece : lightPiece;
+
+  currentPlayer = currentPlayer  === lightPiece ? darkPiece : lightPiece;
+  //if black and bot is on, schedule bot move
+  if (currentPlayer === darkPiece) {
+    if (botMode === 'easy')   scene.time.delayedCall(300, easyBot,   [scene], scene);
+    if (botMode === 'medium') scene.time.delayedCall(300, mediumBot, [scene], scene);
+    if (botMode === 'hard')   scene.time.delayedCall(300, hardBot,   [scene], scene);
+  }
   startPlayerTimer(); // start next player’s timer
   // remove the highlight after a move is made
   clearHighlightedTiles();
@@ -716,7 +731,7 @@ function endTurn(scene) {
     turn.textContent = 'Black';
     dot.style.backgroundColor = colorblindMode ? COLORS.strBlue: COLORS.strBlack;
   }
-}
+
 
   // reset draw offer if it was made by the current player
   if (drawOffered && drawOfferedBy === currentPlayer) {
@@ -731,14 +746,7 @@ function endTurn(scene) {
     gameOverPrompts.classList.remove('show');
     drawBtn.textContent = 'Offer Draw';
     declineDrawBtn.style.display = 'none';
-  }
-
-  //if black and bot is on, schedule bot move
-  if (vsEasyBot && currentPlayer === darkPiece){
-    //delay so user has time to process bot move after their own
-    scene.time.delayedCall(300, easyBot, [scene], scene);
-  }
-}
+  }}
 
 // helper function to clear all the highlighted tiles
 function clearHighlightedTiles() {
@@ -897,7 +905,7 @@ function executeJumpChain(piece, jump) {
     gameOverMessage.classList.remove('show');
     gameOverPrompts.classList.remove('show');
     drawBtn.textContent = 'Offer Draw';
-    declineDrawBtn.style.display = 'none';
+    declineDrawBtn.style.display = 'none';}
   updateScore();
   checkGameOver();
 
@@ -936,11 +944,12 @@ function executeJumpChain(piece, jump) {
         'crown'
       );
       crown.setDisplaySize(tile_size, tile_size);
+      crown.setDepth(1);
       piece.kingIcon = crown;
     }
   }
 
-  piece.sprite.scene.sound.play('slide');
+  piece.sprite.scene.sound.play('slide', { volume: volumeAmount });
 }
 
 // Retrieves a 2D array representation of the board state where 0 are unoccupied
@@ -1082,6 +1091,108 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
+//function to determine if a given move is a capture for bot use
+function is_capture(piece, x, y) {
+    return Math.abs(x - piece.x) === 2 && Math.abs(y - piece.y) === 2;
+}
+//coordinate dist from peice coords to board center for bot use
+function get_dist_from_center(x, y) {
+    const center = (BOARD_SIZE - 1) / 2;
+    return Math.hypot(x - center, y - center);
+  }
+//function to simulate a move on a copy of the board, returns board
+function simMove(board, {piece, x, y}){
+    //get board copy
+    const copy = board.map(r => r.slice());
+    //get val in pieces spot
+    const val = board[piece.y][piece.x];
+    //clear out
+    copy[piece.y][piece.x] = 0;
+
+    //if it a capture, remove captured piece
+    if (Math.abs(x - piece.x) === 2) {
+    const capture_col = (x + piece.x) / 2 | 0; //col of captured p
+    const capture_row = (y + piece.y) / 2 | 0; //row of captured peice
+    copy[capture_row][capture_col] = 0; //remove
+    }
+
+    copy[y][x] = val;
+    return copy
+
+}
+//function to compute optimality of pos for black for comparison in hard bot
+//inputs board and returns score of how good it is for black
+function scoreBoard(board){
+    let score = 0; //init score
+    const center = (BOARD_SIZE -1)/2; //get center of board
+    //loop through board
+    for (let y = 0; y<BOARD_SIZE; y++){
+        for (let x = 0; x<BOARD_SIZE; x++){
+            const sq_val = board[y][x];
+            if (sq_val === 2){ //if there is a black piece
+            score += 100;
+            score -= Math.hypot(x-center, y-center);//Black far from center = bad
+            }
+            else if (sq_val === 1){
+                //if there is a red piece
+                score -= 100;
+                score += Math.hypot(x-center, y-center);
+            }
+        }
+    }
+    //add 5 points to score for black legal moves and -5 for red legal moves
+    score += getLegalMoves(COLORS.black).length *5;
+    score -= getLegalMoves(COLORS.red).length *5;
+    return score;
+
+}
+//in order for the hard bot to "be smart", we are going to  have it "think ahead"
+//In order to do this effeciently, we need to iterate over all possible moves
+//that can be made by either player, and the responses to those moves
+//Then once it has done that it finds the best board for black
+//Then it assumes black will max the scoreBoard and red will min it
+//So basically we are looking for the move where if red and black play optimally
+//This is the best move for black
+//Similar to the road trip game problem from HW#8 CMSC 27200, where each player
+//is trying to pick the bet move, and assume the opponent is also picking the best move for themselves
+//i.e Bot wants to max the score and player wants to min the score
+function minimax(board, depth, alpha, beta, maximizing) {
+    //check for leaf
+    if (depth === 0) return scoreBoard(board);
+    //pick legal moves for black when maxxing, red when minning
+    const player = maximizing ? COLORS.black : COLORS.red;
+    const moves = getLegalMoves(player).map(([m]) => m);//get and unpack legal moves
+    if (moves.length === 0) {
+      // if no moves, you're donezo
+      return maximizing ? -Infinity : +Infinity;
+      //- inf = worst for black, pos inf = worst for red
+    }
+    if (maximizing) { //we are working with black here
+      let value = -Infinity; //set initial val at lowest possible val
+      for (const mv of moves) { //loop over black moves
+        const child = simMove(board, mv); //sim the move to get new pos
+        //recusrivly call func with depth-1, and set maximizing false bc red's turn
+        //take max of val and score of recursive call to choose maxed score
+        value = Math.max(value, minimax(child, depth-1, alpha, beta, false));
+        alpha = Math.max(alpha, value); //Best score black can guarentee
+        if (alpha >= beta) break;  //Red can force the score to at most beta, so red will never allow aplha>=beta,
+        //so we do not need to look at further moves here, because they won't be able to beat that
+      }
+      return value;//return best score black can get
+    } else {  //now do the same thing for red
+      let value = +Infinity;
+      for (const mv of moves) {
+        const child = simMove(board, mv);
+        value = Math.min(value, minimax(child, depth-1, alpha, beta, true));
+        beta = Math.min(beta, value);
+        if (alpha >= beta) break;
+      }
+      return value;
+    }
+  }
+
+
+
 //return arr of legal moves for given player
 function getLegalMoves(color) {
   //arr to store legal moves
@@ -1093,35 +1204,30 @@ function getLegalMoves(color) {
   pieces.forEach((piece) => {
     if (piece.color !== color) return; //return for other p;layer peices
     // simple moves
-    [-1, 1].forEach((diagonal) => {
-      //try L and R diagonals
-      const col = piece.x + diagonal; //new col
-      const row = piece.y + direction; //new row
-      if (
-        //check if move is valid
-        col >= 0 &&
-        col < BOARD_SIZE &&
-        row >= 0 &&
-        row < BOARD_SIZE &&
-        !getPiece(col, row) &&
-        isValidMove(piece, col, row)
-      ) {
-        moves.push({ piece, x: col, y: row }); //add move to arr
+    [-1, 1].forEach(diagonal => { //try L and R diagonals
+      const x = piece.x + diagonal; //new col
+      const y = piece.y + direction; //new row
+      if ( //check if mvoe is valid
+        x >= 0 && x < BOARD_SIZE && y >= 0 && y < BOARD_SIZE &&
+        !getPiece(x, y) && isValidMove(piece, x, y)) {
+            move = {piece, x, y};//gather the move
+            capture_bool = is_capture(piece, x, y);//is it a capture?
+            center_dist = get_dist_from_center(x, y);//how far from middle
+            //add move, if it is a capture, and how far from center to arr
+            moves.push([move, capture_bool, center_dist]); //add move to arr
       }
     });
     // jump moves for captures
-    [-2, 2].forEach((jump) => {
-      const jump_col = piece.x + jump;
-      const jump_row = piece.y + 2 * direction;
+    [-2, 2].forEach(jump => {
+      const x = piece.x + jump;
+      const y = piece.y + 2 * direction;
       if (
-        jump_col >= 0 &&
-        jump_col < BOARD_SIZE &&
-        jump_row >= 0 &&
-        jump_row < BOARD_SIZE &&
-        !getPiece(jump_col, jump_row) &&
-        isValidMove(piece, jump_col, jump_row)
-      ) {
-        moves.push({ piece, x: jump_col, y: jump_row });
+        x >= 0 && x < BOARD_SIZE && y >= 0 && y < BOARD_SIZE &&
+        !getPiece(x, y) && isValidMove(piece, x, y)) {
+            move = {piece, x, y}; //gather the move
+            capture_bool = is_capture(piece, x, y);//is it a capture?
+            center_dist = get_dist_from_center(x, y);//how far from middle
+            moves.push([move, capture_bool, center_dist]);
       }
     });
   });
@@ -1140,13 +1246,58 @@ function easyBot(scene) {
     console.log('Cant move');
     return;
   }
-  // get random move
-  const move = Phaser.Utils.Array.GetRandom(legalMoves);
-  // execute move
+  //get random move
+  const [move] = Phaser.Utils.Array.GetRandom(legalMoves);
+  //execute move
   movePiece(move.piece, move.x, move.y);
   // end bot's turn
   endTurn(scene);
 }
+
+//Easy bot: Prioritizes 1) Captures 2 central moves
+function mediumBot(scene){
+    const moves = getLegalMoves(COLORS.black);
+    if (moves.length === 0){//no moves
+        console.log('Cant move');
+        return;
+    }
+    let [bestMove, capture, closestDist] = moves[0]; //init first move as best move
+    for(const[move, c_bool, dist] of moves){ //loop through moves
+        if (c_bool){
+            bestMove = move;
+            break; //whatever the first capture is we do it
+        }
+        if (!capture && dist < closestDist){ //if dist is closer to middle
+            bestMove = move; //this is new best move
+            closestDist = dist; //this is new closest dist
+        }
+
+    }   //end loop
+    movePiece(bestMove.piece, bestMove.x, bestMove.y);
+    endTurn(scene);
+}
+
+//Hard bot: thinks ahead and calculates best move
+function hardBot(scene) {
+    const board = getBoardState(); //get 2D board rep
+    const legal = getLegalMoves(COLORS.black).map(([m]) => m); //get and unpack legals
+    if (legal.length === 0) {
+        return console.log('Cant move');}//no moves
+    let best = legal[0]; //best is the best move
+    let bestScore = -Infinity; //best score is the max minimix for black
+    for (const move of legal) { //loop over black moves
+      const child = simMove(board, move); //sim
+        //call minimax to search pos child w depth 4, next move is red
+        //returns score of the play
+      const score = minimax(child, 4, -Infinity, +Infinity, false);
+      if (score > bestScore) {
+        bestScore = score;
+        best = move;
+      }
+    }//end loop
+    movePiece(best.piece, best.x, best.y);
+    endTurn(scene);
+  }
 
 // function to enable or disable the coordinates overlay
 function toggleCoordinateVisibility() {
