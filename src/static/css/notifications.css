@@ -13,11 +13,11 @@
   border: none;         /* remove left border */
 }
 
-.notification-hover:hover {
+/* .notification-hover:hover {
   background-color: #f8f9fa;
   cursor: pointer;
   transition: background-color 0.2s ease;
-}
+} */
 
 .button-container {
   padding-left: 1rem;
@@ -132,7 +132,7 @@
 .notification-item {
   display: flex;
   flex-direction: column;
-  background-color: #f8f9fa;
+  background-color: #ffffff !important;
   padding: 0.75rem 1rem;
   border-left: 4px solid #7aa5d5; /* friend request style fallback */
   /*border-radius: 6px;*/
@@ -142,7 +142,7 @@
 }
 
 .notification-item:hover {
-  background-color: #eef2f5;
+  background-color: #eef2f5 !important;
 }
 
 /* Slight icon enhancement */
@@ -187,23 +187,18 @@
 }
 
 .notification-style-friend {
-  background-color: #f8f9fa;
   border-left: 3px solid #7aa5d5;
 }
 .notification-style-group {
-  background-color: #f8f9fa;
   border-left: 3px solid #85c799;
 }
 .notification-style-match {
-  background-color: #f8f9fa;
   border-left: 3px solid #f0ad4e;
 }
 .notification-style-achievement {
-  background-color: #f8f9fa;
   border-left: 3px solid #d9534f;
 }
 .notification-style-system {
-  background-color: #f8f9fa;
   border-left: 3px solid #5bc0de;
 }
 .notification-style-default {
@@ -261,34 +256,27 @@ a {
   margin-bottom: 10px;
 }
 
-.dropdown-item {
-  position: relative;
-  padding: 8px;
+/*!---Custom Notification Label*/
+
+.dismiss-label {
+  background-color: transparent;
+}
+
+.dismiss-label.btn:hover {
+  background-color: transparent;
+}
+
+.notification-container:hover, .notification-hover:hover {
+  background-color: #e9ecef; /* Hover effect */
   cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
-.dropdown-submenu {
-  display: none;
-  position: absolute;
-  top: 0;
-  left: 100%;
-  background: white;
-  border: 1px solid #ccc;
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  z-index: 1001;
+.delete-label-btn {
+  background-color: transparent;
 }
 
-.dropdown-item:hover>.dropdown-submenu {
-  display: block;
-}
-
-.dropdown-submenu li {
-  padding: 8px;
-  cursor: pointer;
-}
-
-.dropdown-submenu li:hover {
-  background-color: #f0f0f0;
+.delete-label-btn:hover{
+  color: #800000;
+  background-color: transparent;
 }

@@ -2,6 +2,7 @@
 Utilities for the chat app. Includes profanity filtering.
 """
 
+import json
 import os
 import re
 
@@ -61,3 +62,15 @@ class ProfanityFilter:
             str: The censored message.
         """
         return self.pattern.sub(lambda m: "*" * len(m.group()), message)
+
+    def profanity_filter(text):
+        pf = ProfanityFilter()
+        return pf.censor_message(text)
+
+
+def get_profanity_list_json():
+    """
+    Return the profanity list as a JSON-safe string for frontend use.
+    """
+    pf = ProfanityFilter()
+    return json.dumps(pf.profanity_list)

@@ -121,5 +121,37 @@
         });
       }
     });
+    document.getElementById("profanityToggleBtn").addEventListener("click", function() {
+      fetch("{% url 'toggle-profanity' %}", {
+          method: "POST",
+          headers: {
+            "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value,
+            "X-Requested-With": "XMLHttpRequest"
+          }
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            // Reload the page so the chat view is re-rendered
+            location.reload();
+          }
+        });
+    });
+    document.getElementById("profanityToggleBtn").addEventListener("click", function() {
+      fetch("{% url 'toggle-profanity' %}", {
+          method: "POST",
+          headers: {
+            "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value,
+            "X-Requested-With": "XMLHttpRequest"
+          }
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            // Reload the page so the chat view is re-rendered
+            location.reload();
+          }
+        });
+    });
   </script>
 {% endblock content %}

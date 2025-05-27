@@ -45,6 +45,8 @@ class User(AbstractUser):
     )
     # friends is a symmetrical relationship, so it is a many-to-many field
     friends = models.ManyToManyField("self", symmetrical=True, blank=True)
+    # blocked_users is a non-symmetrical relationship for user blocking
+    blocked_users = models.ManyToManyField("self", symmetrical=False, blank=True, related_name="blocked_by")
     tokens = models.PositiveSmallIntegerField(validators=[MaxValueValidator(3)], default=1)
 
     # a moderator can manage/approve game guides in Knowledge Base
@@ -158,9 +160,10 @@ class UserProfile(models.Model):
     """
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    bio = models.TextField(blank=True)
+    bio = models.TextField(blank=True, max_length=500)
     date_joined = models.DateTimeField(auto_now_add=True)
     profile_photo = models.ImageField(upload_to="profile_photos/", blank=True, null=True)
+    favorite_games = models.ManyToManyField("games.Game", blank=True, related_name="favorited_by")
 
     @classmethod
     def get_or_create_profile(cls, user: User) -> "UserProfile":

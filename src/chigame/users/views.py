@@ -1,3 +1,4 @@
+from django import forms
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
@@ -13,13 +14,13 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_POST
-from django.views.generic import DetailView, RedirectView, UpdateView
+from django.views.generic import DetailView, RedirectView, UpdateView, View
 from django.views.generic.edit import CreateView, DeleteView
 from django_tables2 import SingleTableView
 
-from chigame.games.models import GameList, Lobby, Player, Tournament
+from chigame.games.models import Game, GameList, Lobby, Player, Tournament
 
-from .forms import FriendInvitationForm
+from .forms import FriendInvitationForm, UserProfileForm
 from .models import (
     FriendInvitation,
     FriendRequestNotification,
@@ -204,8 +205,15 @@ def user_profile_detail_view(request, pk):
     if request.user.is_authenticated and request.user.pk == pk:
         # if user is accessing their own profile, create a profile if it doesn't exist
         profile = UserProfile.get_or_create_profile(request.user)
-        game_lists = GameList.objects.filter(created_by=request.user)
-        return render(request, "users/userprofile_detail.html", {"profile": profile, "game_lists": game_lists})
+        # Get favorite games from GameList system
+        favorites_list, _ = GameList.objects.get_or_create(name="Favorites", created_by=request.user)
+        favorite_games = favorites_list.games.all()
+        available_games = Game.objects.exclude(id__in=favorite_games.values_list("id", flat=True))
+        return render(
+            request,
+            "users/userprofile_detail.html",
+            {"profile": profile, "available_games": available_games, "favorite_games": favorite_games},
+        )
     else:
         # fetch another user's profile
         try:
@@ -216,14 +224,24 @@ def user_profile_detail_view(request, pk):
             else:
                 raise Http404("The user you are trying to access does not exist.")
 
+    # Get favorite games for the profile user (for viewing other users' profiles)
+    try:
+        favorites_list = GameList.objects.get(name="Favorites", created_by=profile.user)
+        favorite_games = favorites_list.games.all()
+    except GameList.DoesNotExist:
+        favorite_games = []
+
     # for checking friendship and pending friend request status
     is_friend = None
     friendship_request = None
+    is_blocked = False
     friend_request_message = None
     target_user = get_object_or_404(User, pk=pk)
     if request.user.is_authenticated:
         # check friendship or pending invitation with the target user
         is_friend = target_user.friends.filter(pk=request.user.pk).exists()
+        # check if current user has blocked the target user
+        is_blocked = request.user.blocked_users.filter(pk=target_user.pk).exists()
         if not is_friend:
             curr_user = request.user
             friendship_request = FriendInvitation.objects.get_by_users(curr_user, target_user)
@@ -236,6 +254,8 @@ def user_profile_detail_view(request, pk):
         "profile": profile,
         "is_friend": is_friend,
         "friendship_request": friendship_request,
+        "favorite_games": favorite_games,
+        "is_blocked": is_blocked,
         "friend_request_message": friend_request_message,
     }
     return render(request, "users/userprofile_detail.html", context=context)
@@ -259,6 +279,14 @@ def send_friend_invitation(request, pk):
     # fetch the current user and the target user
     curr_user = User.objects.get(pk=request.user.id)
     other_user = User.objects.get(pk=pk)
+
+    # Check if either user has blocked the other
+    if curr_user.blocked_users.filter(pk=other_user.pk).exists():
+        messages.error(request, "You have blocked this user.")
+        return redirect(reverse("users:user-profile", kwargs={"pk": pk}))
+    if other_user.blocked_users.filter(pk=curr_user.pk).exists():
+        messages.error(request, "User not found.")
+        return redirect(reverse("users:user-profile", kwargs={"pk": pk}))
 
     # if the current user and the target user are already friends, return an error
     if curr_user.friends.filter(pk=other_user.pk).exists():
@@ -500,8 +528,20 @@ def notification_search_results(request):
 @login_required
 def user_inbox_view(request, pk, category="inbox"):
     """
-    Displays a user's inbox containing notifications. The user can only access
-    their own inbox.
+    Display the user's inbox with categorized notifications.
+
+    This view renders the inbox page for the logged-in user, showing notifications
+    filtered by the specified category. It ensures that users can only access their
+    own inbox and redirects otherwise.
+
+    Args:
+        request (HttpRequest): The incoming HTTP request.
+        pk (int): The primary key of the user whose inbox is being accessed.
+        category (str, optional): The category of notifications to display.
+            Defaults to "inbox". Special category "deleted" is also handled.
+
+    Returns:
+        HttpResponse: The rendered inbox page with the filtered notifications.
     """
     if pk != request.user.pk:
         messages.error(request, "Not your inbox")
@@ -763,6 +803,24 @@ def upload_profile_photo(request):
 @csrf_protect
 @require_POST
 def move_notification(request, pk):
+    """
+    Handle user actions to move a notification to a different category
+    or assign a label to it.
+
+    This view supports POST requests to:
+    - Change the category of a notification (e.g., move to "archived").
+    - Assign an existing label to the notification.
+
+    It validates that the notification belongs to the requesting user
+    and provides appropriate feedback messages.
+
+    Args:
+        request (HttpRequest): The incoming POST request containing category or label_id.
+        pk (int): The primary key of the notification to be modified.
+
+    Returns:
+        HttpResponseRedirect: Redirects to the user's inbox view under the target category.
+    """
     notification = get_object_or_404(Notification, pk=pk, receiver=request.user)
     new_category = request.POST.get("category")
     next_category = request.POST.get("next") or "inbox"  # fallback to inbox if not provided
@@ -789,6 +847,19 @@ def move_notification(request, pk):
 
 @login_required
 def create_notification_label(request):
+    """
+    Create a custom notification label for the logged-in user.
+
+    This view handles POST requests to add user-defined (custom) labels,
+    which can be used to organize and filter notifications. If a label with
+    the given name already exists for the user, a message is shown instead.
+
+    Args:
+        request (HttpRequest): The POST request containing 'label_name' in the form data.
+
+    Returns:
+        HttpResponseRedirect: Redirects to the label management page after processing.
+    """
     if request.method == "POST":
         label_name = request.POST.get("label_name")
         if label_name:
@@ -804,11 +875,50 @@ def create_notification_label(request):
 
 @login_required
 def manage_labels_page_view(request):
+    """
+    Render the label management page for custom notification labels.
+
+    Displays all user-defined labels associated with the logged-in user,
+    allowing them to review and manage their custom organization of notifications.
+
+    Args:
+        request (HttpRequest): The incoming GET request from the logged-in user.
+
+    Returns:
+        HttpResponse: Renders the 'manage_labels.html' template with the user's labels.
+    """
     user_labels = NotificationLabel.objects.filter(user=request.user).order_by("name")
     context = {
         "labels": user_labels,
     }
     return render(request, "users/manage_labels.html", context)
+
+
+@login_required
+@require_POST
+def delete_notification_label(request, label_id):
+    """
+    Delete a custom notification label belonging to the logged-in user.
+
+    This view handles POST requests to remove a user-defined label by ID.
+    It ensures the label belongs to the requesting user before deletion.
+    After deletion, the user is redirected to the label management page
+    with a success message.
+
+    Args:
+        request (HttpRequest): The incoming POST request from the user.
+        label_id (int): The primary key of the custom label to delete.
+
+    Returns:
+        HttpResponseRedirect: Redirects to the label management page with a status message.
+    """
+    label = get_object_or_404(NotificationLabel, pk=label_id, user=request.user)
+    label_name = label.name
+
+    label.delete()
+
+    messages.success(request, f"Label '{label_name}' deleted successfully.")
+    return redirect(reverse("users:manage-labels-page"))
 
 
 @login_required
@@ -841,10 +951,21 @@ def assign_label_to_notification(request, notification_id):
 @login_required
 def notifications_by_label(request, label_id):
     """
-    Retrieves and displays all notifications associated with a specific label
-    belonging to the logged-in user, excluding deleted ones.
+    Display all non-deleted notifications associated with a specific custom label.
+
+    This view retrieves notifications tagged with a user-defined label, belonging
+    to the logged-in user. Deleted notifications are excluded from the result.
+    It also passes all of the user's labels to the template for sidebar display.
+
+    Args:
+        request (HttpRequest): The incoming GET request from the logged-in user.
+        label_id (int): The primary key of the custom label used to filter notifications.
+
+    Returns:
+        HttpResponse: Renders the 'notifications_by_label.html' template with filtered notifications.
     """
     label = get_object_or_404(NotificationLabel, pk=label_id, user=request.user)
+    # Fetch only visible (non-deleted) notifications for the current user that have this label
     notifications = label.notifications.filter(receiver=request.user, visible=True).order_by("-first_sent")
 
     all_user_labels = NotificationLabel.objects.filter(user=request.user).order_by("name")
@@ -862,8 +983,143 @@ def notifications_by_label(request, label_id):
 
 @login_required
 @require_POST
+def add_favorite_game(request, game_id):
+    """
+    Add a game to the user's favorite games list.
+
+    Args:
+        request (HttpRequest): The HTTP request
+        game_id (int): The ID of the game to add
+
+    Returns:
+        Redirects back to the user's profile
+    """
+    try:
+        game = Game.objects.get(id=game_id)
+        favorites_list, _ = GameList.objects.get_or_create(name="Favorites", created_by=request.user)
+        favorites_list.games.add(game)
+        messages.success(request, f"{game.name} added to your favorite games.")
+    except Game.DoesNotExist:
+        messages.error(request, "Game not found.")
+    except Exception as e:
+        messages.error(request, f"Error adding game to favorites: {str(e)}")
+
+    return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
+
+
+@login_required
+@require_POST
+def remove_favorite_game(request, game_id):
+    """
+    Remove a game from the user's favorite games list.
+
+    Args:
+        request (HttpRequest): The HTTP request
+        game_id (int): The ID of the game to remove
+
+    Returns:
+        Redirects back to the user's profile
+    """
+    try:
+        game = Game.objects.get(id=game_id)
+        favorites_list, _ = GameList.objects.get_or_create(name="Favorites", created_by=request.user)
+        favorites_list.games.remove(game)
+        messages.success(request, f"{game.name} removed from your favorite games.")
+    except Game.DoesNotExist:
+        messages.error(request, "Game not found.")
+    except Exception as e:
+        messages.error(request, f"Error removing game from favorites: {str(e)}")
+
+    return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
+
+
+@login_required
+def block_user(request, pk):
+    """
+    Block a user to prevent them from sending friend invitations.
+
+    Args:
+        request (HttpRequest)
+        pk (int): The primary key of the user to block
+
+    Returns:
+        HttpResponse: Redirects to the user's profile
+    """
+    try:
+        user_to_block = User.objects.get(pk=pk)
+        current_user = request.user
+
+        if user_to_block == current_user:
+            messages.error(request, "You cannot block yourself.")
+            return redirect(reverse("users:user-profile", kwargs={"pk": current_user.pk}))
+
+        # Remove friendship if they are friends
+        if current_user.friends.filter(pk=user_to_block.pk).exists():
+            current_user.friends.remove(user_to_block)
+
+        # Cancel any pending friend invitations between them
+        FriendInvitation.objects.filter(
+            Q(sender=current_user, receiver=user_to_block, is_deleted=False)
+            | Q(sender=user_to_block, receiver=current_user, is_deleted=False)
+        ).update(is_deleted=True)
+
+        # Block the user
+        current_user.blocked_users.add(user_to_block)
+        messages.success(request, f"You have blocked {user_to_block.name or user_to_block.email}.")
+
+    except User.DoesNotExist:
+        messages.error(request, "User not found.")
+
+    return redirect(reverse("users:user-profile", kwargs={"pk": pk}))
+
+
+@login_required
+def edit_profile(request, pk):
+    """
+    View for editing user profile information including bio.
+    """
+    if request.user.pk != pk:
+        messages.error(request, "You can only edit your own profile.")
+        return redirect("users:user-profile", pk=request.user.pk)
+
+    profile = UserProfile.get_or_create_profile(request.user)
+
+    if request.method == "POST":
+        form = UserProfileForm(request.POST, instance=profile)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Profile updated successfully!")
+            return redirect("users:user-profile", pk=request.user.pk)
+    else:
+        form = UserProfileForm(instance=profile)
+
+    context = {
+        "form": form,
+        "profile": profile,
+    }
+
+    return render(request, "users/edit_profile.html", context)
+
+
+@login_required
+@require_POST
 @csrf_protect
 def unassign_label_from_notification(request, notification_id, label_id):
+    """
+    Remove a custom label from a specific notification for the logged-in user.
+
+    This view handles POST requests to unassign a user-defined label from a
+    notification, ensuring both belong to the current user. It provides
+    success, info, or error messages based on the state of the label assignment.
+
+    Args:
+        request (HttpRequest): The POST request to unassign a label.
+        notification_id (int): The ID of the notification to modify.
+        label_id (int): The ID of the label to remove from the notification.
+
+    Returns:
+        HttpResponseRedirect: Redirects to the 'notifications-by-label' view for the same label.
+    """
     notification = get_object_or_404(Notification, pk=notification_id, receiver=request.user)
 
     try:
@@ -883,18 +1139,6 @@ def unassign_label_from_notification(request, notification_id, label_id):
         messages.error(request, f"An error occurred: {str(e)}")
 
     return redirect(reverse("users:notifications-by-label", kwargs={"label_id": label_id}))
-
-
-@login_required
-@require_POST
-def delete_notification_label(request, label_id):
-    label = get_object_or_404(NotificationLabel, pk=label_id, user=request.user)
-    label_name = label.name
-
-    label.delete()
-
-    messages.success(request, f"Label '{label_name}' deleted successfully.")
-    return redirect(reverse("users:manage-labels-page"))
 
 
 @login_required
@@ -984,3 +1228,75 @@ class GroupDeleteView(LoginRequiredMixin, DeleteView):
         if obj.created_by != request.user:
             raise PermissionDenied
         return super().dispatch(request, *args, **kwargs)
+
+
+class GroupJoinView(LoginRequiredMixin, View):
+    template_name = "users/group_join.html"
+
+    def get(self, request, *args, **kwargs):
+        group = get_object_or_404(Group, pk=kwargs["pk"])
+        if request.user in group.members.all():
+            messages.error(request, "You are already a member of this group.")
+            return redirect(reverse("users:group-detail", kwargs={"pk": group.pk}))
+        return render(request, self.template_name, {"group": group})
+
+    def post(self, request, *args, **kwargs):
+        group = get_object_or_404(Group, pk=kwargs["pk"])
+        if request.user in group.members.all():
+            messages.error(request, "You are already a member of this group.")
+        else:
+            group.members.add(request.user)
+            messages.success(request, "You have successfully joined the group.")
+        return redirect(reverse("users:group-detail", kwargs={"pk": group.pk}))
+
+
+class GroupLeaveView(LoginRequiredMixin, View):
+    template_name = "users/group_leave.html"
+
+    def get(self, request, *args, **kwargs):
+        group = get_object_or_404(Group, pk=kwargs["pk"])
+        if request.user not in group.members.all():
+            messages.error(request, "You are not a member of this group.")
+            return redirect(reverse("users:group-detail", kwargs={"pk": group.pk}))
+        return render(request, self.template_name, {"group": group})
+
+    def post(self, request, *args, **kwargs):
+        group = get_object_or_404(Group, pk=kwargs["pk"])
+        if request.user not in group.members.all():
+            messages.error(request, "You are not a member of this group.")
+        else:
+            group.members.remove(request.user)
+            messages.success(request, "You have successfully left the group.")
+        return redirect(reverse("users:group-detail", kwargs={"pk": group.pk}))
+
+
+class GroupForm(forms.ModelForm):
+    class Meta:
+        model = Group
+        fields = ["name", "description", "members"]
+        widgets = {
+            "members": forms.CheckboxSelectMultiple(),
+        }
+
+
+class GroupUpdateView(LoginRequiredMixin, UpdateView):
+    model = Group
+    form_class = GroupForm
+    template_name = "users/group_update.html"
+
+    def get_success_url(self):
+        return reverse("users:group-detail", kwargs={"pk": self.object.pk})
+
+    def dispatch(self, request, *args, **kwargs):
+        group = self.get_object()
+        if request.user not in group.members.all():
+            messages.error(request, "You do not have permission to edit this group.")
+            return redirect(reverse("users:group-detail", kwargs={"pk": group.pk}))
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        if self.request.user != self.get_object().created_by:
+            form.fields.pop("name", None)
+            form.fields.pop("description", None)
+        return form
