@@ -790,7 +790,7 @@ class UploadFileView(View):
             return redirect("game-list")
 
         messages.error(request, "No file selected.")
-        return redirect("interactive-fiction")
+        return redirect("game-list")
 
 
 # =============== Tournaments Views ===============

@@ -356,6 +356,23 @@
 
       openModalBtn.addEventListener('click', function(event) {
         event.preventDefault();
+
+        const name = document.getElementById('id_name').value.trim();
+        const author = document.getElementById('id_author').value.trim();
+        const desc = document.getElementById('id_description').value.trim();
+        const gameFile = document.getElementById('id_game_file');
+
+        // Validation check
+        if (!name || !author || !desc) {
+          alert("Please fill in all required fields before submitting:\n- Name\n- Author\n- Description");
+          return;
+        }
+
+        if (!gameFile || !gameFile.files || gameFile.files.length === 0) {
+          alert("Please upload a .html game file before submitting.");
+          return;
+        }
+
         reviewContainer.innerHTML = gatherFormData();
         modal.classList.add('show');
       });
