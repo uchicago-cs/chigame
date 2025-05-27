@@ -11,7 +11,7 @@
         {% for game in favorite_games %}
           <li class="list-group-item d-flex justify-content-between align-items-center">
             <a href="{% url 'game-detail' pk=game.pk %}">{{ game.name }}</a>
-            <a href="{% url 'remove-from-favorites' pk=game.pk %}"
+            <a href="{% url 'remove-from-favorites' game_id=game.pk %}"
                class="btn btn-sm btn-outline-warning">Remove</a>
           </li>
         {% endfor %}
