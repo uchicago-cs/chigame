@@ -35,6 +35,9 @@ urlpatterns = [
     path("search/", views.search_results, name="game-search-results"),
     path("<int:pk>/reviews/", views.ReviewListView.as_view(), name="game-review-list"),
     path("games/<int:pk>/review/", views.add_review, name="add-review"),
+    path("queue/", views.QueueListView.as_view(), name="queue-list"),
+    path("queue/add/<int:game_id>/", views.add_to_queue, name="add-to-queue"),
+    path("queue/remove/<int:game_id>/", views.remove_from_queue, name="remove-from-queue"),
     # interactive fiction
     path("interactive-fiction/", views.InteractiveFictionView.as_view(), name="interactive-fiction"),
     path("<int:pk>/upload/", UploadFileView.as_view(), name="upload-file"),
