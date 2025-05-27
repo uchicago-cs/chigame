@@ -1,19 +1,37 @@
 <div class="list-group">
   {% for chat in chats %}
-    <a href="{% url 'chat-page' chat.id %}"
-       class="list-group-item list-group-item-action d-flex justify-content-between align-items-start">
+    <div class="list-group-item d-flex justify-content-between align-items-center">
       <div class="flex-grow-1">
-        <div class="d-flex align-items-center gap-2 mb-1">
-          <h5 class="mb-1">{{ chat.name }}</h5>
-          <span class="badge bg-primary rounded-pill extra-small-text">
-            {{ chat.user_count }} user{{ chat.user_count|pluralize }}
-          </span>
-        </div>
-        <div class="text-muted small">{{ chat.last_message|default:"No messages yet." }}</div>
+        <a href="{% url 'chat-page' chat.id %}"
+           class="text-decoration-none text-dark d-block">
+          <div class="d-flex align-items-center gap-3 mb-1">
+            <h5 class="mb-1">{{ chat.name }}</h5>
+            <span class="badge bg-primary rounded-pill extra-small-text">
+              {{ chat.user_count }} user{{ chat.user_count|pluralize }}
+            </span>
+          </div>
+          <div class="d-flex justify-content-between align-items-center">
+            <div class="text-muted small text-truncate me-2">{{ chat.last_message|default:"No messages yet." }}</div>
+            {% if chat.last_message_time %}
+              <div class="text-muted small flex-shrink-0">{{ chat.last_message_time|date:"g:i A" }}</div>
+            {% endif %}
+          </div>
+        </a>
       </div>
-      {% if chat.last_message_time %}
-        <div class="text-muted small">{{ chat.last_message_time|date:"g:i A" }}</div>
-      {% endif %}
-    </a>
+      <div class="dropdown ms-2">
+        <button class="btn btn-sm btn-light"
+                type="button"
+                data-bs-toggle="dropdown"
+                aria-expanded="false">⋮</button>
+        <ul class="dropdown-menu">
+          <li>
+            <a class="dropdown-item text-danger"
+               href="#"
+               data-chat-id="{{ chat.id }}"
+               onclick="confirmLeaveChat(this)">Leave Chat</a>
+          </li>
+        </ul>
+      </div>
+    </div>
   {% endfor %}
 </div>

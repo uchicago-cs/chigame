@@ -27,8 +27,6 @@ from django.views import View
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 from django.views.generic.edit import FormMixin
 from rest_framework import status
-
-# ============ new imports
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
@@ -248,7 +246,8 @@ class MatchCreateView(CreateView):
             min_players=self.game.min_players,
             max_players=self.game.max_players,
         )
-        lobby.members.set(all_players)
+
+        lobby.invited_members.set(all_players)
 
         # Match creation
         match = form.save(commit=False)
@@ -268,6 +267,44 @@ class MatchCodeView(LoginRequiredMixin, DetailView):
     model = Lobby
     template_name = "matches/match_code.html"
     context_object_name = "lobby"
+
+
+@login_required
+def join_match(request, pk):
+    game = get_object_or_404(Game, pk=pk)
+    if request.method == "POST":
+        lobby_code = request.POST.get("lobby_code", "").strip().upper()
+        try:
+            lobby = Lobby.objects.get(join_code=lobby_code)
+
+            # Check if the user was invited
+            if request.user not in lobby.invited_members.all():
+                messages.error(request, "You were not invited to this match.")
+                return render(request, "matches/match_join.html", {"game": game})
+
+            # Check if the user is already a member
+            if request.user in lobby.members.all():
+                messages.info(request, "You have already joined this match.")
+                return redirect("lobby-details", pk=lobby.pk)
+
+            # Check if the match is already full
+            if lobby.match_status == 2:
+                messages.error(request, "This match is already full.")
+                return render(request, "matches/match_join.html", {"game": game})
+
+            lobby.members.add(request.user)
+            if lobby.members.all().count() == lobby.invited_members.all().count():
+                lobby.match_status = 2
+                messages.success(request, "You joined! Match is now full and ready to begin.")
+            else:
+                messages.success(request, "You have successfully joined the match.")
+
+            lobby.save()
+            return redirect("lobby-details", pk=lobby.pk)
+
+        except Lobby.DoesNotExist:
+            messages.error(request, "Invalid lobby code.")
+    return render(request, "matches/match_join.html", {"game": game})
 
 
 # =============== BGG Searching =================
@@ -510,8 +547,8 @@ def apply_sorting_and_filtering(queryset, sort_param, players_param):
 
 def get_recommended_games(game, user=None, limit=5):
     """
-    Returns a queryset of recommended games based on multiple weighted factors.
 
+    Returns a queryset of recommended games based on user-weighted factors.
     Args:
         game: The reference Game object
         user: Optional User object to check play history
@@ -521,50 +558,72 @@ def get_recommended_games(game, user=None, limit=5):
         QuerySet of Game objects ordered by recommendation score
     """
 
-    # Settled on a recommendation system that combines multiple factors
-    # (as opposed to having it only be category based):
-    # Game categories (40% weight)
-    # Game mechanics (30% weight)
-    # Game designers/artists (15% weight)
-    # Similar complexity ratings (10% weight)
-    # Similar playtime (5% weight)
-    #
-    # The reason I went with this weighted approach is to provide more well
-    # rounded recommendations than
-    # using categories alone. Also, I deprioritized, but didn't exclude, games
-    # the user has already played.
+    from chigame.users.models import RecommendationPreferences
 
     all_games = Game.objects.exclude(id=game.id)
+
+    # Default weights if no user or no preferences
+    category_weight = 0.4
+    mechanics_weight = 0.3
+    people_weight = 0.15
+    complexity_weight = 0.1
+    playtime_weight = 0.05
+
+    # Get custom weights if user is authenticated
+    if user and user.is_authenticated:
+        try:
+            prefs = RecommendationPreferences.objects.get(user=user)
+            total = (
+                prefs.category_weight
+                + prefs.mechanics_weight
+                + prefs.designers_weight
+                + prefs.complexity_weight
+                + prefs.playtime_weight
+            )
+
+            # Normalize weights to sum to 1.0
+            if total > 0:
+                category_weight = prefs.category_weight / 100
+                mechanics_weight = prefs.mechanics_weight / 100
+                people_weight = prefs.designers_weight / 100
+                complexity_weight = prefs.complexity_weight / 100
+                playtime_weight = prefs.playtime_weight / 100
+        except RecommendationPreferences.DoesNotExist:
+            # Use defaults
+            pass
 
     game_categories = game.categories.all()
     game_mechanics = game.mechanics.all()
     game_people = game.people.all()
 
-    all_games = all_games.annotate(category_score=Count("categories", filter=Q(categories__in=game_categories)) * 0.4)
-
-    all_games = all_games.annotate(mechanics_score=Count("mechanics", filter=Q(mechanics__in=game_mechanics)) * 0.3)
-
-    all_games = all_games.annotate(people_score=Count("people", filter=Q(people__in=game_people)) * 0.15)
+    all_games = all_games.annotate(
+        category_score=Count("categories", filter=Q(categories__in=game_categories)) * category_weight
+    )
+    all_games = all_games.annotate(
+        mechanics_score=Count("mechanics", filter=Q(mechanics__in=game_mechanics)) * mechanics_weight
+    )
+    all_games = all_games.annotate(people_score=Count("people", filter=Q(people__in=game_people)) * people_weight)
 
     if game.complexity:
         # Convert Decimal to float before arithmetic operations
         complexity_value = float(game.complexity)
         all_games = all_games.annotate(
             complexity_score=Case(
-                When(complexity__range=(complexity_value - 0.5, complexity_value + 0.5), then=0.1),
-                When(complexity__range=(complexity_value - 1.0, complexity_value + 1.0), then=0.05),
+                When(complexity__range=(complexity_value - 0.5, complexity_value + 0.5), then=complexity_weight),
+                When(complexity__range=(complexity_value - 1.0, complexity_value + 1.0), then=complexity_weight * 0.5),
                 default=Value(0),
                 output_field=FloatField(),
             )
         )
     else:
         all_games = all_games.annotate(complexity_score=Value(0, output_field=FloatField()))
+
     if game.expected_playtime:
         # Convert to float before arithmetic
         playtime_value = float(game.expected_playtime)
         all_games = all_games.annotate(
             playtime_score=Case(
-                When(expected_playtime__range=(playtime_value * 0.8, playtime_value * 1.2), then=0.05),
+                When(expected_playtime__range=(playtime_value * 0.8, playtime_value * 1.2), then=playtime_weight),
                 default=Value(0),
                 output_field=FloatField(),
             )
@@ -1605,6 +1664,53 @@ class TournamentArchivedListView(ListView):
         return self.request.user.is_staff
 
 
+@login_required
+def play_embedded_game(request, pk):
+    """
+    Generic view for playing embedded games.
+    This handles any game that has a game_url field populated.
+    This also makes it easy to check if a game is populated or not!
+    Also added debugging for PR testing
+    """
+    game = get_object_or_404(Game, pk=pk)
+
+    if not game.game_url:
+        messages.error(request, f"{game.name} is not available for embedded play.")
+        return redirect("game-detail", pk=pk)
+
+    iframe_url = game.game_url
+    jwt_token_used = False
+
+    if "zhejiej.github.io/Words-Game" in game.game_url:
+        payload = {
+            "user_id": request.user.id,
+            "username": request.user.username,
+            "exp": datetime.now(timezone.utc) + timedelta(minutes=30),
+        }
+        token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
+
+        separator = "&" if "?" in game.game_url else "?"
+        iframe_url = f"{game.game_url}{separator}token={token}"
+        jwt_token_used = True
+
+        messages.info(request, f"JWT Token generated for {game.name}")
+
+    # Debug info (for PR testing)
+    if settings.DEBUG:
+        messages.info(request, f" Loading embedded game: {game.name}")
+        if jwt_token_used:
+            messages.info(request, "JWT authentication enabled")
+        messages.info(request, f"Game URL: {iframe_url}")
+
+    context = {
+        "game": game,
+        "iframe_url": iframe_url,
+        "jwt_token_used": jwt_token_used,
+    }
+
+    return render(request, "games/embedded_game.html", context)
+
+
 # Placeholder Game
 @login_required
 def coin_flip_game(request, pk):
@@ -1951,7 +2057,7 @@ def wordle_game_page(request):
     token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
 
     # Local development server URL + token
-    iframe_url = f"http://localhost:3000/index.html?token={token}"
+    iframe_url = f"https://zhejiej.github.io/Words-Game/?token={token}"
 
     return render(request, "games/wordle.html", {"iframe_url": iframe_url})
 
