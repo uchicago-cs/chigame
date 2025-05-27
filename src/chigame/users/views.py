@@ -864,6 +864,7 @@ def block_user(request, pk):
 
     return redirect(reverse("users:user-profile", kwargs={"pk": pk}))
 
+
 def recommendation_preferences(request, pk):
     """
     Allow users to customize their game recommendation preferences.
