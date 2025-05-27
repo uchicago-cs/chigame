@@ -882,6 +882,7 @@ def privacy_settings_view(request):
     context = {"form": form}
     return render(request, "users/privacy_settings.html", context)
 
+
 def recommendation_preferences(request, pk):
     """
     Allow users to customize their game recommendation preferences.
