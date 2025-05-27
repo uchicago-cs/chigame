@@ -12,20 +12,22 @@ from django.utils.translation import gettext_lazy as _
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_POST
 from django.views.generic import DetailView, RedirectView, UpdateView
+from django_tables2 import SingleTableView
 
-from chigame.games.models import Lobby, Player, Tournament
+from chigame.games.models import GameList, Lobby, Player, Tournament
 
 from .forms import PrivacySettingsForm
 from .models import (
     FriendInvitation,
     FriendRequestNotification,
+    Group,
     GroupInvitationNotification,
     MatchInvitationNotification,
     Notification,
     NotificationLabel,
     UserProfile,
 )
-from .tables import FriendsTable, UserTable
+from .tables import GroupTable, UserTable
 
 User = get_user_model()
 
@@ -54,6 +56,24 @@ class BaseUserUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
 
     def get_object(self):
         return self.request.user
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        try:
+            context["profile"] = self.request.user.userprofile
+        except UserProfile.DoesNotExist:
+            context["profile"] = None
+        return context
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        try:
+            profile = self.request.user.userprofile
+            profile.bio = self.request.POST.get("bio", profile.bio)
+            profile.save()
+        except UserProfile.DoesNotExist:
+            pass
+        return response
 
 
 class NameUpdateView(BaseUserUpdateView):
@@ -159,6 +179,10 @@ def user_profile_detail_view(request, pk):
     pending friend requests between the current user and the user
     being viewed.
 
+    IMPORTANT NOTE TO DEVELOPERS: Profile url takes user pk, not profile pk.
+    It might not necessarily be the case that providing profile pk will get you
+    the profile of the user you want.
+
     Args:
         request (HttpRequest)
         pk (int): The primary key of the user whose profile is being viewed
@@ -176,7 +200,8 @@ def user_profile_detail_view(request, pk):
     if request.user.is_authenticated and request.user.pk == pk:
         # if user is accessing their own profile, create a profile if it doesn't exist
         profile = UserProfile.get_or_create_profile(request.user)
-        return render(request, "users/userprofile_detail.html", {"profile": profile})
+        game_lists = GameList.objects.filter(created_by=request.user)
+        return render(request, "users/userprofile_detail.html", {"profile": profile, "game_lists": game_lists})
     else:
         # fetch another user's profile
         try:
@@ -265,7 +290,9 @@ def send_friend_invitation(request, pk):
             receiver=other_user,
             type=Notification.FRIEND_REQUEST,
             message=Notification.DEFAULT_MESSAGES[Notification.FRIEND_REQUEST],
+            category="social",
         )
+
     # if the other user has already sent a friend request, return an error
     elif invitation.sender.pk == other_user.pk:
         messages.info(request, "You already have a pending friend invitation from this profile.")
@@ -277,7 +304,10 @@ def send_friend_invitation(request, pk):
             notification.renew_notification()
         except Notification.DoesNotExist:
             notification = Notification.objects.create(
-                actor=invitation, receiver=other_user, type=Notification.FRIEND_REQUEST
+                actor=invitation,
+                receiver=other_user,
+                type=Notification.FRIEND_REQUEST,
+                category="social",
             )
     return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
 
@@ -415,7 +445,7 @@ def user_search_results(request):
     context = {"found": False, "query_type": "Users"}
     if query_input:
         profiles_list = UserProfile.objects.filter(
-            Q(user__email__icontains=query_input) | Q(user__name__icontains=query_input)
+            Q(user__username__icontains=query_input) | Q(user__name__icontains=query_input)
         )
 
         if request.user.is_authenticated:
@@ -473,33 +503,24 @@ def user_inbox_view(request, pk, category="inbox"):
     """
     Displays a user's inbox containing notifications. The user can only access
     their own inbox.
-
-    Args:
-        request (HttpRequest)
-        pk (int): The primary key of the user
-
-    Returns:
-        HttpResponse: Rendered template with user inbox context including
-            - pk: The primary key of the user
-            - user: The user
-            - notifications: The notifications in the user's inbox
-            - default_notification_messages: The default notification messages
-            for each notification type
     """
-
     if pk != request.user.pk:
         messages.error(request, "Not your inbox")
         return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
 
     user = request.user
 
-    if category and category in dict(Notification.CATEGORY_CHOICES):
+    # Handle deleted notifications
+    if category == "deleted":
+        notifications = Notification.objects.filter_by_receiver(user, deleted=True)
+    elif category and category in dict(Notification.CATEGORY_CHOICES):
         notifications = Notification.objects.filter_by_receiver(user).filter_by_category(category)
     else:
         notifications = Notification.objects.filter_by_receiver(user)
 
     default_notification_messages = Notification.DEFAULT_MESSAGES
     user_labels = NotificationLabel.objects.filter(user=user)
+
     context = {
         "pk": pk,
         "user": user,
@@ -510,11 +531,7 @@ def user_inbox_view(request, pk, category="inbox"):
         "category_choices": Notification.CATEGORY_CHOICES,
     }
 
-    if pk == user.id:
-        return render(request, "users/user_inbox.html", context)
-    else:
-        messages.error(request, "Not your inbox")
-        return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
+    return render(request, "users/user_inbox.html", context)
 
 
 @login_required
@@ -570,9 +587,8 @@ def friend_list_view(request, pk):
     target_user = get_object_or_404(User, pk=pk)
     # fetch the target user's friends
     friends = target_user.friends.all()
-    # render the friends table
-    table = FriendsTable(friends)
-    context = {"table": table}
+    context = {"friends": friends}
+
     # if the target user is the current user, render the friends list
     if pk == user.id:
         return render(request, "users/user_friend_list.html", context)
@@ -650,22 +666,18 @@ def notification_detail(request, pk):
 def act_on_inbox_notification(request, pk, action):
     """
     Allow a user to perform actions (mark as read/unread, delete) on a notification in their inbox.
-
-    Args:
-        request (HttpRequest)
-        pk (int): The primary key of the notification
-        action (str): The action to perform on the notification
-
-    Returns:
-        HttpResponse: Redirects to the user's inbox
-        Error messages: When trying to perform actions on a non-existent notification or
-        when trying to perform actions on someone else's notifications
     """
+    # Get the category to return to, defaulting to 'inbox'
+    next_category = request.GET.get("next", "inbox")
+
     try:
         notification = Notification.objects.get(pk=pk)
         if notification.receiver.pk != request.user.pk:
             messages.error(request, "You can not perform actions on this notification")
-            return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
+            return redirect(
+                reverse("users:user-inbox-category", kwargs={"pk": request.user.pk, "category": next_category})
+            )
+
         if action == "mark_read":
             notification.mark_as_read()
         elif action == "mark_unread":
@@ -676,7 +688,8 @@ def act_on_inbox_notification(request, pk, action):
             notification.mark_as_unread()
     except Notification.DoesNotExist:
         messages.error(request, "Something went wrong. This notification does not exist")
-    return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
+
+    return redirect(reverse("users:user-inbox-category", kwargs={"pk": request.user.pk, "category": next_category}))
 
 
 @login_required
@@ -753,11 +766,13 @@ def upload_profile_photo(request):
 def move_notification(request, pk):
     notification = get_object_or_404(Notification, pk=pk, receiver=request.user)
     new_category = request.POST.get("category")
+    next_category = request.POST.get("next") or "inbox"  # fallback to inbox if not provided
+
     if new_category and new_category in dict(Notification.CATEGORY_CHOICES):
         notification.category = new_category
         notification.save()
         messages.success(request, f"Notification moved to {new_category}.")
-        return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
+        return redirect("users:user-inbox-category", pk=request.user.pk, category=next_category)
 
     label_id = request.POST.get("label_id")
     if label_id:
@@ -767,10 +782,10 @@ def move_notification(request, pk):
             messages.success(request, "Label assigned to notification.")
         except NotificationLabel.DoesNotExist:
             messages.error(request, "Label not found or does not belong to you.")
-        return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
+        return redirect("users:user-inbox-category", pk=request.user.pk, category=next_category)
 
     messages.error(request, "Invalid category or label.")
-    return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
+    return redirect("users:user-inbox-category", pk=request.user.pk, category=next_category)
 
 
 @login_required
@@ -814,7 +829,7 @@ def assign_label_to_notification(request, notification_id):
         notification.labels.add(label)
         messages.success(request, "Label assigned to notification.")
     except NotificationLabel.DoesNotExist:
-        messages.error(request, "Label not found or does not belong to you.")
+        messages.error(request, "Label not  found or does not belong to you.")
 
     return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
 
@@ -866,3 +881,50 @@ def privacy_settings_view(request):
 
     context = {"form": form}
     return render(request, "users/privacy_settings.html", context)
+
+def recommendation_preferences(request, pk):
+    """
+    Allow users to customize their game recommendation preferences.
+
+    Args:
+        request (HttpRequest)
+        pk (int): The primary key of the user
+
+    Returns:
+        HttpResponse: Rendered template with recommendation preferences
+    """
+
+    if pk != request.user.pk:
+        messages.error(request, "You can only manage your own preferences")
+        return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
+
+    from .models import RecommendationPreferences
+
+    preferences = RecommendationPreferences.get_or_create_preferences(request.user)
+
+    if request.method == "POST":
+        try:
+            preferences.category_weight = min(100, max(0, int(request.POST.get("category_weight", 40))))
+            preferences.mechanics_weight = min(100, max(0, int(request.POST.get("mechanics_weight", 30))))
+            preferences.designers_weight = min(100, max(0, int(request.POST.get("designers_weight", 15))))
+            preferences.complexity_weight = min(100, max(0, int(request.POST.get("complexity_weight", 10))))
+            preferences.playtime_weight = min(100, max(0, int(request.POST.get("playtime_weight", 5))))
+            preferences.save()
+            messages.success(request, "Your recommendation preferences have been updated")
+        except ValueError:
+            messages.error(request, "Invalid preference values. Please enter numbers between 0 and 100.")
+
+    context = {"preferences": preferences, "user_id": pk}
+
+    return render(request, "users/recommendation_preferences.html", context)
+
+
+class GroupListView(SingleTableView):
+    model = Group
+    table_class = GroupTable
+    template_name = "users/group_list.html"
+
+
+class GroupDetailView(DetailView):
+    model = Group
+    template_name = "users/group_detail.html"

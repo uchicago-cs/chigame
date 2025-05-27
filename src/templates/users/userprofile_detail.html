@@ -23,20 +23,28 @@
       text-align: center;
     }
 
-    .btn {
+    .btn-base {
+      border-radius: 6px;
+      font-size: 15px;
+      transition: border-color 0.3s, box-shadow 0.3s;
+      text-align: center;
+      cursor: pointer;
+    }
+
+    .btn-maroon {
       border: 1px solid #ccc;
       border-radius: 6px;
       font-size: 15px;
       transition: border-color 0.3s, box-shadow 0.3s;
     }
 
-    .btn:focus {
+    .btn-maroon:focus {
       outline: none;
       border-color: #800000;
       box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.2);
     }
 
-    .btn {
+    .btn-maroon {
       background-color: #800000;
       color: white;
       text-align: center;
@@ -44,8 +52,16 @@
       cursor: pointer;
     }
 
-    .btn:hover {
+    .btn-maroon:hover {
       background-color: #800000;
+    }
+
+    .friend-request {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #80000015;
+      border-radius: 12px;
+      border: 1px solid #ddd;
     }
 
     .profile-bio {
@@ -98,7 +114,11 @@
           <div class="card-header">
             <h3>
               {% if profile.user == request.user %}
-                Welcome to Chigame, {{ profile.user.name }}!
+                {% if not profile.user.name or profile.user.name == "" %}
+                  Welcome to Chigame!
+                {% else %}
+                  Welcome to Chigame, {{ profile.user.name }}!
+                {% endif %}
               {% else %}
                 {{ profile.user.name }}'s Profile
               {% endif %}
@@ -134,17 +154,19 @@
                 {% endif %}
                 {% if profile.user == request.user %}
                   <a href="{% url 'users:detail' request.user.pk %}"
-                     class="btn btn-primary">Account</a>
+                     class="btn btn-maroon">Account</a>
                   <a href="{% url 'users:friend-list' profile.user.id %}"
-                     class="btn btn-primary">Friend List</a>
+                     class="btn btn-maroon">Friend List</a>
                   <a href="{% url 'users:user-history' profile.user.pk %}"
-                     class="btn btn-primary">Stats</a>
-                  <a href="{% url 'users:privacy-settings' %}" class="btn btn-primary">Privacy Settings</a>
+                     class="btn btn-maroon">Stats</a>
+                  <a href="{% url 'users:privacy-settings' %}" class="btn btn-maroon">Privacy Settings</a>
                 {% elif is_friend %}
                   <a href="{% url 'users:remove-friend' profile.user.pk %}"
-                     class="btn btn-primary">Remove Friend</a>
+                     class="btn btn-maroon">Remove Friend</a>
                   <a href="{% url 'users:user-history' profile.user.pk %}"
                      class="btn btn-primary">Stats</a>
+                  <a href="{% url 'users:recommendation-preferences' profile.user.pk %}"
+                     class="btn btn-primary">Recommendation Preferences</a>
                 {% elif is_friend %}
                   <a href="{% url 'users:remove-friend' profile.user.pk %}"
                      class="btn btn-primary">Remove Friend</a>
@@ -161,12 +183,39 @@
                        class="btn btn-primary">Decline Friendship Request</a>
                   {% endif %}
                   <a href="{% url 'users:user-history' profile.user.pk %}"
-                     class="btn btn-primary">Stats</a>
+                     class="btn btn-maroon">Stats</a>
                 {% elif can_send_friend_request %}
                   <a href="{% url 'users:add-friend' profile.user.pk %}"
-                     class="btn btn-primary">Add Friend</a>
+                     class="btn btn-maroon">Add Friend</a>
                 {% endif %}
               </div>
+              {% if friendship_request %}
+                <div class="friend-request card p-3 mb-3 shadow-sm border-0">
+                  {% if friendship_request.sender_id == request.user.pk %}
+                    <div class="d-flex gap-2 align-items-center">
+                      <div class="flex-grow-1">
+                        <h4 class="mb-0">Request Sent</h4>
+                      </div>
+                      <div class="d-flex gap-2">
+                        <a href="{% url 'users:cancel-friend-invitation' profile.user.id %}"
+                           class="btn btn-base btn-outline-danger">Cancel</a>
+                      </div>
+                    </div>
+                  {% else %}
+                    <div class="d-flex gap-2 align-items-center">
+                      <div class="flex-grow-1">
+                        <h4 class="mb-0">Friendship Request</h4>
+                      </div>
+                      <div class="d-flex gap-2">
+                        <a href="{% url 'users:accept-friend-invitation' friendship_request.id %}"
+                           class="btn btn-base btn-outline-success">Accept</a>
+                        <a href="{% url 'users:decline-friend-invitation' friendship_request.id %}"
+                           class="btn btn-base btn-outline-danger">Decline</a>
+                      </div>
+                    </div>
+                  {% endif %}
+                </div>
+              {% endif %}
               <div class="profile-bio">
                 <h4>Bio:</h4>
                 {% if profile.bio == "" %}
@@ -182,6 +231,29 @@
             </div>
           </div>
         </div>
+        {% if profile.user == request.user %}
+          <div class="card mt-4">
+            <div class="card-header">
+              <h3>My Game Lists</h3>
+            </div>
+            <div class="card-body">
+              {% if game_lists %}
+                <ul class="list-group list-group-flush">
+                  {% for game_list in game_lists %}
+                    <li class="list-group-item">
+                      <a href="{% url 'gamelist-detail' game_list.pk %}">{{ game_list.name }}</a>
+                      <span class="badge bg-secondary rounded-pill float-end">{{ game_list.games.count }} game{{ game_list.games.count|pluralize }}</span>
+                    </li>
+                  {% endfor %}
+                </ul>
+              {% else %}
+                <p class="text-muted">
+                  You don't have any game lists yet. <a href="{% url 'game-list' %}">Browse games</a> to create some!
+                </p>
+              {% endif %}
+            </div>
+          </div>
+        {% endif %}
       </div>
     </div>
   </div>

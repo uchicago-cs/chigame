@@ -1,6 +1,9 @@
-from django.db import models
+import copy
 
-from chigame.games.models import Game
+from django.db import models
+from django.utils import timezone
+
+import chigame.games.models as games
 from chigame.users.models import User
 
 
@@ -19,29 +22,94 @@ class Achievement(models.Model):
     description = models.TextField(null=True, blank=True)
     spoiler = models.BooleanField(default=False)
     rarity = models.IntegerField(choices=Rarity.choices)
-    game = models.ForeignKey(Game, on_delete=models.CASCADE)
+    game = models.ForeignKey(games.Game, on_delete=models.CASCADE)
     threshold = models.FloatField(null=True, blank=True, default=1)
     # threshold is amount needed to earn achievement (e.g. 5.0 wins)
 
     def __str__(self):
         return f"{self.name} ({self.game})"
 
+    @staticmethod
+    def get_achievement(game, name):
+        """
+        Get an achievement by name and game
+        """
+        try:
+            return Achievement.objects.get(name=name, game=game)
+        except Achievement.DoesNotExist:
+            return None
+
+    def get_user_achievement(self, user):
+        """
+        Method of an achievement that, given a user, returns the UserAchievement object
+        associated with that achievement and user. If no such object exists, returns None.
+        """
+        try:
+            user_achievement = UserAchievement.objects.get(achievement=self, user=user)
+            return user_achievement
+        except UserAchievement.DoesNotExist:
+            return None
+
+    def get_achievement_percentage(self):
+        """
+        Method of achievement that returns as a float the percentage of the associated game's
+        users who have gotten that achievement
+        """
+        users = self.game.users.all()
+        obtained = 0
+        for user in users:
+            user_achievement = self.get_user_achievement(user)
+            if user_achievement is not None and user_achievement.date_earned is not None:
+                obtained += 1
+        return obtained / len(users)
+
     class Meta:
         unique_together = ("name", "game")
 
     def advance(self, user, amount=1):
         """
-        Advance the progress of a user towards this achievement.
+        Advance the progress of a user towards this achievement. This is separate from set_progress because
+        we think developers will want to be able to call advance when the user does something that makes progress
+        without having to figure out the current progress.
         """
         user_achievement, created = UserAchievement.objects.get_or_create(user=user, achievement=self)
         if created:
             amount -= 1
-        if user_achievement.progress >= self.threshold:
+        if self.is_earned(user):
             return
-        user_achievement.progress += amount
-        if user_achievement.progress >= self.threshold:
-            user_achievement.date_earned = models.DateTimeField(auto_now_add=True)
-        user_achievement.save()
+        self.set_progress(user, user_achievement.progress + amount)
+
+    def set_progress(self, user, progress, override=False):
+        """
+        Set the progress of a user toward an achievement.
+        The "override" field allows achievements to be taken away from users, which we expect will be uncommon.
+        """
+        user_achievement, _ = UserAchievement.objects.get_or_create(user=user, achievement=self)
+        if user_achievement.progress >= self.threshold - 1e-8 and not override:
+            # Developers cannot take away achievements from users without specifying override
+            return
+        user_achievement.progress = progress
+        if user_achievement.progress >= self.threshold - 1e-8:
+            # Hardcoded subtraction accounts for float effects
+            user_achievement.date_earned = timezone.now()
+            user_achievement.last_updated = copy.copy(user_achievement.date_earned)
+        else:
+            user_achievement.date_earned = None
+            user_achievement.last_updated = timezone.now()
+        user_achievement.save(update_fields=["progress", "date_earned", "last_updated"])
+
+    def is_earned(self, user):
+        """
+        Determines whether a given user has this achievement.
+        For now, this is done by checking to make sure that there is a date_earned.
+        """
+        try:
+            user_achievement = UserAchievement.objects.get(user=user, achievement=self)
+            if user_achievement.date_earned is not None:
+                return True
+            return False
+        except UserAchievement.DoesNotExist:
+            return False
 
 
 class UserAchievement(models.Model):
@@ -53,7 +121,7 @@ class UserAchievement(models.Model):
     achievement = models.ForeignKey(Achievement, on_delete=models.CASCADE)
     pinned = models.BooleanField(default=False)
     date_earned = models.DateTimeField(null=True, blank=True)
-    last_updated = models.DateTimeField(auto_now=True)
+    last_updated = models.DateTimeField(auto_now_add=True)
     progress = models.FloatField(null=True, blank=True, default=1)
     # progress can be updated if achievement has a threshold
 
