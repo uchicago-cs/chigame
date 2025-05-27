@@ -42,12 +42,16 @@ let playerColors = {
 
 let pieces = [];
 let selectedPiece = null;
-let currentPlayer = COLORS.red; // red starts first
+let myColor = PLAYER_ID === 1 ? COLORS.red : COLORS.black;
+let currentTurnColor = CURRENT_TURN_PLAYER_ID === 1 ? COLORS.red : COLORS.black;
 // change to adjust the piece size, any value less than 2 would make the pieces
 // bigger than the tiles
 const RADIUS_SCALE_FACTOR = 2.5;
 // selected piece highlight stroke width
 const HIGHLIGHT_SIZE = 3;
+let highlightedTiles = [];
+// prevent player from moving pieces too quickly
+let moveInProgress = false;
 
 // ------------------- Get Board State ----------------------------------------
 // From Database
@@ -66,8 +70,7 @@ async function fetchInitialBoardState() {
   }
 }
 
-
-// ---INIT FUNCTIONS-----------------------------------------------------------
+// ---INIT FUNCTIONS----------------------------------------------------------
 function preload() {
 
 }
@@ -89,11 +92,23 @@ function update() {
 }
 // ----------------------------------------------------------------------------
 
+// Mirror and Unmirrors the board by transforming the coordinates
+// This depends on whether they are player 2 or not
+function maybeMirrorCoord(x, y) {
+  return PLAYER_ID === 2 ? [BOARD_SIZE - 1 - x, BOARD_SIZE - 1 - y] : [x, y];
+}
+
+function maybeUnmirrorCoord(x, y) {
+  return PLAYER_ID === 2 ? [BOARD_SIZE - 1 - x, BOARD_SIZE - 1 - y] : [x, y];
+}
+
 // Draw the game board
 function drawBoard(scene) {
   // loop over the entire game board (y is column, x is row)
   for (let y = 0; y < BOARD_SIZE; y++) {
     for (let x = 0; x < BOARD_SIZE; x++) {
+      const [logicalX, logicalY] = [x, y]; // store logical (unflipped) coordinates
+      const [drawX, drawY] = maybeMirrorCoord(x, y);
       // setting tile colors: even tiles = light brown, odd tiles = dark brown
       let tile_color = (x + y) % 2 === 0 ? COLORS.light_brown : COLORS.dark_brown;
 
@@ -103,8 +118,8 @@ function drawBoard(scene) {
           // phaser actually positions shape based on the center, not top-left
           // margin + x returns the top-left location of each tile
           // tile size / 2 returns the center of the tile
-          MARGIN + x * TILE_SIZE + TILE_SIZE / 2, // x position
-          MARGIN + y * TILE_SIZE + TILE_SIZE / 2, // y position
+          MARGIN + drawX * TILE_SIZE + TILE_SIZE / 2, // x position
+          MARGIN + drawY * TILE_SIZE + TILE_SIZE / 2, // y position
           TILE_SIZE, // width
           TILE_SIZE, // height
           tile_color
@@ -112,20 +127,22 @@ function drawBoard(scene) {
         // make the tiles selectable so players can click on them to move pieces
         .setInteractive();
 
+      tile.logicalX = logicalX;
+      tile.logicalY = logicalY;
+
       // listens for clicks on tiles
-      tile.on('pointerdown', () => {
-        // does nothing if no pieces were selected
-        if (!selectedPiece) return;
+      tile.on('pointerdown', function () {
+        if (!selectedPiece || selectedPiece.ownerId !== PLAYER_ID) return;
 
         // see if there are any pieces at the selected square
-        const targetPiece = getPiece(x, y);
+        const targetPiece = getPiece(this.logicalX, this.logicalY);
 
         // if there's no piece on the selected square
         // and it is a valid move for the selected piece,
         // move the piece and end the player turn
-        if (!targetPiece && isValidMove(selectedPiece, x, y)) {
-          movePiece(selectedPiece, x, y);
-          endTurn();
+        if (!targetPiece && isValidMove(selectedPiece, this.logicalX, this.logicalY)) {
+          movePiece(selectedPiece, this.logicalX, this.logicalY);
+          // endTurn();
         }
       });
     }
@@ -134,32 +151,40 @@ function drawBoard(scene) {
 
 function createPiece(x, y, logicalColor, scene) {
   const owner = logicalColor === COLORS.red ? PLAYER_RED : PLAYER_BLACK;
+  const ownerId = owner === PLAYER_RED ? 1 : 2; // You can use Django to inject real IDs
+
+  const [drawX, drawY] = maybeMirrorCoord(x, y);
 
   const piece = {
     x,
     y,
     owner,
-    color: playerColors[owner],  // use current visual color
+    ownerId, // <--- Add this to store which player owns the piece
+    color: playerColors[owner],
     sprite: scene.add.circle(
-      MARGIN + x * TILE_SIZE + TILE_SIZE / 2,
-      MARGIN + y * TILE_SIZE + TILE_SIZE / 2,
+      MARGIN + drawX * TILE_SIZE + TILE_SIZE / 2,
+      MARGIN + drawY * TILE_SIZE + TILE_SIZE / 2,
       TILE_SIZE / RADIUS_SCALE_FACTOR,
-      playerColors[owner] // use this for visual fill
+      playerColors[owner]
     ),
   };
 
   piece.sprite.setInteractive();
   piece.sprite.on('pointerdown', () => {
-    if (!selectedPiece && piece.owner === getCurrentPlayerOwner()) {
-      selectedPiece = piece;
-      piece.sprite.setStrokeStyle(HIGHLIGHT_SIZE, COLORS.white);
-    } else if (selectedPiece === piece) {
+    if (!selectedPiece && piece.ownerId !== PLAYER_ID) {
+      // Not your piece
+      return;
+    }
+
+    if (selectedPiece === piece) {
       selectedPiece.sprite.setStrokeStyle();
       selectedPiece = null;
+      clearHighlights();
     } else if (piece.owner === getCurrentPlayerOwner()) {
-      selectedPiece.sprite.setStrokeStyle();
+      if (selectedPiece) selectedPiece.sprite.setStrokeStyle();
       selectedPiece = piece;
       piece.sprite.setStrokeStyle(HIGHLIGHT_SIZE, COLORS.white);
+      highlightValidMoves(scene, piece);
     }
   });
 
@@ -167,9 +192,8 @@ function createPiece(x, y, logicalColor, scene) {
 }
 
 
-
 function getCurrentPlayerOwner() {
-  return currentPlayer === COLORS.red || currentPlayer === COLORS.colorblind_orange
+  return currentTurnColor === COLORS.red || currentTurnColor === COLORS.colorblind_orange
     ? PLAYER_RED
     : PLAYER_BLACK;
 }
@@ -238,8 +262,53 @@ function isValidMove(piece, moveX, moveY) {
   return false;
 }
 
+// helper function to highlight the valid moves for the selected piece
+function highlightValidMoves(scene, piece) {
+  // clear old highlights
+  clearHighlights();
+
+  // iterate through the board
+  for (let y = 0; y < BOARD_SIZE; y++) {
+    for (let x = 0; x < BOARD_SIZE; x++) {
+      // check that the tile is not occupied and is a valid move
+      if (!getPiece(x, y) && isValidMove(piece, x, y)) {
+        const [drawX, drawY] = maybeMirrorCoord(x, y);
+
+        // add a slighlty transparent white square on top of that tile to make
+        // the tile appear highlighted
+        const highlight = scene.add.rectangle(
+          MARGIN + drawX * TILE_SIZE + TILE_SIZE / 2,
+          MARGIN + drawY * TILE_SIZE + TILE_SIZE / 2,
+          TILE_SIZE,
+          TILE_SIZE,
+          COLORS.white,
+          0.3
+        );
+
+        // Track it for later cleanup
+        highlightedTiles.push(highlight);
+      }
+    }
+  }
+}
+
+// helper function to clear all the highlighted tiles
+function clearHighlights() {
+  while (highlightedTiles.length > 0) {
+    highlightedTiles.pop().destroy();
+  }
+}
+
+
 function movePiece(piece, moveX, moveY) {
+  if (moveInProgress) return;
+  moveInProgress = true;
+
   updateScore();
+
+  if (PLAYER_ID !== CURRENT_TURN_PLAYER_ID) {
+    return;
+  }
 
   const dx = moveX - piece.x;
   const dy = moveY - piece.y;
@@ -250,6 +319,7 @@ function movePiece(piece, moveX, moveY) {
     if (captured) {
       captured.sprite.destroy(); // delete the sprite (remove from display state)
       pieces = pieces.filter((p) => p !== captured); // remove it from the array (game state)
+      checkGameOver();
     }
   }
 
@@ -258,8 +328,10 @@ function movePiece(piece, moveX, moveY) {
   piece.x = moveX;
   piece.y = moveY;
   // update the display state
-  piece.sprite.x = MARGIN + piece.x * TILE_SIZE + TILE_SIZE / 2;
-  piece.sprite.y = MARGIN + piece.y * TILE_SIZE + TILE_SIZE / 2;
+  const [drawX, drawY] = maybeMirrorCoord(moveX, moveY);
+  piece.sprite.x = MARGIN + drawX * TILE_SIZE + TILE_SIZE / 2;
+  piece.sprite.y = MARGIN + drawY * TILE_SIZE + TILE_SIZE / 2;
+
 
   // Log the current state
   const currentState = getBoardState();
@@ -270,7 +342,10 @@ function movePiece(piece, moveX, moveY) {
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ state: currentState }),
+    body: JSON.stringify({
+      state: currentState,
+      next_player_id: PLAYER_ID === 1 ? 2 : 1,
+    }),
   })
     .then((response) => response.json())
     .then((data) => {
@@ -278,11 +353,44 @@ function movePiece(piece, moveX, moveY) {
         console.error("Failed to update board:", data.error);
       } else {
         console.log("Board updated successfully.");
+        endTurn();
       }
     })
-    .catch((error) => console.error("Fetch error:", error));
-
+    .catch((err) => {
+      console.error("Network error:", err);
+    })
+    .finally(() => {
+      moveInProgress = false;
+    });
 }
+
+// check individual games for their game over
+function showGameOverPrompt(message) {
+  const gameOverPrompts = document.getElementById('gameOverPrompts');
+  const gameOverMessage = document.getElementById('gameOverMessage');
+
+  gameOverMessage.textContent = message;
+  gameOverMessage.classList.add('show');
+  gameOverPrompts.classList.add('show');
+  document.getElementById('playAgainPrompt').style.display = 'flex';
+  document.getElementById('drawBtn').style.display = 'none';
+  document.getElementById('forfeitBtn').style.display = 'none';
+}
+
+// Check if the game is over due to all pieces of one color being captured
+function checkGameOver() {
+  const redPieces = pieces.filter((p) => p.owner === PLAYER_RED);
+  const blackPieces = pieces.filter((p) => p.owner === PLAYER_BLACK);
+
+  if (redPieces.length === 0) {
+    gameOver = true;
+    showGameOverPrompt('All red pieces captured! Black wins!');
+  } else if (blackPieces.length === 0) {
+    gameOver = true;
+    showGameOverPrompt('All black pieces captured! Red wins!');
+  }
+}
+
 
 // helper function to get the piece
 function getPiece(x, y) {
@@ -297,8 +405,8 @@ function endTurn() {
   }
   selectedPiece = null;
   // switch between red and black player turn
-  currentPlayer =
-    getCurrentPlayerOwner() === PLAYER_RED ? COLORS.black : COLORS.red;
+  currentTurnColor = (currentTurnColor === COLORS.red) ? COLORS.black : COLORS.red;
+  clearHighlights();
 }
 
 // Retrieves a 2D array representation of the board state where 0 are unoccupied
@@ -365,9 +473,13 @@ function update() {
       .then(res => res.json())
       .then(data => {
         const newState = JSON.stringify(data.state);
+        CURRENT_TURN_PLAYER_ID = data.current_turn_player_id;
+        currentTurnColor = CURRENT_TURN_PLAYER_ID === 1 ? COLORS.red : COLORS.black;
         if (newState !== lastKnownState) {
           lastKnownState = newState;
           reloadBoardFromState(data.state);
+
+          checkGameOver();
         }
       })
       .catch(err => console.error("Polling error:", err));
@@ -473,4 +585,20 @@ document.addEventListener('DOMContentLoaded', () => {
       coordElements.length = 0;
     }
   });
+});
+
+// Play again buttons
+document.addEventListener('DOMContentLoaded', () => {
+  const playAgainYes = document.getElementById('playAgainYes');
+  const playAgainNo = document.getElementById('playAgainNo');
+
+  if (playAgainYes && playAgainNo) {
+    playAgainYes.addEventListener('click', () => {
+      location.reload(); // simple reset by reloading the page
+    });
+
+    playAgainNo.addEventListener('click', () => {
+      document.getElementById('playAgainPrompt').style.display = 'none';
+    });
+  }
 });

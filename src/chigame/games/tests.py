@@ -368,7 +368,7 @@ class CheckersGameUpdateBoardStateTests(APITestCase):
         ]
         response = self.client.post(
             reverse("update_board_state", args=[self.board.id]),
-            {"state": new_state},
+            {"state": new_state, "next_player_id": self.player2.user.id},
             format="json",
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
