@@ -126,6 +126,8 @@
     font-weight: bold;
   }
 </style>
+{% load profanity_tags %}
+
 <div id="message-container"
      class="chat-messages-scroll flex-grow-1 overflow-auto p-3 bg-light d-flex flex-column">
   <div class="d-flex flex-column h-100">
@@ -142,14 +144,32 @@
               </div>
             {% endif %}
             <div class="fw-bold small text-danger">{{ message.user.username }}</div>
-            <div class="mt-1">{{ message.content }}</div>
+            <div class="mt-1">
+              {% if not chat.profanity_allowed or chat_user.profanity %}
+                {{ message.content|profanity_filter }}
+              {% else %}
+                {{ message.content }}
+              {% endif %}
+            </div>
             <div class="message-meta text-end text-muted small mt-1">
               {% if message.id == chat.pinned_message.id %}
                 <span class="text-warning small ms-1 pinned-label">📌 Pinned</span>
               {% endif %}
             </div>
             <div class="text-end text-muted small mt-1">{{ message.sent_at|date:"g:i A" }}</div>
-            <div class="message-reactions mt-1" id="reactions-{{ message.id }}"></div>
+            <div class="message-reactions mt-1"
+                 id="reactions-{{ message.id }}"
+                 data-message-id="{{ message.id }}">
+              {% for reaction in message.reaction_summary %}
+                <span class="reaction-pill"
+                      data-reaction="{{ reaction.content }}"
+                      data-message-id="{{ message.id }}"
+                      title="Click to react/unreact">
+                  {{ reaction.content }}
+                  <span class="reaction-count">{{ reaction.count }}</span>
+                </span>
+              {% endfor %}
+            </div>
           </div>
           {% if message.edited %}<div class="text-end text-muted small mt-1 fst-italic">(edited)</div>{% endif %}
         </div>

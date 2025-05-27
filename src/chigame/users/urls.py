@@ -64,6 +64,7 @@ urlpatterns = [
     path("labels/create/", views.create_notification_label, name="create-notification-label"),
     path("labels/<int:label_id>/notifications/", views.notifications_by_label, name="notifications-by-label"),
     path("inbox/<int:pk>/<str:category>/", views.user_inbox_view, name="user-inbox-category"),
+    path("user/<int:pk>/toggle-profanity/", views.toggle_profanity, name="toggle-profanity"),
     path("profile/<int:pk>/edit/", edit_profile, name="edit-profile"),
     path("labels/manage/", views.manage_labels_page_view, name="manage-labels-page"),
     path(
