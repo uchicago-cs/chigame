@@ -186,6 +186,7 @@
   </style>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
+
       const labelSelect = document.getElementById('id_labels');
       let labelChoices = null;
       if (labelSelect) {
@@ -496,6 +497,10 @@
           <button type="button" id="add_label_btn" class="btn-secondary">Add Label</button>
         </div>
       </div>
+    </div>
+    <div>
+      <label for="id_labels">Labels</label>
+      <input type="text" name="labels" id="id_labels" />
     </div>
     <div>
       <label for="id_rules">Rules:</label>
