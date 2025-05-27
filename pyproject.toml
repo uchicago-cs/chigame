@@ -6,6 +6,8 @@ python_files = [
     "tests.py",
     "test_*.py",
 ]
+testpaths = ["src/chigame"]
+norecursedirs = ["src/sandbox"]
 pythonpath = ["src/"]
 
 # ==== Coverage ====

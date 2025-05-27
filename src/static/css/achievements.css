@@ -50,8 +50,88 @@
       border-radius: 5px;
       margin-bottom: 20px;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      width: 65%;
     }
 
+    .stats-container {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      align-items: stretch;
+    }
+
+    .recent-achievements-tab {
+      position: absolute;
+      top: 15%;
+      right: 15%;
+      width: 20%;
+      background-color: var(--accent);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 0.25rem 0.25rem 0 0;
+      margin: 0;
+      font-size: 1em;
+      font-weight: normal;
+      box-sizing: border-box;
+      text-align: center;
+      z-index: 2;
+    }
+
+    .recent-achievements-box {
+      position: absolute;
+      top: 21%;
+      right: 15%;
+      width: 20%;
+      background-color: var(--card-bg);
+      border-radius: 0 0 5px 5px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      z-index: 1;
+    }
+
+    .recent-achievements-content {
+      padding: 10px;
+      max-height: 180px;
+      overflow-y: auto;
+    }
+
+    .recent-achievement-item {
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      font-size: 0.9em;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .recent-achievement-item:last-child {
+      border-bottom: none;
+    }
+
+    .recent-achievement-name {
+      font-weight: 500;
+      margin-right: 5px;
+    }
+
+    .recent-achievement-game {
+      color: #666;
+      font-style: italic;
+    }
+
+    .recent-achievement-time {
+      color: #888;
+      font-size: 0.85em;
+      white-space: nowrap;
+    }
+
+    @media (max-width: 768px) {
+
+      .user-stats,
+      .recent-achievements {
+        width: 100%;
+        float: none;
+      }
+    }
     .search-box {
       padding: 10px;
       margin-bottom: 20px;
@@ -144,14 +224,13 @@
     }
 
     .achievement-info {
-      max-width: calc(100% - 40px);
       overflow: hidden;
     }
 
     .achievement-info h4 {
       margin: 0 0 5px 0;
       font-size: 1.1em;
-      max-width: 100px;
+      max-width: 140px;
       overflow-wrap: break-word;
     }
 
@@ -161,19 +240,8 @@
     }
 
     .achievement-date {
-      font-size: 0.8em;
+      font-size: 0.8em !important;
       color: #aaa;
-    }
-
-    .achievement-percent {
-      position: absolute;
-      right: 10px;
-      top: 10px;
-      font-size: 0.8em;
-      background-color: rgba(0, 0, 0, 0.05);
-      padding: 3px 8px;
-      border-radius: 10px;
-      border: 1px solid rgba(0, 0, 0, 0.125);
     }
 
     .achievement.not-unlocked .achievement-info h4,
@@ -184,13 +252,12 @@
     .achievement.hidden .achievement-info p.achievement-desc {
       color: #6c757d;
       font-style: italic;
-      max-width: 90%;
       overflow-wrap: break-word;
     }
 
     .not-unlocked .trophy-icon img {
       filter: brightness(0.3);
-      /* 60% brightness (70% darker) */
+      /* 30% brightness (70% darker) */
       opacity: 0.6;
     }
 
@@ -286,11 +353,15 @@
     .achievement-desc {
       margin: 0;
       font-size: 0.9em;
-      overflow: hidden;
-      max-width: 90%;
       box-orient: vertical;
       max-height: 3em;
       overflow-wrap: break-word;
+      display: -webkit-box;
+      line-height: 1.4;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;  /* This is the key: set to 2 lines */
+      overflow: hidden;         /* Necessary for -webkit-line-clamp to work */
+      text-overflow: ellipsis;  /* Though often implied by -webkit-line-clamp, it's good to be explicit */
     }
 
     .achievement.expanded .achievement-desc {
@@ -299,7 +370,47 @@
       cursor: pointer;
       word-wrap: break-word;
       overflow-wrap: break-word;
+      display: block;             /* Or its original display type if not 'block'. This overrides 'display: -webkit-box;' */
+      -webkit-line-clamp: unset;  /* Explicitly removes the line clamping. 'none' or 'initial' can also work. */
+      overflow: visible;          /* Allows all text to be seen, overriding 'overflow: hidden;' */
     }
+
+    .achievement-title {
+    word-break: normal !important;
+    white-space: normal;
+    overflow-wrap: normal;
+    }
+
+    .expand-button {
+      display: inline-block;
+      color: var(--accent);
+      background-color: rgba(13, 110, 253, 0.1);
+      padding: 2px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.85em;
+      border: none;
+      position: absolute;
+      left: 12px;
+      margin-left: 12px;
+      top: 60px;
+    }
+
+    .expand-button.hidden {
+      display: none;
+    }
+
+    .expand-button:hover {
+      background-color: rgba(13, 110, 253, 0.2);
+    }
+
+    /* When expanded, show full text */
+    .expanded .achievement-desc {
+      white-space: normal;
+      overflow: visible;
+      max-height: none;
+    }
+
 
     .pin-button {
       background-color: transparent;
@@ -307,7 +418,6 @@
       color: #888;
       cursor: pointer;
       position: absolute;
-      /* Changed from margin-left */
       right: 6px;
       top: 5px;
       width: 30px;
@@ -326,15 +436,10 @@
 
     /* Reposition the percentage badge */
     .achievement-percent {
-      position: absolute;
-      right: 45px;
-      top: 10px;
+      display: block;
+      margin: 4px 0 8px 0;
       font-size: 0.8em;
-      background-color: rgba(0, 0, 0, 0.05);
-      padding: 3px 8px;
-      border-radius: 10px;
-      border: 1px solid rgba(0, 0, 0, 0.125);
-      white-space: nowrap;
+      max-width: 120px;
     }
 
     /* Responsive styles */
