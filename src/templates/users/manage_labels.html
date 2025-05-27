@@ -35,7 +35,7 @@
                           data-label-name="{{ label_item.name|escapejs }}"
                           data-delete-url="{% url 'users:delete-notification-label' label_item.id %}"
                           title="Delete label '{{ label_item.name }}'">
-                    <i class="bi bi-trash icon-lg"></i>
+                    <i class="delete-label-btn bi bi-trash icon-lg"></i>
                   </button>
                 </span>
               </li>

@@ -9,7 +9,7 @@
 }
 
 .inbox-category.active {
-  background-color: #800000;
+  background-color: #800000 !important;
   border: none;         /* remove left border */
 }
 
@@ -91,7 +91,7 @@
 
 .notifications-title {
   background-color: #800000;        /* ChiGame maroon */
-  color: white;
+  color: #e8e8e8 !important;
   text-align: center;
   font-weight: 600;
   font-size: 1rem;
@@ -108,7 +108,7 @@
 }
 
 #notification-btn .bi-bell {
-  color: #6c757d;
+  color: #e8e8e8;
 }
 
 #notification-btn-wrapper button:hover {
@@ -173,18 +173,7 @@
   color: #6c757d;
 }
 
-/* Dismiss button refinement */
-.notification-dismiss-btn {
-  background: none;
-  border: none;
-  padding: 0;
-  opacity: 0.5;
-}
 
-.notification-dismiss-btn:hover {
-  opacity: 1;
-  background: none;
-}
 
 .notification-style-friend {
   border-left: 3px solid #7aa5d5;
@@ -272,11 +261,29 @@ a {
   transition: background-color 0.2s ease;
 }
 
+
+
+.btn {
+  background-color: #800000 !important;
+  border: none !important;
+  color: #fff !important;
+  padding: 0.5rem 1.25rem !important;
+  border-radius: 0.25rem !important;
+  font-weight: 500 !important;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.btn:hover,
+.btn:focus {
+  background-color: #a00000 !important;
+  outline: none !important;
+}
+
 .delete-label-btn {
-  background-color: transparent;
+  background-color: transparent !important;
 }
 
 .delete-label-btn:hover{
-  color: #800000;
-  background-color: transparent;
+  color: #800000 !important;
+  background-color: transparent !important;
 }
