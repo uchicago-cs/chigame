@@ -136,7 +136,7 @@
         <div class="mb-3 {% if message.user == request.user %}align-self-end{% else %}align-self-start{% endif %}"
              data-message-id="{{ message.id }}"
              oncontextmenu="showContextMenu(event, '{{ message.id }}', '{{ message.user.username }}', '{{ message.content }}'); return false;">
-          <div class="{% if message.user == request.user %}bg-success-subtle{% else %}bg-white{% endif %} rounded p-2 shadow-sm">
+          <div class="{% if message.user == request.user %}chat-message--mine{% else %}chat-message--other{% endif %} rounded p-2 shadow-sm">
             {% if message.reply_to %}
               <div class="message-reply">
                 <div class="message-reply__sender">{{ message.reply_to.user.username }}</div>
