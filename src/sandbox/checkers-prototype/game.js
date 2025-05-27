@@ -123,7 +123,8 @@ function create() {
   const easyBot = document.getElementById('toggle-bot');
 
   // Score display
-  const score = document.getElementById('score');
+  const redScore = document.getElementById('red-score');
+  const blackScore = document.getElementById('black-score')
 
   // current turn indicator
   const turn = document.getElementById('player-turn');
@@ -154,7 +155,8 @@ function create() {
     drawBtn.textContent = 'Offer Draw';
     forfeitBtn.style.display = 'block';
     declineDrawBtn.style.display = 'none';
-    score.innerHTML = 'Red: 0<br>Black: 0';
+    redScore.innerHTML = "0";
+    blackScore.innerHTML = "0";
     turn.textContent = 'Red';
     dot.style.backgroundColor = COLORS.strRed;
 
@@ -544,8 +546,10 @@ function isValidMove(piece, moveX, moveY) {
 
 // Updates score on frontend
 function updateScore() {
-  const score = document.getElementById('score');
-  score.innerHTML = 'Red: ' + redCaptured + '<br>Black: ' + blackCaptured;
+  const redScore = document.getElementById('red-score');
+  const blackScore = document.getElementById('black-score');
+  redScore.innerHTML = redCaptured;
+  blackScore.innerHTML = blackCaptured;
 }
 
 // function to move a piece
@@ -1389,10 +1393,11 @@ function updateTimerDisplay() {
   const blackSec = String(blackTime % 60).padStart(2, '0');
 
   // update the innerHTML
-  redDisplay.textContent = `Red: ${redMin}:${redSec}`;
-  blackDisplay.textContent = `Black: ${blackMin}:${blackSec}`;
+  redDisplay.textContent = `${redMin}:${redSec}`;
+  blackDisplay.textContent = `${blackMin}:${blackSec}`;
 }
 
+// end the gamer if either player runs out of time
 function endGameOnTimeout(winnerColor) {
   stopPlayerTimer(); // stop the timer so that it doesn't go into the negatives
   gameOver = true;
