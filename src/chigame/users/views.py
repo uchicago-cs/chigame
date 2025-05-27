@@ -839,6 +839,18 @@ def manage_labels_page_view(request):
 
 
 @login_required
+@require_POST
+def delete_notification_label(request, label_id):
+    label = get_object_or_404(NotificationLabel, pk=label_id, user=request.user)
+    label_name = label.name
+
+    label.delete()
+
+    messages.success(request, f"Label '{label_name}' deleted successfully.")
+    return redirect(reverse("users:manage-labels-page"))
+
+
+@login_required
 def assign_label_to_notification(request, notification_id):
     """
     Assigns a selected notification label to a specific notification.
@@ -872,6 +884,7 @@ def notifications_by_label(request, label_id):
     belonging to the logged-in user, excluding deleted ones.
     """
     label = get_object_or_404(NotificationLabel, pk=label_id, user=request.user)
+    # Fetch only visible (non-deleted) notifications for the current user that have this label
     notifications = label.notifications.filter(receiver=request.user, visible=True).order_by("-first_sent")
 
     all_user_labels = NotificationLabel.objects.filter(user=request.user).order_by("name")
@@ -1030,18 +1043,6 @@ def unassign_label_from_notification(request, notification_id, label_id):
         messages.error(request, f"An error occurred: {str(e)}")
 
     return redirect(reverse("users:notifications-by-label", kwargs={"label_id": label_id}))
-
-
-@login_required
-@require_POST
-def delete_notification_label(request, label_id):
-    label = get_object_or_404(NotificationLabel, pk=label_id, user=request.user)
-    label_name = label.name
-
-    label.delete()
-
-    messages.success(request, f"Label '{label_name}' deleted successfully.")
-    return redirect(reverse("users:manage-labels-page"))
 
 
 @login_required
