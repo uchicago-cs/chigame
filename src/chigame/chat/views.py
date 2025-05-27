@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.db.models import Count, OuterRef, Subquery
@@ -20,8 +22,23 @@ def chat(request, chat_id):
     # if the chat is public, add the request user to the chat
     if request.user.is_authenticated and chat.public and not chat.users.filter(id=request.user.id).exists():
         chat.users.add(request.user)
-    if request.user.is_authenticated and not chat.users.filter(id=request.user.id).exists():
-        chat.users.add(request.user)
+
+    # get reactions
+    reaction_data = (
+        LiveChatMessageReaction.objects.filter(message__live_chat=chat)
+        .values("message_id", "content")
+        .annotate(count=Count("id"))
+    )
+
+    # Map reactions to each message_id
+    reaction_map = defaultdict(list)
+    for r in reaction_data:
+        reaction_map[r["message_id"]].append({"content": r["content"], "count": r["count"]})
+
+    # Attach .reaction_summary to each message object
+    for message in messages:
+        message.reaction_summary = reaction_map.get(message.id, [])
+
     return render(
         request,
         "chat/index.html",
@@ -61,18 +78,21 @@ def live_chat_list(request):
     )
 
 
+@login_required
 def create_live_chat(request):
     if request.method == "POST":
         form = LiveChatForm(request.POST)
 
         if form.is_valid():
-            form.save()
+            chat = form.save()
+            LiveChatUser.objects.create(user=request.user, live_chat=chat)
             return redirect("live-chat-list")
     else:
         form = LiveChatForm()
     return render(request, "chat/create-live-chat.html", {"form": form})
 
 
+@login_required
 def leave_chat(request, chat_id):
     chat = get_object_or_404(LiveChat, id=chat_id)
 
