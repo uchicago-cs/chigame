@@ -40,6 +40,7 @@ const COLORS = {
   black: 0x000000,
   red: 0xff0000,
   white: 0xffffff,
+  orange: 0xffa500,
   colorblind_blue: 0x1e88e5,
   colorblind_orange: 0xffc107,
   strRed: '#ff0000', // string needed b/c hex cannot be used to change css
@@ -66,6 +67,7 @@ let highlightedTiles = [];
 let gameOver = false;
 let drawOffered = false;
 let drawOfferedBy = null;
+let lastMoveHighlights = [];
 // Initial time for each player
 let redTime = 300;
 let blackTime = 300;
@@ -123,7 +125,8 @@ function create() {
   const easyBot = document.getElementById('toggle-bot');
 
   // Score display
-  const score = document.getElementById('score');
+  const redScore = document.getElementById('red-score');
+  const blackScore = document.getElementById('black-score')
 
   // current turn indicator
   const turn = document.getElementById('player-turn');
@@ -154,7 +157,8 @@ function create() {
     drawBtn.textContent = 'Offer Draw';
     forfeitBtn.style.display = 'block';
     declineDrawBtn.style.display = 'none';
-    score.innerHTML = 'Red: 0<br>Black: 0';
+    redScore.innerHTML = "0";
+    blackScore.innerHTML = "0";
     turn.textContent = 'Red';
     dot.style.backgroundColor = COLORS.strRed;
 
@@ -397,6 +401,9 @@ function createPiece(x, y, color, scene) {
     }
   });
 
+  // so the pieces will be above the highlights
+  piece.sprite.setDepth(1);
+
   // push to array
   pieces.push(piece);
 }
@@ -544,8 +551,10 @@ function isValidMove(piece, moveX, moveY) {
 
 // Updates score on frontend
 function updateScore() {
-  const score = document.getElementById('score');
-  score.innerHTML = 'Red: ' + redCaptured + '<br>Black: ' + blackCaptured;
+  const redScore = document.getElementById('red-score');
+  const blackScore = document.getElementById('black-score');
+  redScore.innerHTML = redCaptured;
+  blackScore.innerHTML = blackCaptured;
 }
 
 // function to move a piece
@@ -574,6 +583,18 @@ function movePiece(piece, moveX, moveY) {
       checkGameOver();
     }
   }
+
+  clearLastMoveHighlights();
+  // highlight the original tile
+  const originHighlight = checkers.scene.scenes[0].add.rectangle(
+    MARGIN + piece.x * TILE_SIZE + TILE_SIZE / 2,
+    MARGIN + piece.y * TILE_SIZE + TILE_SIZE / 2,
+    TILE_SIZE,
+    TILE_SIZE,
+    COLORS.orange,
+    0.3
+  );
+  lastMoveHighlights.push(originHighlight);
 
   // Move the piece
   piece.x = moveX;
@@ -619,6 +640,18 @@ function movePiece(piece, moveX, moveY) {
     });
   }
 
+  // Highlight destination tile
+  const destHighlight = checkers.scene.scenes[0].add.rectangle(
+    MARGIN + moveX * TILE_SIZE + TILE_SIZE / 2,
+    MARGIN + moveY * TILE_SIZE + TILE_SIZE / 2,
+    TILE_SIZE,
+    TILE_SIZE,
+    COLORS.orange,
+    0.3
+  );
+  lastMoveHighlights.push(destHighlight);
+  // Play move sound effect
+  piece.sprite.scene.sound.play('slide');
   //console.log('Current board state:', getBoardState());
   piece.sprite.scene.sound.play('slide');
 }
@@ -1328,6 +1361,13 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
+
+function clearLastMoveHighlights() {
+  while (lastMoveHighlights.length > 0) {
+    lastMoveHighlights.pop().destroy();
+  }
+}
+
 // functions for the timers
 function startPlayerTimer() {
   // stop the current running timer
@@ -1375,10 +1415,11 @@ function updateTimerDisplay() {
   const blackSec = String(blackTime % 60).padStart(2, '0');
 
   // update the innerHTML
-  redDisplay.textContent = `Red: ${redMin}:${redSec}`;
-  blackDisplay.textContent = `Black: ${blackMin}:${blackSec}`;
+  redDisplay.textContent = `${redMin}:${redSec}`;
+  blackDisplay.textContent = `${blackMin}:${blackSec}`;
 }
 
+// end the gamer if either player runs out of time
 function endGameOnTimeout(winnerColor) {
   stopPlayerTimer(); // stop the timer so that it doesn't go into the negatives
   gameOver = true;
