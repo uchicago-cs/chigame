@@ -19,8 +19,8 @@ urlpatterns = [
     path("tournaments/<int:pk>/chat/", views.TournamentChatDetailView, name="tournament-chat"),
     # Games favorites
     path("favorites/", views.FavoriteListView.as_view(), name="favorite-list"),
-    path("<int:pk>/favorite/", views.add_to_favorites, name="add-to-favorites"),
-    path("<int:pk>/unfavorite/", views.remove_from_favorites, name="remove-from-favorites"),
+    path("favorite-games/add/<int:game_id>/", views.add_to_favorites, name="add-to-favorites"),
+    path("favorite-games/remove/<int:game_id>/", views.remove_from_favorites, name="remove-from-favorites"),
     # custom game list handling
     path("gamelists/<int:pk>/", views.GameListDetailView.as_view(), name="gamelist-detail"),
     path("<int:pk>/gamelists/<int:list_pk>/add/", views.add_to_gamelist, name="add-to-gamelist"),
@@ -50,7 +50,7 @@ urlpatterns = [
     path("tournaments/<int:pk>/update/", views.TournamentUpdateView.as_view(), name="tournament-update"),
     path("tournaments/<int:pk>/delete/", views.TournamentDeleteView.as_view(), name="tournament-delete"),
     path("tournaments/archived/", views.TournamentArchivedListView.as_view(), name="tournament-archived"),
-    # addedum
+    # an addedum
     path("tournaments/<int:pk>/match-stats/", views.MatchStatsView.as_view(), name="tournament-match-stats"),
     # placeholder game
     path("lobby/<int:pk>/coinflip", views.coin_flip_game, name="placeholder-game"),
@@ -73,6 +73,10 @@ urlpatterns = [
     path("checkers/<int:pk>/", views.checkers_game_view, name="checkers-game"),
     path("checkers/<int:board_id>/update/", views.checkers_game_update_board_state, name="update_board_state"),
     path("checkers/<int:board_id>/state/", views.checkers_game_get_board_state, name="checkers-get-state"),
+    # tournament feedback
+    path("tournaments/<int:tournament_id>/feedback/", views.tournament_feedback_list, name="tournament-feedback-list"),
+    path("tournaments/<int:tournament_id>/feedback/submit/", views.submit_feedback, name="submit-feedback"),
+    path("<int:pk>/play/", views.play_embedded_game, name="play-embedded-game"),
     # tournament recommendations
     path(
         "tournaments/<int:tournament_id>/recommendations/",
