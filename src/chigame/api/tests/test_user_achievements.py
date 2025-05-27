@@ -3,7 +3,8 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from chigame.achievements.models import UserAchievement
-from chigame.api.tests.factories import AchievementFactory, GameFactory, UserAchievementFactory, UserFactory
+from chigame.achievements.tests.factories import CompletedUserAchievementFactory
+from chigame.api.tests.factories import AchievementFactory, GameFactory, UserFactory
 
 # Local application/library specific imports
 
@@ -13,7 +14,7 @@ class UserAchievementTests(APITestCase):
         self.user = UserFactory()
         self.game = GameFactory()
         self.achievement = AchievementFactory(game=self.game)
-        self.user_achievement = UserAchievementFactory()
+        self.user_achievement = CompletedUserAchievementFactory()
 
     def test_create_user_achievement_success(self):
         data = {
@@ -32,7 +33,7 @@ class UserAchievementTests(APITestCase):
         self.assertEqual(response.data["data"]["progress"], 0)
 
     def test_create_duplicate_user_achievement_fails(self):
-        UserAchievementFactory(user=self.user, achievement=self.achievement)
+        CompletedUserAchievementFactory(user=self.user, achievement=self.achievement)
         data = {"user": self.user.id}
         response = self.client.post(
             reverse("api-user-achievement-assignment", kwargs={"game_id": self.game.id, "pk": self.achievement.id}),
@@ -103,7 +104,7 @@ class UserAchievementTests(APITestCase):
     def test_get_user_achievements_success(self):
         achievements = AchievementFactory.create_batch(3, game=self.game)
 
-        user_achievements = [UserAchievementFactory(user=self.user, achievement=a) for a in achievements]
+        user_achievements = [CompletedUserAchievementFactory(user=self.user, achievement=a) for a in achievements]
 
         assert len(user_achievements) != 0
         response = self.client.get(reverse("api-user-achievements", kwargs={"pk": self.user.id}))
