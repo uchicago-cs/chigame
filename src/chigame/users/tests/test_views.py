@@ -187,7 +187,7 @@ class TestFavoriteGamesViews:
         """Test adding a game to favorites."""
         client.force_login(user)
 
-        response = client.post(reverse("users:add-favorite-game"), {"game_id": game1.id})
+        response = client.post(reverse("users:add-favorite-game", args=[game1.id]))
 
         assert response.status_code == 302
         favorites_list = GameList.objects.get(name="Favorites", created_by=user)
@@ -202,7 +202,7 @@ class TestFavoriteGamesViews:
         favorites_list.games.add(game1)
 
         # Remove game
-        response = client.post(reverse("users:remove-favorite-game", kwargs={"game_id": game1.id}))
+        response = client.post(reverse("users:remove-favorite-game", args=[game1.id]))
 
         # back to profile
         assert response.status_code == 302
@@ -220,7 +220,7 @@ class TestFavoriteGamesViews:
 
     def test_add_favorite_requires_login(self, client, game1):
         """Test that adding favorites requires authentication."""
-        response = client.post(reverse("users:add-favorite-game"), {"game_id": game1.id})
+        response = client.post(reverse("users:add-favorite-game", args=[game1.id]))
 
         assert response.status_code == 302
         assert "/accounts/login/" in response.url

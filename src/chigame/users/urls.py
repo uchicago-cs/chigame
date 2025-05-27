@@ -67,7 +67,7 @@ urlpatterns = [
     path("labels/create/", views.create_notification_label, name="create-notification-label"),
     path("labels/<int:label_id>/notifications/", views.notifications_by_label, name="notifications-by-label"),
     path("inbox/<int:pk>/<str:category>/", views.user_inbox_view, name="user-inbox-category"),
-    path("favorite-games/add/", view=add_favorite_game, name="add-favorite-game"),
+    path("favorite-games/add/<int:game_id>/", view=add_favorite_game, name="add-favorite-game"),
     path("favorite-games/remove/<int:game_id>/", view=remove_favorite_game, name="remove-favorite-game"),
     path("block/<int:pk>/", view=block_user, name="block-user"),
     path("profile/<int:pk>/edit/", edit_profile, name="edit-profile"),

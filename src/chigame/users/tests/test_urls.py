@@ -22,11 +22,14 @@ def test_redirect():
 
 def test_add_favorite_game():
     game_id = 123
-    assert reverse("users:add_favorite_game", kwargs={"game_id": game_id}) == f"/users/favorites/add/{game_id}/"
-    assert resolve(f"/users/favorites/add/{game_id}/").view_name == "users:add_favorite_game"
+    assert reverse("users:add-favorite-game", kwargs={"game_id": game_id}) == f"/users/favorite-games/add/{game_id}/"
+    assert resolve(f"/users/favorite-games/add/{game_id}/").view_name == "users:add-favorite-game"
 
 
 def test_remove_favorite_game():
     game_id = 456
-    assert reverse("users:remove_favorite_game", kwargs={"game_id": game_id}) == f"/users/favorites/remove/{game_id}/"
-    assert resolve(f"/users/favorites/remove/{game_id}/").view_name == "users:remove_favorite_game"
+    assert (
+        reverse("users:remove-favorite-game", kwargs={"game_id": game_id})
+        == f"/users/favorite-games/remove/{game_id}/"
+    )
+    assert resolve(f"/users/favorite-games/remove/{game_id}/").view_name == "users:remove-favorite-game"

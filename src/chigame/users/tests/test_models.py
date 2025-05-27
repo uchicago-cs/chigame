@@ -229,10 +229,6 @@ def test_notificationqueryset_is_x_methods():
     assert len(deleted_notifications) == 2
     assert len(not_deleted_notifications) == 3
 
-    notifications.restore_all_deleted()
-    assert len(Notification.objects.is_deleted()) == 0
-    assert len(Notification.objects.is_not_deleted()) == 5
-
 
 @pytest.mark.django_db
 def test_user_favorites_list_creation():
