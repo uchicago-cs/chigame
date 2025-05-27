@@ -447,11 +447,15 @@
     {% for player in tournament.get_all_players %}
       <li>
         <p>
-          {% if player.name %}
-            <a href="{% url 'users:detail' player.id %}">{{ player.name }}</a>
-          {% else %}
-            <a href="{% url 'users:detail' player.id %}">{{ player.email }}</a>
-          {% endif %}
+          <a href="{% url 'users:detail' player.id %}">
+            {% if player.name %}
+              {{ player.name }}
+            {% elif player.username %}
+              {{ player.username }}
+            {% else %}
+              {{ player.email }}
+            {% endif %}
+          </a>
         </p>
       </li>
     {% endfor %}
@@ -463,11 +467,15 @@
       {% for winner in tournament.get_all_winners %}
         <li>
           <p>
-            {% if winner.name %}
-              <a href="{% url 'users:detail' winner.id %}">{{ winner.name }}</a>
-            {% else %}
-              <a href="{% url 'users:detail' winner.id %}">{{ winner.email }}</a>
-            {% endif %}
+            <a href="{% url 'users:detail' winner.id %}">
+              {% if winner.name %}
+                {{ winner.name }}
+              {% elif winner.username %}
+                {{ winner.username }}
+              {% else %}
+                {{ winner.email }}
+              {% endif %}
+            </a>
           </p>
         </li>
       {% endfor %}
@@ -478,22 +486,43 @@
   {% if tournament.get_all_matches %}
     <ul>
       {% for match in tournament.get_all_matches %}
-        <li>
-          <p>
-            Match (
-            {% for player in match.players.all %}
-              {% if player.name %}
-                <a href="{% url 'users:detail' player.id %}">{{ player.name }}</a>
-              {% else %}
-                <a href="{% url 'users:detail' player.id %}">{{ player.email }}</a>
-              {% endif %}
-              {% if not forloop.last %}vs.{% endif %}
-            {% empty %}
-              Forfeited
-            {% endfor %}
-            )
-          </p>
-          <!-- You can add more fields as needed -->
+        <li class="match-item">
+          <div class="match-info">
+            <p class="match-players">
+              Match (
+              {% for player in match.players.all %}
+                <a href="{% url 'users:detail' player.id %}">
+                  {% if player.name %}
+                    {{ player.name }}
+                  {% elif player.username %}
+                    {{ player.username }}
+                  {% else %}
+                    {{ player.email }}
+                  {% endif %}
+                </a>
+                {% if not forloop.last %}vs.{% endif %}
+              {% empty %}
+                Forfeited
+              {% endfor %}
+              )
+            </p>
+            <p class="match-status">Status: {{ match.lobby.get_match_status_display }}</p>
+            {% if match.lobby.match_status == match.lobby.Viewable %}
+              <p class="match-in-progress">Match in progress</p>
+            {% elif match.lobby.match_status == match.lobby.Finished %}
+              <p class="match-finished">Match finished</p>
+            {% else %}
+              <p class="match-waiting">Waiting for players ({{ match.lobby.members.count }}/{{ match.players.count }})</p>
+            {% endif %}
+            {% if user in match.players.all and tournament.status == "tournament in progress" and match.lobby.match_status != match.lobby.Viewable %}
+              <form method="post" class="join-match-form">
+                {% csrf_token %}
+                <input type="hidden" name="tournament_id" value="{{ tournament.id }}" />
+                <input type="hidden" name="action" value="join_match" />
+                <button type="submit" class="join-match-button">Join Match</button>
+              </form>
+            {% endif %}
+          </div>
         </li>
       {% endfor %}
     </ul>
