@@ -42,7 +42,7 @@ class FriendsTable(tables.Table):
             "email",
             "online_status",
             "last_seen",
-            "username"
+            "username",
         ]  # Adjust fields to show relevant information from the UserProfile model
 
         attrs = {
