@@ -1,24 +1,158 @@
-[
-    {
-      "model": "games.gamehistory",
-      "pk": 1,
-      "fields": {
-        "user": 1,
-        "match": 1,
-        "date_played": "2025-05-23T12:00:00Z",
-        "is_completed": true,
-        "result": 0
-      }
-    },
-    {
-      "model": "games.gamehistory",
-      "pk": 2,
-      "fields": {
-        "user": 2,
-        "match": 1,
-        "date_played": "2025-05-23T12:00:00Z",
-        "is_completed": true,
-        "result": 2
-      }
+  {
+    "model": "users.user",
+    "pk": 1,
+    "fields": {
+      "username": "admin",
+      "email": "admin@example.com",
+      "is_superuser": true,
+      "is_staff": true,
+      "is_active": true
     }
-  ]
+  },
+  {
+    "model": "users.user",
+    "pk": 2,
+    "fields": {
+      "username": "user2",
+      "email": "user2@example.com",
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": true
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 3,
+    "fields": {
+      "username": "user3",
+      "email": "user3@example.com",
+      "is_superuser": false,
+      "is_staff": false,
+      "is_active": true
+    }
+  },
+  {
+    "model": "games.game",
+    "pk": 1,
+    "fields": {
+      "name": "History Checkers",
+      "description": "This is a test game history game.",
+      "complexity": 3.5,
+      "min_players": 2,
+      "max_players": 4,
+      "suggested_age": 10,
+      "year_published": 2025,
+      "expected_playtime": 30,
+      "min_playtime": 20,
+      "max_playtime": 40,
+      "rules": "Test rules text.",
+      "twine_file": null
+    }
+  },
+  {
+    "model": "games.lobby",
+    "pk": 1,
+    "fields": {
+      "match_status": 3,
+      "name": "Lobby 1",
+      "game": 1,
+      "game_mod_status": 1,
+      "created_by": 1,
+      "min_players": 2,
+      "max_players": 4,
+      "time_constraint": 300,
+      "lobby_created": "2025-05-23T09:00:00Z"
+    }
+  },
+  {
+    "model": "games.lobby",
+    "pk": 2,
+    "fields": {
+      "match_status": 3,
+      "name": "Lobby 2",
+      "game": 1,
+      "game_mod_status": 1,
+      "created_by": 2,
+      "min_players": 2,
+      "max_players": 4,
+      "time_constraint": 300,
+      "lobby_created": "2025-05-23T09:30:00Z"
+    }
+  },
+  {
+    "model": "games.lobby",
+    "pk": 3,
+    "fields": {
+      "match_status": 2,
+      "name": "Lobby 3",
+      "game": 1,
+      "game_mod_status": 1,
+      "created_by": 3,
+      "min_players": 2,
+      "max_players": 4,
+      "time_constraint": 300,
+      "lobby_created": "2025-05-23T10:00:00Z"
+    }
+  },
+  {
+    "model": "games.match",
+    "pk": 1,
+    "fields": {
+      "game": 1,
+      "lobby": 1,
+      "date_played": "2025-05-23T10:00:00Z"
+    }
+  },
+  {
+    "model": "games.match",
+    "pk": 2,
+    "fields": {
+      "game": 1,
+      "lobby": 2,
+      "date_played": "2025-05-23T11:00:00Z"
+    }
+  },
+  {
+    "model": "games.match",
+    "pk": 3,
+    "fields": {
+      "game": 1,
+      "lobby": 3,
+      "date_played": "2025-05-23T12:00:00Z"
+    }
+  },
+  {
+    "model": "games.gamehistory",
+    "pk": 1,
+    "fields": {
+      "user": 1,
+      "match": 1,
+      "date_played": "2025-05-23T12:00:00Z",
+      "is_completed": true,
+      "result": 1
+    }
+  },
+  {
+    "model": "games.gamehistory",
+    "pk": 2,
+    "fields": {
+      "user": 1,
+      "match": 2,
+      "date_played": "2025-05-23T12:05:00Z",
+      "is_completed": true,
+      "result": 2
+    }
+  },
+  {
+    "model": "games.gamehistory",
+    "pk": 3,
+    "fields": {
+      "user": 1,
+      "match": 3,
+      "date_played": "2025-05-23T12:10:00Z",
+      "is_completed": false,
+      "result": null
+    }
+  }
+]
+

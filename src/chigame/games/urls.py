@@ -1,7 +1,7 @@
 from django.urls import path
 
 from . import views
-from .views import InteractiveFictionView, LobbyCreateView, UploadFileView
+from .views import InteractiveFictionDetailView, LobbyCreateView, UploadFileView
 
 urlpatterns = [
     # lobbies
@@ -36,11 +36,13 @@ urlpatterns = [
     path("games/<int:pk>/review/", views.add_review, name="add-review"),
     # matches
     path("<int:pk>/match/create/", views.MatchCreateView.as_view(), name="match-create"),
+    path("<int:pk>/match/join/", views.join_match, name="match-join"),
+    path("games/<int:game_id>/history/", views.game_history_view, name="game_history"),
     path("lobby/<int:pk>/code/", views.MatchCodeView.as_view(), name="match-code"),
     # interactive fiction
     path("interactive-fiction/", views.IFGameCreateView.as_view(), name="interactive-fiction-create"),
     path("<int:pk>/upload/", UploadFileView.as_view(), name="upload-file"),
-    path("if-game/<int:pk>/", InteractiveFictionView.as_view(), name="interactive-fiction-detail"),
+    path("if-game/<int:pk>/", InteractiveFictionDetailView.as_view(), name="interactive-fiction-detail"),
     # tournaments
     path("tournaments/", views.TournamentListView.as_view(), name="tournament-list"),
     path("tournaments/<int:pk>/", views.TournamentDetailView.as_view(), name="tournament-detail"),
@@ -48,7 +50,7 @@ urlpatterns = [
     path("tournaments/<int:pk>/update/", views.TournamentUpdateView.as_view(), name="tournament-update"),
     path("tournaments/<int:pk>/delete/", views.TournamentDeleteView.as_view(), name="tournament-delete"),
     path("tournaments/archived/", views.TournamentArchivedListView.as_view(), name="tournament-archived"),
-    # addedum
+    # an addedum
     path("tournaments/<int:pk>/match-stats/", views.MatchStatsView.as_view(), name="tournament-match-stats"),
     # placeholder game
     path("lobby/<int:pk>/coinflip", views.coin_flip_game, name="placeholder-game"),
@@ -71,6 +73,10 @@ urlpatterns = [
     path("checkers/<int:pk>/", views.checkers_game_view, name="checkers-game"),
     path("checkers/<int:board_id>/update/", views.checkers_game_update_board_state, name="update_board_state"),
     path("checkers/<int:board_id>/state/", views.checkers_game_get_board_state, name="checkers-get-state"),
+    # tournament feedback
+    path("tournaments/<int:tournament_id>/feedback/", views.tournament_feedback_list, name="tournament-feedback-list"),
+    path("tournaments/<int:tournament_id>/feedback/submit/", views.submit_feedback, name="submit-feedback"),
+    path("<int:pk>/play/", views.play_embedded_game, name="play-embedded-game"),
     # tournament recommendations
     path(
         "tournaments/<int:tournament_id>/recommendations/",

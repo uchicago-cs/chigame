@@ -158,16 +158,23 @@
                   <a href="{% url 'users:friend-list' profile.user.id %}"
                      class="btn btn-maroon">Friend List</a>
                   <a href="{% url 'users:user-history' profile.user.pk %}"
-                     class="btn btn-maroon">Stats</a>
+                     class="btn btn-primary">Stats</a>
+                  <a href="{% url 'users:recommendation-preferences' profile.user.pk %}"
+                     class="btn btn-primary">Recommendation Preferences</a>
                 {% elif is_friend %}
                   <a href="{% url 'users:remove-friend' profile.user.pk %}"
-                     class="btn btn-maroon">Remove Friend</a>
+                     class="btn btn-primary">Remove Friend</a>
                   <a href="{% url 'users:user-history' profile.user.pk %}"
-                     class="btn btn-maroon">Stats</a>
-                {% else %}
-                  {% if not friendship_request %}
-                    <a href="{% url 'users:add-friend' profile.user.pk %}"
-                       class="btn btn-maroon">Add Friend</a>
+                     class="btn btn-primary">Stats</a>
+                {% elif friendship_request %}
+                  {% if friendship_request.sender_id == request.user.pk %}
+                    <a href="{% url 'users:cancel-friend-invitation' profile.user.id %}"
+                       class="btn btn-primary">Cancel Friendship Request</a>
+                  {% else %}
+                    <a href="{% url 'users:accept-friend-invitation' friendship_request.id %}"
+                       class="btn btn-primary">Accept Friendship Request</a>
+                    <a href="{% url 'users:decline-friend-invitation' friendship_request.id %}"
+                       class="btn btn-primary">Decline Friendship Request</a>
                   {% endif %}
                   <a href="{% url 'users:user-history' profile.user.pk %}"
                      class="btn btn-maroon">Stats</a>
@@ -215,6 +222,29 @@
             </div>
           </div>
         </div>
+        {% if profile.user == request.user %}
+          <div class="card mt-4">
+            <div class="card-header">
+              <h3>My Game Lists</h3>
+            </div>
+            <div class="card-body">
+              {% if game_lists %}
+                <ul class="list-group list-group-flush">
+                  {% for game_list in game_lists %}
+                    <li class="list-group-item">
+                      <a href="{% url 'gamelist-detail' game_list.pk %}">{{ game_list.name }}</a>
+                      <span class="badge bg-secondary rounded-pill float-end">{{ game_list.games.count }} game{{ game_list.games.count|pluralize }}</span>
+                    </li>
+                  {% endfor %}
+                </ul>
+              {% else %}
+                <p class="text-muted">
+                  You don't have any game lists yet. <a href="{% url 'game-list' %}">Browse games</a> to create some!
+                </p>
+              {% endif %}
+            </div>
+          </div>
+        {% endif %}
       </div>
     </div>
   </div>
