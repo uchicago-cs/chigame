@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block content %}
+  <style>
+    .form-width {
+      max-width: 600px;
+    }
+
+    .code-cell {
+      width: 60px;
+      height: 60px;
+      font-size: 2rem;
+      border-radius: 10px;
+      border: 2px solid lightgray;
+      text-transform: uppercase;
+    }
+
+    .btn-join {
+      background-color: #800000;
+      border: none;
+      color: white;
+    }
+
+    .full-height-center {
+      min-height: 80vh;
+    }
+  </style>
+  <!-- To make sure it's in the center of the page -->
+  <div class="d-flex justify-content-center align-items-center full-height-center">
+    <div class="text-center">
+      <h1 class="mb-4">Enter code to join match</h1>
+      <!-- Adding input form -->
+      <form method="post"
+            class="d-flex flex-column align-items-center form-width">
+        {% csrf_token %}
+        <div class="d-flex gap-2 justify-content-center mb-4">
+          <!-- Add 6 fields (one for each character) to enter the lobby code; transforms entered letters into uppercase -->
+          {% for i in "123456" %}
+            <input type="text"
+                   name="code_{{ i }}"
+                   maxlength="1"
+                   class="form-control text-center code-cell" />
+          {% endfor %}
+        </div>
+        <input type="hidden" name="lobby_code" id="lobby_code_combined" />
+        <!-- Use maroon color for the button -->
+        <button type="submit" class="btn btn-join">Join Match</button>
+      </form>
+      <!-- To display messages, incluing error messages -->
+      {% if messages %}
+        <div class="mt-3">
+          {% for message in messages %}<div class="alert alert-{{ message.tags }}">{{ message }}</div>{% endfor %}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+  {% block extra_js %}
+    <script>
+      // Move automaticaly to the next 'cell' (this code block is written with the help of ChatGPT)
+      document.querySelectorAll('.code-cell').forEach((input, idx, arr) => {
+        input.addEventListener('input', () => {
+          if (input.value.length === 1 && idx < arr.length - 1) {
+            arr[idx + 1].focus();
+          }
+          document.getElementById('lobby_code_combined').value = Array.from(arr).map(i => i.value.toUpperCase()).join('');
+        });
+      });
+    </script>
+  {% endblock extra_js %}
+{% endblock content %}
