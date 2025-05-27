@@ -73,6 +73,7 @@ urlpatterns = [
     ),
     path("labels/<int:label_id>/notifications/", views.notifications_by_label, name="notifications-by-label"),
     path("inbox/<int:pk>/<str:category>/", views.user_inbox_view, name="user-inbox-category"),
+    path("user/<int:pk>/toggle-profanity/", views.toggle_profanity, name="toggle-profanity"),
     path("favorite-games/add/", view=add_favorite_game, name="add-favorite-game"),
     path("favorite-games/remove/<int:game_id>/", view=remove_favorite_game, name="remove-favorite-game"),
     path("block/<int:pk>/", view=block_user, name="block-user"),
