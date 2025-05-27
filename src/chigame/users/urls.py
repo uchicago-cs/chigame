@@ -75,6 +75,7 @@ urlpatterns = [
         name="unassign-label-from-notification",
     ),
     path("labels/<int:label_id>/delete/", views.delete_notification_label, name="delete-notification-label"),
+    path("<int:pk>/recommendation-preferences/", views.recommendation_preferences, name="recommendation-preferences"),
     path("achievements", user_achievements, name="user-achievements"),
     path("achievements/<int:game_id>", user_achievements, name="user-achievements-game"),
     path("achievements/all/<int:status>", user_achievements, name="user-achievements-status"),
@@ -90,4 +91,6 @@ urlpatterns = [
     # Group paths
     path("groups/", views.GroupListView.as_view(), name="group-list"),
     path("groups/<int:pk>/", views.GroupDetailView.as_view(), name="group-detail"),
+    path("groups/create/", views.GroupCreateView.as_view(), name="group-create"),
+    path("groups/<int:pk>/delete/", views.GroupDeleteView.as_view(), name="group-delete"),
 ]

@@ -557,6 +557,9 @@ function movePiece(piece, moveX, moveY) {
   if (Math.abs(dx) === 2 && Math.abs(dy) === 2) {
     const captured = getPiece(piece.x + dx / 2, piece.y + dy / 2);
     if (captured) {
+      if (captured.isKing && captured.kingIcon) {
+        captured.kingIcon.destroy();
+      }
       captured.sprite.destroy(); // delete the sprite (remove from display state)
       if (captured.kingIcon) captured.kingIcon.destroy(); // destroy the icon as well
       pieces = pieces.filter((p) => p !== captured); // remove it from the array (game state)
@@ -758,9 +761,7 @@ function giveHint() {
 // helper function to highlight the valid moves for the selected piece
 function highlightValidMoves(scene, piece) {
   clearHighlightedTiles(); // remove any previous highlights
-
   var jumpPaths = getJumpPaths(piece);
-
   if (jumpPaths.length > 0) {
     // Highlight all final landing squares of all jump paths
     for (var i = 0; i < jumpPaths.length; i++) {
@@ -837,11 +838,13 @@ function highlightValidMoves(scene, piece) {
 function executeJumpChain(piece, jump) {
   for (var i = 0; i < jump.captures.length; i++) {
     var captured = jump.captures[i];
+    if (captured.isKing && captured.kingIcon) {
+      captured.kingIcon.destroy();
+    }
     captured.sprite.destroy();
     pieces = pieces.filter(function (p) {
       return p !== captured;
     });
-
     if (currentPlayer === lightPiece) {
       redCaptured++;
     } else {
@@ -868,8 +871,18 @@ function executeJumpChain(piece, jump) {
   var final = jump.path[jump.path.length - 1];
   piece.x = final.x;
   piece.y = final.y;
-  piece.sprite.x = margin + final.x * tile_size + tile_size / 2;
-  piece.sprite.y = margin + final.y * tile_size + tile_size / 2;
+
+  const newX = margin + final.x * tile_size + tile_size / 2;
+  const newY = margin + final.y * tile_size + tile_size / 2;
+
+  // Animate movement
+  checkers.scene.scenes[0].tweens.add({
+    targets: piece.sprite,
+    x: newX,
+    y: newY,
+    duration: 250,
+    ease: 'Power3',
+  });
 
   // move the king icon if applicable
   if (piece.isKing && piece.kingIcon) {
@@ -1176,6 +1189,7 @@ document.addEventListener('DOMContentLoaded', () => {
     muted = !muted;
     checkers.sound.mute = muted;
     // then update the label
+    toggleMuteBtn.classList.toggle('selected');
     toggleMuteBtn.textContent = muted ? 'Unmute' : 'Mute';
   });
 
@@ -1186,6 +1200,7 @@ document.addEventListener('DOMContentLoaded', () => {
       muted = !muted;
       checkers.sound.mute = muted;
       toggleMuteBtn.textContent = muted ? 'Unmute' : 'Mute';
+      toggleMuteBtn.classList.toggle('selected');
     }
   });
 });

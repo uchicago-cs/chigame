@@ -277,6 +277,10 @@ canvas {
     outline-offset: -3px;
 }
 
+#toggle-mute {
+    min-width: 7rem;
+}
+
 #captured-pieces {
     position: fixed;
     right: 0px;

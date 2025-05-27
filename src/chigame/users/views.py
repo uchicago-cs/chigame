@@ -3,15 +3,17 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
+from django.core.exceptions import PermissionDenied
 from django.db.models import Q
 from django.http import Http404, HttpResponseNotFound
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_POST
 from django.views.generic import DetailView, RedirectView, UpdateView
+from django.views.generic.edit import CreateView, DeleteView
 from django_tables2 import SingleTableView
 
 from chigame.games.models import GameList, Lobby, Player, Tournament
@@ -20,6 +22,7 @@ from .models import (
     FriendInvitation,
     FriendRequestNotification,
     Group,
+    GroupInvitation,
     GroupInvitationNotification,
     MatchInvitationNotification,
     Notification,
@@ -787,7 +790,7 @@ def assign_label_to_notification(request, notification_id):
         notification.labels.add(label)
         messages.success(request, "Label assigned to notification.")
     except NotificationLabel.DoesNotExist:
-        messages.error(request, "Label not found or does not belong to you.")
+        messages.error(request, "Label not  found or does not belong to you.")
 
     return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
 
@@ -851,6 +854,44 @@ def delete_notification_label(request, label_id):
     return redirect(reverse("users:manage-labels-page"))
 
 
+@login_required
+def recommendation_preferences(request, pk):
+    """
+    Allow users to customize their game recommendation preferences.
+
+    Args:
+        request (HttpRequest)
+        pk (int): The primary key of the user
+
+    Returns:
+        HttpResponse: Rendered template with recommendation preferences
+    """
+
+    if pk != request.user.pk:
+        messages.error(request, "You can only manage your own preferences")
+        return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
+
+    from .models import RecommendationPreferences
+
+    preferences = RecommendationPreferences.get_or_create_preferences(request.user)
+
+    if request.method == "POST":
+        try:
+            preferences.category_weight = min(100, max(0, int(request.POST.get("category_weight", 40))))
+            preferences.mechanics_weight = min(100, max(0, int(request.POST.get("mechanics_weight", 30))))
+            preferences.designers_weight = min(100, max(0, int(request.POST.get("designers_weight", 15))))
+            preferences.complexity_weight = min(100, max(0, int(request.POST.get("complexity_weight", 10))))
+            preferences.playtime_weight = min(100, max(0, int(request.POST.get("playtime_weight", 5))))
+            preferences.save()
+            messages.success(request, "Your recommendation preferences have been updated")
+        except ValueError:
+            messages.error(request, "Invalid preference values. Please enter numbers between 0 and 100.")
+
+    context = {"preferences": preferences, "user_id": pk}
+
+    return render(request, "users/recommendation_preferences.html", context)
+
+
 class GroupListView(SingleTableView):
     model = Group
     table_class = GroupTable
@@ -860,3 +901,43 @@ class GroupListView(SingleTableView):
 class GroupDetailView(DetailView):
     model = Group
     template_name = "users/group_detail.html"
+
+
+class GroupCreateView(LoginRequiredMixin, CreateView):
+    model = Group
+    fields = ["name", "description", "members"]
+    template_name = "users/group_create.html"
+    success_url = reverse_lazy("group-list")
+
+    def form_valid(self, form):
+        form.instance.created_by = self.request.user
+        response = super().form_valid(form)
+
+        self.object.members.add(self.request.user)
+
+        selected_members = form.cleaned_data["members"]
+        for user in selected_members:
+            if user != self.request.user:
+                GroupInvitation.objects.get_or_create(
+                    friend_group=self.object,
+                    sender=self.request.user,
+                    receiver=user,
+                    defaults={"accepted": False, "is_deleted": False},
+                )
+
+        return response
+
+
+class GroupDeleteView(LoginRequiredMixin, DeleteView):
+    model = Group
+    template_name = "users/group_confirm_delete.html"
+    success_url = reverse_lazy("group-list")
+
+    def get_queryset(self):
+        return Group.objects.filter(created_by=self.request.user)
+
+    def dispatch(self, request, *args, **kwargs):
+        obj = self.get_object()
+        if obj.created_by != request.user:
+            raise PermissionDenied
+        return super().dispatch(request, *args, **kwargs)
