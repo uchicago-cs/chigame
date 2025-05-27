@@ -106,6 +106,82 @@
     .photo-upload-form label:hover {
       background-color: #600000;
     }
+
+    .favorite-games-section {
+      margin-top: 30px;
+      padding: 20px;
+      background-color: #f8f9fa;
+      border-radius: 12px;
+      border: 1px solid #ddd;
+    }
+
+    .favorite-games-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 15px;
+      margin-top: 15px;
+    }
+
+    .favorite-game-card {
+      text-align: center;
+      background-color: white;
+      border-radius: 8px;
+      padding: 10px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      transition: transform 0.2s;
+    }
+
+    .favorite-game-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .favorite-game-image {
+      width: 100%;
+      height: 100px;
+      object-fit: cover;
+      border-radius: 6px;
+      margin-bottom: 8px;
+    }
+
+    .favorite-game-name {
+      font-size: 12px;
+      font-weight: bold;
+      color: #333;
+      text-decoration: none;
+      display: block;
+      line-height: 1.2;
+    }
+
+    .favorite-game-name:hover {
+      color: #800000;
+      text-decoration: none;
+    }
+
+    .no-favorites {
+      text-align: center;
+      color: #666;
+      font-style: italic;
+      margin-top: 15px;
+    }
+
+    .btn-secondary {
+      background-color: #6c757d;
+      border-color: #6c757d;
+    }
+
+    .friend-buttons {
+      margin-top: 10px;
+    }
+
+    .friend-buttons .btn {
+      margin: 5px;
+      min-width: 120px;
+    }
+
+    .friend-request-message {
+      text-align: left;
+    }
   </style>
   <div class="container mt-5">
     <div class="row">
@@ -123,6 +199,18 @@
                 {{ profile.user.name }}'s Profile
               {% endif %}
             </h3>
+            {% if profile.user != request.user %}
+              <div class="online-status">
+                {% if profile.user.get_online_status == 'online' %}
+                  <span class="badge bg-success">Online</span>
+                {% elif profile.user.get_online_status == 'recently_active' %}
+                  <span class="badge bg-warning">Recently Active</span>
+                {% else %}
+                  <span class="badge bg-secondary">Offline</span>
+                {% endif %}
+                <small class="text-muted ms-2">Last seen: {{ profile.user.get_last_seen_display }}</small>
+              </div>
+            {% endif %}
           </div>
           <div class="card-body">
             <div class="media">
@@ -156,45 +244,65 @@
                   <a href="{% url 'users:detail' request.user.pk %}"
                      class="btn btn-maroon">Account</a>
                   <a href="{% url 'users:friend-list' profile.user.id %}"
-                     class="btn btn-maroon">Friend List</a>
+                     class="btn btn-primary">Friend List</a>
+                  <a href="{% url 'users:user-history' profile.user.pk %}"
+                     class="btn btn-primary">Stats</a>
+                  <a href="{% url 'users:edit-profile' profile.user.pk %}"
+                     class="btn btn-primary">Edit Profile</a>
+                {% elif is_friend %}
+                  <a href="{% url 'users:remove-friend' profile.user.pk %}"
+                     class="btn btn-primary">Remove Friend</a>
                   <a href="{% url 'users:user-history' profile.user.pk %}"
                      class="btn btn-maroon">Stats</a>
+                  <a href="{% url 'users:recommendation-preferences' profile.user.pk %}"
+                     class="btn btn-maroon">Recommendation Preferences</a>
                 {% elif is_friend %}
                   <a href="{% url 'users:remove-friend' profile.user.pk %}"
                      class="btn btn-maroon">Remove Friend</a>
                   <a href="{% url 'users:user-history' profile.user.pk %}"
                      class="btn btn-maroon">Stats</a>
+                {% elif friendship_request %}
+                  <a href="{% url 'users:user-history' profile.user.pk %}"
+                     class="btn btn-primary">Stats</a>
+                {% elif is_blocked %}
+                  <p>User not available.</p>
                 {% else %}
-                  {% if not friendship_request %}
-                    <a href="{% url 'users:add-friend' profile.user.pk %}"
-                       class="btn btn-maroon">Add Friend</a>
-                  {% endif %}
+                  <a href="{% url 'users:add-friend' profile.user.pk %}"
+                     class="btn btn-primary">Add Friend</a>
+                  <a href="{% url 'users:block-user' profile.user.pk %}"
+                     class="btn btn-primary">Block User</a>
                   <a href="{% url 'users:user-history' profile.user.pk %}"
                      class="btn btn-maroon">Stats</a>
                 {% endif %}
               </div>
-              {% if friendship_request %}
-                <div class="friend-request card p-3 mb-3 shadow-sm border-0">
-                  {% if friendship_request.sender_id == request.user.pk %}
-                    <div class="d-flex gap-2 align-items-center">
-                      <div class="flex-grow-1">
-                        <h4 class="mb-0">Request Sent</h4>
-                      </div>
-                      <div class="d-flex gap-2">
-                        <a href="{% url 'users:cancel-friend-invitation' profile.user.id %}"
-                           class="btn btn-base btn-outline-danger">Cancel</a>
-                      </div>
+            </div>
+            {% if friendship_request %}
+              <div class="friend-request card p-3 mb-3 shadow-sm border-0">
+                {% if friendship_request.sender_id == request.user.pk %}
+                  <div class="d-flex gap-2 align-items-center">
+                    <div class="flex-grow-1">
+                      <h4 class="mb-0">Request Sent</h4>
                     </div>
-                  {% else %}
-                    <div class="d-flex gap-2 align-items-center">
-                      <div class="flex-grow-1">
-                        <h4 class="mb-0">Friendship Request</h4>
-                      </div>
-                      <div class="d-flex gap-2">
-                        <a href="{% url 'users:accept-friend-invitation' friendship_request.id %}"
-                           class="btn btn-base btn-outline-success">Accept</a>
-                        <a href="{% url 'users:decline-friend-invitation' friendship_request.id %}"
-                           class="btn btn-base btn-outline-danger">Decline</a>
+                    <div class="d-flex gap-2">
+                      <a href="{% url 'users:cancel-friend-invitation' profile.user.id %}"
+                         class="btn btn-base btn-outline-danger">Cancel</a>
+                    {% else %}
+                      <div class="d-flex flex-column">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                          <h4 class="mb-0">Friendship Request</h4>
+                          <div class="d-flex gap-2">
+                            <a href="{% url 'users:accept-friend-invitation' friendship_request.id %}"
+                               class="btn btn-base btn-outline-success">Accept</a>
+                            <a href="{% url 'users:decline-friend-invitation' friendship_request.id %}"
+                               class="btn btn-base btn-outline-danger">Decline</a>
+                          </div>
+                        </div>
+                        {% if friend_request_message %}
+                          <div class="p-2 bg-light rounded">
+                            <small class="text-muted">{{ profile.user.name }} sent you a message:</small>
+                            <div class="mt-1">"{{ friend_request_message }}"</div>
+                          </div>
+                        {% endif %}
                       </div>
                     </div>
                   {% endif %}
@@ -212,9 +320,78 @@
                   <p>{{ profile.bio }}</p>
                 {% endif %}
               </div>
+              <!-- Favorite Games Section -->
+              <div class="favorite-games-section">
+                <h4>
+                  {% if profile.user == request.user %}
+                    My Favorite Games
+                  {% else %}
+                    {{ profile.user.name }}'s Favorite Games
+                  {% endif %}
+                </h4>
+                {% if favorite_games %}
+                  <div class="favorite-games-grid">
+                    {% for game in favorite_games %}
+                      <div class="favorite-game-card">
+                        <a href="{% url 'game-detail' game.pk %}">
+                          {% if game.image %}
+                            <img src="{{ game.image }}"
+                                 alt="{{ game.name }}"
+                                 class="favorite-game-image" />
+                          {% else %}
+                            <img src="{% static 'images/no_picture_available.png' %}"
+                                 alt="{{ game.name }}"
+                                 class="favorite-game-image" />
+                          {% endif %}
+                          <span class="favorite-game-name">{{ game.name }}</span>
+                        </a>
+                      </div>
+                    {% endfor %}
+                  </div>
+                  {% if profile.user == request.user %}
+                    <div class="favorites-view-all-container">
+                      <a href="{% url 'favorite-list' %}"
+                         class="btn btn-sm"
+                         class="favorites-view-all-btn">View All Favorites</a>
+                    </div>
+                  {% endif %}
+                {% else %}
+                  <div class="no-favorites">
+                    {% if profile.user == request.user %}
+                      You haven't added any favorite games yet.
+                      <a href="{% url 'game-list' %}" class="favorites-browse-link">Browse games</a> to add some!
+                    {% else %}
+                      {{ profile.user.name }} hasn't added any favorite games yet.
+                    {% endif %}
+                  </div>
+                {% endif %}
+              </div>
             </div>
           </div>
         </div>
+        {% if profile.user == request.user %}
+          <div class="card mt-4">
+            <div class="card-header">
+              <h3>My Game Lists</h3>
+            </div>
+            <div class="card-body">
+              {% if game_lists %}
+                <ul class="list-group list-group-flush">
+                  {% for game_list in game_lists %}
+                    <li class="list-group-item">
+                      <a href="{% url 'gamelist-detail' game_list.pk %}">{{ game_list.name }}</a>
+                      <span class="badge bg-secondary rounded-pill float-end">{{ game_list.games.count }} game{{ game_list.games.count|pluralize }}</span>
+                    </li>
+                  {% endfor %}
+                </ul>
+              {% else %}
+                <p class="text-muted">
+                  You don't have any game lists yet. <a href="{% url 'game-list' %}">Browse games</a> to create some!
+                </p>
+              {% endif %}
+            </div>
+          </div>
+        {% endif %}
       </div>
     </div>
   </div>

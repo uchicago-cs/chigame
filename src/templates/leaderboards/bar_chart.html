@@ -1,5 +1,9 @@
 {% extends "base.html" %}
 
+<!-- Here we turn off djlint to avoid confusion between Jinja patterns and
+      JS curly braces. With JS style, this won't work as intended -->
+{# djlint:off #}
+
 {% block content %}
   <h1>{{ leaderboard.name }}</h1>
   <div>
@@ -19,50 +23,43 @@
   {% if leaderboard_data %}
     <canvas id="leaderboardChart" width="800" height="400"></canvas>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <script>
       const leaderboardData = {
-        labels: [{
-            %
-            for data in leaderboard_data %
-          }
-          '{{ data.player }}', {
-            %
-            endfor %
-          }
+        labels: [
+          {% for data in leaderboard_data %}
+            '{{ data.player }}',
+          {% endfor %}
         ],
-        datasets: [{
-          label: '{{ score_metric_name }}',
-          data: [{
-            %
-            for data in leaderboard_data %
-          } {
-            {
-              data.score
-            }
-          }, {
-            %
-            endfor %
-          }],
-          backgroundColor: (context) => {
-            const chart = context.chart;
-            const {
-              ctx,
-              chartArea
-            } = chart;
-            if (!chartArea) return 'rgb(128, 0, 0)';
-            const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
-            gradient.addColorStop(0, 'rgba(255, 99, 132, 0.8)');
-            gradient.addColorStop(1, 'rgba(54, 162, 235, 0.8)');
-            return gradient;
-          },
-          borderColor: 'rgba(128, 0, 0, 1)',
-          borderWidth: 1,
-          barThickness: 100,
-          borderRadius: 5,
-          hoverBackgroundColor: 'rgba(255, 99, 132, 0.6)',
-          hoverBorderColor: 'rgba(255, 99, 132, 1)',
-          hoverBorderWidth: 2,
-        }]
+        datasets: [
+          {
+            label: '{{ score_metric_name }}',
+            data: [
+              {% for data in leaderboard_data %}
+                {{ data.score }},
+              {% endfor %}
+            ],
+            backgroundColor: (context) => {
+              const chart = context.chart;
+              const {
+                ctx,
+                chartArea
+              } = chart;
+              if (!chartArea) return 'rgb(128, 0, 0)';
+              const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+              gradient.addColorStop(0, 'rgba(255, 99, 132, 0.8)');
+              gradient.addColorStop(1, 'rgba(54, 162, 235, 0.8)');
+              return gradient;
+            },
+            borderColor: 'rgba(128, 0, 0, 1)',
+            borderWidth: 1,
+            barThickness: 100,
+            borderRadius: 5,
+            hoverBackgroundColor: 'rgba(255, 99, 132, 0.6)',
+            hoverBorderColor: 'rgba(255, 99, 132, 1)',
+            hoverBorderWidth: 2,
+          }
+        ]
       };
 
       const config = {
@@ -120,8 +117,10 @@
         document.getElementById('leaderboardChart'),
         config
       );
-    </script>
+</script>
   {% else %}
     <p>No leaderboard data available for {{ score_metric_name }}.</p>
   {% endif %}
 {% endblock content %}
+
+{# djlint:on #}

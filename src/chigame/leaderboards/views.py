@@ -38,6 +38,33 @@ def leaderboard_view(request, game_id):
     )
 
 
+def bar_chart(request, game_id):
+    game = get_object_or_404(Game, id=game_id)
+    leaderboard = game.leaderboards.first()
+
+    if not leaderboard:
+        return render(request, "leaderboards/empty.html", {"game": game})
+
+    entries = LeaderboardEntry.objects.filter(leaderboard=leaderboard).select_related("user")
+
+    score_metric_name = f"{game.name} Points"
+
+    leaderboard_data = []
+    for entry in entries:
+        metric_score = entry.metric_scores.filter(metric__name=score_metric_name).first()
+        if metric_score:
+            leaderboard_data.append({"player": entry.user.user.name, "score": metric_score.score})
+        leaderboard_data.sort(key=lambda item: item["score"], reverse=True)
+
+    context = {
+        "game": game,
+        "leaderboard": leaderboard,
+        "leaderboard_data": leaderboard_data,
+        "score_metric_name": score_metric_name,
+    }
+    return render(request, "leaderboards/bar_chart.html", context)
+
+
 def landing_page_view(request):
     top_entries = []
 
@@ -159,33 +186,6 @@ def privacy_setting_delete(request, pk):
     context = {"setting": setting}
 
     return render(request, "leaderboards/privacy_setting_confirm_delete.html", context)
-
-
-def bar_chart(request, game_id):
-    game = get_object_or_404(Game, id=game_id)
-    leaderboard = game.leaderboards.first()
-
-    if not leaderboard:
-        return render(request, "leaderboards/empty.html", {"game": game})
-
-    entries = LeaderboardEntry.objects.filter(leaderboard=leaderboard).select_related("user")
-
-    score_metric_name = f"{game.name} Points"
-
-    leaderboard_data = []
-    for entry in entries:
-        metric_score = entry.metric_scores.filter(metric__name=score_metric_name).first()
-        if metric_score:
-            leaderboard_data.append({"player": entry.user.user.name, "score": metric_score.score})
-        leaderboard_data.sort(key=lambda item: item["score"], reverse=True)
-
-    context = {
-        "game": game,
-        "leaderboard": leaderboard,
-        "leaderboard_data": leaderboard_data,
-        "score_metric_name": score_metric_name,
-    }
-    return render(request, "leaderboards/bar_chart.html", context)
 
 
 def top_time_played_bar_chart(request, game_id):
