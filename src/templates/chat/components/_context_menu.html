@@ -14,6 +14,11 @@
   function showContextMenu(event, messageId, username, content) {
     const contextMenu = document.getElementById('contextMenu');
     const replyPreview = document.getElementById('replyPreview');
+    // Prevent default context menu
+    event.preventDefault();
+
+    // Clear previous listener if it exists
+    document.removeEventListener('click', hideContextMenu);
 
     // Store reply information
     replyToMessageId = messageId;
