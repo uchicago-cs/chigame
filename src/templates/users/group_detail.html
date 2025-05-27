@@ -16,11 +16,13 @@
       <div class="col-sm-12">
         <h3>{{ object.name }}</h3>
         <p>Group ID: {{ object.id }}</p>
-        <p>Description: {{ object.description }}</p>
-        <p>Created on: {{ object.created_at }}</p>
+        <p>Description: {{ object.description|default:"No description provided." }}</p>
+        <p>Created on: {{ object.date_created }}</p>
         <p>Members:</p>
         <ul>
-          {% for member in object.members.all %}<li>{{ member.username }}</li>{% endfor %}
+          {% for member in object.members.all %}
+            <li>{{ member.name|default:member.username|default:"Unnamed User" }}</li>
+          {% endfor %}
         </ul>
         <div class="mt-3">
           {% if user in object.members.all %}
