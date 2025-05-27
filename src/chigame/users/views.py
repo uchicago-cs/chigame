@@ -1013,7 +1013,7 @@ def unblock_user(request, pk):
         pk (int): The primary key of the user to unblock
 
     Returns:
-        HttpResponse: Redirects to the user's profile
+        HttpResponse: Redirects to the blocked users list
     """
     try:
         user_to_unblock = User.objects.get(pk=pk)
@@ -1028,7 +1028,7 @@ def unblock_user(request, pk):
     except User.DoesNotExist:
         messages.error(request, "User not found.")
 
-    return redirect(reverse("users:user-profile", kwargs={"pk": pk}))
+    return redirect(reverse("users:blocked-users-list"))
 
 
 @login_required
