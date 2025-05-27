@@ -9,6 +9,7 @@ from chigame.achievements.models import Achievement, UserAchievement
 from chigame.chat.models import LiveChat, LiveChatUser
 from chigame.games.models import Category, Chat, Feedback, Game, Lobby, Match, Mechanic, Review, Tournament
 from chigame.users.models import User
+from chigame.knowledge_base.models import Guide, GeneralFeedback, ReviewFeedback
 
 
 class CategoryFactory(DjangoModelFactory):
