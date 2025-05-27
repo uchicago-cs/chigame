@@ -1,11 +1,10 @@
 <div id="contextMenu" class="context-menu">
   <div class="small text-muted mb-1" id="replyPreview"></div>
-  <button class="btn btn-sm btn-light w-100" onclick="pinMessage()">Pinning Messages</button>
   <button class="btn btn-sm btn-light w-100" onclick="replyToMessage()">Reply</button>
   <button class="btn btn-sm btn-light w-100"
           onclick="editMessage(replyToMessageId, replyToContent)">Edit Message</button>
-  <button class="btn btn-sm btn-light w-100" onclick="reactToMessage()">React to Message</button>
-  <button class="btn btn-sm btnlight w-100" onclick="reactToMessage('❤️')">Add Reactions</button>
+  <button class="btn btn-sm btn-light w-100" onclick="pinMessage()">Pin Message</button>
+  <button class="btn btn-sm btn-light w-100" onclick="reactToMessage('❤️')">React to Message ❤️</button>
   <button class="btn btn-sm btn-danger w-100"
           onclick="deleteMessage()"
           title="Delete Message">Delete Message</button>
@@ -15,6 +14,11 @@
   function showContextMenu(event, messageId, username, content) {
     const contextMenu = document.getElementById('contextMenu');
     const replyPreview = document.getElementById('replyPreview');
+    // Prevent default context menu
+    event.preventDefault();
+
+    // Clear previous listener if it exists
+    document.removeEventListener('click', hideContextMenu);
 
     // Store reply information
     replyToMessageId = messageId;
@@ -85,6 +89,7 @@
         } else {
           console.error('Failed to edit message');
         }
+        inputElement.value = "";
       })
       .catch(error => {
         console.error('Error editing message:', error);
@@ -104,8 +109,9 @@
     hideContextMenu();
 
     document.getElementById('replying-to-preview').classList.remove('d-none');
-    document.getElementById('preview-username').textContent = replyToUsername;
-    document.getElementById('preview-content').textContent = replyToContent;
+    document.getElementById("replying-to-username").textContent = replyToUsername;
+    document.getElementById("replying-to-content").textContent = replyToContent;
+
   }
 
   /**
@@ -120,7 +126,18 @@
       if (response.ok) {
         const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
         if (messageElement) {
+          const wasPinned = messageElement.classList.contains("pinned-message") ||
+            messageElement.querySelector(".pinned-label");
+
           messageElement.remove();
+
+          if (wasPinned) {
+            const banner = document.getElementById("pinned-message-container");
+            if (banner) {
+              banner.innerHTML = "";
+              banner.style.display = "none";
+            }
+          }
         }
       } else {
         console.error('Failed to delete message');
@@ -131,8 +148,15 @@
   /**
    * Reacts to a message on the frontend.
    */
-  function reactToMessage(content = "❤️") {
-    const messageId = replyToMessageId;
+  function reactToMessage(content = "❤️", messageId = null) {
+    if (!messageId) {
+      messageId = replyToMessageId;
+    }
+
+    if (!messageId) {
+      console.error("No messageId available for reaction.");
+      return;
+    }
     replyToMessageId = null;
     replyToUsername = null;
     replyToContent = null;
@@ -213,6 +237,11 @@
         }
       })
       .catch(err => console.error('Pin failed:', err));
+    replyToMessageId = null;
+    replyToUsername = null;
+    replyToContent = null;
+    document.getElementById("replying-to-preview").classList.add("d-none");
+
 
     hideContextMenu();
   }
@@ -258,10 +287,5 @@
         existing.remove();
       }
     }
-  }
-
-  function pinningMessage() {
-    hideContextMenu();
-
   }
 </script>

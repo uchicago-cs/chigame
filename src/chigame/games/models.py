@@ -39,6 +39,23 @@ class Game(models.Model):
     game_url = models.URLField(blank=True, null=True, help_text="URL for embedded games (e.g., external web games)")
     # interactive fiction  - twine file
     twine_file = models.FileField(upload_to="twine_games/", null=True, blank=True)
+    GENRE_CHOICES = [
+        ("fantasy", "Fantasy"),
+        ("sci-fi", "Sci-Fi"),
+        ("horror", "Horror"),
+        ("romance", "Romance"),
+        ("mystery", "Mystery"),
+        ("comedy", "Comedy"),
+        ("drama", "Drama"),
+    ]
+    genre = models.CharField(max_length=50, choices=GENRE_CHOICES, default="drama")
+
+    CONTENT_SENSITIVITY_CHOICES = [
+        ("everyone", "Everyone"),
+        ("teen", "Teen"),
+        ("mature", "Mature"),
+    ]
+    content_sensitivity = models.CharField(max_length=20, choices=CONTENT_SENSITIVITY_CHOICES, default="everyone")
 
     suggested_age = models.PositiveSmallIntegerField(
         null=True, blank=True
@@ -373,6 +390,12 @@ class Tournament(models.Model):
     draw_rules = models.TextField()  # not limited to 255 characters
     num_winner = models.PositiveIntegerField(default=1)  # number of possible winners for the tournament
     archived = models.BooleanField(default=False)  # whether the tournament is archived by the admin
+
+    # Prize fields
+    prize_description = models.TextField(blank=True, null=True)  # description of the prizes offered
+    first_place_prize = models.CharField(max_length=255, blank=True, null=True)  # prize for the first place winner
+    second_place_prize = models.CharField(max_length=255, blank=True, null=True)  # prize for the second place winner
+    third_place_prize = models.CharField(max_length=255, blank=True, null=True)  # prize for the third place winner
 
     matches = models.ManyToManyField(Match, related_name="tournament", blank=True)
     winners = models.ManyToManyField(User, related_name="won_tournaments", blank=True)  # allow multiple winners
