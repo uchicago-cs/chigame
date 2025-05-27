@@ -2,10 +2,14 @@ import random
 
 from allauth.account.forms import SignupForm
 from allauth.socialaccount.forms import SignupForm as SocialSignupForm
+from django import forms
 from django.contrib.auth import forms as admin_forms
 from django.contrib.auth import get_user_model
-from django.forms import EmailField
+from django.core.exceptions import ValidationError
+from django.forms import EmailField, ModelForm, Textarea
 from django.utils.translation import gettext_lazy as _
+
+from .models import UserProfile
 
 POKEMON_NAMES = [
     "pikachu",
@@ -84,3 +88,49 @@ def generate_unique_username():
         username = f"{name}{number}"
         if not User.objects.filter(username=username).exists():
             return username
+
+
+class UserProfileForm(ModelForm):
+    """
+    Form for editing user profile information.
+    """
+
+    class Meta:
+        model = UserProfile
+        fields = ["bio"]
+        widgets = {
+            "bio": Textarea(
+                attrs={
+                    "class": "form-control",
+                    "rows": 4,
+                    "placeholder": "Tell us about yourself...",
+                    "maxlength": 500,
+                    "id": "bio-textarea",
+                }
+            )
+        }
+        help_texts = {"bio": "Maximum 500 characters"}
+
+    def clean_bio(self):
+        bio = self.cleaned_data.get("bio", "")
+        if len(bio) > 500:
+            raise ValidationError(_("Bio cannot exceed 500 characters."))
+        return bio
+
+
+class FriendInvitationForm(forms.Form):
+    """
+    Form for sending friend invitations with optional personal messages.
+    """
+
+    message = forms.CharField(
+        max_length=500,
+        required=False,
+        widget=forms.Textarea(
+            attrs={
+                "rows": 3,
+                "placeholder": "Let them know why you'd like to be friends! (Gaming buddies, shared interests, etc.)",
+                "class": "form-control",
+            }
+        ),
+    )
