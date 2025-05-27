@@ -4,15 +4,17 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.messages.views import SuccessMessageMixin
+from django.core.exceptions import PermissionDenied
 from django.db.models import Q
 from django.http import Http404, HttpResponseNotFound
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_POST
 from django.views.generic import DetailView, RedirectView, UpdateView
+from django.views.generic.edit import CreateView, DeleteView
 from django_tables2 import SingleTableView
 
 from chigame.games.models import GameList, Lobby, Player, Tournament
@@ -22,6 +24,7 @@ from .models import (
     FriendInvitation,
     FriendRequestNotification,
     Group,
+    GroupInvitation,
     GroupInvitationNotification,
     MatchInvitationNotification,
     Notification,
@@ -767,7 +770,7 @@ def move_notification(request, pk):
     if new_category and new_category in dict(Notification.CATEGORY_CHOICES):
         notification.category = new_category
         notification.save()
-        messages.success(request, f"Notification moved to {new_category}.")
+        # messages.success(request, f"Notification moved to {new_category}.") # Message Location needs to be fixed
         return redirect("users:user-inbox-category", pk=request.user.pk, category=next_category)
 
     label_id = request.POST.get("label_id")
@@ -786,21 +789,26 @@ def move_notification(request, pk):
 
 @login_required
 def create_notification_label(request):
-    """
-    Handles the creation of a new notification label for the logged-in user.
-
-    If the request method is POST and a label name is provided, it creates a new
-    NotificationLabel object associated with the user. If the label name is empty,
-    it displays an error message. Finally, it redirects the user back to their inbox.
-    """
     if request.method == "POST":
         label_name = request.POST.get("label_name")
         if label_name:
-            NotificationLabel.objects.get_or_create(user=request.user, name=label_name)
-            messages.success(request, "Label created successfully.")
+            label, created = NotificationLabel.objects.get_or_create(user=request.user, name=label_name)
+            if created:
+                messages.success(request, f"Label '{label_name}' created successfully.")
+            else:
+                messages.info(request, f"Label '{label_name}' already exists.")
         else:
             messages.error(request, "Label name cannot be empty.")
-    return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
+    return redirect(reverse("users:manage-labels-page"))
+
+
+@login_required
+def manage_labels_page_view(request):
+    user_labels = NotificationLabel.objects.filter(user=request.user).order_by("name")
+    context = {
+        "labels": user_labels,
+    }
+    return render(request, "users/manage_labels.html", context)
 
 
 @login_required
@@ -834,22 +842,59 @@ def assign_label_to_notification(request, notification_id):
 def notifications_by_label(request, label_id):
     """
     Retrieves and displays all notifications associated with a specific label
-    belonging to the logged-in user.
-
-    It fetches the NotificationLabel object and then retrieves all notifications
-    that have been assigned this label. These are then passed to a template for
-    rendering.
-
-    Args:
-        label_id (int): The ID of the notification label to filter by.
+    belonging to the logged-in user, excluding deleted ones.
     """
     label = get_object_or_404(NotificationLabel, pk=label_id, user=request.user)
-    notifications = label.notifications.all()
+    notifications = label.notifications.filter(receiver=request.user, visible=True).order_by("-first_sent")
+
+    all_user_labels = NotificationLabel.objects.filter(user=request.user).order_by("name")
+
     context = {
         "label": label,
         "notifications": notifications,
+        "active_category": f"label-{label.id}",
+        "category_choices": Notification.CATEGORY_CHOICES,
+        "labels": all_user_labels,
+        "pk": request.user.pk,
     }
     return render(request, "users/notifications_by_label.html", context)
+
+
+@login_required
+@require_POST
+@csrf_protect
+def unassign_label_from_notification(request, notification_id, label_id):
+    notification = get_object_or_404(Notification, pk=notification_id, receiver=request.user)
+
+    try:
+        # Use the label_id from the URL parameter directly
+        label_to_unassign = NotificationLabel.objects.get(pk=label_id, user=request.user)
+
+        # Check if the label is actually assigned to this notification
+        if label_to_unassign in notification.labels.all():
+            notification.labels.remove(label_to_unassign)
+            messages.success(request, f"Label '{label_to_unassign.name}' removed from notification.")
+        else:
+            messages.info(request, f"Label '{label_to_unassign.name}' was not assigned to this notification.")
+
+    except NotificationLabel.DoesNotExist:
+        messages.error(request, "Label not found or does not belong to you.")
+    except Exception as e:  # Catch any other potential errors
+        messages.error(request, f"An error occurred: {str(e)}")
+
+    return redirect(reverse("users:notifications-by-label", kwargs={"label_id": label_id}))
+
+
+@login_required
+@require_POST
+def delete_notification_label(request, label_id):
+    label = get_object_or_404(NotificationLabel, pk=label_id, user=request.user)
+    label_name = label.name
+
+    label.delete()
+
+    messages.success(request, f"Label '{label_name}' deleted successfully.")
+    return redirect(reverse("users:manage-labels-page"))
 
 
 @login_required
@@ -899,3 +944,43 @@ class GroupListView(SingleTableView):
 class GroupDetailView(DetailView):
     model = Group
     template_name = "users/group_detail.html"
+
+
+class GroupCreateView(LoginRequiredMixin, CreateView):
+    model = Group
+    fields = ["name", "description", "members"]
+    template_name = "users/group_create.html"
+    success_url = reverse_lazy("group-list")
+
+    def form_valid(self, form):
+        form.instance.created_by = self.request.user
+        response = super().form_valid(form)
+
+        self.object.members.add(self.request.user)
+
+        selected_members = form.cleaned_data["members"]
+        for user in selected_members:
+            if user != self.request.user:
+                GroupInvitation.objects.get_or_create(
+                    friend_group=self.object,
+                    sender=self.request.user,
+                    receiver=user,
+                    defaults={"accepted": False, "is_deleted": False},
+                )
+
+        return response
+
+
+class GroupDeleteView(LoginRequiredMixin, DeleteView):
+    model = Group
+    template_name = "users/group_confirm_delete.html"
+    success_url = reverse_lazy("group-list")
+
+    def get_queryset(self):
+        return Group.objects.filter(created_by=self.request.user)
+
+    def dispatch(self, request, *args, **kwargs):
+        obj = self.get_object()
+        if obj.created_by != request.user:
+            raise PermissionDenied
+        return super().dispatch(request, *args, **kwargs)
