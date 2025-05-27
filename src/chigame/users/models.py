@@ -230,7 +230,7 @@ class Group(models.Model):
 
     name = models.TextField()
     description = models.TextField(blank=True)
-    members = models.ManyToManyField(User)
+    members = models.ManyToManyField(User, blank=True)
     created_by = models.ForeignKey(User, related_name="created_groups", on_delete=models.CASCADE)
     date_created = models.DateTimeField(auto_now_add=True)
     group_admin_permissions = False
@@ -263,6 +263,9 @@ class GroupInvitation(models.Model):
     def delete(self):
         self.is_deleted = True
         self.save()
+
+    def __str__(self):
+        return f"Invitation from {self.sender} to {self.receiver} for {self.friend_group}"
 
 
 class NotificationQuerySet(models.QuerySet):
