@@ -28,11 +28,6 @@
       </div>
       <!-- add buttons to this div -->
       <div class="nav-btns">
-        <!-- game timer for red and black -->
-        <div id="timers">
-          <div id="red-timer"></div>
-          <div id="black-timer"></div>
-        </div>
         <button id="forfeitBtn" class="btn">Forfeit</button>
         <button id="drawBtn" class="btn">Offer Draw</button>
         <button id="declineDrawBtn" class="btn">Decline Draw</button>
@@ -92,11 +87,29 @@
       </div>
       <div id="settings-tab">⚙️</div>
     </div>
-    <div id="captured-pieces">
-      <div id="score">
-        Red: 0
-        <br />
-        Black: 0
+    <button id="settings-button" class="settings-button">⚙️</button>
+    <!-- game information menu -->
+    <div id="game-information">
+      <div id="red-info">
+        <h3>Red</h3>
+        <p>
+          Time Left: <span id="red-timer" class="info"></span>
+        </p>
+        <p>
+          Score: <span id="red-score" class="info">0</span>
+        </p>
+      </div>
+      <br />
+      <hr />
+      <br />
+      <div id="black-info">
+        <h3>Black</h3>
+        <p>
+          Time Left: <span id="black-timer" class="info"></span>
+        </p>
+        <p>
+          Score: <span id="black-score" class="info">0</span>
+        </p>
       </div>
     </div>
     <div id="endScreenPiece" class="hidden"></div>
