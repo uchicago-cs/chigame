@@ -683,7 +683,6 @@ function endTurn(scene) {
     turn.textContent = 'Black';
     dot.style.backgroundColor = colorblindMode ? COLORS.strBlue: COLORS.strBlack;
   }
-}
 
   // reset draw offer if it was made by the current player
   if (drawOffered && drawOfferedBy === currentPlayer) {
@@ -852,19 +851,6 @@ function executeJumpChain(piece, jump) {
     }
   }
 
-  // reset draw offer if it was made by the current player
-  if (drawOffered && drawOfferedBy === currentPlayer) {
-    const gameOverPrompts = document.getElementById('gameOverPrompts');
-    const gameOverMessage = document.getElementById('gameOverMessage');
-    const drawBtn = document.getElementById('drawBtn');
-    const declineDrawBtn = document.getElementById('declineDrawBtn');
-    drawOffered = false;
-    drawOfferedBy = null;
-    gameOverMessage.textContent = '';
-    gameOverMessage.classList.remove('show');
-    gameOverPrompts.classList.remove('show');
-    drawBtn.textContent = 'Offer Draw';
-    declineDrawBtn.style.display = 'none';
   updateScore();
   checkGameOver();
 
