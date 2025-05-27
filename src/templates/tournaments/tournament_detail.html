@@ -132,6 +132,43 @@
       display: inline;
     }
 
+    /* Prize section styling */
+    .prize-section {
+      margin: 20px 0;
+      padding: 15px;
+      border: 1px solid #ffd700;
+      border-radius: 5px;
+      background-color: #fffdf0;
+    }
+
+    .prize-section h3 {
+      color: #b8860b;
+      margin-bottom: 10px;
+    }
+
+    .prize-description {
+      margin-bottom: 15px;
+      font-style: italic;
+    }
+
+    .prizes-list {
+      list-style: none;
+      padding-left: 10px;
+    }
+
+    .prizes-list li {
+      margin: 10px 0;
+    }
+
+    .prize-position {
+      font-weight: bold;
+      color: #333;
+    }
+
+    .prize-value {
+      font-size: 1.1em;
+    }
+
     /* #addedum */
     .stats-button {
       display: inline-block;
@@ -378,16 +415,47 @@
   <p>Description: {{ tournament.description }}</p>
   <p>Rules: {{ tournament.rules }}</p>
   <p>Draw rules: {{ tournament.draw_rules }}</p>
+  <!-- Prize Section -->
+  {% if tournament.prize_description or tournament.first_place_prize or tournament.second_place_prize or tournament.third_place_prize %}
+    <div class="prize-section">
+      <h3>Tournament Prizes</h3>
+      {% if tournament.prize_description %}<p class="prize-description">{{ tournament.prize_description }}</p>{% endif %}
+      <ul class="prizes-list">
+        {% if tournament.first_place_prize %}
+          <li>
+            <span class="prize-position">🥇 First Place:</span>
+            <span class="prize-value">{{ tournament.first_place_prize }}</span>
+          </li>
+        {% endif %}
+        {% if tournament.second_place_prize %}
+          <li>
+            <span class="prize-position">🥈 Second Place:</span>
+            <span class="prize-value">{{ tournament.second_place_prize }}</span>
+          </li>
+        {% endif %}
+        {% if tournament.third_place_prize %}
+          <li>
+            <span class="prize-position">🥉 Third Place:</span>
+            <span class="prize-value">{{ tournament.third_place_prize }}</span>
+          </li>
+        {% endif %}
+      </ul>
+    </div>
+  {% endif %}
   <p>Players:</p>
   <ul>
     {% for player in tournament.get_all_players %}
       <li>
         <p>
-          {% if player.name %}
-            <a href="{% url 'users:detail' player.id %}">{{ player.name }}</a>
-          {% else %}
-            <a href="{% url 'users:detail' player.id %}">{{ player.email }}</a>
-          {% endif %}
+          <a href="{% url 'users:detail' player.id %}">
+            {% if player.name %}
+              {{ player.name }}
+            {% elif player.username %}
+              {{ player.username }}
+            {% else %}
+              {{ player.email }}
+            {% endif %}
+          </a>
         </p>
       </li>
     {% endfor %}
@@ -399,11 +467,15 @@
       {% for winner in tournament.get_all_winners %}
         <li>
           <p>
-            {% if winner.name %}
-              <a href="{% url 'users:detail' winner.id %}">{{ winner.name }}</a>
-            {% else %}
-              <a href="{% url 'users:detail' winner.id %}">{{ winner.email }}</a>
-            {% endif %}
+            <a href="{% url 'users:detail' winner.id %}">
+              {% if winner.name %}
+                {{ winner.name }}
+              {% elif winner.username %}
+                {{ winner.username }}
+              {% else %}
+                {{ winner.email }}
+              {% endif %}
+            </a>
           </p>
         </li>
       {% endfor %}
@@ -414,22 +486,43 @@
   {% if tournament.get_all_matches %}
     <ul>
       {% for match in tournament.get_all_matches %}
-        <li>
-          <p>
-            Match (
-            {% for player in match.players.all %}
-              {% if player.name %}
-                <a href="{% url 'users:detail' player.id %}">{{ player.name }}</a>
-              {% else %}
-                <a href="{% url 'users:detail' player.id %}">{{ player.email }}</a>
-              {% endif %}
-              {% if not forloop.last %}vs.{% endif %}
-            {% empty %}
-              Forfeited
-            {% endfor %}
-            )
-          </p>
-          <!-- You can add more fields as needed -->
+        <li class="match-item">
+          <div class="match-info">
+            <p class="match-players">
+              Match (
+              {% for player in match.players.all %}
+                <a href="{% url 'users:detail' player.id %}">
+                  {% if player.name %}
+                    {{ player.name }}
+                  {% elif player.username %}
+                    {{ player.username }}
+                  {% else %}
+                    {{ player.email }}
+                  {% endif %}
+                </a>
+                {% if not forloop.last %}vs.{% endif %}
+              {% empty %}
+                Forfeited
+              {% endfor %}
+              )
+            </p>
+            <p class="match-status">Status: {{ match.lobby.get_match_status_display }}</p>
+            {% if match.lobby.match_status == match.lobby.Viewable %}
+              <p class="match-in-progress">Match in progress</p>
+            {% elif match.lobby.match_status == match.lobby.Finished %}
+              <p class="match-finished">Match finished</p>
+            {% else %}
+              <p class="match-waiting">Waiting for players ({{ match.lobby.members.count }}/{{ match.players.count }})</p>
+            {% endif %}
+            {% if user in match.players.all and tournament.status == "tournament in progress" and match.lobby.match_status != match.lobby.Viewable %}
+              <form method="post" class="join-match-form">
+                {% csrf_token %}
+                <input type="hidden" name="tournament_id" value="{{ tournament.id }}" />
+                <input type="hidden" name="action" value="join_match" />
+                <button type="submit" class="join-match-button">Join Match</button>
+              </form>
+            {% endif %}
+          </div>
         </li>
       {% endfor %}
     </ul>
