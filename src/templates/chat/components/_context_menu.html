@@ -84,6 +84,7 @@
         } else {
           console.error('Failed to edit message');
         }
+        inputElement.value = "";
       })
       .catch(error => {
         console.error('Error editing message:', error);
