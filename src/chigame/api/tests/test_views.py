@@ -1,7 +1,21 @@
 from django.test import TestCase, Client
 from django.urls import reverse
+
+from chigame.achievements.models import Achievement, UserAchievement
 from chigame.users.models import User
-from .factories import *
+from chigame.games.models import Feedback, Game, Review, Tournament
+from chigame.chat.models import LiveChat
+
+from factories import (
+    AchievementFactory, 
+    FeedbackFactory, 
+    GameFactory, 
+    UserFactory, 
+    UserAchievementFactory, 
+    ReviewFactory, 
+    TournamentFactory
+)
+
 import pytest
 
 class UserViewTests(APITestCase):
