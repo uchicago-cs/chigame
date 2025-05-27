@@ -1,5 +1,4 @@
 import json
-import os
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta
 from functools import wraps
@@ -12,7 +11,6 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
-from django.core.files.storage import FileSystemStorage
 from django.core.paginator import Paginator
 from django.db.models import Avg, Case, Count, ExpressionWrapper, F, FloatField, Q, Value, When
 from django.db.models.functions import Lower
@@ -23,7 +21,6 @@ from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.utils.timezone import now
-from django.views import View
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 from django.views.generic.edit import FormMixin
 from rest_framework import status
@@ -760,7 +757,6 @@ class GameDeleteView(DeleteView):
             return HttpResponseForbidden("You don't have permission to delete this game.")
         return super().dispatch(request, *args, **kwargs)
 
-
 class UploadFileView(View):
     def post(self, request, pk=None):
         uploaded_file = request.FILES.get("uploaded_file")
@@ -791,8 +787,7 @@ class UploadFileView(View):
 
         messages.error(request, "No file selected.")
         return redirect("game-list")
-
-
+      
 # =============== Tournaments Views ===============
 
 

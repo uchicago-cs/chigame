@@ -552,6 +552,21 @@
 
       openModalBtn.addEventListener('click', function(event) {
         event.preventDefault();
+        const name = document.getElementById('id_name').value.trim();
+        const author = document.getElementById('id_author').value.trim();
+        const desc = document.getElementById('id_description').value.trim();
+        const gameFile = document.getElementById('id_game_file');
+
+        // Validation check
+        if (!name || !author || !desc) {
+          alert("Please fill in all required fields before submitting:\n- Name (100 chars)\n- Author Name (50 chars)\n- Description (500 chars)");
+          return;
+        }
+
+        if (!gameFile || !gameFile.files || gameFile.files.length === 0) {
+          alert("Please upload a .html game file before submitting.");
+          return;
+        }
         reviewContainer.innerHTML = gatherFormData();
         modal.classList.add('show');
       });
@@ -600,10 +615,7 @@
     });
   </script>
   <h1>Create Interactive Fiction Game</h1>
-  <form method="post"
-        enctype="multipart/form-data"
-        id="game_form"
-        action="{% url 'upload-file' pk=game.pk %}">
+  <form method="post" enctype="multipart/form-data" id="game_form">
     {% csrf_token %}
     <div>
       <label for="id_name">
@@ -741,7 +753,7 @@
                 data-maxlength>{{ form.content_warning.value }}</textarea>
     </div>
     <div>
-      <label for="id_image">Cover Image</label>
+      <label for="id_image">Cover Imags</label>
       <div class="upload-zone" data-input-id="id_cover_image">
         Drag &amp; drop a file here
         <br />
