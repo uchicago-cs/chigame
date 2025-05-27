@@ -944,6 +944,7 @@ function executeJumpChain(piece, jump) {
         'crown'
       );
       crown.setDisplaySize(tile_size, tile_size);
+      crown.setDepth(1);
       piece.kingIcon = crown;
     }
   }
