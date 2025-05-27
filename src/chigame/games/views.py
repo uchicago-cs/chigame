@@ -41,7 +41,6 @@ from .models import (
     GameHistory,
     GameList,
     GameQueue,
-    InteractiveFictionGame,
     Lobby,
     Match,
     Player,
