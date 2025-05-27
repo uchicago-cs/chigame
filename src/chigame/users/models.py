@@ -45,6 +45,8 @@ class User(AbstractUser):
     )
     # friends is a symmetrical relationship, so it is a many-to-many field
     friends = models.ManyToManyField("self", symmetrical=True, blank=True)
+    # blocked_users is a non-symmetrical relationship for user blocking
+    blocked_users = models.ManyToManyField("self", symmetrical=False, blank=True, related_name="blocked_by")
     tokens = models.PositiveSmallIntegerField(validators=[MaxValueValidator(3)], default=1)
 
     # a moderator can manage/approve game guides in Knowledge Base
