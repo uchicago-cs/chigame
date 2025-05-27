@@ -2,24 +2,29 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.contenttypes.models import ContentType
 from django.contrib.messages.views import SuccessMessageMixin
+from django.core.exceptions import PermissionDenied
 from django.db.models import Q
 from django.http import Http404, HttpResponseNotFound
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_POST
 from django.views.generic import DetailView, RedirectView, UpdateView
+from django.views.generic.edit import CreateView, DeleteView
 from django_tables2 import SingleTableView
 
 from chigame.games.models import GameList, Lobby, Player, Tournament
 
+from .forms import FriendInvitationForm, UserProfileForm
 from .models import (
     FriendInvitation,
     FriendRequestNotification,
     Group,
+    GroupInvitation,
     GroupInvitationNotification,
     MatchInvitationNotification,
     Notification,
@@ -214,6 +219,7 @@ def user_profile_detail_view(request, pk):
     # for checking friendship and pending friend request status
     is_friend = None
     friendship_request = None
+    friend_request_message = None
     target_user = get_object_or_404(User, pk=pk)
     if request.user.is_authenticated:
         # check friendship or pending invitation with the target user
@@ -221,9 +227,17 @@ def user_profile_detail_view(request, pk):
         if not is_friend:
             curr_user = request.user
             friendship_request = FriendInvitation.objects.get_by_users(curr_user, target_user)
+            # If there's a pending personalized friend request from the profile owner to current user, get the message
+            if friendship_request and friendship_request.sender == target_user and friendship_request.message:
+                friend_request_message = friendship_request.message
 
     # provide frontend profile + friendship status
-    context = {"profile": profile, "is_friend": is_friend, "friendship_request": friendship_request}
+    context = {
+        "profile": profile,
+        "is_friend": is_friend,
+        "friendship_request": friendship_request,
+        "friend_request_message": friend_request_message,
+    }
     return render(request, "users/userprofile_detail.html", context=context)
 
 
@@ -255,36 +269,68 @@ def send_friend_invitation(request, pk):
         messages.error(request, "You can't send friendship invitation to yourself")
         return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
     # check if the friendship invitation already exists
-    invitation, new = FriendInvitation.objects.filter(
+    invitation = FriendInvitation.objects.filter(
         Q(sender=curr_user, receiver=other_user, is_deleted=False)
         | Q(sender=other_user, receiver=curr_user, is_deleted=False)
-    ).get_or_create(defaults={"sender": curr_user, "receiver": other_user, "is_deleted": False})
-    if new:
-        messages.success(request, "Friendship invitation sent successfully.")
-        notification = Notification.objects.create(
-            actor=invitation,
-            receiver=other_user,
-            type=Notification.FRIEND_REQUEST,
-            message=Notification.DEFAULT_MESSAGES[Notification.FRIEND_REQUEST],
-            category="social",
-        )
+    ).first()
 
-    # if the other user has already sent a friend request, return an error
-    elif invitation.sender.pk == other_user.pk:
-        messages.info(request, "You already have a pending friend invitation from this profile.")
-    # if the friendship invitation already exists, return an error
+    if invitation:
+        # if the other user has already sent a friend request it throws an error
+        if invitation.sender.pk == other_user.pk:
+            messages.info(request, "You already have a pending friend invitation from this profile.")
+        else:
+            messages.info(request, "Friendship invitation already sent before.")
+            try:
+                notification = Notification.objects.get_by_actor(invitation, receiver=other_user)
+                notification.renew_notification()
+            except Notification.DoesNotExist:
+                notification = Notification.objects.create(
+                    actor=invitation, receiver=other_user, type=Notification.FRIEND_REQUEST
+                )
+        return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
+
+    # Check if user wants to add the optional message
+    show_form = request.GET.get("with_message") == "true" or (
+        request.method == "GET" and "with_message" in request.GET
+    )
+
+    if request.method == "GET" and show_form:
+        form = FriendInvitationForm()
+        context = {
+            "form": form,
+            "target_user": other_user,
+        }
+        return render(request, "users/send_friend_invitation.html", context)
+
+    elif request.method == "POST":
+        form = FriendInvitationForm(request.POST)
+        if form.is_valid():
+            message = form.cleaned_data.get("message", "")
+        else:
+            context = {
+                "form": form,
+                "target_user": other_user,
+            }
+            return render(request, "users/send_friend_invitation.html", context)
     else:
-        messages.info(request, "Friendship invitation already sent before.")
-        try:
-            notification = Notification.objects.get_by_actor(invitation, receiver=other_user)
-            notification.renew_notification()
-        except Notification.DoesNotExist:
-            notification = Notification.objects.create(
-                actor=invitation,
-                receiver=other_user,
-                type=Notification.FRIEND_REQUEST,
-                category="social",
-            )
+        message = ""
+
+    new_invitation = FriendInvitation.objects.create(
+        sender=curr_user, receiver=other_user, message=message, is_deleted=False
+    )
+
+    messages.success(request, "Friendship invitation sent successfully.")
+
+    # Create notification using default friend request message
+    content_type = ContentType.objects.get_for_model(FriendInvitation)
+
+    notification, new = Notification.objects.get_or_create(
+        actor_content_type=content_type,
+        actor_object_id=new_invitation.id,
+        receiver=other_user,
+        type=Notification.FRIEND_REQUEST,
+        defaults={"message": Notification.DEFAULT_MESSAGES[Notification.FRIEND_REQUEST]},
+    )
     return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
 
 
@@ -724,7 +770,7 @@ def move_notification(request, pk):
     if new_category and new_category in dict(Notification.CATEGORY_CHOICES):
         notification.category = new_category
         notification.save()
-        messages.success(request, f"Notification moved to {new_category}.")
+        # messages.success(request, f"Notification moved to {new_category}.") # Message Location needs to be fixed
         return redirect("users:user-inbox-category", pk=request.user.pk, category=next_category)
 
     label_id = request.POST.get("label_id")
@@ -743,21 +789,26 @@ def move_notification(request, pk):
 
 @login_required
 def create_notification_label(request):
-    """
-    Handles the creation of a new notification label for the logged-in user.
-
-    If the request method is POST and a label name is provided, it creates a new
-    NotificationLabel object associated with the user. If the label name is empty,
-    it displays an error message. Finally, it redirects the user back to their inbox.
-    """
     if request.method == "POST":
         label_name = request.POST.get("label_name")
         if label_name:
-            NotificationLabel.objects.get_or_create(user=request.user, name=label_name)
-            messages.success(request, "Label created successfully.")
+            label, created = NotificationLabel.objects.get_or_create(user=request.user, name=label_name)
+            if created:
+                messages.success(request, f"Label '{label_name}' created successfully.")
+            else:
+                messages.info(request, f"Label '{label_name}' already exists.")
         else:
             messages.error(request, "Label name cannot be empty.")
-    return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
+    return redirect(reverse("users:manage-labels-page"))
+
+
+@login_required
+def manage_labels_page_view(request):
+    user_labels = NotificationLabel.objects.filter(user=request.user).order_by("name")
+    context = {
+        "labels": user_labels,
+    }
+    return render(request, "users/manage_labels.html", context)
 
 
 @login_required
@@ -782,7 +833,7 @@ def assign_label_to_notification(request, notification_id):
         notification.labels.add(label)
         messages.success(request, "Label assigned to notification.")
     except NotificationLabel.DoesNotExist:
-        messages.error(request, "Label not found or does not belong to you.")
+        messages.error(request, "Label not  found or does not belong to you.")
 
     return redirect(reverse("users:user-inbox", kwargs={"pk": request.user.pk}))
 
@@ -791,22 +842,125 @@ def assign_label_to_notification(request, notification_id):
 def notifications_by_label(request, label_id):
     """
     Retrieves and displays all notifications associated with a specific label
-    belonging to the logged-in user.
-
-    It fetches the NotificationLabel object and then retrieves all notifications
-    that have been assigned this label. These are then passed to a template for
-    rendering.
-
-    Args:
-        label_id (int): The ID of the notification label to filter by.
+    belonging to the logged-in user, excluding deleted ones.
     """
     label = get_object_or_404(NotificationLabel, pk=label_id, user=request.user)
-    notifications = label.notifications.all()
+    notifications = label.notifications.filter(receiver=request.user, visible=True).order_by("-first_sent")
+
+    all_user_labels = NotificationLabel.objects.filter(user=request.user).order_by("name")
+
     context = {
         "label": label,
         "notifications": notifications,
+        "active_category": f"label-{label.id}",
+        "category_choices": Notification.CATEGORY_CHOICES,
+        "labels": all_user_labels,
+        "pk": request.user.pk,
     }
     return render(request, "users/notifications_by_label.html", context)
+
+
+@login_required
+def edit_profile(request, pk):
+    """
+    View for editing user profile information including bio.
+    """
+    if request.user.pk != pk:
+        messages.error(request, "You can only edit your own profile.")
+        return redirect("users:user-profile", pk=request.user.pk)
+
+    profile = UserProfile.get_or_create_profile(request.user)
+
+    if request.method == "POST":
+        form = UserProfileForm(request.POST, instance=profile)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Profile updated successfully!")
+            return redirect("users:user-profile", pk=request.user.pk)
+    else:
+        form = UserProfileForm(instance=profile)
+
+    context = {
+        "form": form,
+        "profile": profile,
+    }
+
+    return render(request, "users/edit_profile.html", context)
+
+
+@login_required
+@require_POST
+@csrf_protect
+def unassign_label_from_notification(request, notification_id, label_id):
+    notification = get_object_or_404(Notification, pk=notification_id, receiver=request.user)
+
+    try:
+        # Use the label_id from the URL parameter directly
+        label_to_unassign = NotificationLabel.objects.get(pk=label_id, user=request.user)
+
+        # Check if the label is actually assigned to this notification
+        if label_to_unassign in notification.labels.all():
+            notification.labels.remove(label_to_unassign)
+            messages.success(request, f"Label '{label_to_unassign.name}' removed from notification.")
+        else:
+            messages.info(request, f"Label '{label_to_unassign.name}' was not assigned to this notification.")
+
+    except NotificationLabel.DoesNotExist:
+        messages.error(request, "Label not found or does not belong to you.")
+    except Exception as e:  # Catch any other potential errors
+        messages.error(request, f"An error occurred: {str(e)}")
+
+    return redirect(reverse("users:notifications-by-label", kwargs={"label_id": label_id}))
+
+
+@login_required
+@require_POST
+def delete_notification_label(request, label_id):
+    label = get_object_or_404(NotificationLabel, pk=label_id, user=request.user)
+    label_name = label.name
+
+    label.delete()
+
+    messages.success(request, f"Label '{label_name}' deleted successfully.")
+    return redirect(reverse("users:manage-labels-page"))
+
+
+@login_required
+def recommendation_preferences(request, pk):
+    """
+    Allow users to customize their game recommendation preferences.
+
+    Args:
+        request (HttpRequest)
+        pk (int): The primary key of the user
+
+    Returns:
+        HttpResponse: Rendered template with recommendation preferences
+    """
+
+    if pk != request.user.pk:
+        messages.error(request, "You can only manage your own preferences")
+        return redirect(reverse("users:user-profile", kwargs={"pk": request.user.pk}))
+
+    from .models import RecommendationPreferences
+
+    preferences = RecommendationPreferences.get_or_create_preferences(request.user)
+
+    if request.method == "POST":
+        try:
+            preferences.category_weight = min(100, max(0, int(request.POST.get("category_weight", 40))))
+            preferences.mechanics_weight = min(100, max(0, int(request.POST.get("mechanics_weight", 30))))
+            preferences.designers_weight = min(100, max(0, int(request.POST.get("designers_weight", 15))))
+            preferences.complexity_weight = min(100, max(0, int(request.POST.get("complexity_weight", 10))))
+            preferences.playtime_weight = min(100, max(0, int(request.POST.get("playtime_weight", 5))))
+            preferences.save()
+            messages.success(request, "Your recommendation preferences have been updated")
+        except ValueError:
+            messages.error(request, "Invalid preference values. Please enter numbers between 0 and 100.")
+
+    context = {"preferences": preferences, "user_id": pk}
+
+    return render(request, "users/recommendation_preferences.html", context)
 
 
 class GroupListView(SingleTableView):
@@ -818,3 +972,43 @@ class GroupListView(SingleTableView):
 class GroupDetailView(DetailView):
     model = Group
     template_name = "users/group_detail.html"
+
+
+class GroupCreateView(LoginRequiredMixin, CreateView):
+    model = Group
+    fields = ["name", "description", "members"]
+    template_name = "users/group_create.html"
+    success_url = reverse_lazy("group-list")
+
+    def form_valid(self, form):
+        form.instance.created_by = self.request.user
+        response = super().form_valid(form)
+
+        self.object.members.add(self.request.user)
+
+        selected_members = form.cleaned_data["members"]
+        for user in selected_members:
+            if user != self.request.user:
+                GroupInvitation.objects.get_or_create(
+                    friend_group=self.object,
+                    sender=self.request.user,
+                    receiver=user,
+                    defaults={"accepted": False, "is_deleted": False},
+                )
+
+        return response
+
+
+class GroupDeleteView(LoginRequiredMixin, DeleteView):
+    model = Group
+    template_name = "users/group_confirm_delete.html"
+    success_url = reverse_lazy("group-list")
+
+    def get_queryset(self):
+        return Group.objects.filter(created_by=self.request.user)
+
+    def dispatch(self, request, *args, **kwargs):
+        obj = self.get_object()
+        if obj.created_by != request.user:
+            raise PermissionDenied
+        return super().dispatch(request, *args, **kwargs)

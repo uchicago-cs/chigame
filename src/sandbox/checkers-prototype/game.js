@@ -42,6 +42,10 @@ const COLORS = {
   white: 0xffffff,
   colorblind_blue: 0x1e88e5,
   colorblind_orange: 0xffc107,
+  strRed: '#ff0000', // string needed b/c hex cannot be used to change css
+  strBlack: '#000000',
+  strBlue: '#1e88e5',
+  strOrange: '#ffc107',
   yellow: 0xffff00,
 };
 let lightPiece = COLORS.red;
@@ -67,6 +71,8 @@ let redTime = 300;
 let blackTime = 300;
 // this will determine whose timer to decrement
 let activeTimer = null;
+
+let colorblindMode = false;
 
 //BOT SETTINGS
 let vsEasyBot = true;
@@ -117,7 +123,14 @@ function create() {
   const easyBot = document.getElementById('toggle-bot');
 
   // Score display
-  const score = document.getElementById('score');
+  const redScore = document.getElementById('red-score');
+  const blackScore = document.getElementById('black-score')
+
+  // current turn indicator
+  const turn = document.getElementById('player-turn');
+  const dot = document.querySelector('.dot');
+  turn.textContent = 'Red';
+  dot.style.backgroundColor = COLORS.strRed;
 
   function resetGame() {
     // Clear all pieces
@@ -142,7 +155,10 @@ function create() {
     drawBtn.textContent = 'Offer Draw';
     forfeitBtn.style.display = 'block';
     declineDrawBtn.style.display = 'none';
-    score.innerHTML = 'Red: 0<br>Black: 0';
+    redScore.innerHTML = "0";
+    blackScore.innerHTML = "0";
+    turn.textContent = 'Red';
+    dot.style.backgroundColor = COLORS.strRed;
 
     // Repopulate the board using the stored scene reference
     populatePieces(scene);
@@ -530,8 +546,10 @@ function isValidMove(piece, moveX, moveY) {
 
 // Updates score on frontend
 function updateScore() {
-  const score = document.getElementById('score');
-  score.innerHTML = 'Red: ' + redCaptured + '<br>Black: ' + blackCaptured;
+  const redScore = document.getElementById('red-score');
+  const blackScore = document.getElementById('black-score');
+  redScore.innerHTML = redCaptured;
+  blackScore.innerHTML = blackCaptured;
 }
 
 // function to move a piece
@@ -543,6 +561,9 @@ function movePiece(piece, moveX, moveY) {
   if (Math.abs(dx) === 2 && Math.abs(dy) === 2) {
     const captured = getPiece(piece.x + dx / 2, piece.y + dy / 2);
     if (captured) {
+      if (captured.isKing && captured.kingIcon) {
+        captured.kingIcon.destroy();
+      }
       captured.sprite.destroy(); // delete the sprite (remove from display state)
       if (captured.kingIcon) captured.kingIcon.destroy(); // destroy the icon as well
       pieces = pieces.filter((p) => p !== captured); // remove it from the array (game state)
@@ -572,6 +593,7 @@ function movePiece(piece, moveX, moveY) {
     y: newY,
     duration: 250, // I think best to have this in 200-300 ms range
     ease: 'Power3',
+
     // onComplete is needed so crown icon only loads after animation is over
     onComplete: () => {
       // Check for king promotion
@@ -589,7 +611,6 @@ function movePiece(piece, moveX, moveY) {
     },
   });
 
-  // Play move sound effect
   piece.sprite.scene.sound.play('slide', { volume: volumeAmount });
   // Move king icon if applicable
   if (piece.isKing && piece.kingIcon) {
@@ -603,6 +624,7 @@ function movePiece(piece, moveX, moveY) {
   }
 
   //console.log('Current board state:', getBoardState());
+  piece.sprite.scene.sound.play('slide');
 }
 
 // Check if the game is over due to all pieces of one color being captured
@@ -654,6 +676,18 @@ function endTurn(scene) {
   startPlayerTimer(); // start next player’s timer
   // remove the highlight after a move is made
   clearHighlightedTiles();
+
+  // update turn indicator
+  const turn = document.getElementById('player-turn');
+  const dot = document.querySelector('.dot');
+  if (currentPlayer === COLORS.red) {
+    turn.textContent = 'Red';
+    dot.style.backgroundColor = colorblindMode ? COLORS.strOrange: COLORS.strRed;
+  } else {
+    turn.textContent = 'Black';
+    dot.style.backgroundColor = colorblindMode ? COLORS.strBlue: COLORS.strBlack;
+  }
+}
 
   // reset draw offer if it was made by the current player
   if (drawOffered && drawOfferedBy === currentPlayer) {
@@ -731,9 +765,7 @@ function giveHint() {
 // helper function to highlight the valid moves for the selected piece
 function highlightValidMoves(scene, piece) {
   clearHighlightedTiles(); // remove any previous highlights
-
   var jumpPaths = getJumpPaths(piece);
-
   if (jumpPaths.length > 0) {
     // Highlight all final landing squares of all jump paths
     for (var i = 0; i < jumpPaths.length; i++) {
@@ -810,11 +842,13 @@ function highlightValidMoves(scene, piece) {
 function executeJumpChain(piece, jump) {
   for (var i = 0; i < jump.captures.length; i++) {
     var captured = jump.captures[i];
+    if (captured.isKing && captured.kingIcon) {
+      captured.kingIcon.destroy();
+    }
     captured.sprite.destroy();
     pieces = pieces.filter(function (p) {
       return p !== captured;
     });
-
     if (currentPlayer === lightPiece) {
       redCaptured++;
     } else {
@@ -822,14 +856,37 @@ function executeJumpChain(piece, jump) {
     }
   }
 
+  // reset draw offer if it was made by the current player
+  if (drawOffered && drawOfferedBy === currentPlayer) {
+    const gameOverPrompts = document.getElementById('gameOverPrompts');
+    const gameOverMessage = document.getElementById('gameOverMessage');
+    const drawBtn = document.getElementById('drawBtn');
+    const declineDrawBtn = document.getElementById('declineDrawBtn');
+    drawOffered = false;
+    drawOfferedBy = null;
+    gameOverMessage.textContent = '';
+    gameOverMessage.classList.remove('show');
+    gameOverPrompts.classList.remove('show');
+    drawBtn.textContent = 'Offer Draw';
+    declineDrawBtn.style.display = 'none';
   updateScore();
   checkGameOver();
 
   var final = jump.path[jump.path.length - 1];
   piece.x = final.x;
   piece.y = final.y;
-  piece.sprite.x = margin + final.x * tile_size + tile_size / 2;
-  piece.sprite.y = margin + final.y * tile_size + tile_size / 2;
+
+  const newX = margin + final.x * tile_size + tile_size / 2;
+  const newY = margin + final.y * tile_size + tile_size / 2;
+
+  // Animate movement
+  checkers.scene.scenes[0].tweens.add({
+    targets: piece.sprite,
+    x: newX,
+    y: newY,
+    duration: 250,
+    ease: 'Power3',
+  });
 
   // move the king icon if applicable
   if (piece.isKing && piece.kingIcon) {
@@ -927,11 +984,14 @@ function changePieceColor(newColorOne, newColorTwo) {
 // Event listener for the toggle colorblind button
 document.addEventListener('DOMContentLoaded', () => {
   const changeColorButton = document.getElementById('toggle-colorblind');
-
+  const dot = document.querySelector('.dot');
   changeColorButton.addEventListener('click', () => {
     const firstPieceColor = pieces[0].color;
     // if the first piece is a default color, change to colorblind colors
     if (firstPieceColor === COLORS.red || firstPieceColor === COLORS.black) {
+      colorblindMode = true;
+      dot.style.backgroundColor = currentPlayer == COLORS.red ? COLORS.strOrange :COLORS.strBlue;
+      changePieceColor(COLORS.colorblind_blue, COLORS.colorblind_orange);
       changeColorButton.classList.add('selected');
       lightPiece = COLORS.colorblind_orange;
       darkPiece = COLORS.colorblind_blue;
@@ -943,6 +1003,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     // if the first piece is a colorblind color, change to default colors
     else {
+      colorblindMode = false;
+      dot.style.backgroundColor = currentPlayer == COLORS.red ? COLORS.strRed: COLORS.strBlack;
       changePieceColor(COLORS.black, COLORS.red);
       changeColorButton.classList.remove('selected');
       lightPiece = COLORS.red;
@@ -1131,6 +1193,7 @@ document.addEventListener('DOMContentLoaded', () => {
     muted = !muted;
     checkers.sound.mute = muted;
     // then update the label
+    toggleMuteBtn.classList.toggle('selected');
     toggleMuteBtn.textContent = muted ? 'Unmute' : 'Mute';
   });
 
@@ -1141,6 +1204,7 @@ document.addEventListener('DOMContentLoaded', () => {
       muted = !muted;
       checkers.sound.mute = muted;
       toggleMuteBtn.textContent = muted ? 'Unmute' : 'Mute';
+      toggleMuteBtn.classList.toggle('selected');
     }
   });
 });
@@ -1190,6 +1254,11 @@ function resizeGame(percentage) {
       if (piece.kingIcon) {
         piece.kingIcon.destroy();
       }
+    } else {
+      // remove coordinates
+      coordElements.forEach((el) => document.body.removeChild(el));
+      coordElements.length = 0;
+
       // create a new crown icon with the updated position and size
       piece.kingIcon = checkers.scene.scenes[0].add.image(
         margin + piece.x * tile_size + tile_size / 2,
@@ -1245,12 +1314,35 @@ function resizeGame(percentage) {
 // Event listener for the resize slider
 document.addEventListener('DOMContentLoaded', () => {
   const resizeSlider = document.getElementById('resize-slider');
-  const resizeValue = document.getElementById('resize-value');
+  const resizeDisplay = document.getElementById('resize-display');
 
-  resizeSlider.addEventListener('input', () => {
+  function updateSize() {
     const percent = parseInt(resizeSlider.value, 10);
-    resizeValue.textContent = percent + '%';
     resizeGame(percent / 100);
+    resizeDisplay.textContent = `${resizeSlider.value}%`;
+
+    // math to align the slider
+    const thumbX = (resizeSlider.value - resizeSlider.min) /
+      (resizeSlider.max - resizeSlider.min) *
+      (resizeSlider.getBoundingClientRect().width -
+        parseFloat(window.getComputedStyle(resizeSlider).getPropertyValue('height'))) +
+      resizeSlider.offsetLeft;
+
+    resizeDisplay.style.left = `${thumbX}px`;
+    resizeDisplay.style.top = `${resizeSlider.offsetTop - 25}px`;
+    resizeDisplay.style.transform = `translate(-25%, 0)`;
+  }
+
+  resizeSlider.addEventListener("input", updateSize);
+  resizeSlider.addEventListener("mouseover", () => {
+    resizeDisplay.style.opacity = "100";
+    resizeDisplay.style.visibility = "visible";
+    updateSize();
+  });
+
+  resizeSlider.addEventListener("mouseout", () => {
+    resizeDisplay.style.opacity = "0";
+    resizeDisplay.style.visibility = "hidden";
   });
 });
 
@@ -1301,10 +1393,11 @@ function updateTimerDisplay() {
   const blackSec = String(blackTime % 60).padStart(2, '0');
 
   // update the innerHTML
-  redDisplay.textContent = `Red: ${redMin}:${redSec}`;
-  blackDisplay.textContent = `Black: ${blackMin}:${blackSec}`;
+  redDisplay.textContent = `${redMin}:${redSec}`;
+  blackDisplay.textContent = `${blackMin}:${blackSec}`;
 }
 
+// end the gamer if either player runs out of time
 function endGameOnTimeout(winnerColor) {
   stopPlayerTimer(); // stop the timer so that it doesn't go into the negatives
   gameOver = true;

@@ -21,13 +21,13 @@
     <script src="game.js"></script>
     <nav class="navbar">
       <h1>CHIGAME</h1>
+      <!-- turn indicator -->
+      <div class="turn-indicator">
+        <span class="dot"></span>
+        <p id="player-turn">Red</p>
+      </div>
       <!-- add buttons to this div -->
       <div class="nav-btns">
-        <!-- game timer for red and black -->
-        <div id="timers">
-          <div id="red-timer"></div>
-          <div id="black-timer"></div>
-        </div>
         <button id="forfeitBtn" class="btn">Forfeit</button>
         <button id="drawBtn" class="btn">Offer Draw</button>
         <button id="declineDrawBtn" class="btn">Decline Draw</button>
@@ -72,26 +72,44 @@
             <div id="volume-display" class="value-display"></div>
           </div>
           <!-- Board Scale Slider -->
-          <div class="slider-container">
-            <label for="resize-slider">
-              Board Scale: <span id="resize-value">100%</span>
-            </label>
+          <div class="setting-option">
+            <i class="fa-solid fa-maximize"></i>
             <input type="range"
                    id="resize-slider"
                    min="50"
                    max="120"
                    value="100"
-                   step="5" />
+                   step="5"
+                   title="resize slider" />
+            <div id="resize-display" class="value-display"></div>
           </div>
         </div>
       </div>
       <div id="settings-tab">⚙️</div>
     </div>
-    <div id="captured-pieces">
-      <div id="score">
-        Red: 0
-        <br />
-        Black: 0
+    <button id="settings-button" class="settings-button">⚙️</button>
+    <!-- game information menu -->
+    <div id="game-information">
+      <div id="red-info">
+        <h3>Red</h3>
+        <p>
+          Time Left: <span id="red-timer" class="info"></span>
+        </p>
+        <p>
+          Score: <span id="red-score" class="info">0</span>
+        </p>
+      </div>
+      <br />
+      <hr />
+      <br />
+      <div id="black-info">
+        <h3>Black</h3>
+        <p>
+          Time Left: <span id="black-timer" class="info"></span>
+        </p>
+        <p>
+          Score: <span id="black-score" class="info">0</span>
+        </p>
       </div>
     </div>
     <div id="endScreenPiece" class="hidden"></div>
