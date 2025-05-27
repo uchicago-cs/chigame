@@ -1,6 +1,8 @@
 import pytest
 from django.core.exceptions import ValidationError
 
+from chigame.api.tests.factories import GameFactory
+from chigame.games.models import GameList
 from chigame.users.models import FriendInvitation, Notification, User, UserProfile
 
 from .factories import (
@@ -209,22 +211,103 @@ def test_notificationqueryset_mark_x_methods():
 
 @pytest.mark.django_db
 def test_notificationqueryset_is_x_methods():
-    FriendInvitationNotificationFactory.create_batch(5)
-    notifications = Notification.objects.all()
+    notifications = FriendInvitationNotificationFactory.create_batch(5)
 
-    assert len(Notification.objects.is_unread()) == 5
-    assert len(Notification.objects.is_read()) == 0
-    assert len(Notification.objects.is_deleted()) == 0
-    assert len(Notification.objects.is_not_deleted()) == 5
+    # Mark 2 as read, 2 as deleted
+    notifications[0].mark_as_read()
+    notifications[1].mark_as_read()
+    notifications[2].mark_as_deleted()
+    notifications[3].mark_as_deleted()
 
-    notifications.mark_all_read()
-    assert len(Notification.objects.is_unread()) == 0
-    assert len(Notification.objects.is_read()) == 5
+    read_notifications = Notification.objects.is_read()
+    unread_notifications = Notification.objects.is_unread()
+    deleted_notifications = Notification.objects.is_deleted()
+    not_deleted_notifications = Notification.objects.is_not_deleted()
 
-    notifications.mark_all_deleted()
-    assert len(Notification.objects.is_deleted()) == 5
-    assert len(Notification.objects.is_not_deleted()) == 0
+    assert len(read_notifications) == 2
+    assert len(unread_notifications) == 3
+    assert len(deleted_notifications) == 2
+    assert len(not_deleted_notifications) == 3
 
-    notifications.restore_all_deleted()
-    assert len(Notification.objects.is_deleted()) == 0
-    assert len(Notification.objects.is_not_deleted()) == 5
+
+@pytest.mark.django_db
+def test_user_favorites_list_creation():
+    # Test that a favorites GameList is automatically created for a user
+    user = UserFactory()
+    # The signal should have already created the Favorites list
+    favorites_list = GameList.objects.get(created_by=user, name="Favorites")
+    assert favorites_list.created_by == user
+    assert favorites_list.name == "Favorites"
+
+
+@pytest.mark.django_db
+def test_add_game_to_favorites():
+    # Test adding a game to user's favorites list
+    user = UserFactory()
+    game = GameFactory(name="Chess")
+    # Get the automatically created favorites list
+    favorites_list = GameList.objects.get(created_by=user, name="Favorites")
+    favorites_list.games.add(game)
+
+    assert game in favorites_list.games.all()
+    assert favorites_list.games.count() == 1
+
+
+@pytest.mark.django_db
+def test_remove_game_from_favorites():
+    # Test removing a game from user's favorites list
+    user = UserFactory()
+    game = GameFactory(name="Monopoly")
+    favorites_list = GameList.objects.get(created_by=user, name="Favorites")
+    favorites_list.games.add(game)
+    assert favorites_list.games.count() == 1
+
+    favorites_list.games.remove(game)
+    assert game not in favorites_list.games.all()
+    assert favorites_list.games.count() == 0
+
+
+@pytest.mark.django_db
+def test_notification_auto_categorization():
+    """Test that notifications are automatically categorized based on their type."""
+    # Create a friend invitation notification
+    notification = Notification.objects.create(
+        receiver=UserFactory(),
+        type=Notification.FRIEND_REQUEST,
+        actor=FriendInvitationFactory(),
+        message="Test friend request",
+    )
+
+    # Should be automatically categorized as "social"
+    assert notification.category == "social"
+
+    # Test group invitation
+    group_notification = Notification.objects.create(
+        receiver=UserFactory(),
+        type=Notification.GROUP_INVITATION,
+        actor=GroupInvitationFactory(),
+        message="Test group invitation",
+    )
+
+    # Should be automatically categorized as "social"
+    assert group_notification.category == "social"
+
+    # Test reminder notification
+    reminder_notification = Notification.objects.create(
+        receiver=UserFactory(), type=Notification.REMINDER, actor=UserFactory(), message="Test reminder"
+    )
+
+    # Should be automatically categorized as "updates"
+    assert reminder_notification.category == "updates"
+
+    # Test notification with explicit category (should not be overridden)
+    explicit_notification = Notification.objects.create(
+        receiver=UserFactory(),
+        type=Notification.FRIEND_REQUEST,
+        actor=FriendInvitationFactory(),
+        category="promotions",  # Explicitly set to something else
+        message="Test with explicit category",
+    )
+
+    # Should keep the explicitly set category
+    assert explicit_notification.category == "promotions"
