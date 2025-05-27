@@ -1,7 +1,10 @@
 {% extends "base.html" %}
 
 {% block content %}
-  <h1>{{ leaderboard.name }}</h1>
+  <div>
+    <a href="{% url 'leaderboard_view' game.id %}">← Back</a>
+    <h1>{{ leaderboard.name }}</h1>
+  </div>
   <div>
     <a href="{% url 'points_bar_chart' game.id %}"
        class="btn {% if 'Points' in score_metric_name %}btn-dark active{% else %}btn-outline-dark{% endif %}">

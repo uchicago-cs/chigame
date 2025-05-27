@@ -1,4 +1,5 @@
 import json
+import os
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta
 from functools import wraps
@@ -11,6 +12,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
+from django.core.files.storage import FileSystemStorage
 from django.core.paginator import Paginator
 from django.db.models import Avg, Case, Count, ExpressionWrapper, F, FloatField, Q, Value, When
 from django.db.models.functions import Lower
@@ -21,7 +23,7 @@ from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.utils.timezone import now
-from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
+from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView, View
 from django.views.generic.edit import FormMixin
 from rest_framework import status
 from rest_framework.decorators import api_view
@@ -200,7 +202,7 @@ class GameCreateView(UserPassesTestMixin, CreateView):
     # Ensure the uploaded Twine .html file is saved to the Game model
     def form_valid(self, form):
         self.object = form.save(commit=False)
-        # ✅ Manually assign uploaded file
+        # Manually assign uploaded file
         if self.request.FILES.get("twine_file"):
             self.object.twine_file = self.request.FILES["twine_file"]
         self.object.save()
@@ -790,6 +792,38 @@ class GameDeleteView(DeleteView):
         if not request.user.is_staff:
             return HttpResponseForbidden("You don't have permission to delete this game.")
         return super().dispatch(request, *args, **kwargs)
+
+
+class UploadFileView(View):
+    def post(self, request, pk=None):
+        uploaded_file = request.FILES.get("uploaded_file")
+        game_name = request.POST.get("name", "").strip() or "DEFAULT"
+
+        print("Name:", game_name)
+        print("POST:", request.POST)
+        print("FILES:", request.FILES)
+
+        if uploaded_file:
+            # Save the file to twine_games/
+            fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, "twine_games"))
+            safe_filename = uploaded_file.name.replace(" ", "_")
+            filename = fs.save(safe_filename, uploaded_file)
+
+            # Create a basic Game instance
+            game = Game.objects.create(
+                name=game_name,
+                description="Uploaded Twine game",
+                min_players=1,
+                max_players=1,
+                complexity=1,
+                twine_file=f"twine_games/{filename}",
+            )
+
+            messages.success(request, f"Game '{game.name}' uploaded successfully!")
+            return redirect("game-list")
+
+        messages.error(request, "No file selected.")
+        return redirect("game-list")
 
 
 # =============== Tournaments Views ===============
@@ -2098,8 +2132,7 @@ def checkers_game_view(request, pk):
             [0, 1, 0, 1, 0, 1, 0, 1],
             [1, 0, 1, 0, 1, 0, 1, 0],
         ]
-        # Save first turn
-        board = CheckersBoard.objects.create(state=default_state)
+        board = CheckersBoard.objects.create(state=default_state, current_turn_player=game.player_1)
         CheckersTurn.objects.create(game=game, board=board, turn_number=1, player=game.player_1)
 
     # Determine player ID for frontend
@@ -2114,6 +2147,7 @@ def checkers_game_view(request, pk):
             "board_id": board.id,
             "player_id": player.id,
             "turn_number": turn_number,
+            "current_turn_player_id": board.current_turn_player.id if board.current_turn_player else None,
         },
     )
 
@@ -2123,25 +2157,33 @@ def checkers_game_update_board_state(request, board_id):
     try:
         board = CheckersBoard.objects.get(pk=board_id)
         new_state = request.data.get("state")
+        next_player_id = request.data.get("next_player_id")
 
-        if new_state is None:
-            return Response({"error": "Missing 'state'"}, status=status.HTTP_400_BAD_REQUEST)
+        if new_state is None or next_player_id is None:
+            return Response({"error": "Missing 'state' or 'next_player_id'"}, status=status.HTTP_400_BAD_REQUEST)
 
         board.state = new_state
+        board.current_turn_player_id = next_player_id
         board.save()
+
         return Response({"success": True})
 
     except CheckersBoard.DoesNotExist:
-        return Response({"error": "Board not found"}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"error": "Board not found"}, status=404)
     except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({"error": str(e)}, status=500)
 
 
 @api_view(["GET"])
 def checkers_game_get_board_state(request, board_id):
     try:
         board = CheckersBoard.objects.get(pk=board_id)
-        return Response({"state": board.state})
+        return Response(
+            {
+                "state": board.state,
+                "current_turn_player_id": board.current_turn_player.id if board.current_turn_player else None,
+            }
+        )
     except CheckersBoard.DoesNotExist:
         return Response({"error": "Board not found"}, status=404)
 
