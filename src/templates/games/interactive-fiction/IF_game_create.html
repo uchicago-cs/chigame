@@ -555,7 +555,7 @@
         const name = document.getElementById('id_name').value.trim();
         const author = document.getElementById('id_author').value.trim();
         const desc = document.getElementById('id_description').value.trim();
-        const gameFile = document.getElementById('id_game_file');
+        const gameFile = document.getElementById('myFile');
 
         // Validation check
         if (!name || !author || !desc) {
@@ -615,7 +615,10 @@
     });
   </script>
   <h1>Create Interactive Fiction Game</h1>
-  <form method="post" enctype="multipart/form-data" id="game_form">
+  <form method="post"
+        action="{% url 'upload-file' pk=game.pk %}"
+        enctype="multipart/form-data"
+        id="game_form">
     {% csrf_token %}
     <div>
       <label for="id_name">
@@ -624,7 +627,7 @@
       <input type="text"
              name="name"
              id="id_name"
-             value="{{ form.name.value }}"
+             value="{{ form.name.value|default_if_none:'' }}"
              required
              maxlength="50"
              data-maxlength />
@@ -647,9 +650,10 @@
       </label>
       <textarea name="description"
                 id="id_description"
+                value="{{ form.description.value|default_if_none:'' }}"
                 required
                 maxlength="500"
-                data-maxlength>{{ form.description.value }}</textarea>
+                data-maxlength></textarea>
     </div>
     <div>
       <label for="id_genre">Genre:</label>
@@ -731,10 +735,10 @@
       <label for="id_rules">Rules:</label>
       <textarea name="rules"
                 id="id_rules"
-                placeholder="Enter the rules"
+                placeholder="Enter rules"
                 rows="4"
                 maxlength="500"
-                data-maxlength>{{ form.rules.value }}</textarea>
+                data-maxlength></textarea>
     </div>
     <div>
       <label for="id_year_published">Year Published:</label>
@@ -753,7 +757,7 @@
                 data-maxlength>{{ form.content_warning.value }}</textarea>
     </div>
     <div>
-      <label for="id_image">Cover Imags</label>
+      <label for="id_image">Cover Image</label>
       <div class="upload-zone" data-input-id="id_cover_image">
         Drag &amp; drop a file here
         <br />
@@ -761,7 +765,7 @@
       </div>
       <input type="file"
              id="id_cover_image"
-             name="uploaded_file"
+             name="uploaded_image"
              class="if-file-input"
              accept="image/*" />
     </div>
@@ -813,11 +817,6 @@
         </div>
       </div>
     </h3>
-  </form>
-  <form method="post"
-        action="{% url 'upload-file' pk=game.pk %}"
-        enctype="multipart/form-data">
-    {% csrf_token %}
     <div class="upload-zone" data-input-id="myFile">
       Drag &amp; drop your exported Twine HTML file here
       <br />

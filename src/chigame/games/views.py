@@ -746,8 +746,8 @@ class IFGameCreateView(CreateView):
         if not latest_game:
             # fallback dummy game to prevent pk=None
             latest_game = Game.objects.create(
-                name="Untitled IF Game",
-                description="Temporary IF placeholder",
+                name="Untitled Game",
+                description="Temporary Game placeholder",
                 min_players=1,
                 max_players=1,
                 complexity=1.0,
@@ -778,6 +778,7 @@ class UploadFileView(View):
     def post(self, request, pk=None):
         uploaded_file = request.FILES.get("uploaded_file")
         game_name = request.POST.get("name", "").strip() or "DEFAULT"
+        desc = request.POST.get("description", "").strip() or "Uploaded Twine game"
 
         print("Name:", game_name)
         print("POST:", request.POST)
@@ -792,7 +793,7 @@ class UploadFileView(View):
             # Create a basic Game instance
             game = Game.objects.create(
                 name=game_name,
-                description="Uploaded Twine game",
+                description=desc,
                 min_players=1,
                 max_players=1,
                 complexity=1,
