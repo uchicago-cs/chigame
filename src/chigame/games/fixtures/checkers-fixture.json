@@ -181,7 +181,8 @@
           1,
           0
         ]
-      ]
+      ],
+      "current_turn_player": 1
     }
   },
   {

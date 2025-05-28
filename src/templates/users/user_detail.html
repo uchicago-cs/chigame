@@ -6,22 +6,13 @@
   User Details: {{ object.username }}
 {% endblock title %}
 {% block content %}
-  <div class="container">
-    <h1>{{ object.name|default:object.username }}</h1>
-    <p>
-      <strong>Username:</strong> {{ object.username }}
-    </p>
-    <p>
-      <strong>Email:</strong> {{ object.email }}
-    </p>
-    <p>
-      <strong>Joined:</strong> {{ object.date_joined|date:"Y-m-d" }}
-    </p>
+  <style>
+    .full-container {
+      margin-bottom: 30px;
+    }
+  </style>
+  <div class="container full-container">
     {% if object == request.user %}
-      <a href="{% url 'account_email' %}" class="btn btn-primary">Manage Email</a>
-      <a href="{% url 'account_change_password' %}" class="btn btn-primary">Change Password</a>
-      {# Link to the more detailed profile page #}
-      <a href="{% url 'users:user-profile' object.pk %}" class="btn btn-info">View Full Profile</a>
       <!-- Action buttons -->
       <style>
         .list-item {
@@ -66,6 +57,7 @@
           margin-left: 10px;
         }
       </style>
+      <h1>My Account</h1>
       <div class="row">
         <div class="col-sm-12">
           <ul>
@@ -123,6 +115,9 @@
             {% endif %}
           </ul>
         </div>
+        <h1>My Password</h1>
+        <a href="{% url 'account_change_password' %}"
+           class="btn btn-primary btn-sm slim-btn">Change Password</a>
       </div>
     {% else %}
       <!-- Display a message or take a different action -->

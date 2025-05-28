@@ -1,7 +1,7 @@
 from django.urls import path
 
 from . import views
-from .views import InteractiveFictionDetailView, LobbyCreateView, UploadFileView
+from .views import InteractiveFictionDetailView, LobbyCreateView
 
 urlpatterns = [
     # lobbies
@@ -19,8 +19,8 @@ urlpatterns = [
     path("tournaments/<int:pk>/chat/", views.TournamentChatDetailView, name="tournament-chat"),
     # Games favorites
     path("favorites/", views.FavoriteListView.as_view(), name="favorite-list"),
-    path("<int:pk>/favorite/", views.add_to_favorites, name="add-to-favorites"),
-    path("<int:pk>/unfavorite/", views.remove_from_favorites, name="remove-from-favorites"),
+    path("favorite-games/add/<int:game_id>/", views.add_to_favorites, name="add-to-favorites"),
+    path("favorite-games/remove/<int:game_id>/", views.remove_from_favorites, name="remove-from-favorites"),
     # custom game list handling
     path("gamelists/<int:pk>/", views.GameListDetailView.as_view(), name="gamelist-detail"),
     path("<int:pk>/gamelists/<int:list_pk>/add/", views.add_to_gamelist, name="add-to-gamelist"),
@@ -34,14 +34,14 @@ urlpatterns = [
     path("search/", views.search_results, name="game-search-results"),
     path("<int:pk>/reviews/", views.ReviewListView.as_view(), name="game-review-list"),
     path("games/<int:pk>/review/", views.add_review, name="add-review"),
+    path("queue/", views.QueueListView.as_view(), name="queue-list"),
     # matches
     path("<int:pk>/match/create/", views.MatchCreateView.as_view(), name="match-create"),
     path("<int:pk>/match/join/", views.join_match, name="match-join"),
-    path("games/<int:game_id>/history/", views.game_history_view, name="game_history"),
+    path("games/<int:game_id>/history/", views.GameHistoryView.as_view(), name="game_history"),
     path("lobby/<int:pk>/code/", views.MatchCodeView.as_view(), name="match-code"),
     # interactive fiction
     path("interactive-fiction/", views.IFGameCreateView.as_view(), name="interactive-fiction-create"),
-    path("<int:pk>/upload/", UploadFileView.as_view(), name="upload-file"),
     path("if-game/<int:pk>/", InteractiveFictionDetailView.as_view(), name="interactive-fiction-detail"),
     # tournaments
     path("tournaments/", views.TournamentListView.as_view(), name="tournament-list"),

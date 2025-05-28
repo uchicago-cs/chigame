@@ -51,10 +51,10 @@
            class="btn btn-outline-primary">Create a Match</a>
         {% if user.is_authenticated %}
           {% if game in favorites_list.games.all %}
-            <a href="{% url 'remove-from-favorites' pk=game.pk %}"
+            <a href="{% url 'remove-from-favorites' game_id=game.pk %}"
                class="btn btn-outline-warning">Remove from Favorites</a>
           {% else %}
-            <a href="{% url 'add-to-favorites' pk=game.pk %}"
+            <a href="{% url 'add-to-favorites' game_id=game.pk %}"
                class="btn btn-outline-success">Add to Favorites</a>
           {% endif %}
           <a href="{% url 'game_history' game.id %}"
@@ -113,12 +113,6 @@
           </p>
         {% endif %}
         <p>{{ game.description|linebreaksbr }}</p>
-        {% if is_twine_game %}
-          <h3>Play Twine Game</h3>
-          <a href="{{ game.twine_file.url }}"
-             target="_blank"
-             class="btn btn-success">Open Game in New Tab</a>
-        {% endif %}
         <h3 id="player-description">Players</h3>
         <p>
           {% if game.min_players == game.max_players %}
@@ -143,22 +137,6 @@
         <h3 id="rule-description">Rules</h3>
         <div class="mb-4">
           <p>{{ game.rules }}</p>
-          {% if game.pk == 9999 %}
-            {# for interactive fiction games #}
-            <hr />
-            <h3>Upload a File</h3>
-            <form method="post"
-                  action="{% url 'upload-file' pk=game.pk %}"
-                  enctype="multipart/form-data">
-              {% csrf_token %}
-              <input type="file" id="myFile" name="uploaded_file" />
-              <input type="submit" class="btn btn-primary" value="Upload" />
-            </form>
-            <h3>Uploaded Story</h3>
-            <a href="{{ uploaded_file_url }}"
-               target="_blank"
-               class="btn btn-success">Play Uploaded Game</a>
-          {% endif %}
         </div>
         <a href="{% url 'game-review-list' pk=game.pk %}">See All Reviews for {{ game.name }}</a>
       </div>

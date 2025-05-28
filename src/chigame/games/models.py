@@ -39,6 +39,23 @@ class Game(models.Model):
     game_url = models.URLField(blank=True, null=True, help_text="URL for embedded games (e.g., external web games)")
     # interactive fiction  - twine file
     twine_file = models.FileField(upload_to="twine_games/", null=True, blank=True)
+    GENRE_CHOICES = [
+        ("fantasy", "Fantasy"),
+        ("sci-fi", "Sci-Fi"),
+        ("horror", "Horror"),
+        ("romance", "Romance"),
+        ("mystery", "Mystery"),
+        ("comedy", "Comedy"),
+        ("drama", "Drama"),
+    ]
+    genre = models.CharField(max_length=50, choices=GENRE_CHOICES, default="drama")
+
+    CONTENT_SENSITIVITY_CHOICES = [
+        ("everyone", "Everyone"),
+        ("teen", "Teen"),
+        ("mature", "Mature"),
+    ]
+    content_sensitivity = models.CharField(max_length=20, choices=CONTENT_SENSITIVITY_CHOICES, default="everyone")
 
     suggested_age = models.PositiveSmallIntegerField(
         null=True, blank=True
@@ -374,9 +391,16 @@ class Tournament(models.Model):
     num_winner = models.PositiveIntegerField(default=1)  # number of possible winners for the tournament
     archived = models.BooleanField(default=False)  # whether the tournament is archived by the admin
 
+    # Prize fields
+    prize_description = models.TextField(blank=True, null=True)  # description of the prizes offered
+    first_place_prize = models.CharField(max_length=255, blank=True, null=True)  # prize for the first place winner
+    second_place_prize = models.CharField(max_length=255, blank=True, null=True)  # prize for the second place winner
+    third_place_prize = models.CharField(max_length=255, blank=True, null=True)  # prize for the third place winner
+
     matches = models.ManyToManyField(Match, related_name="tournament", blank=True)
     winners = models.ManyToManyField(User, related_name="won_tournaments", blank=True)  # allow multiple winners
     players = models.ManyToManyField(User, related_name="joined_tournaments", blank=True)
+    waitlist = models.ManyToManyField(User, related_name="waitlisted_tournaments", blank=True)  # users on the waitlist
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="created_tournaments")
 
     @property
@@ -654,30 +678,68 @@ class Tournament(models.Model):
         # a self.matches.clear()
         self.save()
 
+    def promote_from_waitlist(self) -> list[User]:
+        """
+        Promotes users from the waitlist to the tournament if spots are available
+        and the registration is open. Users are promoted based on the order they appear
+        in the waitlist query (typically insertion order for ManyToMany, but not guaranteed).
+
+        Returns:
+            list[User]: List of users who were promoted.
+        """
+        promoted_users = []
+        if self.status != "registration open":
+            return promoted_users  # Can only promote during registration
+
+        available_spots = self.max_players - self.players.count()
+        if available_spots <= 0:
+            return promoted_users  # No spots available
+
+        # Get waitlisted users (order might vary based on DB backend)
+        # Convert to list to avoid modifying queryset while iterating if needed later
+        waitlisted_users = list(self.waitlist.all())
+
+        users_to_promote = waitlisted_users[:available_spots]
+
+        if users_to_promote:
+            for user in users_to_promote:
+                self.players.add(user)
+                self.waitlist.remove(user)
+                promoted_users.append(user)
+            self.save()  # Save once after promoting all possible users
+
+        return promoted_users
+
     def tournament_sign_up(self, user: User) -> int:
         """
         Signs up a user for a tournament. If the user has already joined the
-        tournament, nothing happens.
+        tournament or is on the waitlist, nothing happens. If the tournament is full,
+        the user is added to the waitlist.
 
         Args:
             user: the user
 
         Returns:
             int: 0 if the user has successfully signed up for the tournament,
-            1 if the user has already joined the tournament,
-            2 if the tournament is full,
-            3 if the registration period of tournament has already ended
+                 1 if the user has already joined the tournament or is on the waitlist,
+                 2 if the user was added to the waitlist,
+                 3 if the registration period of tournament has already ended.
         """
         if self.status != "registration open":
-            # The registration period has ended (the join and withdraw buttons only appear
-            # during the registration period)
+            # The registration period has ended
             return 3
-        if user in self.players.all():
-            # The user has already joined the tournament
+
+        if user in self.players.all() or user in self.waitlist.all():
+            # The user has already joined the tournament or is on the waitlist
             return 1
+
         if self.players.count() >= self.max_players:
-            # The tournament is full
+            # The tournament is full, add to waitlist
+            self.waitlist.add(user)
+            self.save()  # Save after adding to waitlist
             return 2
+
+        # Add user to players if there is space
         self.players.add(user)
         self.save()
         return 0
@@ -687,27 +749,48 @@ class Tournament(models.Model):
         user: User,
     ) -> int:
         """
-        Withdraws a user from a tournament. If the user has not joined the
-        tournament, nothing happens.
+        Withdraws a user from a tournament or its waitlist.
+        If the user has not joined either, nothing happens.
+        When a player withdraws during the registration period,
+        users from the waitlist are automatically promoted if spots become available.
 
         Args:
             user: the user
 
         Returns:
-            int: 0 if the user has successfully withdrawn from the tournament,
-            1 if the user has not joined the tournament
-            3 if the registration period of tournament has already ended
+            int: 0 if the user has successfully withdrawn,
+                 1 if the user was not found in players or waitlist,
+                 3 if the withdrawal attempt is outside the registration period.
         """
         if self.status != "registration open":
-            # The registration period has ended (the join and withdraw buttons only appear
-            # during the registration period)
+            # Can only withdraw during registration period
             return 3
-        if user not in self.players.all():
-            # The user has not joined the tournament
+
+        withdrew_from_players = False
+        if user in self.players.all():
+            # User is a player, remove them
+            self.players.remove(user)
+            # Don't save yet, promotion might modify players/waitlist again
+            withdrew_from_players = True
+        elif user in self.waitlist.all():
+            # User is on waitlist, remove them
+            self.waitlist.remove(user)
+            self.save()  # Save after removing from waitlist
+            return 0  # Successful withdrawal from waitlist
+        else:
+            # The user was not found in players or waitlist
             return 1
-        self.players.remove(user)
-        self.save()
-        return 0
+
+        # If a player withdrew, attempt promotion and save
+        if withdrew_from_players:
+            self.promote_from_waitlist()  # This method saves if promotions occur
+            # Need to save here in case no promotion occurred but player was removed
+            if not self.promote_from_waitlist():  # Check if promote_from_waitlist saved
+                self.save()
+            return 0  # Successful withdrawal from players
+
+        # Fallback case, should not be reached if logic above is correct
+        return 1
 
     # a
     def get_tournament_statistics(self):
@@ -1021,6 +1104,10 @@ class CheckersBoard(models.Model):
     """
 
     state = models.JSONField()  # store positions/pieces as a 2D array
+    current_turn_player = models.ForeignKey(
+        "games.Player", on_delete=models.CASCADE, null=True, blank=True, related_name="current_turn_boards"
+    )
+    # state_bits = models.IntegerField() # stores positions as bits
 
     def __str__(self):
         return f"Board {self.id}"
@@ -1138,3 +1225,6 @@ class GameQueueEntry(models.Model):
 
     def __str__(self):
         return f"{self.game.name} (pos {self.position})"
+
+
+# Game Stat Model Implementation
