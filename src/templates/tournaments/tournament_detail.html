@@ -578,7 +578,6 @@
   {% if tournament.status == "tournament ended" %}
     <a href="{% url 'tournament-match-stats' tournament.id %}"
        class="stats-button">View Match Analytics</a>
-    =======
     <!-- Feedback Creation Section -->
     <h2>Submit Feedback</h2>
     <form method="post" action="{% url 'submit-feedback' tournament.id %}">

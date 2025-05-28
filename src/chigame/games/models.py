@@ -287,6 +287,11 @@ class Match(models.Model):
     end_time = models.DateTimeField(null=True, blank=True)
     duration = models.DurationField(null=True, blank=True)
     average_rating = models.DecimalField(max_digits=3, decimal_places=2, null=True, blank=True)
+    # a
+    start_time = models.DateTimeField(null=True, blank=True)
+    end_time = models.DateTimeField(null=True, blank=True)
+    duration = models.DurationField(null=True, blank=True)
+    average_rating = models.DecimalField(max_digits=3, decimal_places=2, null=True, blank=True)
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
@@ -322,9 +327,6 @@ class Match(models.Model):
         return None
 
 
-# a
-
-
 class Player(models.Model):
     """
     A player in a match.
@@ -348,6 +350,8 @@ class Player(models.Model):
     role = models.TextField(blank=True, null=True)
     outcome = models.PositiveSmallIntegerField(choices=OUTCOMES, blank=True, null=True)
     victory_type = models.TextField(blank=True, null=True)
+    # Addedum player performance
+    rating = models.DecimalField(max_digits=3, decimal_places=2, null=True, blank=True)
     # Addedum player performance
     rating = models.DecimalField(max_digits=3, decimal_places=2, null=True, blank=True)
 
@@ -533,6 +537,15 @@ class Tournament(models.Model):
                         # Use the most recent player record if multiple exist
                         bracket_players.append(players.latest("id"))
                 # a
+
+                # a Get all players for each user in the bracket
+                bracket_players = []
+                for user in bracket_users:
+                    players = Player.objects.filter(user=user, match=bracket)
+                    if players.exists():
+                        # Use the most recent player record if multiple exist
+                        bracket_players.append(players.latest("id"))
+                # a
                 bracket_with_outcome = any(player.outcome is not None for player in bracket_players)
                 if not bracket_with_outcome:  # the match has not finished
                     for player in bracket_players:
@@ -667,6 +680,15 @@ class Tournament(models.Model):
                     # Use the most recent player record if multiple exist
                     bracket_players.append(players.latest("id"))
             # a
+            # bracket_players = [Player.objects.get(user=user, match=bracket) for user in bracket_users]
+            # a Get all players for each user in the bracket
+            bracket_players = []
+            for user in bracket_users:
+                players = Player.objects.filter(user=user, match=bracket)
+                if players.exists():
+                    # Use the most recent player record if multiple exist
+                    bracket_players.append(players.latest("id"))
+            # a
             bracket_winners = [
                 player.user for player in bracket_players if player.outcome == Player.WIN
             ]  # allow multiple winners
@@ -675,6 +697,7 @@ class Tournament(models.Model):
                 winners.append(winner)
 
         self.winners.set(winners)
+        # a self.matches.clear()
         # a self.matches.clear()
         self.save()
 
@@ -792,7 +815,6 @@ class Tournament(models.Model):
         # Fallback case, should not be reached if logic above is correct
         return 1
 
-    # a
     def get_tournament_statistics(self):
         """
         Calculate and return various statistics about the tournament.
@@ -1073,7 +1095,7 @@ def update_match_timing(sender, instance, **kwargs):
         pass  # No match exists yet for this lobby
 
 
-# ================ CHECKERS =================
+# ================ CHECKERS ================
 
 
 class Checkers(models.Model):
