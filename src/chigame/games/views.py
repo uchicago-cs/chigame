@@ -68,28 +68,8 @@ class QueueListView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         queue, _ = GameQueue.objects.get_or_create(user=self.request.user)
-        # Grab the actual Game objects in position order
         entries = queue.entries.order_by("position").select_related("game")
         return [entry.game for entry in entries]
-
-    @login_required
-    def add_to_queue(request, game_id):
-        """Add a game to the current user's queue."""
-        game = get_object_or_404(Game, pk=game_id)
-        queue, _ = GameQueue.objects.get_or_create(user=request.user)
-        queue.add_game(game)
-        return redirect("queue-list")
-
-    @login_required
-    def remove_from_queue(request, game_id):
-        """Remove a game from the current user's queue."""
-        game = get_object_or_404(Game, pk=game_id)
-        try:
-            queue = GameQueue.objects.get(user=request.user)
-            queue.entries.filter(game=game).delete()
-        except GameQueue.DoesNotExist:
-            pass
-        return redirect("queue-list")
 
 
 # =============== Games CRUD and Search Views ===============
