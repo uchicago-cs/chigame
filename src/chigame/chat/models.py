@@ -12,6 +12,8 @@ class LiveChat(models.Model):
 
     name = models.TextField(null=False)
     users: models.ManyToManyField = models.ManyToManyField(User, through="LiveChatUser", related_name="live_chats")
+    background_image = models.ImageField(upload_to="chat_backrounds/", null=True, blank=True)
+
     pinned_message = models.ForeignKey(
         "LiveChatMessage", null=True, blank=True, on_delete=models.SET_NULL, related_name="pinned_message"
     )

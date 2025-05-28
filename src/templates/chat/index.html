@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block content %}
   <style>
@@ -42,10 +43,38 @@
     }
 
     .chat-messages-scroll {
-      flex-grow: 1;
-      overflow-y: auto;
+      height: 100%;
+      min-height: 0;
+    }
+
+    .message-menu {
+      position: absolute;
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+      z-index: 1000;
+    }
+
+    .message-menu ul {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .message-menu li {
+      padding: 8px 12px;
+      cursor: pointer;
+    }
+
+    .message-menu li:hover {
+      background: #f0f0f0;
     }
   </style>
+
+  <div id="chat-container"
+       class="chat-container h-100 d-flex flex-column position-relative"
+       {% if chat.background_image %} style="background-image: url('{{ chat.background_image.url }}'); background-size: cover; background-position: center;" {% else %} style="background-size: cover; background-position: center;" {% endif %}>
   <div id="chatContainer" class="chat-container centered-chat">
     {% include "chat/components/_header.html" %}
     <div id="chat-body" class="d-flex flex-column flex-grow-1 overflow-hidden">
@@ -62,5 +91,16 @@
     </script>
     <div id="chat-context" data-user-id="{{ request.user.id }}"></div>
     {% include "chat/components/_script.html" %}
+
+    {# Blank triple-click menu #}
+    <div id="message-menu" class="message-menu" style="display: none;">
+      <ul>
+        <li data-action="copy">Copy Message</li>
+        <li data-action="delete">Delete Message</li>
+        <li data-action="pin">Pin Message</li>
+      </ul>
+    </div>
   </div>
+
+  <script src="{% static 'js/chat-menu.js' %}"></script>
 {% endblock content %}

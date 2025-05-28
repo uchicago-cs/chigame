@@ -1,4 +1,48 @@
 <script>
+  (function() {
+    const chatSocket = new WebSocket(
+      (window.location.protocol === 'https:' ? 'wss://' : 'ws://') +
+      window.location.host +
+      "/ws/chat/{{ chat.id }}/"
+    );
+
+    chatSocket.onmessage = function(e) {
+      const data = JSON.parse(e.data);
+      const ul = document.querySelector('#messages');
+
+      if (data.type === 'message') {
+        const li = document.createElement('li');
+        li.textContent = `${data.username}: ${data.message}`;
+        ul.appendChild(li);
+      } else if (data.type === 'unfurl') {
+        data.urls.forEach(url => {
+          const li = document.createElement('li');
+          li.className = 'unfurl-placeholder';
+          li.textContent = `🔗 Preview coming soon for ${url}`;
+          ul.appendChild(li);
+        });
+      }
+    };
+
+    chatSocket.onclose = function(e) {
+      console.error('Chat socket closed unexpectedly');
+    };
+
+    document.querySelector('#chat-form').onsubmit = function(e) {
+      e.preventDefault();
+      const input = document.querySelector('#chat-input');
+      const message = input.value;
+      chatSocket.send(JSON.stringify({
+        message: message,
+        user_id: {
+          {
+            user.id
+          }
+        }
+      }));
+      input.value = '';
+    };
+  })();
   let replyToMessageId = null;
   let replyToUsername = null;
   let replyToContent = null;
