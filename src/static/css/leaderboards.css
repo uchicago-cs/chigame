@@ -1,0 +1,121 @@
+.leaderboard-title {
+    font-size: 2rem;
+    margin-bottom: 2rem;
+    margin-top: 1rem;
+  }
+
+  .table-container {
+    overflow-x: auto;
+    margin-top: 2rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .leaderboard-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 0.5rem;
+    font-size: 16px;
+  }
+
+  .leaderboard-table thead {
+    background-color: #f0f0f0;
+    text-align: left;
+  }
+
+  .leaderboard-table th,
+  .leaderboard-table td {
+    padding: 12px 24px;
+    border-bottom: 1px solid #ccc;
+  }
+
+  .leaderboard-table tr:hover {
+    background-color: #f9f9f9;
+    cursor: pointer;
+  }
+
+  .leaderboard-meta {
+    font-style: italic;
+    margin-top: 1.5rem;
+  }
+
+  .leaderboard-controls {
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+
+  select {
+    padding: 6px 12px;
+    font-size: 1em;
+  }
+
+  form {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid #ddd;
+  }
+
+  .leaderboard-container {
+    max-width: 1000px;
+    margin: 2rem auto;
+    padding: 1rem;
+  }
+
+  .leaderboard-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .leaderboard-title {
+    font-size: 2rem;
+    margin: 0;
+  }
+
+  .leaderboard-description {
+    font-style: italic;
+    color: #555;
+  }
+
+  .back-link {
+    font-size: 1rem;
+    text-decoration: none;
+    color: #444;
+    margin-bottom: 0.5rem;
+    display: inline-block;
+  }
+
+  .back-link:hover {
+    color: #000;
+  }
+
+  .btn-view-chart {
+    margin-top: 1.5rem;
+    display: inline-block;
+    padding: 0.5em 1em;
+    font-size: 1rem;
+    background-color: #800000;
+    color: white;
+    border-radius: 5px;
+    text-decoration: none;
+  }
+
+  .btn-view-chart:hover {
+    background-color: #6d0202;
+  }
+
+  .back-link {
+    font-size: 1rem;
+    text-decoration: none;
+    color: #444;
+    margin-bottom: 1rem;
+    display: inline-block;
+  }
+
+  .back-link:hover {
+    color: #000;
+  }

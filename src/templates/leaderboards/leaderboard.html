@@ -1,40 +1,47 @@
 {% extends "base.html" %}
 
+{% load static %}
+
+{% block css %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'css/leaderboards.css' %}" />
+{% endblock css %}
 {% block content %}
-  <div>
-    <a href="{% url 'leaderboards_landing' %}">← Back</a>
-    <h1>{{ leaderboard.name }}</h1>
+  <div class="leaderboard-container">
+    <div class="leaderboard-header">
+      <a href="{% url 'leaderboards_landing' %}" class="back-link">← Back</a>
+      <h1 class="leaderboard-title">{{ leaderboard.name }}</h1>
+      <p class="leaderboard-description">{{ leaderboard.description }}</p>
+    </div>
+    <div class="table-container">
+      <table class="leaderboard-table">
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Player</th>
+            <th>Region</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for entry in entries %}
+            <tr>
+              <td>{{ entry.rank }}</td>
+              <td>{{ entry.user.user.name }}</td>
+              <td>{{ entry.region }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% if "Points" in leaderboard.name %}
+      <a href="{% url 'points_bar_chart' game.id %}"
+         class="btn btn-view-chart">View Bar Chart</a>
+    {% elif "Time Played" in leaderboard.name %}
+      <a href="{% url 'top_time_played_bar_chart' game.id %}"
+         class="btn btn-view-chart">View Bar Chart</a>
+    {% elif "Games Won" in leaderboard.name %}
+      <a href="{% url 'top_games_won_bar_chart' game.id %}"
+         class="btn btn-view-chart">View Bar Chart</a>
+    {% endif %}
   </div>
-  <p>{{ leaderboard.description }}</p>
-  <table>
-    <thead>
-      <tr>
-        <th>Rank</th>
-        <th>Player</th>
-        <th>Region</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for entry in entries %}
-        <tr>
-          <td>{{ entry.rank }}</td>
-          <td>{{ entry.user.user.name }}</td>
-          <td>{{ entry.region }}</td>
-        </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-  {% if "Points" in leaderboard.name %}
-    <a href="{% url 'points_bar_chart' game.id %}">
-      <button>View Bar Chart</button>
-    </a>
-  {% elif "Time Played" in leaderboard.name %}
-    <a href="{% url 'top_time_played_bar_chart' game.id %}">
-      <button>View Bar Chart</button>
-    </a>
-  {% elif "Games Won" in leaderboard.name %}
-    <a href="{% url 'top_games_won_bar_chart' game.id %}">
-      <button>View Bar Chart</button>
-    </a>
-  {% endif %}
 {% endblock content %}

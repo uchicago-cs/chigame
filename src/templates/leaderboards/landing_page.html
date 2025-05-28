@@ -1,31 +1,53 @@
 {% extends "base.html" %}
 
+{% load static %}
+
+{% block css %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'css/leaderboards.css' %}" />
+{% endblock css %}
 {% block content %}
-  <h1>Leaderboards</h1>
+  <h1 class="leaderboard-title">Leaderboards</h1>
   {% if top_entries %}
-    <table>
-      <thead>
-        <tr>
-          <th align="left">Game</th>
-          <th align="left">Current Global Leader</th>
-          <th align="left">Region</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for item in top_entries %}
-          <tr onclick="window.location='{% url 'leaderboard_view' item.entry.leaderboard.game.id %}'">
-            <td>{{ item.game }}</td>
-            <td>{{ item.entry.user.user.name }}</td>
-            <td>{{ item.entry.region }}</td>
+    <div class="table-container">
+      <table class="leaderboard-table">
+        <thead>
+          <tr>
+            <th align="left">Game</th>
+            <th align="left">Current Global Leader</th>
+            <th align="left">Region</th>
           </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-    <p>
-      <strong>Default View Metric:</strong> {{ default_view_metric|default:"Not set" }}
-      &nbsp;&nbsp;&nbsp;
-      <strong>Anonymity Setting:</strong> {{ anonymity|default:"Not set" }}
-    </p>
+        </thead>
+        <tbody>
+          {% for item in top_entries %}
+            <tr onclick="window.location='{% url 'leaderboard_view' item.entry.leaderboard.game.id %}?view_metric={{ default_view_metric }}'">
+              <td>{{ item.game }}</td>
+              <td>{{ item.entry.user.user.name }}</td>
+              <td>{{ item.entry.region }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <form method="get" class="leaderboard-controls">
+      <label for="view_metric">Default View Metric:</label>
+      <select name="view_metric" id="view_metric" onchange="this.form.submit()">
+        <option value="Points"
+                {% if default_view_metric == "Points" %}selected{% endif %}>Points</option>
+        <option value="Games Won"
+                {% if default_view_metric == "Games Won" %}selected{% endif %}>Games Won</option>
+        <option value="Time Played"
+                {% if default_view_metric == "Time Played" %}selected{% endif %}>Time Played (min)</option>
+      </select>
+      <label for="anonymity">Anonymity Setting:</label>
+      <select name="anonymity" id="anonymity" onchange="this.form.submit()">
+        <option value="Visible" {% if anonymity == "Visible" %}selected{% endif %}>Visible</option>
+        <option value="Anonymous"
+                {% if anonymity == "Anonymous" %}selected{% endif %}>Anonymous</option>
+        <option value="Name Hidden"
+                {% if anonymity == "Name Hidden" %}selected{% endif %}>Name Hidden</option>
+      </select>
+    </form>
   {% else %}
     <p>No leaderboard entries found.</p>
   {% endif %}

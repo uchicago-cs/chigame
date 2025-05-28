@@ -1,8 +1,14 @@
 {% extends "base.html" %}
 
+{% load static %}
+
+{% block css %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'css/leaderboards.css' %}" />
+{% endblock css %}
 {% block content %}
   <div>
-    <a href="{% url 'leaderboard_view' game.id %}">← Back</a>
+    <a href="{% url 'leaderboard_view' game.id %}" class="back-link">← Back</a>
     <h1>{{ leaderboard.name }}</h1>
   </div>
   <div>
