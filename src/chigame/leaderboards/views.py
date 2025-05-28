@@ -63,8 +63,7 @@ def get_tier_info(score, metric_name):
 
 def leaderboard_view(request, game_id):
     game = get_object_or_404(Game, id=game_id)
-    view_metric = request.GET.get("view_metric", "Points")
-    leaderboard = game.leaderboards.filter(name__icontains=view_metric).first()
+    leaderboard = game.leaderboards.first()
 
     if not leaderboard:
         return render(request, "leaderboards/empty.html", {"game": game})
@@ -198,12 +197,10 @@ def top_games_won_bar_chart(request, game_id):
 
 
 def landing_page_view(request):
-    default_view_metric = request.GET.get("view_metric", "Points")
-    anonymity = request.GET.get("anonymity", "Visible")
     top_entries = []
 
     for game in Game.objects.prefetch_related("leaderboards").all():
-        leaderboard = game.leaderboards.filter(name__icontains=default_view_metric).first()
+        leaderboard = game.leaderboards.first()
         if leaderboard:
             top_entry = (
                 LeaderboardEntry.objects.filter(leaderboard=leaderboard)
@@ -219,14 +216,15 @@ def landing_page_view(request):
                     }
                 )
 
-    # Todo: Link security settings
+    # Default view metric hardcoded as Points to match the leaderboard fixture
+    # Anonymity hardcoded as None, and will be linked with security settings in later PR
     return render(
         request,
         "leaderboards/landing_page.html",
         {
             "top_entries": top_entries,
-            "default_view_metric": default_view_metric,
-            "anonymity": anonymity,
+            "default_view_metric": "Points",
+            "anonymity": None,
         },
     )
 
