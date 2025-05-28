@@ -2,15 +2,18 @@
 
 {% block content %}
   <div class="container mt-5">
-    <h1 class="display-4 mb-4">Game History for {{ game.name }}</h1>
-    <a href="{% url 'game-detail' game.id %}" class="btn btn-primary mb-4">← Return to Game Detail</a>
-    <form method="get" class="mb-4">
-      <div class="row">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h1 class="display-4">Game History: {{ game.name }}</h1>
+      <a href="{% url 'game-detail' game.id %}"
+         class="btn btn-outline-primary">← Return to Game Detail</a>
+    </div>
+    <form method="get" class="mb-4 p-3 bg-light rounded shadow-sm">
+      <div class="row align-items-end">
         <div class="col-md-4">
-          <label for="periodSelect" class="form-label">Select Period:</label>
+          <label for="periodSelect" class="form-label fw-bold">View Statistics For:</label>
           <select name="period"
                   id="periodSelect"
-                  class="form-select"
+                  class="form-select form-select-lg"
                   onchange="this.form.submit()">
             {% for option in period_options %}
               <option value="{{ option.value }}"
@@ -20,60 +23,160 @@
         </div>
       </div>
     </form>
-    <div class="row mb-4">
-      <div class="col-md-3">
-        <div class="card text-center">
-          <div class="card-body">
-            <h5 class="card-title">Total Played</h5>
-            <p class="card-text fs-4">{{ total_played }}</p>
+    {% if entries or total_played > 0 %}
+      {# Overall Statistics Section #}
+      <h2 class="mb-3">Overall Performance</h2>
+      <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4 mb-4">
+        <div class="col">
+          <div class="card h-100 text-center shadow-sm">
+            <div class="card-body">
+              <h5 class="card-title text-primary">Total Played</h5>
+              <p class="card-text fs-2 fw-bold">{{ total_played }}</p>
+            </div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="card h-100 text-center shadow-sm">
+            <div class="card-body">
+              <h5 class="card-title text-success">Wins</h5>
+              <p class="card-text fs-2 fw-bold">{{ wins }}</p>
+            </div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="card h-100 text-center shadow-sm">
+            <div class="card-body">
+              <h5 class="card-title text-danger">Losses</h5>
+              <p class="card-text fs-2 fw-bold">{{ losses }}</p>
+            </div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="card h-100 text-center shadow-sm">
+            <div class="card-body">
+              <h5 class="card-title text-secondary">Draws</h5>
+              <p class="card-text fs-2 fw-bold">{{ draws }}</p>
+            </div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="card h-100 text-center shadow-sm">
+            <div class="card-body">
+              <h5 class="card-title text-info">Win Rate</h5>
+              <p class="card-text fs-2 fw-bold">{{ win_rate|floatformat:2 }}%</p>
+            </div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="card h-100 text-center shadow-sm">
+            <div class="card-body">
+              <h5 class="card-title text-warning">Incomplete</h5>
+              <p class="card-text fs-2 fw-bold">{{ incomplete }}</p>
+            </div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="card h-100 text-center shadow-sm">
+            <div class="card-body">
+              <h5 class="card-title">Avg. Playtime</h5>
+              <p class="card-text fs-2 fw-bold">
+                {% if average_playtime %}
+                  {{ average_playtime }}
+                {% else %}
+                  N/A
+                {% endif %}
+              </p>
+            </div>
           </div>
         </div>
       </div>
-      <div class="col-md-3">
-        <div class="card text-center text-success">
-          <div class="card-body">
-            <h5 class="card-title">Wins</h5>
-            <p class="card-text fs-4">{{ wins }}</p>
+      {# Streaks Section #}
+      <h2 class="mb-3">Streaks</h2>
+      <div class="row row-cols-1 row-cols-md-3 g-4 mb-4">
+        <div class="col">
+          <div class="card h-100 text-center shadow-sm">
+            <div class="card-body">
+              <h5 class="card-title text-success">Longest Win Streak</h5>
+              <p class="card-text fs-2 fw-bold">{{ longest_win_streak }}</p>
+            </div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="card h-100 text-center shadow-sm">
+            <div class="card-body">
+              <h5 class="card-title text-danger">Longest Loss Streak</h5>
+              <p class="card-text fs-2 fw-bold">{{ longest_loss_streak }}</p>
+            </div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="card h-100 text-center shadow-sm">
+            <div class="card-body">
+              <h5 class="card-title">Current Streak</h5>
+              <p class="card-text fs-2 fw-bold">
+                {% if current_streak_count > 0 %}
+                  {{ current_streak_count }} {{ current_streak_type }}{{ current_streak_count|pluralize }}
+                {% else %}
+                  N/A
+                {% endif %}
+              </p>
+            </div>
           </div>
         </div>
       </div>
-      <div class="col-md-3">
-        <div class="card text-center text-danger">
-          <div class="card-body">
-            <h5 class="card-title">Losses</h5>
-            <p class="card-text fs-4">{{ losses }}</p>
+      {# Opponent Statistics Section #}
+      <h2 class="mb-3">Opponent Insights</h2>
+      <div class="row row-cols-1 row-cols-md-3 g-4 mb-4">
+        <div class="col">
+          <div class="card h-100 text-center shadow-sm">
+            <div class="card-body">
+              <h5 class="card-title">Most Played With/Against</h5>
+              <p class="card-text fs-4">
+                {% if most_played_with %}
+                  <a href="{% url 'users:user-profile' most_played_with.user.pk %}">{{ most_played_with.user.username }}</a>
+                  ({{ most_played_with.count }} games)
+                {% else %}
+                  N/A
+                {% endif %}
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="card h-100 text-center shadow-sm">
+            <div class="card-body">
+              <h5 class="card-title text-success">Favorite Opponent</h5>
+              <p class="card-text fs-4">
+                {% if favorite_opponent %}
+                  <a href="{% url 'users:user-profile' favorite_opponent.user.pk %}">{{ favorite_opponent.user.username }}</a>
+                  ({{ favorite_opponent.count }} wins)
+                {% else %}
+                  N/A
+                {% endif %}
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="card h-100 text-center shadow-sm">
+            <div class="card-body">
+              <h5 class="card-title text-danger">Nemesis Opponent</h5>
+              <p class="card-text fs-4">
+                {% if nemesis_opponent %}
+                  <a href="{% url 'users:user-profile' nemesis_opponent.user.pk %}">{{ nemesis_opponent.user.username }}</a>
+                  ({{ nemesis_opponent.count }} losses)
+                {% else %}
+                  N/A
+                {% endif %}
+              </p>
+            </div>
           </div>
         </div>
       </div>
-      <div class="col-md-3">
-        <div class="card text-center text-secondary">
-          <div class="card-body">
-            <h5 class="card-title">Draws</h5>
-            <p class="card-text fs-4">{{ draws }}</p>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="row mb-4">
-      <div class="col-md-3">
-        <div class="card text-center text-info">
-          <div class="card-body">
-            <h5 class="card-title">Win Rate</h5>
-            <p class="card-text fs-4">{{ win_rate|floatformat:2 }}%</p>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="card text-center text-warning">
-          <div class="card-body">
-            <h5 class="card-title">Incomplete</h5>
-            <p class="card-text fs-4">{{ incomplete }}</p>
-          </div>
-        </div>
-      </div>
-    </div>
+    {% endif %}
     {% if entries %}
-      <div class="table-responsive">
+      <h2 class="mb-3">Match Log</h2>
+      <div class="table-responsive shadow-sm">
         <table class="table table-bordered table-hover align-middle">
           <thead class="table-light">
             <tr>
@@ -81,12 +184,19 @@
               <th scope="col">Date Played</th>
               <th scope="col">Status</th>
               <th scope="col">Result</th>
+              <th scope="col">Opponent(s)</th>
             </tr>
           </thead>
           <tbody>
             {% for record in entries %}
               <tr>
-                <td>{{ record.match.id }}</td>
+                <td>
+                  {% if record.match %}
+                    <a href="{% url 'lobby-details' record.match.lobby.pk %}">{{ record.match.id }}</a>
+                  {% else %}
+                    N/A
+                  {% endif %}
+                </td>
                 <td>{{ record.date_played|date:"Y-m-d H:i" }}</td>
                 <td>
                   {% if record.is_completed %}
@@ -96,9 +206,8 @@
                   {% endif %}
                 </td>
                 <td>
-                  {# GameHistory.WIN = 0, GameHistory.DRAW = 1, GameHistory.LOSE = 2, GameHistory.INCOMPLETE = 3 #}
                   {% if record.result == 0 %}
-                    <span class="badge bg-success">Win</span> {# Assuming 0 is Win based on common game dev practice, check model #}
+                    <span class="badge bg-success">Win</span>
                   {% elif record.result == 1 %}
                     <span class="badge bg-secondary">Draw</span>
                   {% elif record.result == 2 %}
@@ -109,14 +218,35 @@
                     <span class="badge bg-light text-dark">N/A</span>
                   {% endif %}
                 </td>
+                <td>
+                  {% if record.match %}
+                    {% for player in record.match.players.all %}
+                      {% if player != request.user %}
+                        <a href="{% url 'users:user-profile' player.pk %}">{{ player.username }}</a>
+                        {% if not forloop.last %},{% endif %}
+                      {% endif %}
+                    {% empty %}
+                      No other players
+                    {% endfor %}
+                  {% else %}
+                    N/A
+                  {% endif %}
+                </td>
               </tr>
             {% endfor %}
           </tbody>
         </table>
       </div>
     {% else %}
-      <div class="alert alert-warning text-center mt-4" role="alert">
-        🎮 No game history found for the selected period. Time to start playing!
+      <div class="alert alert-info text-center mt-4 shadow-sm" role="alert">
+        <h4 class="alert-heading">🎮 No Game History Yet!</h4>
+        <p>
+          It looks like you haven't played any matches for <strong>{{ game.name }}</strong> in the selected period.
+        </p>
+        <hr />
+        <p class="mb-0">
+          Time to dive in and make some history! You can <a href="{% url 'match-create' pk=game.pk %}" class="alert-link">create a match</a> or <a href="{% url 'match-join' pk=game.pk %}" class="alert-link">join an existing one</a>.
+        </p>
       </div>
     {% endif %}
   </div>
