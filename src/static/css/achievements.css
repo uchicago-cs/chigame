@@ -63,9 +63,9 @@
 
     .recent-achievements-tab {
       position: absolute;
-      top: 15%;
-      right: 15%;
-      width: 20%;
+      top: 15vh;
+      right: 15vw;
+      width: 20vw;
       background-color: var(--accent);
       color: white;
       padding: 10px 20px;
@@ -80,9 +80,10 @@
 
     .recent-achievements-box {
       position: absolute;
-      top: 21%;
-      right: 15%;
-      width: 20%;
+      top: 21vh;
+      right: 15vw;
+      width: 20vw;
+      max-height: 28vh;
       background-color: var(--card-bg);
       border-radius: 0 0 5px 5px;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
