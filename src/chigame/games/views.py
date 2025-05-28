@@ -1999,7 +1999,7 @@ def create_game_history_entry(user, match):
         user=user,
         match=match,
         defaults={
-            "is_completed": match.lobby.match_status == 3,  # Lobby.Finished
+            "is_completed": match.lobby.match_status == Lobby.Finished,  # Lobby.Finished is 3
             "result": outcome,
         },
     )
@@ -2031,7 +2031,8 @@ class GameHistoryView(View):
             if start_date:
                 entries = entries.filter(date_played__gte=start_date)
 
-        entries = entries.select_related("match").order_by("-date_played")
+        # Order by date_played ascending for accurate streak calculations first
+        ordered_entries_for_streaks = entries.select_related("match").order_by("date_played")
 
         # Calculate statistics
         total_played = entries.count()
@@ -2042,9 +2043,20 @@ class GameHistoryView(View):
 
         win_rate = (wins / total_played) * 100 if total_played > 0 else 0
 
+        longest_win_streak = self._calculate_longest_streak(ordered_entries_for_streaks, GameHistory.WIN)
+        longest_loss_streak = self._calculate_longest_streak(ordered_entries_for_streaks, GameHistory.LOSE)
+        current_streak_type, current_streak_count = self._calculate_current_streak(ordered_entries_for_streaks)
+        average_playtime_seconds = self._calculate_average_playtime(entries)  # Can use original entries for this
+        average_playtime = (
+            timedelta(seconds=average_playtime_seconds) if average_playtime_seconds is not None else None
+        )
+
+        # For opponent-based stats, we can use the original entries collection
+        opponent_stats = self._calculate_opponent_stats(request.user, entries)
+
         context = {
             "game": game,
-            "entries": entries,
+            "entries": entries.select_related("match").order_by("-date_played"),  # Re-order for display
             "selected_period": period,
             "total_played": total_played,
             "wins": wins,
@@ -2052,6 +2064,14 @@ class GameHistoryView(View):
             "draws": draws,
             "incomplete": incomplete,
             "win_rate": win_rate,
+            "longest_win_streak": longest_win_streak,
+            "longest_loss_streak": longest_loss_streak,
+            "current_streak_type": current_streak_type,
+            "current_streak_count": current_streak_count,
+            "average_playtime": average_playtime,
+            "most_played_with": opponent_stats["most_played_with"],
+            "favorite_opponent": opponent_stats["favorite_opponent"],
+            "nemesis_opponent": opponent_stats["nemesis_opponent"],
             "period_options": [
                 {"value": "all", "label": "All Time"},
                 {"value": "7days", "label": "Last 7 Days"},
@@ -2062,6 +2082,101 @@ class GameHistoryView(View):
             ],
         }
         return render(request, "games/game_history.html", context)
+
+    def _calculate_longest_streak(self, entries, outcome_type):
+        max_streak = 0
+        current_streak = 0
+        for entry in entries:
+            if entry.result == outcome_type:
+                current_streak += 1
+            else:
+                max_streak = max(max_streak, current_streak)
+                current_streak = 0
+        max_streak = max(max_streak, current_streak)  # Final check
+        return max_streak
+
+    def _calculate_current_streak(self, entries):
+        if not entries:
+            return "N/A", 0
+
+        # .last() requires an ordered queryset
+        last_entry = entries.last()
+        if not last_entry or last_entry.result not in [GameHistory.WIN, GameHistory.LOSE]:
+            return "N/A", 0  # Not a win or loss
+
+        streak_type = last_entry.result
+        current_streak_count = 0
+
+        # Iterate in reverse order from the original ascending sort for streaks
+        for entry in reversed(entries):
+            if entry.result == streak_type:
+                current_streak_count += 1
+            else:
+                break
+
+        streak_label = "Win" if streak_type == GameHistory.WIN else "Loss"
+        return streak_label, current_streak_count
+
+    def _calculate_average_playtime(self, entries):
+        total_duration_seconds = 0
+        completed_games_count = 0
+        for entry in entries:
+            if entry.is_completed and entry.match and entry.match.start_time and entry.match.end_time:
+                duration = entry.match.end_time - entry.match.start_time
+                total_duration_seconds += duration.total_seconds()
+                completed_games_count += 1
+
+        if completed_games_count > 0:
+            return total_duration_seconds / completed_games_count
+        return None
+
+    def _calculate_opponent_stats(self, current_user, entries):
+        opponent_play_count = {}
+        opponent_win_count = {}
+        opponent_loss_count = {}
+
+        for entry in entries:
+            match = entry.match
+            if not match:
+                continue
+
+            opponents_in_match = [player for player in match.players.all() if player != current_user]
+
+            for opponent in opponents_in_match:
+                opponent_play_count[opponent] = opponent_play_count.get(opponent, 0) + 1
+
+                if entry.result == GameHistory.WIN:
+                    opponent_win_count[opponent] = opponent_win_count.get(opponent, 0) + 1
+                elif entry.result == GameHistory.LOSE:
+                    opponent_loss_count[opponent] = opponent_loss_count.get(opponent, 0) + 1
+
+        most_played_with_opponent = None
+        if opponent_play_count:
+            most_played_with_opponent_user = max(opponent_play_count, key=opponent_play_count.get)
+            most_played_with_opponent = {
+                "user": most_played_with_opponent_user,
+                "count": opponent_play_count[most_played_with_opponent_user],
+            }
+
+        favorite_opponent_user = None
+        if opponent_win_count:
+            favorite_opponent_user_candidate = max(opponent_win_count, key=opponent_win_count.get)
+            max_wins_against = opponent_win_count[favorite_opponent_user_candidate]
+            if max_wins_against > 0:
+                favorite_opponent_user = {"user": favorite_opponent_user_candidate, "count": max_wins_against}
+
+        nemesis_opponent_user = None
+        if opponent_loss_count:
+            nemesis_opponent_user_candidate = max(opponent_loss_count, key=opponent_loss_count.get)
+            max_losses_against = opponent_loss_count[nemesis_opponent_user_candidate]
+            if max_losses_against > 0:
+                nemesis_opponent_user = {"user": nemesis_opponent_user_candidate, "count": max_losses_against}
+
+        return {
+            "most_played_with": most_played_with_opponent,
+            "favorite_opponent": favorite_opponent_user,
+            "nemesis_opponent": nemesis_opponent_user,
+        }
 
 
 class MatchStatsView(DetailView):
