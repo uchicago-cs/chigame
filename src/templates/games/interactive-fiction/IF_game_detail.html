@@ -34,10 +34,10 @@
            class="btn btn-outline-primary">Play Game in New Tab</a>
         {% if user.is_authenticated %}
           {% if game in favorites_list.games.all %}
-            <a href="{% url 'remove-from-favorites' pk=game.pk %}"
+            <a href="{% url 'remove-from-favorites' game_id=game.pk %}"
                class="btn btn-outline-warning">Remove from Favorites</a>
           {% else %}
-            <a href="{% url 'add-to-favorites' pk=game.pk %}"
+            <a href="{% url 'add-to-favorites' game_id=game.pk %}"
                class="btn btn-outline-success">Add to Favorites</a>
           {% endif %}
           {% if game_lists %}

@@ -42,6 +42,7 @@ from .models import (
     Game,
     GameHistory,
     GameList,
+    GameQueue,
     Lobby,
     Match,
     Player,
@@ -56,6 +57,19 @@ from .simulation_utils import (
     get_ordered_players_by_seeds,
 )
 from .tables import LobbyTable
+
+
+class QueueListView(LoginRequiredMixin, ListView):
+    """Display the current user's queued games."""
+
+    model = Game
+    template_name = "games/queue_list.html"
+    context_object_name = "queued_games"
+
+    def get_queryset(self):
+        queue, _ = GameQueue.objects.get_or_create(user=self.request.user)
+        entries = queue.entries.order_by("position").select_related("game")
+        return [entry.game for entry in entries]
 
 
 # =============== Games CRUD and Search Views ===============
@@ -1817,18 +1831,18 @@ def add_review(request, pk):
 
 
 @login_required
-def add_to_favorites(request, pk):
+def add_to_favorites(request, game_id):
     """Add a game to the current user's 'Favorites' list."""
-    game = get_object_or_404(Game, pk=pk)
+    game = get_object_or_404(Game, pk=game_id)
     favorites_list, _ = GameList.objects.get_or_create(name="Favorites", created_by=request.user)
     favorites_list.games.add(game)
     return redirect("favorite-list")
 
 
 @login_required
-def remove_from_favorites(request, pk):
+def remove_from_favorites(request, game_id):
     """Remove a game from the current user's 'Favorites' list."""
-    game = get_object_or_404(Game, pk=pk)
+    game = get_object_or_404(Game, pk=game_id)
     try:
         favorites_list = GameList.objects.get(name="Favorites", created_by=request.user)
         favorites_list.games.remove(game)
@@ -2005,15 +2019,63 @@ def create_game_history_entry(user, match):
     )
 
 
-@login_required
-def game_history_view(request, game_id):
-    game = get_object_or_404(Game, id=game_id)
-    entries = (
-        GameHistory.objects.filter(user=request.user, match__game=game)
-        .select_related("match")
-        .order_by("-date_played")
-    )
-    return render(request, "games/game_history.html", {"game": game, "entries": entries})
+@method_decorator(login_required, name="dispatch")
+class GameHistoryView(View):
+    def get(self, request, game_id):
+        game = get_object_or_404(Game, id=game_id)
+        period = request.GET.get("period", "all")  # Default to "all" if no period is specified
+
+        entries = GameHistory.objects.filter(user=request.user, match__game=game)
+
+        if period != "all":
+            today = timezone.now().date()
+            if period == "7days":
+                start_date = today - timedelta(days=7)
+            elif period == "30days":
+                start_date = today - timedelta(days=30)
+            elif period == "3months":
+                start_date = today - timedelta(days=90)
+            elif period == "6months":
+                start_date = today - timedelta(days=180)
+            elif period == "12months":
+                start_date = today - timedelta(days=365)
+            else:  # Default to all if period is unknown
+                start_date = None
+
+            if start_date:
+                entries = entries.filter(date_played__gte=start_date)
+
+        entries = entries.select_related("match").order_by("-date_played")
+
+        # Calculate statistics
+        total_played = entries.count()
+        wins = entries.filter(result=GameHistory.WIN).count()
+        losses = entries.filter(result=GameHistory.LOSE).count()
+        draws = entries.filter(result=GameHistory.DRAW).count()
+        incomplete = entries.filter(result=GameHistory.INCOMPLETE).count()
+
+        win_rate = (wins / total_played) * 100 if total_played > 0 else 0
+
+        context = {
+            "game": game,
+            "entries": entries,
+            "selected_period": period,
+            "total_played": total_played,
+            "wins": wins,
+            "losses": losses,
+            "draws": draws,
+            "incomplete": incomplete,
+            "win_rate": win_rate,
+            "period_options": [
+                {"value": "all", "label": "All Time"},
+                {"value": "7days", "label": "Last 7 Days"},
+                {"value": "30days", "label": "Last 30 Days"},
+                {"value": "3months", "label": "Last 3 Months"},
+                {"value": "6months", "label": "Last 6 Months"},
+                {"value": "12months", "label": "Last 12 Months"},
+            ],
+        }
+        return render(request, "games/game_history.html", context)
 
 
 class MatchStatsView(DetailView):
@@ -2098,8 +2160,7 @@ def checkers_game_view(request, pk):
             [0, 1, 0, 1, 0, 1, 0, 1],
             [1, 0, 1, 0, 1, 0, 1, 0],
         ]
-        # Save first turn
-        board = CheckersBoard.objects.create(state=default_state)
+        board = CheckersBoard.objects.create(state=default_state, current_turn_player=game.player_1)
         CheckersTurn.objects.create(game=game, board=board, turn_number=1, player=game.player_1)
 
     # Determine player ID for frontend
@@ -2114,6 +2175,7 @@ def checkers_game_view(request, pk):
             "board_id": board.id,
             "player_id": player.id,
             "turn_number": turn_number,
+            "current_turn_player_id": board.current_turn_player.id if board.current_turn_player else None,
         },
     )
 
@@ -2123,25 +2185,33 @@ def checkers_game_update_board_state(request, board_id):
     try:
         board = CheckersBoard.objects.get(pk=board_id)
         new_state = request.data.get("state")
+        next_player_id = request.data.get("next_player_id")
 
-        if new_state is None:
-            return Response({"error": "Missing 'state'"}, status=status.HTTP_400_BAD_REQUEST)
+        if new_state is None or next_player_id is None:
+            return Response({"error": "Missing 'state' or 'next_player_id'"}, status=status.HTTP_400_BAD_REQUEST)
 
         board.state = new_state
+        board.current_turn_player_id = next_player_id
         board.save()
+
         return Response({"success": True})
 
     except CheckersBoard.DoesNotExist:
-        return Response({"error": "Board not found"}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"error": "Board not found"}, status=404)
     except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({"error": str(e)}, status=500)
 
 
 @api_view(["GET"])
 def checkers_game_get_board_state(request, board_id):
     try:
         board = CheckersBoard.objects.get(pk=board_id)
-        return Response({"state": board.state})
+        return Response(
+            {
+                "state": board.state,
+                "current_turn_player_id": board.current_turn_player.id if board.current_turn_player else None,
+            }
+        )
     except CheckersBoard.DoesNotExist:
         return Response({"error": "Board not found"}, status=404)
 

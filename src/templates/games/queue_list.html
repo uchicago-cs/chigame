@@ -1,0 +1,22 @@
+{# templates/games/queue_list.html #}
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block content %}
+  <h1>My Queue</h1>
+  {% if queued_games %}
+    <ul>
+      {% for game in queued_games %}
+        <li>
+          <a href="{% url 'game-detail' game.pk %}">{{ game.name }}</a>
+          <a href="{% url 'remove-from-queue' game.pk %}">Remove</a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>
+      Your queue is empty. <a href="{% url 'game-list' %}">Browse games</a> to add some.
+    </p>
+  {% endif %}
+{% endblock content %}
