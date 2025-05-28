@@ -42,6 +42,7 @@ from .models import (
     Game,
     GameHistory,
     GameList,
+    GameQueue,
     Lobby,
     Match,
     Player,
@@ -56,6 +57,19 @@ from .simulation_utils import (
     get_ordered_players_by_seeds,
 )
 from .tables import LobbyTable
+
+
+class QueueListView(LoginRequiredMixin, ListView):
+    """Display the current user's queued games."""
+
+    model = Game
+    template_name = "games/queue_list.html"
+    context_object_name = "queued_games"
+
+    def get_queryset(self):
+        queue, _ = GameQueue.objects.get_or_create(user=self.request.user)
+        entries = queue.entries.order_by("position").select_related("game")
+        return [entry.game for entry in entries]
 
 
 # =============== Games CRUD and Search Views ===============
