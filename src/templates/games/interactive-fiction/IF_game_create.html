@@ -613,9 +613,13 @@
         });
       }
     });
+
+
+
+
   </script>
   <h1>Create Interactive Fiction Game</h1>
-  <form method="post" enctype="multipart/form-data" id="game_form">
+  <form method="post" action="{% url 'upload-file' pk=game.pk %}" enctype="multipart/form-data" id="game_form">
     {% csrf_token %}
     <div>
       <label for="id_name">
@@ -814,11 +818,6 @@
         </div>
       </div>
     </h3>
-  </form>
-  <form method="post"
-        action="{% url 'upload-file' pk=game.pk %}"
-        enctype="multipart/form-data">
-    {% csrf_token %}
     <div class="upload-zone" data-input-id="myFile">
       Drag &amp; drop your exported Twine HTML file here
       <br />
