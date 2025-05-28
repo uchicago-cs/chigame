@@ -613,13 +613,12 @@
         });
       }
     });
-
-
-
-
   </script>
   <h1>Create Interactive Fiction Game</h1>
-  <form method="post" action="{% url 'upload-file' pk=game.pk %}" enctype="multipart/form-data" id="game_form">
+  <form method="post"
+        action="{% url 'upload-file' pk=game.pk %}"
+        enctype="multipart/form-data"
+        id="game_form">
     {% csrf_token %}
     <div>
       <label for="id_name">

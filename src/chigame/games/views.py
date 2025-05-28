@@ -780,7 +780,6 @@ class UploadFileView(View):
         game_name = request.POST.get("name", "").strip() or "DEFAULT"
         desc = request.POST.get("description", "").strip() or "Uploaded Twine game"
 
-
         print("Name:", game_name)
         print("POST:", request.POST)
         print("FILES:", request.FILES)
