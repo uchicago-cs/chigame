@@ -4,6 +4,74 @@
   <div class="container mt-5">
     <h1 class="display-4 mb-4">Game History for {{ game.name }}</h1>
     <a href="{% url 'game-detail' game.id %}" class="btn btn-primary mb-4">← Return to Game Detail</a>
+    <form method="get" class="mb-4">
+      <div class="row">
+        <div class="col-md-4">
+          <label for="periodSelect" class="form-label">Select Period:</label>
+          <select name="period"
+                  id="periodSelect"
+                  class="form-select"
+                  onchange="this.form.submit()">
+            {% for option in period_options %}
+              <option value="{{ option.value }}"
+                      {% if option.value == selected_period %}selected{% endif %}>{{ option.label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+    </form>
+    <div class="row mb-4">
+      <div class="col-md-3">
+        <div class="card text-center">
+          <div class="card-body">
+            <h5 class="card-title">Total Played</h5>
+            <p class="card-text fs-4">{{ total_played }}</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card text-center text-success">
+          <div class="card-body">
+            <h5 class="card-title">Wins</h5>
+            <p class="card-text fs-4">{{ wins }}</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card text-center text-danger">
+          <div class="card-body">
+            <h5 class="card-title">Losses</h5>
+            <p class="card-text fs-4">{{ losses }}</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card text-center text-secondary">
+          <div class="card-body">
+            <h5 class="card-title">Draws</h5>
+            <p class="card-text fs-4">{{ draws }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row mb-4">
+      <div class="col-md-3">
+        <div class="card text-center text-info">
+          <div class="card-body">
+            <h5 class="card-title">Win Rate</h5>
+            <p class="card-text fs-4">{{ win_rate|floatformat:2 }}%</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card text-center text-warning">
+          <div class="card-body">
+            <h5 class="card-title">Incomplete</h5>
+            <p class="card-text fs-4">{{ incomplete }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
     {% if entries %}
       <div class="table-responsive">
         <table class="table table-bordered table-hover align-middle">
@@ -28,14 +96,17 @@
                   {% endif %}
                 </td>
                 <td>
+                  {# GameHistory.WIN = 0, GameHistory.DRAW = 1, GameHistory.LOSE = 2, GameHistory.INCOMPLETE = 3 #}
                   {% if record.result == 0 %}
-                    <span class="badge bg-secondary">Draw</span>
+                    <span class="badge bg-success">Win</span> {# Assuming 0 is Win based on common game dev practice, check model #}
                   {% elif record.result == 1 %}
-                    <span class="badge bg-success">Win</span>
+                    <span class="badge bg-secondary">Draw</span>
                   {% elif record.result == 2 %}
                     <span class="badge bg-danger">Lose</span>
+                  {% elif record.result == 3 %}
+                    <span class="badge bg-info text-dark">Incomplete</span>
                   {% else %}
-                    <span class="badge bg-secondary">N/A</span>
+                    <span class="badge bg-light text-dark">N/A</span>
                   {% endif %}
                 </td>
               </tr>
@@ -45,7 +116,7 @@
       </div>
     {% else %}
       <div class="alert alert-warning text-center mt-4" role="alert">
-        🎮 No game history found for this game yet. Time to start playing!
+        🎮 No game history found for the selected period. Time to start playing!
       </div>
     {% endif %}
   </div>
