@@ -42,6 +42,7 @@ urlpatterns = [
     path("lobby/<int:pk>/code/", views.MatchCodeView.as_view(), name="match-code"),
     # interactive fiction
     path("interactive-fiction/", views.IFGameCreateView.as_view(), name="interactive-fiction-create"),
+    path('upload/<int:pk>/', views.UploadFileView.as_view(), name='upload-file'),
     path("if-game/<int:pk>/", InteractiveFictionDetailView.as_view(), name="interactive-fiction-detail"),
     # tournaments
     path("tournaments/", views.TournamentListView.as_view(), name="tournament-list"),
